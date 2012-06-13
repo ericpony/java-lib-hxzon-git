@@ -1,0 +1,1 @@
+zul.inp.Bandpopup=zk.$extends(zul.Widget,{getZclass:function(){var a=this._zclass;return a!=null?a:"z-bandpopup"},afterChildrenMinFlex_:function(b){if(b=="w"){var c=this.parent,a=c&&c.$n("pp");if(a){a.style.width=jq.px0(this._hflexsz);zk(a)._updateProp(["width"])}}}});

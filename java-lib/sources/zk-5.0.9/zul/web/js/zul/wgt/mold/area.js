@@ -1,0 +1,1 @@
+function(a){a.push("<area",this.domAttrs_(),"/>")};

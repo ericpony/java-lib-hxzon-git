@@ -1,0 +1,1 @@
+function(a){a.push("<applet",this.domAttrs_(),">");this._outParamHtml(a);a.push("</applet>")};

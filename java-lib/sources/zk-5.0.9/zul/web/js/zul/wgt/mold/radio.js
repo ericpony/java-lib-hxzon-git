@@ -1,0 +1,1 @@
+function(b){var c=this.uuid,d=this.getZclass(),a=this.getRadiogroup();b.push("<span",this.domAttrs_(),">",'<input type="radio" id="',c,'-real"',this.contentAttrs_(),'/><label for="',c,'-real"',this.domTextStyleAttr_(),' class="',d,'-cnt">',this.domContent_(),"</label>",(a&&a._orient=="vertical"?"<br/>":""),"</span>")};

@@ -1,0 +1,1 @@
+function(a){a.push("<div",this.domAttrs_(),'><span id="',this.uuid,'-img"','class="',this.getZclass(),'-img"></span></div>')};

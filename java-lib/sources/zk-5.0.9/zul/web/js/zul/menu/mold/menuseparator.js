@@ -1,0 +1,1 @@
+function(a){var b=this.isPopup()?"li":"td";a.push("<",b,this.domAttrs_(),'><span class="',this.getZclass(),'-inner">&nbsp;</span></',b,">")};

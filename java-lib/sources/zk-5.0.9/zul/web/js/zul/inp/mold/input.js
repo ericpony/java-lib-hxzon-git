@@ -1,0 +1,1 @@
+function(a){var d=this.getZclass(),c=this.uuid,b=this.inRoundedMold();if(!b){a.push("<input",this.domAttrs_(),"/>")}else{a.push("<i",this.domAttrs_({text:true}),">",'<input id="',c,'-real"','class="',d,'-inp"',this.textAttrs_(),"/>",'<i id="',c,'-right-edge"','class="',d,"-right-edge");if(zk.ie6_&&this._readonly){a.push(" ",d,"-right-edge-readonly")}a.push('"></i></i>')}};

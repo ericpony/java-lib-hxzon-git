@@ -1,0 +1,1 @@
+function(b){b.push('<button type="',this._type,'"',this.domAttrs_());var a=this._tabindex;if(this._disabled){b.push(' disabled="disabled"')}if(a){b.push(' tabindex="',a,'"')}b.push(">",this.domContent_(),"</button>")};

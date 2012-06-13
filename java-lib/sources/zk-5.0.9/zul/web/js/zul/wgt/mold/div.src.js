@@ -1,0 +1,2 @@
+
+zk.Page.prototype.redraw

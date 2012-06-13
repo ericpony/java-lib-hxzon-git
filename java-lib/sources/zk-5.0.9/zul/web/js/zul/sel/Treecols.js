@@ -1,0 +1,1 @@
+zul.sel.Treecols=zk.$extends(zul.mesh.HeadWidget,{getTree:function(){return this.parent},setVisible:function(a){if(this._visible!=a){this.$supers("setVisible",arguments);this.getTree().rerender()}},getZclass:function(){return this._zclass==null?"z-treecols":this._zclass}});

@@ -1,0 +1,1 @@
+function(b){b.push("<a ",this.domAttrs_(),">",this.domContent_());for(var a=this.firstChild;a;a=a.nextSibling){a.redraw(b)}b.push("</a>")};

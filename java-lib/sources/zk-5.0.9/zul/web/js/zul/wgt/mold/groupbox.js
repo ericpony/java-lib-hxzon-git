@@ -1,0 +1,1 @@
+function(a,c){a.push("<fieldset",this.domAttrs_(),">");var b=this.caption;if(b){b.redraw(a)}this._redrawCave(a,c);a.push("</fieldset>")};

@@ -1,0 +1,1 @@
+function(a){a.push("<embed",this.domAttrs_(),' mastersound enablejavascript="true"/>')};

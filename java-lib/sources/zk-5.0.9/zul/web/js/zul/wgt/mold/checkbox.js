@@ -1,0 +1,1 @@
+function(a){var b=this.uuid,d=this.getZclass(),c=this.domContent_();a.push("<span",this.domAttrs_(),">",'<input type="checkbox" id="',b,'-real"',this.contentAttrs_(),"/><label ");if(!(zk.ie<8)||jq.trim(c)){a.push('for="',b,'-real"')}a.push(this.domTextStyleAttr_(),' class="',d,'-cnt">',this.domContent_(),"</label></span>")};

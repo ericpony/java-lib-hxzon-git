@@ -1,0 +1,1 @@
+function(b){var a=this.isVertical()?"span":"div";b.push("<",a,this.domAttrs_(),">&nbsp;</",a,">")};

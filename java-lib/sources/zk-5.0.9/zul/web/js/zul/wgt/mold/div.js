@@ -1,0 +1,1 @@
+zk.Page.prototype.redraw;

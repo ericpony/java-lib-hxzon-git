@@ -1,0 +1,1 @@
+function(b){if(this.parent.$instanceof(zul.sel.Tree)){b.push('<tbody id="',this.parent.uuid,'-rows" ',this.domAttrs_({id:1}),">");for(var a=this.firstChild;a;a=a.nextSibling){a.redraw(b)}b.push("</tbody>")}else{for(var a=this.firstChild;a;a=a.nextSibling){a.redraw(b)}}};

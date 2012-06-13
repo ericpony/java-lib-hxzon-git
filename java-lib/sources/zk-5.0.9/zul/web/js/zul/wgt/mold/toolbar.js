@@ -1,0 +1,1 @@
+function(b){var d=this.getZclass(),c="vertical"!=this.getOrient()?"":"<br/>";b.push("<div ",this.domAttrs_(),">",'<div id="',this.uuid,'-cave"',' class="',d,"-body ",d,"-",this.getAlign(),'" >');for(var a=this.firstChild;a;a=a.nextSibling){b.push(c);a.redraw(b)}b.push('</div><div class="z-clear"></div></div>')};
