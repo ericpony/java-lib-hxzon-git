@@ -1,0 +1,215 @@
+﻿Ext JS 4 First Look
+Copyright ? 2011 Packt Publishing
+All rights reserved. No part of this book may be reproduced, stored in a retrieval 
+system, or transmitted in any form or by any means, without the prior written 
+permission of the publisher, except in the case of brief quotations embedded in 
+critical articles or reviews.
+Every effort has been made in the preparation of this book to ensure the accuracy 
+of the information presented. However, the information contained in this book is 
+sold without warranty, either express or implied. Neither the author, nor Packt 
+Publishing, and its dealers and distributors will be held liable for any damages 
+caused or alleged to be caused directly or indirectly by this book.
+Packt Publishing has endeavored to provide trademark information about all of the 
+companies and products mentioned in this book by the appropriate use of capitals. 
+However, Packt Publishing cannot guarantee the accuracy of this information.
+First published: December 2011
+Production Reference: 1081211
+Published by Packt Publishing Ltd. 
+Livery Place 
+35 Livery Street 
+Birmingham B3 2PB, UK.
+ISBN 978-1-84951-666-2
+www.packtpub.com
+Cover Image by Parag Kadam (paragvkadam@gmail.com)
+=========================
+Table of Contents
+Preface  1
+
+Chapter 1: What's New in Ext JS 4?  7
+Chapter 2: The New Data Package  41
+Chapter 3: Upgraded Layouts  97
+Chapter 4: Upgraded Charts  143
+Chapter 5: Upgraded Grid, Tree, and Form  201
+Chapter 6: Ext JS 4 Themes  241
+Chapter 7: MVC Application Architecture  265
+
+Appendix A: Ext JS 4 Versus Ext JS 3 Class Names  307
+Index  313
+=========================
+Table of Contents
+Preface  1
+
+Chapter 1: What's New in Ext JS 4?  7
+Getting started with Ext JS 4  7
+Package and namespace updates  8
+Upgraded documentation  9
+Ext JS 4 SDK quick look  11
+What is the difference between ext.js and ext-all.js?  13
+Deploying Ext JS locally  14
+The new Ext JS 4 class system  14
+Class definition and creation  15
+Creating a new class  15
+Extending a class  15
+Mixins  17
+Config (auto setters and getters)  19
+Dynamic class loading  21
+Statics  26
+Migrating from Ext JS 3 to Ext JS 4  28
+Adapters  28
+JavaScript compatibility file  30
+Sandbox mode  30
+Sencha platform  35
+Data package  36
+Draw package and charts  37
+Layouts  37
+Grids  38
+Forms  38
+Accessibility  39
+Theming  39
+Summary  39
+
+Chapter 2: The New Data Package  41
+Broad overview  41
+The new model class  43
+Declaring fields  43
+Validating the model  48
+Loading/saving data with proxies and stores  51
+Linking models through associations  54
+Proxies  63
+Client proxies  63
+LocalStorageProxy  65
+SessionStorageProxy  67
+MemoryProxy  68
+Server proxies  70
+AjaxProxy  71
+Rest proxy  78
+JsonP proxy  80
+Stores  82
+Readers  83
+Writers  86
+JsonWriter  87
+XmlWriter  89
+Sorting  90
+Filtering  94
+Summary  95
+
+Chapter 3: Upgraded Layouts  97
+Ext JS 4 layouts  97
+Container layouts  99
+Auto layout  99
+Anchor layout  101
+Absolute layout  104
+HBox layout  105
+VBox layout  107
+Accordion layout  108
+Table layout  110
+Column layout  111
+Fit layout  113
+Card layout  114
+Border layout  116
+Component layouts  119
+Dock layout  119
+Tool layout  131
+Field layout  133
+TriggerField layout  139
+Summary  142
+
+Chapter 4: Upgraded Charts  143
+Ext JS 4 chart upgrades  144
+Ext draw package  144
+Applying transformations to a draw  150
+Putting it all together  151
+Ext chart package  154
+Legend  158
+Axis  159
+Category, Numeric, and Time axes  160
+Gauge axis  162
+Radial axis  163
+Series  163
+Bar chart  164
+Grouped bar chart  167
+Stacked bar chart  169
+Column chart  171
+Line Chart  173
+Customizing a Line Chart  175
+Grouped Line Chart  177
+Area Chart  180
+Grouped Area Chart  182
+Scatter Chart  183
+Grouped Scatter Chart  185
+Pie Chart  186
+Donut Chart  188
+Radar Chart  189
+Grouped Radar Chart  191
+Gauge Chart  192
+Customizing a Chart  194
+Summary  199
+
+Chapter 5: Upgraded Grid, Tree, and Form  201
+Grid panel  201
+Columns  203
+Feature support  206
+Ext.grid.feature.Grouping  206
+Ext.grid.feature.GroupingSummary  209
+Ext.grid.feature.Summary  211
+Ext.grid.feature.RowBody  212
+Grid plugins  214
+Ext.grid.plugin.CellEditing  214
+Ext.grid.plugin.RowEditing  216
+Saving the data to the server  217
+Infinite scrolling  219
+Tree panel  222
+Drag-and-drop and sorting  223
+Check tree  225
+Tree grid  226
+Form  228
+Form fields  229
+Validation  234
+Form label  238
+Actions  238
+Summary  240
+
+Chapter 6: Ext JS 4 Themes  241
+Getting started with Ext JS 4 themes  241
+Installing Ruby  242
+Windows and Mac OS  242
+Linux  242
+Ubuntu and Debian  243
+Red Hat Enterprise and Fedora  243
+Installing Sass and Compass  243
+Setting up an Ext project  246
+Creating a new theme  248
+Variables  252
+Bugs in earlier versions of Ext JS 4.1  254
+Creating new Ext JS Component UIs  255
+Complete my-ext-theme.scss file  258
+Supporting legacy browsers  259
+Missing custom images  264
+Summary  264
+
+Chapter 7: MVC Application Architecture  265
+The new MVC application architecture  265
+Creating a sample application the old-fashioned way  266
+Migrating/creating an app using the MVC architecture  272
+Project directory structure  273
+Ext.ComponentQuery  274
+Ext.container.Container functions: query, child, down, and up  278
+Query function  278
+Child function  279
+Down function competency  279
+Up function  280
+Creating the MVC application  280
+Creating the book-mvc application  280
+Creating the controller class  283
+Controlling a view in the controller class  285
+Creating the model and store classes  287
+Adding the book details panel  291
+Controller getter methods  295
+Useful tips to develop an MVC application  296
+Nested models and MVC  296
+Building your application for production  301
+Summary  305
+
+Appendix A: Ext JS 4 Versus Ext JS 3 Class Names  307
+
+Index  313

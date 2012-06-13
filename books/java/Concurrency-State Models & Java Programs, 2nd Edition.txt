@@ -1,0 +1,32 @@
+﻿Concurrency: State Models & Java Programs, 2nd Edition
+by Jeff Magee and Jeff Kramer 
+John Wiley & Sons 2006 (432 pages) 
+ISBN:0470093552 
+Presenting concepts, techniques and problems through a variety of forms, this book provides a systematic and practical approach to designing, analyzing and implementing concurrent programs.
+====================
+Table of Contents  
+ Concurrency—State Models & Java Programs, 2nd Edition  
+ Preface  
+ Chapter 1 - Introduction 
+ Chapter 2 - Processes and Threads 
+ Chapter 3 - Concurrent Execution 
+ Chapter 4 - Shared Objects and Mutual Exclusion 
+ Chapter 5 - Monitors and Condition Synchronization 
+ Chapter 6 - Deadlock 
+ Chapter 7 - Safety and Liveness Properties 
+ Chapter 8 - Model-Based Design 
+ Chapter 9 - Dynamic Systems 
+ Chapter 10 - Message Passing 
+ Chapter 11 - Concurrent Architectures 
+ Chapter 12 - Timed Systems 
+ Chapter 13 - Program Verification 
+ Chapter 14 - Logical Properties 
+ Appendix A - FSP Quick Reference 
+ Appendix B - FSP Language Specification 
+ Appendix C - FSP Semantics 
+ Appendix D - UML Class Diagrams 
+ Bibliography  
+ Index  
+ List of Figures  
+ List of Tables  
+ List of Programs  

@@ -1,0 +1,190 @@
+﻿Smashing CSS: Professional Techniques for Modern Layout
+精彩绝伦的CSS
+http://www.ituring.com.cn/book/924
+Paperback: 304 pages
+Publisher: Wiley; 1 edition (November 9, 2010)
+Language: English
+ISBN-10: 047068416X
+ISBN-13: 978-0470684160
+=======================
+本书不仅介绍了CSS基础知识，而且全面细致地讲解了布局与效果，最后展望了HTML5和CSS3的未来，是构建现代Web布局的实用指南。
+本书作者Eric A. Meyer是一位国际公认的HTML、CSS、Web标准方面的专家，他在本书中深入浅出地分析了普遍适用的实用技术，包括如何选择正确的工具。
+
+本书主要内容如下：
+ 显示/隐藏元素；
+ 用XHTML创建背景；
+ 15个布局技术，包括“清除浮动”（clearfix）和Holy Grail技术，以及应用两栏/三栏布局、伪造栏(faux column)布局、“唯一布局”（One True Layout）、基于em的布局、流式栅格等技术；
+ 各种CSS效果，包括CSS弹出窗口、框冲切（boxpunching）、圆角、CSS sprite、滑动门（Sliding Door）、流式漂白布局（Liquid Bleach）、参差浮动（ragged float）等；
+ 为表添加样式，内容涉及thead、 tfoot、tbody、行标题（row header）、面向列的样式设计（ column-oriented styling ）等；
+ 各种CSS3元素，内容涉及设置圆角、多背景、 RGBA，以及通过 jQuery执行CSS3 选取操作等。
+
+本书适合具有一定的CSS和JavaScript使用经验且正在寻求更先进技术的开发人员学习参考。
+=======================
+this edition i  rst published 2011
+? 2011 John Wiley & Sons, Ltd.
+Registered oi   ce
+John Wiley & Sons Ltd, h  e Atrium, Southern Gate, Chichester, West Sussex, PO19 8SQ, 
+United Kingdom 
+For details of our global editorial oi   ces, for customer services and for information about 
+how to apply for permission to reuse the copyright material in this book please see our 
+website at www.wiley.com. 
+the right of the author to be identii  ed as the author of this work has been asserted in 
+accordance with the Copyright, Designs and Patents Act 1988. 
+All rights reserved. No part of this publication may be reproduced, stored in a retrieval 
+system, or transmitted, in any form or by any means, electronic, mechanical, 
+photocopying, recording or otherwise, except as permitted by the UK Copyright, 
+Designs and Patents Act 1988, without the prior permission of the publisher.
+Wiley also publishes its books in a variety of electronic formats.  Some content that 
+appears in print may not be available in electronic books.
+Content reproduced from Meyerweb.com is copyright material and cannot be repro-
+duced without permission ?1995-2010 Eric A. and Kathryn S. Meyer. All Rights 
+Reserved. ?1995-2010 Eric A. and Kathryn S. Meyer. All Rights Reserved.
+Designations used by companies to distinguish their products are ot  en claimed as 
+trademarks. All brand names and product names used in this book are trade names, 
+service marks, trademarks or registered trademarks of their respective owners. h  e 
+publisher is not associated with any product or vendor mentioned in this book. h  is 
+publication is designed to provide accurate and authoritative information in regard to 
+the subject matter covered. It is sold on the understanding that the publisher is not 
+engaged in rendering professional services. If professional advice or other expert 
+assistance is required, the services of a competent professional should be sought.
+978-0-470-68416-0
+Set in 10/12 Minion Pro Regular by Wiley Composition Services 
+Printed in the US by CJK
+========================
+Contents
+
+PART I: FUNDAMENTALS  3
+ ■ Chapter  1: Tools  5
+ ■ Chapter  2: Selectors  39
+
+PART II: ESSENTIALS  71
+ ■ Chapter  3: Tips  73
+ ■ Chapter  4: Layouts  107
+ ■ Chapter  5: Effects 159
+
+PART III: CUTTING EDGE  203
+ ■ Chapter  6: Tables  205
+ ■ Chapter  7: the (Near) Future  231
+
+Index 269
+==============================
+Contents
+
+PART I: FUNDAMENTALS  3
+
+ ■ Chapter  1: Tools  5
+Firebug 6
+Web Developer Toolbar  13
+Internet Explorer Developer Toolbar (or Tools)  17
+Dragonfly (for Opera)  22
+Web Inspector (Safari)  26
+XRAY 29
+SelectORacle 30
+Diagnostic Style Sheet  31
+Reboot Styles  33
+IE9.js 36
+
+ ■ Chapter  2: Selectors  39
+Pseudo What?  40
+Targets with Style  41
+Specificity  43
+Importance 44
+What Happens when You omit Shorthand Value Keywords  45
+Selectively Overriding Shorthands  47
+Universal Selection  49
+ID vs. Class  50
+ID with Class  52
+Multiclassing 53
+Simple Attribute Selection  54
+Attribute Selection of Classes  56
+ID vs. Attribute Selector  57
+Substring Attribute Selection  58
+More Substring Attribute Selection  60
+Child Selection  62
+Simulated Partial Child Selection  63
+Sibling Selection  65
+Generating Content  67
+
+PART II: ESSENTIALS  71
+
+ ■ Chapter  3: Tips  73
+Validate! 74
+Ordering Your Font Values  75
+Rolling in Line-Height  75
+Unitless Line-Height Values  76
+Avoid Style-less Border Values  78
+Controlling Border Appearance with Color  78
+Suppressing Element Display  80
+Suppressing Element Visibility  82
+Throwing Elements Off-screen  83
+Image Replacement  84
+Print Styles  87
+Developing Print Styles  87
+Block-level Links  89
+Margin or Padding?  90
+Outdenting Lists  92
+Bulleting Lists  93
+Background Bullets  95
+Generating Bullets  98
+You Have More Containers than You h  ink  100
+Document Backgrounds  103
+Server-specii  c CSS  104
+
+ ■ Chapter  4: Layouts  107
+Outlines Instead of Borders  108
+Centering Block Boxes  110
+Float containment: overl  ow  113
+Float containment: l  oating  115
+Clearfixing  117
+Adjacent Clearing  118
+Two Simple Columns  120
+three Simple Columns  121
+Faux Columns  124
+Liquid Bleach  127
+the One True Layout  131
+the Holy Grail  135
+Fluid Grids  140
+Em-Based Layout  144
+Negative Margins in Flow  147
+Positioning Within a Context  150
+Pushing out of the Containing Block  152
+Fixed headers and footers  155
+
+ ■ Chapter  5: Effects 159
+Complexspiral 160
+CSS Pop-ups 165
+CSS Menus 167
+Boxpunching 169
+Pre-CSS 3 Rounded Corners 172
+CSS 3 Rounded Corners 177
+CSS Sprites 179
+Sliding Doors 182
+Clipped Sliding Doors 185
+CSS Parallax 187
+Ragged Floats 190
+Better Ragged Floats 194
+Boxing Your Images 198
+Constrained Images 200
+
+PART III: CUTTING EDGE  203
+
+ ■ Chapter  6: Tables  205
+Head, Body, Foot  206
+Row Headers  208
+Column-oriented Styling  210
+Table Mapping  215
+Table Graphs  222
+
+ ■ Chapter  7: the (Near) Future  231
+Styling HTML 5  232
+Classing like HTML 5  234
+Media Queries  235
+Styling Occasional Children  240
+Styling Occasional Columns  243
+RGB Alpha Color  246
+HSL and HSL Alpha Color  248
+Shadowy Styles  250
+Multiple Backgrounds  251
+2D Transforms  256
+
+Index 269

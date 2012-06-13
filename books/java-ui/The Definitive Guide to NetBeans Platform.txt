@@ -1,0 +1,366 @@
+﻿The Definitive Guide to NetBeans Platform
+The Definitive Guide to NetBeans Platform 6.5
+Copyright ? 2009 by Heiko B?ck
+All rights reserved. No part of this work may be reproduced or transmitted in any form or by any means, 
+electronic or mechanical, including photocopying, recording, or by any information storage or retrieval 
+system, without the prior written permission of the copyright owner and the publisher.
+ISBN-13 (pbk): 978-1-4302-2417-4
+ISBN-13 (electronic): 978-1-4302-2418-1
+Printed and bound in the United States of America 9 8 7 6 5 4 3 2 1
+Trademarked names may appear in this book. Rather than use a trademark symbol with every occurrence 
+of a trademarked name, we use the names only in an editorial fashion and to the benefit of the trademark 
+owner, with no intention of infringement of the trademark.
+Java? and all Java-based marks are trademarks or registered trademarks of Sun Microsystems, Inc., in the 
+US and other countries. Apress, Inc., is not affiliated with Sun Microsystems, Inc., and this book was 
+written without endorsement from Sun Microsystems, Inc.
+Lead Editor: Jim Freeman
+Technical Reviewers: Jaroslav Tulach, Geertjan Wielenga
+Editorial Board: Clay Andres, Steve Anglin, Mark Beckner, Ewan Buckingham, Tony Campbell, Gary 
+Cornell, Jonathan Gennick, Jonathan Hassell, Michelle Lowman, Matthew Moodie, Duncan Parkes, 
+Jeffrey Pepper, Frank Pohlmann, Douglas Pundick, Ben Renow-Clarke, Dominic Shakeshaft, Matt 
+Wade, Tom Welsh
+Project Manager: Douglas Sulenta
+Copy Editor: Damon Larson
+Associate Production Director: Kari Brooks-Copony
+Senior Production Editor: Laura Cheu
+Compositor: Ellie Fountain
+Proofreader: Nancy Sixsmith
+Indexer: BIM Indexing & Proofreading Services
+Artist: Kinetic Publishing Services, LLC
+Cover Designer: Kurt Krames
+Manufacturing Director: Tom Debolski
+Distributed to the book trade worldwide by Springer-Verlag New York, Inc., 233 Spring Street, 6th Floor, 
+New York, NY 10013. Phone 1-800-SPRINGER, fax 201-348-4505, e-mail orders-ny@springer-sbm.com, or 
+visit http://www.springeronline.com. 
+For information on translations, please contact Apress directly at 2855 Telegraph Avenue, Suite 600, 
+Berkeley, CA 94705. Phone 510-549-5930, fax 510-549-5939, e-mail info@apress.com, or visit http://
+www.apress.com. 
+Apress and friends of ED books may be purchased in bulk for academic, corporate, or promotional use. 
+eBook versions and licenses are also available for most titles. For more information, reference our Special 
+Bulk Sales–eBook Licensing web page at http://www.apress.com/info/bulksales.
+The information in this book is distributed on an “as is” basis, without warranty. Although every precaution 
+has been taken in the preparation of this work, neither the author(s) nor Apress shall have any liability to 
+any person or entity with respect to any loss or damage caused or alleged to be caused directly or indirectly 
+by the information contained in this work. 
+The source code for this book is available to readers at http://www.apress.com.
+=======================
+Contents at a Glance
+Foreword  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xvii
+About the Author . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xxi
+About the Technical Reviewers . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xxii
+Acknowledgments. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xxiii
+Introduction  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xxiv
+
+■CHAPTER 1 Introduction  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+■CHAPTER 2 Structure of the NetBeans Platform . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+■CHAPTER 3 The Module System . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+■CHAPTER 4 Actions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 45
+■CHAPTER 5 User Interface Design . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 61
+■CHAPTER 6 Lookup . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 93
+■CHAPTER 7 File Access and Display  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 109
+■CHAPTER 8 Graphical Components  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 135
+■CHAPTER 9 Reusable NetBeans Platform Components . . . . . . . . . . . . . . . . . . . . 175
+■CHAPTER 10 Internationalization and Localization  . . . . . . . . . . . . . . . . . . . . . . . . . 205
+■CHAPTER 11 Real-World Application Development . . . . . . . . . . . . . . . . . . . . . . . . . 213
+■CHAPTER 12 Updating a NetBeans Platform Application . . . . . . . . . . . . . . . . . . . . 219
+■CHAPTER 13 Persistence. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 229
+■CHAPTER 14 Web Services . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 261
+■CHAPTER 15 Extending the NetBeans IDE . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 269
+■CHAPTER 16 From Eclipse RCP to the NetBeans Platform  . . . . . . . . . . . . . . . . . . 279
+■CHAPTER 17 Tips and Tricks  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 287
+■CHAPTER 18 Example: MP3 Manager  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 297
+
+■APPENDIX Important NetBeans Extension Points and Configuration DTDs . . . . . . . . . . . . . . . . . . . . . . . 331
+■INDEX . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 337
+=========================
+Contents
+Foreword  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xvii
+About the Author . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xxi
+About the Technical Reviewers . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xxii
+Acknowledgments. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xxiii
+Introduction  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xxiv
+
+■CHAPTER 1 Introduction  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+What Is a Rich Client?   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+What Is a Rich Client Platform?  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+Advantages of a Rich Client Platform  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+Reduction in Development Time . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+User Interface Consistency  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+Updating. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+Platform Independence  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+Reusability and Reliability  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+Characteristics of the NetBeans Platform   . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+User Interface Framework . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+Data Editor . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+Customization Display . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+Wizard Framework . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+Data Systems  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+Internationalization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+Help System . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+
+■CHAPTER 2 Structure of the NetBeans Platform. . . . . . . . . . . . . . . . . . . . . . . . 7
+NetBeans Platform Architecture   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+NetBeans Platform Distribution  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+NetBeans Runtime Container   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+NetBeans Classloader System . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+Module Classloader  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+System Classloader  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+Original Classloader . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+
+■CHAPTER 3 The Module System . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+Overview   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+Module Structure   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+Module Types   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+Regular. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+Autoload. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+Eager  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+Module Manifest  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+Attributes . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20
+Example . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 24
+Module Layer . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 24
+Order of Entries . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+Instance Files  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+Shadow Files . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+Settings Files. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+Creating and Using Your Own Contents . . . . . . . . . . . . . . . . . . . . . . . 29
+Creating Modules   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+Versioning and Dependencies  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 32
+Versioning . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 33
+Defining Dependencies  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 34
+Lifecycle . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 37
+Module Registry   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 39
+Using Libraries   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 40
+Library Wrapper Module  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 40
+Adding a Library to a Module  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 42
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 43
+
+■CHAPTER 4 Actions. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 45
+Overview   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 45
+Providing Action Classes   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 46
+Always Enabled Actions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 46
+CallableSystemAction. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 49
+CallbackSystemAction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 50
+CookieAction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 52
+General Context-Sensitive Action Classes . . . . . . . . . . . . . . . . . . . . . 55
+Registering Actions  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 57
+Shortcuts and Mnemonics  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 58
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 59
+
+■CHAPTER 5 User Interface Design . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 61
+Overview   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 61
+Menu Bar  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 62
+Creating and Adding Menus and Menu Entries . . . . . . . . . . . . . . . . . 62
+Inserting Separators . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 64
+Hiding Existing Menu Entries. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 64
+Creating a Custom Menu Bar  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 64
+Toolbars  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 65
+Creating Toolbars . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 65
+Configuring Toolbars  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 65
+Modification by the User  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 67
+Creating Custom Toolbars . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 68
+Using Custom Control Elements . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 68
+Window System   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 69
+Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 69
+Configuration. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 70
+Customization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72
+Window: TopComponent  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72
+Docking Container: Mode  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 80
+Groups of Windows: TopComponentGroup  . . . . . . . . . . . . . . . . . . . . 83
+Status Bar   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 86
+Using the Status Bar. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 86
+Extending the Status Bar . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 87
+Progress Bar   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 88
+Displaying the Progress of a Task  . . . . . . . . . . . . . . . . . . . . . . . . . . . 88
+Displaying the Progress of Many Related Tasks . . . . . . . . . . . . . . . . 90
+Integrating a Progress Bar into Your Component  . . . . . . . . . . . . . . . 92
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 92
+
+■CHAPTER 6 Lookup. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 93
+Functionality   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 93
+Services and Extension Points . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 94
+Defining the Service Interface . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 94
+Loose Service Provisioning . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 94
+Providing Multiple Service Implementations . . . . . . . . . . . . . . . . . . . 96
+Ensuring Service Availability . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 97
+Global Services  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 97
+Registering Service Providers  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 99
+Service Provider Configuration File. . . . . . . . . . . . . . . . . . . . . . . . . . 100
+Services Folder . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 101
+Intermodule Communication  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 102
+Java Service Loader  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 107
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 108
+
+■CHAPTER 7 File Access and Display . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 109
+Overview   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 109
+File Systems API  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 110
+Operations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 111
+Data Systems API  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 114
+DataObject . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 116
+DataObject Factory . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 121
+DataLoader  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 121
+Nodes API   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 124
+Node Container . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 125
+Implementing Nodes and Children . . . . . . . . . . . . . . . . . . . . . . . . . . 126
+Explorer & Property Sheet API  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 130
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 133
+
+■CHAPTER 8 Graphical Components . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 135
+Dialogs API . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 135
+Standard Dialogs. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 135
+Custom Dialogs. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 139
+Wizards  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 140
+MultiViews API . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 151
+Visual Library API   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 154
+Structure of the Visual Library API  . . . . . . . . . . . . . . . . . . . . . . . . . . 155
+The Widget Classes  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 155
+Events and Actions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 159
+The Scene: The Root Element . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 164
+ObjectScene: Model-View Relationship . . . . . . . . . . . . . . . . . . . . . . 167
+Graph . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 168
+VMD: Visual Mobile Designer  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 172
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 173
+
+■CHAPTER 9 Reusable NetBeans Platform Components  . . . . . . . . . . . . . . 175
+Help System   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 175
+Creating and Integrating a Helpset   . . . . . . . . . . . . . . . . . . . . . . . . . 175
+Adding Links to Help Topics  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 178
+Context-Sensitive Help. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 179
+Opening the Help System  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 180
+Output Window  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 180
+Navigator  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 182
+Properties Window  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 186
+Providing Properties . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 186
+User-Defined Properties Editor . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 188
+Options Window   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 189
+Providing an Options Panel  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 190
+Settings Administration . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 194
+Palette   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 196
+Defining and Adding Palette Components via the Layer File . . . . . 197
+Creating a Palette from a Node Hierarchy . . . . . . . . . . . . . . . . . . . . 198
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 204
+
+■CHAPTER 10 Internationalization and Localization . . . . . . . . . . . . . . . . . . . . 205
+String Literals in Source Code  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 205
+String Literals in the Manifest File   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 207
+Internationalization of Help Pages . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 208
+Internationalizing Other Resources  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 209
+Graphics. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 209
+Any File  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 209
+Folders and Files. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 210
+Administration and Preparation of Localized Resources   . . . . . . . . . . . . 211
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 212
+
+■CHAPTER 11 Real-World Application Development . . . . . . . . . . . . . . . . . . . . 213
+Creation  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 213
+Customization of Platform Modules   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 214
+Customizing the Launcher  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 215
+Distribution   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 216
+Distribution As a ZIP Archive . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 216
+Distribution via Java Web Start . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 217
+Mac OS X Application . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 217
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 218
+
+■CHAPTER 12 Updating a NetBeans Platform Application . . . . . . . . . . . . . . 219
+Overview   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 219
+The Auto Update Service  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 219
+The NBM File  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 220
+Update Centers  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 223
+Localized NBM Files  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 224
+Configuring and Installing on the Client  . . . . . . . . . . . . . . . . . . . . . . . . . . 225
+New Update Center. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 226
+Automatically Installing Updates . . . . . . . . . . . . . . . . . . . . . . . . . . . . 227
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 227
+
+■CHAPTER 13 Persistence . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 229
+Java DB  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 229
+Integrating Java DB  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 229
+Driver Registration . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 230
+Creating and Using a Database. . . . . . . . . . . . . . . . . . . . . . . . . . . . . 230
+Shutting Down a Database  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 232
+Database Development with the Help of the NetBeans IDE. . . . . . 232
+Example Application . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 235
+Hibernate  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 245
+Setting Up the Hibernate Libraries . . . . . . . . . . . . . . . . . . . . . . . . . . 245
+Structure of the Example Application . . . . . . . . . . . . . . . . . . . . . . . . 246
+Configuring Hibernate  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 247
+Mapping Objects to Relations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 248
+SessionFactory and Sessions  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 250
+Saving and Loading Objects  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 251
+Java Persistence API   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 253
+Hibernate and the Java Persistence API  . . . . . . . . . . . . . . . . . . . . . 253
+Java Persistence Configuration. . . . . . . . . . . . . . . . . . . . . . . . . . . . . 254
+Entity Classes  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 255
+EntityManagerFactory and EntityManager . . . . . . . . . . . . . . . . . . . . 257
+Saving and Loading Objects  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 258
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 259
+
+■CHAPTER 14 Web Services . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 261
+Creating a Web Service Client  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 261
+Using a Web Service . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 264
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 267
+
+■CHAPTER 15 Extending the NetBeans IDE  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 269
+Palettes   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 269
+Defining and Registering Palette Entries . . . . . . . . . . . . . . . . . . . . . 270
+Creating and Registering a PaletteController. . . . . . . . . . . . . . . . . . 272
+Expanding Existing Palettes. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 273
+Task List API   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 274
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 277
+
+■CHAPTER 16 From Eclipse RCP to the NetBeans Platform. . . . . . . . . . . . . 279
+The NetBeans IDE  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 279
+Standard Components . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 279
+Handling Projects . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 280
+From Eclipse Plugins to NetBeans Modules   . . . . . . . . . . . . . . . . . . . . . . 280
+Plugin: Lifecycle and Events . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 281
+Plugin Information. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 282
+Images . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 283
+Resources . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 283
+Settings . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 284
+Application Lifecycle. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 284
+Views and Editors . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 284
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 285
+
+■CHAPTER 17 Tips and Tricks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 287
+Asynchronous Initialization of Graphic Components  . . . . . . . . . . . . . . . . 287
+Undo/Redo  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 289
+Ending an Application’s Lifecycle  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 291
+WarmUp Tasks   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 292
+System Tray . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 293
+Desktop   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 293
+Logging   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 294
+Logger  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 294
+LogManager  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 295
+Configuration. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 295
+Error Reports . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 296
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 296
+
+■CHAPTER 18 Example: MP3 Manager . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 297
+Design   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 297
+Creating the NetBeans Platform Application  . . . . . . . . . . . . . . . . . . . . . . 299
+Support for MP3   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 299
+Creating the JMF Module. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 299
+Registering the MP3 Plugin . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 300
+MP3 File Type . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 300
+ID3 Support  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 302
+ID3 API . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 302
+ID3 Editor . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 304
+Media Library   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 307
+Services  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 308
+MP3 Player   . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 309
+Service Interface. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 309
+Service Provider  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 311
+Playback of MP3 Files  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 314
+User Interface . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 315
+Playlist  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 318
+Node View . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 318
+Node Container . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 319
+TopComponent  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 320
+Drag-and-Drop . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 324
+Saving the Playlist  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 325
+Summary  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 329
+
+■APPENDIX Important NetBeans Extension Points and Configuration DTDs  . . . . . . . . . . . . . . . . . . . . . 331
+■INDEX  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 337

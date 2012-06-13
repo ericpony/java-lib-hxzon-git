@@ -1,0 +1,268 @@
+﻿Eclipse Plug-ins, 3rd Edition
+(Eclipse: Building Commercial-Quality Plug-ins, 2nd Edition新版)
+Eclipse插件开发(原书第3版)
+http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=B003RCK7Z6
+http://www.informit.com/store/product.aspx?isbn=0321553462
+    By Eric Clayberg, Dan Rubel
+    Published Dec 11, 2008 by Addison-Wesley Professional. Part of the Eclipse Series series.
+        Copyright 2009
+        Dimensions: 7 X 9-1/4
+        Pages: 928
+        Edition: 3rd
+        Book
+        ISBN-10: 0-321-55346-2
+        ISBN-13: 978-0-321-55346-1
+=========================
+Producing a commercial-quality plug-in means going above and beyond the minimal requirements needed to integrate with Eclipse. It means attending to all those details that contribute to the “fit and polish” of a commercial offering. This comprehensive guide covers the entire process of plug-in development, including all the extra steps needed to achieve the highest quality results.
+
+Building on two internationally best-selling previous editions, Eclipse Plug-ins, Third Edition, has been fully revised to reflect the powerful new capabilities of Eclipse 3.4. Leading Eclipse experts Eric Clayberg and Dan Rubel present detailed, practical coverage of every aspect of plug-in development, as well as specific, proven solutions for the challenges developers are most likely to encounter.
+
+All code examples, relevant API listings, diagrams, and screen captures have been thoroughly updated to reflect both the Eclipse 3.4 API and the latest Java syntax. In addition, Clayberg and Rubel have completely revamped their popular Favorites View case study, reworking much of its content and recreating its code from scratch. The authors carefully cover new functionality added to existing Eclipse features, such as views and editors, and fully explain brand-new features such as Commands, GEF, and PDE Build.
+
+This extensively revised edition
+
+    Thoroughly covers Eclipse’s new preferences
+    Illuminates the powerful new Eclipse Command Framework, which replaces Eclipse’s older Action Framework
+    Presents extensive new discussions of using commands with views and editors
+    Introduces Mylyn, the new task-focused interface that reduces information overload and simplifies multi-tasking
+    Contains an all-new chapter on using the Graphical Editing Framework (GEF) to build dynamic, interactive graphical user interface elements
+    Walks you step by step through the entire PDE Build process
+    Shows how to create update sites with p2, which replaces Eclipse’s old Update Manager 
+
+This book is designed for every experienced developer interested in extending the Eclipse platform, the Rational Software Development Platform, or any other platform that supports Eclipse plug-ins.
+===========================
+Table of Contents
+
+Foreword by Skip McGaughey     xxxiii
+Foreword by Simon Archer      xxxv
+Preface      xxxvii
+
+Chapter 1: Using Eclipse Tools      1
+Chapter 2: A Simple Plug-in Example      71
+Chapter 3: Eclipse Infrastructure     107
+Chapter 4: The Standard Widget Toolkit      135
+Chapter 5: JFace Viewers     193
+Chapter 6: Commands and Actions     215
+Chapter 7: Views      289
+Chapter 8: Editors      353
+Chapter 9: Resource Change Tracking      407
+Chapter 10: Perspectives     423
+Chapter 11: Dialogs and Wizards      441
+Chapter 12: Preference Pages     485
+Chapter 13: Properties      511
+Chapter 14: Builders, Markers, and Natures      533
+Chapter 15: Implementing Help      577
+Chapter 16: Internationalization     617
+Chapter 17: Creating New Extension Points      637
+Chapter 18: Features, Branding, and Updates     661
+Chapter 19: Building a Product      693
+Chapter 20: GEF: Graphical Editing Framework      731
+Chapter 21: Advanced Topics     779
+
+Appendix A: Eclipse Plug-ins and Resources     819
+Appendix B:  Ready for Rational Software    831
+
+Index 833
+===============================
+Table of Contents
+
+Foreword by Skip McGaughey     xxxiii
+Foreword by Simon Archer      xxxv
+Preface      xxxvii
+
+Chapter 1: Using Eclipse Tools      1
+1.1 Getting Started    1
+1.2 The Eclipse Workbench    3
+1.3 Setting Up Your Environment    14
+1.4 Creating a Project     19
+1.5 Navigating     26
+1.6 Searching     28
+1.7 Writing Code     35
+1.8 Team Development Using CVS     49
+1.9 Running Applications     55
+1.10 Introduction to Debugging     59
+1.11 Introduction to Testing     63
+1.12 Introduction to Mylyn     65
+1.13 Summary     69
+
+Chapter 2: A Simple Plug-in Example      71
+2.1 The Favorites Plug-in     71
+2.2 Creating a Plug-in Project     72
+2.3 Reviewing the Generated Code     77
+2.4 Building a Product     86
+2.5 Installing and Running the Product     92
+2.6 Debugging the Product    94
+2.7 PDE Views     96
+2.8 Writing Plug-in Tests     99
+2.9 Book Samples     105
+2.10 Summary     106
+
+Chapter 3: Eclipse Infrastructure     107
+3.1 Structural Overview    107
+3.2 Plug-in Directory or JAR file    110
+3.3 Plug-in Manifest     113
+3.4 Activator or Plug-in Class     120
+3.5 Plug-in Model     126
+3.6 Logging    128
+3.7 Eclipse Plug-ins     132
+3.8 Summary     133
+
+Chapter 4: The Standard Widget Toolkit      135
+4.1 SWT History and Goals    135
+4.2 SWT Widgets    138
+4.3 Layout Management     178
+4.4 Resource Management     188
+4.5 GUI Builders     190
+4.6 Summary     191
+
+Chapter 5: JFace Viewers     193
+5.1 List-Oriented Viewers     193
+5.2 Text Viewers     211
+5.3 Summary     214
+
+Chapter 6: Commands and Actions     215
+6.1 Commands     216
+6.2 Menu and Toolbar Contributions     220
+6.3 Handlers    236
+6.4 Key Bindings     238
+6.5 IAction versus IActionDelegate     240
+6.6 Workbench Window Actions    242
+6.7 Object Actions     257
+6.8 View Actions     270
+6.9 Editor Actions     277
+6.10 Actions and Key Bindings     284
+6.11 RFRS Considerations     286
+6.12 Summary     287
+
+Chapter 7: Views      289
+7.1 View Declaration     291
+7.2 View Part     293
+7.3 View Commands     313
+7.4 Linking the View     336
+7.5 Saving View State    340
+7.6 Testing     345
+7.7 Image Caching     346
+7.8 Auto-sizing Table Columns     348
+7.9 RFRS Considerations     348
+7.10 Summary     352
+
+Chapter 8: Editors      353
+8.1 Editor Declaration     354
+8.2 Editor Part     358
+8.3 Editing     372
+8.4 Editor Lifecycle     378
+8.5 Editor Commands     381
+8.6 Linking the Editor     400
+8.7 RFRS Considerations     401
+8.8 Summary     405
+
+Chapter 9: Resource Change Tracking      407
+9.1 IResourceChangeListener     407
+9.2 Processing Change Events     411
+9.3 Batching Change Events     414
+9.4 Progress Monitor     415
+9.5 Delayed Changed Events    420
+9.6 Summary     421
+
+Chapter 10: Perspectives     423
+10.1 Creating a Perspective     423
+10.2 Enhancing an Existing Perspective     430
+10.3 RFRS Considerations    438
+10.4 Summary     439
+
+Chapter 11: Dialogs and Wizards      441
+11.1 Dialogs     441
+11.2 Wizards     464
+11.3 RFRS Considerations     482
+11.4 Summary     484
+
+Chapter 12: Preference Pages     485
+12.1 Creating a Preference Page     485
+12.2 Preference Page APIs     487
+12.3 Preference APIs     501
+12.4 RFRS Considerations     508
+12.5 Summary     509
+
+Chapter 13: Properties      511
+13.1 Creating Properties     511
+13.2 Displaying Properties in the Properties Dialog     515
+13.3 Displaying Properties in the Properties View     524
+13.4 Property Pages Reused as Preference Pages    529
+13.5 RFRS Considerations   530
+13.6 Summary     531
+
+Chapter 14: Builders, Markers, and Natures      533
+14.1 Builders     535
+14.2 Markers     548
+14.3 Natures     561
+14.4 RFRS Considerations     572
+14.5 Summary     575
+
+Chapter 15: Implementing Help      577
+15.1 Using Help    577
+15.2 Implementing Help     580
+15.3 Context-Sensitive Help (F1)     591
+15.4 Accessing Help Programmatically     599
+15.5 Cheat Sheets     601
+15.6 RFRS Considerations     611
+15.7 Summary     614
+
+Chapter 16: Internationalization     617
+16.1 Externalizing the Plug-in Manifest     618
+16.2 Externalizing Plug-in Strings     620
+16.3 Using Fragments     629
+16.4 Manual Testing     636
+16.5 Summary     636
+
+Chapter 17: Creating New Extension Points      637
+17.1 The Extension Point Mechanism      637
+17.2 Defining an Extension Point     639
+17.3 Code Behind an Extension Point    649
+17.4 Extension Point Documentation    656
+17.5 Using the Extension Point    657
+17.6 RFRS Considerations    659
+17.7 Summary     660
+
+Chapter 18: Features, Branding, and Updates     661
+18.1 Feature Projects     662
+18.2 Branding     673
+18.3 Update Sites     679
+18.4 RFRS Considerations     689
+18.5 Summary     691
+
+Chapter 19: Building a Product      693
+19.1 A Brief Introduction to Ant      693
+19.2 Building with PDE      711
+19.3 Debugging the PDE Build process     726
+19.4 Summary     729
+
+Chapter 20: GEF: Graphical Editing Framework      731
+20.1 GEF Architecture     731
+20.2 GEF Model     732
+20.3 GEF Controller     733
+20.4 GEF Figures     743
+20.5 GEF in an Eclipse View    754
+20.6 GEF in an Eclipse Editor     758
+20.7 Palette     775
+20.8 Summary     778
+
+Chapter 21: Advanced Topics     779
+21.1 Advanced Search—Reference Projects     780
+21.2 Accessing Internal Code     781
+21.3 Adapters     784
+21.4 Opening a Browser or Creating an Email     788
+21.5 Types Specified in an Extension Point     793
+21.6 Modifying Eclipse to Find Part Identifiers     797
+21.7 Label Decorators     802
+21.8 Background Tasks—Jobs API     808
+21.9 Plug-in ClassLoaders     811
+21.10 Early Startup     816
+21.11 Rich Client Platform     817
+21.12 Conclusion     818
+
+Appendix A: Eclipse Plug-ins and Resources     819
+A.1 Plug-ins      819
+
+Appendix B:  Ready for Rational Software    831
+
+Index 833

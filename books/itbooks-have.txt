@@ -1,0 +1,97 @@
+﻿itbooks-have.txt
+======================================
+算法和原理
+----
+4，编程珠玑（英文版·第2版）
+http://product.dangdang.com/product.aspx?product_id=20895273
+29.20(75折)，已购
+----
+5，编程之美——微软技术面试心得
+http://product.dangdang.com/product.aspx?product_id=20170952
+30.00(75折)，已购，不错
+----
+6，MySQL技术内幕InnoDB存储引擎
+51.80(75折)，已购，不错
+----
+38，多处理器编程的艺术
+39.20(75折)，已购，教材，基础原理和实践
+=======================================
+工具实践
+----
+48，Programming Concurrency on the JVM
+英文打印版
+----
+57，Java并发编程实战
+http://product.dangdang.com/product.aspx?product_id=22606835
+51.80 (75折)，48.4，已购，收益匪浅
+----
+53，Hadoop权威指南（第2版）修订升级版
+62.20 (70折)，已购
+----
+62，Lucene实战(第2版)
+51.80(75折)，已购
+----
+17，Windows7脚本编程和命令行工具指南(详尽讲解微软最新命令行自动化工具Windows PowerShell)
+59.20，已购
+----
+7，Scala程序设计：Java虚拟机多核编程实战
+29.20(75折)，已购，入门，过时
+======================================
+交互设计，软件工程，it视野
+----
+9，About Face 3交互设计精髓
+57.60(80折)，已购，不错
+----
+2，松本行弘的程序世界
+41.80，已购
+----
+12，重构：改善既有代码的设计
+http://www.amazon.cn/gp/product/B003BY6PLK/ref=ox_ya_os_product
+48.40，39.5，已购，有电子书2010.4月版
+=======================================
+c和linux
+----
+3，Linux Shell脚本攻略
+36.80(75折)，已购，不错
+----
+69，C和指针
+40.5，已购
+----
+77，Linux程序设计(第4版)
+http://product.dangdang.com/product.aspx?product_id=20856718
+74.20 (75折)，26.5，已购
+----
+76，UNIX环境高级编程（第2版）
+68.30 (69折)，已购
+----
+81，深入理解LINUX内核（第三版）
+http://product.dangdang.com/product.aspx?product_id=20046247
+76.40(78折)，已购
+=======================================
+javascript
+----
+29，JavaScript高级程序设计(第2版)
+61.40(69折)，已购，有中文版电子书（2009，2010），已推出第3版
+----
+63，JavaScript Web 富应用开发
+http://jayli.github.com/jswebapps/
+《O'Reilly, 2011:JavaScript Web Applications》
+英文打印版，如何开发javascript框架，3个javascript mvc框架的使用
+----
+84，构建多平台可用的网站——渐进增强设计实践
+http://www.ituring.com.cn/book/922
+designing with progressive enhancement(building the web that works for everyone)
+http://filamentgroup.com/dwpe/#aboutthisbook
+英文打印版，html，css，浏览器检测和自定义控件
+=======================================
+css和html
+----
+75，精通HTML5和CSS3设计模式
+Pro HTML5 and CSS3 Design Patterns
+http://www.ituring.com.cn/book/903
+英文打印版，css多态性
+----
+87，Smashing CSS: Professional Techniques for Modern Layout
+精彩绝伦的CSS
+http://www.ituring.com.cn/book/924
+英文打印版

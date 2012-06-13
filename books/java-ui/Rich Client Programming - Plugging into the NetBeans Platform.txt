@@ -1,0 +1,377 @@
+﻿Rich Client Programming: Plugging into the NetBeans Platform
+NetBeans富客户端编程权威教程
+Published: May 2007, Prentice Hall 
+Copyright ? 2007 Sun Microsystems, Inc.
+4150 Network Circle, Santa Clara, California 95054 U.S.A.
+All rights reserved.
+Sun Microsystems, Inc. has intellectual property rights relating to implementations of the technology described in this
+publication. In particular, and without limitation, these intellectual property rights may include one or more U.S. patents,
+foreign patents, or pending applications.
+Sun, Sun Microsystems, the Sun logo, NetBeans, J2EE, and all Sun and Java based trademarks and logos are trademarks or
+registered trademarks of Sun Microsystems, Inc., in the United States and other countries. UNIX is a registered trademark in
+the United States and other countries, exclusively licensed through X/Open Company, Ltd.
+THIS PUBLICATION IS PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, OR NON-INFRINGEMENT. THIS PUBLICATION COULD INCLUDE TECHNICAL
+INACCURACIES OR TYPOGRAPHICAL ERRORS. CHANGES ARE PERIODICALLY ADDED TO THE INFORMATION
+HEREIN; THESE CHANGES WILL BE INCORPORATED IN NEW EDITIONS OF THE PUBLICATION. SUN
+MICROSYSTEMS, INC. MAY MAKE IMPROVEMENTS AND/OR CHANGES IN THE PRODUCT(S)AND/OR THE
+PROGRAM(S) DESCRIBED IN THIS PUBLICATION AT ANY TIME.
+Visit us on the Web: www.prenhallprofessional.com
+Library of Congress Cataloging-in-Publication Data
+Boudreau, Tim.
+Rich client programming : plugging into the NetBeans platform / Tim Boudreau, Jaroslav Tulach, Geertjan Wielenga.
+p. cm.
+Includes bibliographical references and index.
+ISBN 0-13-235480-2 (pbk. : alk. paper)
+1. Java (Computer program language) 2. Computer programming. I. Tulach, Jaroslav. II. Wielenga, Geertjan. III. Title.
+QA76.73.J38B672 2007
+005.13'3--dc22___________________________________2007007068
+All rights reserved. Printed in the United States of America. This publication is protected by copyright, and permission must
+be obtained from the publisher prior to any prohibited reproduction, storage in a retrieval system, or transmission in any
+form or by any means, electronic, mechanical, photocopying, recording, or likewise. For information regarding permissions,
+write to:
+Pearson Education, Inc.
+Rights and Contracts Department
+One Lake Street
+Upper Saddle River, NJ 07458
+Fax: (201) 236-3290
+ISBN 0-13-235480-2
+Text printed in the United States on recycled paper at Courier in Stoughton, Massachusetts.
+First printing, April 2007
+=========================
+Foreword by Jonathan Schwartz xv
+Foreword by Jan Chalupa xvii
+Preface xix
+About the Authors and Contributors xxvii
+Acknowledgments xxxi
+
+Chapter One Getting Started with the NetBeans Platform 1
+ 1.1 Setting Up the IDE 1
+ 1.2 NetBeans IDE Basics 3
+ 1.2.1 Creating a Module 3
+ 1.2.2 Creating an Application 4
+ 1.2.3 Using File Templates 6
+ 1.2.4 Declaring Dependencies 7
+ 1.2.5 Running a Module 8
+ 1.2.6 Branding an Application 8
+ 1.2.7 Distributing an Application 9
+
+Chapter Two The Bene?ts of Modular Programming 11
+ 2.1 Distributed Development 11
+ 2.2 Modular Applications 13
+ 2.2.1 Contents Versioning 13
+ 2.2.2 Secondary Versioning Information 14
+ 2.2.3 Dependency Management 15
+ 2.3 A Modular Programming Manifesto 15
+ 2.4 Using NetBeans to Do Modular Programming 19
+
+Chapter Three Modular Architecture 23
+ 3.1 Modules—The Assembly Units of a Modular Application 23
+ 3.2 Types of Modules 24
+ 3.2.1 End-User Interface Module 24
+ 3.2.2 Simple Library 25
+ 3.2.3 Multiple Vendor Support 26
+ 3.2.4 Modular Library 27
+ 3.3 Module Lifecycle 29
+ 3.4 Groups of Modules 33
+
+Chapter Four Loosely Coupled Communication 39
+ 4.1 Registration and Discovery 39
+ 4.2 MetaInf Services 41
+ 4.3 The Global Lookup 43
+ 4.4 Writing an Extension Point 46
+
+Chapter Five Lookup 49
+ 5.1 Objects That Own Lookups 53
+ 5.2 Lookup as a Communication Mechanism 55
+ 5.3 Lookups and Proxying 58
+ 5.4 Lookup and Selection 62
+ 5.5 Writing Lookup-Sensitive Actions 63
+ 5.6 Tracking the Global Selection 64
+ 5.7 Legacy Variants of the Lookup Pattern in NetBeans APIs 65
+ 5.8 Common Lookup Patterns 66
+
+Chapter Six Filesystems 69
+FileSystems and FileObjects70 6.1
+What Kinds of FileSystems Will I Be Dealing With? 71 6.2
+Layering 72 6.3
+XML Filesystems 73 6.4
+Declarative Registration II: The System Filesystem 74 6.5
+How the System Filesystem Works 75 6.5.1
+The System Filesystem Is Read/Write 76 6.5.2
+Using FileChangeEvents from the System Filesystem 77 6.5.3
+Exploring the System Filesystem—Menus 78 6.5.4
+Getting from FileObjects to Java Objects 88 6.6
+Using Factory Methods to Create Objects from .instance Files 90 6.6.1
+Programmatic Access to the System Filesystem 93 6.6.2
+Using .settings Files 94 6.6.3
+Browsing the System Filesystem 96 6.7
+Conclusions 96 6.8
+Commonly Used Folders in the System Filesystem 96 6.8.1
+
+Chapter Seven Threading, Listener Patterns, and MIME Lookup 103
+Creating the Modules and SPI 104 7.1
+Implementing ListModelProvider 107 7.2
+Setting Up Dependencies 107 7.2.1
+Creating XmlListModelProvider 109 7.2.2
+Registering XmlListModelProvider 123 7.2.3
+Providing a UI Component 123 7.3
+The MIME Lookup SPI and API 124 7.3.1
+Providing a Window Component to Show List Models 125 7.3.2
+Using the Pseudo Navigator 132 7.4
+Conclusion: PseudoNavigator—What’s Wrong with This Picture? 132 7.5
+
+Chapter Eight The Window System 135
+What the Window System Does 137 8.1
+Classes in the Window System API 139 8.2
+Using TopComponent 141 8.3
+Persisting State across Sessions 145 8.4
+Window System Persistence Modes 147 8.4.1
+Window System Persistence Data 147 8.5
+Creating Editor-Style (Nondeclarative) TopComponents 152 8.6
+Opening Your Component Somewhere Else 153 8.6.1
+Advanced Window System Con?guration: De?ning Your Own Modes 153 8.7
+Using TopComponent Groups 158 8.8
+Opening a Component Group Programmatically 161 8.8.1
+
+Chapter Nine Nodes, Explorer Views, Actions, and Presenters 163
+The Nodes API 164 9.1
+Using the Nodes API 167 9.1.1
+The Explorer API 177 9.2
+Types of Explorer View Components 177 9.2.1
+Creating a TopComponent to Display Nodes 179 9.2.2
+Adding a Detail View 182 9.2.3
+Adding Another Detail View Using the Explorer API 184 9.2.4
+Actions 190 9.3
+Presenters 192 9.3.1
+The Actions API and Standard NetBeans Actions 195 9.3.2
+Installing Global Actions in Menus, Toolbars, and Keyboard Shortcuts 196 9.3.3
+Context-Aware Actions 197 9.3.4
+Node Properties 199 9.4
+Nodes and DataObjects: Creating a System Filesystem Browser 203 9.5
+Epilogue: Of Nodes, Property Sheets, and User Interface Design 205 9.6
+
+Chapter Ten DataObjects and DataLoaders 207
+DataObjects: Where Do They Come From? 210 10.1
+Adding Support for a New File Type 212 10.2
+Adding Support for Manifest Files to NetBeans 212 10.2.1
+Providing a Manifest Object from Manifest Files 218 10.2.2
+Providing ManifestProvider from ManifestDataObject and ManifestDataNode 219 10.2.3
+Icon Badging 223 10.2.4
+Testing ManifestDataObject with JUnit 228 10.2.5
+Using Custom File Types Internally 234 10.3
+Serialized Objects and the System Filesystem 235 10.4
+
+Chapter Eleven Graphical User Interfaces 237
+Introduction 237 11.1
+Creating a New GUI Form 240 11.2
+Placing and Aligning a Component in a Form 240 11.3
+Setting Component Size and Resizability 242 11.4
+Specifying Component Behavior and Appearance 244 11.5
+Generating Event Listening and Handling Methods 244 11.6
+Customizing Generated Code 247 11.7
+Building an Explorer View Visually 249 11.8
+Previewing a Form 250 11.9
+Using Custom Beans in the Form Editor 250 11.10
+Using Different Layout Managers 251 11.11
+
+Chapter Twelve Multiview Editors 253
+Introduction 253 12.1
+Getting Started 255 12.2
+Understanding Multiview Editors 256 12.3
+Creating the Editor’s Infrastructure 257 12.4
+Creating the Source View 261 12.5
+Describing a Source MultiViewElement 261 12.5.1
+Creating a Source Editor 263 12.5.2
+Adding the Source View to the Multiview Editor 267 12.5.3
+Creating the Visual View 269 12.6
+Adding a Visual View to the Multiview Editor 269 12.6.1
+Finishing the Sample 271 12.7
+
+Chapter Thirteen Syntax Highlighting 273
+Introduction 273 13.1
+Preparing to Create Syntax Highlighting 274 13.2
+Creating Token IDs 275 13.3
+Creating a Lexical Analyzer 277 13.4
+Extending the Options Window 281 13.5
+Registering the Syntax Highlighting in the Layer File 284 13.6
+Finishing Up 286 13.7
+
+Chapter Fourteen Code Completion 287
+Introduction 287 14.1
+Understanding Code Completion 289 14.2
+Code Completion Query Types 291 14.3
+Preparing to Work with the CompletionProvider Interface 291 14.4
+Implementing a CompletionProvider 293 14.5
+Implementing a CompletionItem 296 14.6
+Adding a Filter to the CompletionProvider 300 14.7
+Adding Documentation to the Code Completion Box 304 14.8
+Adding a Tooltip to the Code Completion Box 305 14.9
+
+Chapter Fifteen Component Palettes 307
+Introduction 307 15.1
+Understanding the Component Palette 308 15.1.1
+Creating Your First Palette 311 15.1.2
+Adding Items to a Palette 313 15.2
+Adding Items to Your First Palette 314 15.2.1
+Letting the User Add Items to the Palette 321 15.2.2
+Dragging and Dropping Palette Items 323 15.3
+De?ning a Drop Target 325 15.3.1
+De?ning a Drag Image 326 15.3.2
+De?ning a Drop Event 328 15.3.3
+De?ning a Drag Gesture 330 15.3.4
+Adding Supporting Features to a Palette 331 15.4
+Adding Actions to the Palette 332 15.4.1
+Adding a Filter and Refreshing the Palette 335 15.4.2
+Adding a Property Change Listener 338 15.4.3
+Setting Palette Attributes 339 15.4.4
+Providing a Palette Manager 341 15.4.5
+Creating a Palette for a Text-Based Editor 344 15.5
+Associating a Palette with a Text-Based Editor 344 15.5.1
+Adding Items to a Text-Based Editor’s Palette 347 15.5.2
+Formatting Dropped Items in a Text-Based Editor 350 15.5.3
+Letting the User Add Items to a Text-Based Editor’s Palette 351 15.5.4
+
+Chapter Sixteen Hyperlinks 355
+Introduction 355 16.1
+Preparing to Provide Hyperlinks 356 16.1.1
+The HyperlinkProvider Class 356 16.1.2
+Getting Started Really Quickly 356 16.1.3
+Preparing to Work with the HyperlinkProvider Class 357 16.2
+Hyperlinks in Manifest Files 359 16.3
+Identifying Hyperlinks 360 16.3.1
+Setting the Length of a Hyperlink 361 16.3.2
+Opening the Referenced Document 362 16.3.3
+Finishing Up 364 16.3.4
+
+Chapter Seventeen Annotations 367
+Introduction 367 17.1
+Preparing to Create an Error Annotation 368 17.2
+Creating an Error Annotation 368 17.3
+Understanding the Error Annotation DTD 370 17.3.1
+Registering an Error Annotation 375 17.3.2
+Installing an Error Annotation 376 17.3.3
+Preparing to Use an Error Annotation 376 17.4
+Using an Error Annotation 377 17.5
+Describing an Annotation 378 17.5.1
+Attaching and Detaching Annotations 379 17.5.2
+De?ning a Request Processor Task 381 17.5.3
+Annotating Part of a Line 382 17.5.4
+Finishing Up 383 17.6
+
+Chapter Eighteen Options Windows 385
+Introduction 385 18.1
+Your First Options Window Extension 385 18.1.1
+Looking at the Options Window Extension Files 389 18.2
+The AdvancedOption Class 389 18.2.1
+The OptionsPanelController Class 390 18.2.2
+The Visual Options Panels 392 18.2.3
+Creating a Primary Panel 393 18.3
+Your First Primary Panel 393 18.3.1
+Reordering Options Panels 395 18.3.2
+Adding Settings to the Options Window 396 18.4
+Example: Using the Preferences API 396 18.4.1
+
+Chapter Nineteen Web Frameworks 399
+Introduction 399 19.1
+Preparing to Provide Support for a Web Framework 400 19.1.1
+The WebFrameworkProvider Class 401 19.1.2
+Getting Started Really Quickly 402 19.1.3
+Example: Basic Registration 402 19.1.4
+Preparing to Work with the WebFrameworkProvider Class 404 19.2
+Providing a Framework Con?guration Panel 406 19.3
+Creating the Con?guration Panel 407 19.3.1
+Example: Adding a Con?guration Panel to the WebFrameworkProvider 410 19.3.2
+Coding the Con?guration Panel 411 19.3.3
+Creating a Source Structure 413 19.4
+Preparing to Use the extend() Method 414 19.4.1
+Example: De?ning the extend() Method 414 19.4.2
+Creating Templates 416 19.4.3
+A Template for Creating a Java File 416 19.4.4
+Preparing to Use a Template to Programmatically Create a Java File 417 19.4.5
+Using a Template to Programmatically Create a Java File 419 19.4.6
+Trying Out the Framework Support Module 422 19.4.7
+Letting the User Select a Library in the Frameworks Panel 423 19.5
+Project Properties Dialog Box and Web Frameworks 424 19.6
+Example: isInWebModule() Method 426 19.6.1
+Finishing Up 427 19.7
+
+Chapter Twenty Web Services 429
+Introduction 429 20.1
+Creating and Testing a Web Service Client 430 20.2
+Integrating the Web Service Client 435 20.3
+
+Chapter Twenty-One JavaHelp Documentation 441
+Creating a Help Set 442 21.1
+Adding New Help Topics 445 21.1.1
+Removing the IDE’s Help Sets 446 21.2
+Branding the Help Set’s Default Texts 449 21.3
+
+Chapter Twenty-Two Update Centers 453
+Introduction 453 22.1
+Adding the IDE’s Update Center Functionality 454 22.2
+Creating and Distributing an Autoupdate Descriptor 456 22.3
+Using the IDE to Create an Autoupdate Descriptor 456 22.3.1
+Uploading the Autoupdate Descriptor and NBM Files 457 22.3.2
+Distributing the URL to the Autoupdate Descriptor 458 22.4
+Generating a Module for Registering an Autoupdate Descriptor 459 22.4.1
+Making the User Manually Register an Autoupdate Descriptor 460 22.4.2
+Downloading NBM Files from an Update Center 461 22.5
+Publishing Updates to Existing Modules 462 22.6
+
+Chapter Twenty-Three Use Case 1: Jens Trapp on NetBeans Module Development 463
+Introduction 463 23.1
+Calling the External Tool 465 23.2
+Creating the Tidy Error Check Action 465 23.2.1
+Retrieving the Filename 468 23.2.2
+Running HTML Tidy 469 23.2.3
+Resolving Dependencies 473 23.2.4
+Running the Example 473 23.2.5
+Handling the Output 476 23.3
+Printing the Output 476 23.3.1
+Listening to the Output 479 23.3.2
+Parsing the Output 481 23.3.3
+Annotating Errors in the Source Editor 484 23.3.4
+Con?guring the Tool 491 23.4
+Extending the Options Window 491 23.4.1
+Persisting the Options 494 23.4.2
+Formatting and Converting Files 496 23.5
+Manipulating Files 497 23.5.1
+Seeing the Difference 504 23.5.2
+Controlling the Conversion 505 23.6
+Creating the Wizard 505 23.6.1
+Connecting the Wizard 517 23.6.2
+
+Chapter Twenty-Four Use Case 2: Rich Unger on Application Development 521
+Introduction 521 24.1
+Getting Started 522 24.2
+Creating Support for the audio/wav MIME Type 526 24.3
+Encapsulating Audio Data in the WavDataObject 530 24.4
+Creating a Component for Viewing WAV Files 533 24.5
+Converting WAV Editor to Multiview 535 24.6
+Creating an API for Plugging in Additional Views 542 24.7
+Implementing Your Own API to Provide a New View 544 24.8
+
+Appendix A Advanced Module System Techniques 551
+Hiding Implementation Details 551 A.1
+Design for Extensibility 553 A.2
+Splitting API and Implementation 555 A.3
+Do I Really Need Cyclic Dependency? 559 A.4
+Crossing the Informational Divide 563 A.5
+Restricting Access to Friends 565 A.6
+Having Public as Well as Friend API 566 A.7
+A Final Word on Modularity 568 A.8
+
+Appendix B Common Idioms and Code Patterns in NetBeans 569
+Things You Do Differently in NetBeans Than in Plain Swing Code 569 B.1
+Things That Represent Files 571 B.2
+Working with Lookup 573 B.3
+Projects 573 B.4
+
+Appendix C Performance 575
+Responsiveness versus Performance 577 C.1
+Performance Tips for Module Authors 578 C.2
+Writing Modules That Are Good Citizens 579 C.3
+
+Index 583

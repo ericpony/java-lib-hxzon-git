@@ -1,0 +1,423 @@
+﻿Learning Ext JS
+Copyright ? 2008 Packt Publishing
+All rights reserved. No part of this book may be reproduced, stored in a retrieval 
+system, or transmitted in any form or by any means, without the prior written 
+permission of the publisher, except in the case of brief quotations embedded in 
+critical articles or reviews.
+Every effort has been made in the preparation of this book to ensure the accuracy of 
+the information presented. However, the information contained in this book is sold 
+without warranty, either express or implied. Neither the authors, Packt Publishing, 
+nor its dealers or distributors will be held liable for any damages caused or alleged to 
+be caused directly or indirectly by this book.
+Packt Publishing has endeavored to provide trademark information about all the 
+companies and products mentioned in this book by the appropriate use of capitals. 
+However, Packt Publishing cannot guarantee the accuracy of this information.
+First published: November 2008
+Production Reference: 1201108 
+Published by Packt Publishing Ltd. 
+32 Lincoln Road 
+Olton 
+Birmingham, B27 6PA, UK.
+ISBN 978-1-847195-14-2 -14-2 14-2
+www.packtpub.com
+Cover Image by Michelle O'Kane (michelle@kofe.ie)
+========================
+Preface  1
+
+Chapter 1: Getting Started  9
+Chapter 2: The Staples of Ext  23
+Chapter 3: Forms  37
+Chapter 4: Buttons, Menus, and Toolbars  61
+Chapter 5: Displaying Data with Grids  73
+Chapter 6: Editor Grids  101
+Chapter 7: Layouts  119
+Chapter 8: Ext JS Does Grow on Trees  137
+Chapter 9: Windows and Dialogs  159
+Chapter 10: Effects  183
+Chapter 11: Drag-and-Drop  205
+Chapter 12: It's All about the Data  223
+Chapter 13: Code for Reuse: Extending Ext JS  249
+Chapter 14: The Power of Ext JS: What Else Can You Do?  273
+
+Where do we go from here?  291
+Index  293
+========================
+Table of Content
+Preface  1
+
+Chapter 1: Getting Started  9
+About Ext  9
+Ext: Not just another JavaScript library   11
+Cross-browser DOM (Document Object Model)  12
+Event-driven interfaces   12
+Ext and AJAX  12
+Getting Ext  13
+Where to put Ext  13
+Including Ext in your pages  14
+What do those files do?  15
+Using the Ext library  15
+Time for action  16
+The example  17
+Not working?  17
+Adapters  18
+Using adapters  18
+I'm asynchronous!  19
+Localization  20
+English only  20
+A language other than English  21
+Multiple languages  21
+Ext JS online community   22
+Summary  22
+
+Chapter 2: The Staples of Ext  23
+Ready, set, go!  23
+Spacer image  24
+Widget  24
+Time for action  24
+What just happened?  25
+Using onReady  25
+More widget wonders  26
+Meet JSON and the config object  28
+The old way  28
+The new way—config objects  28
+What is a config object?  29
+How does JSON work?  30
+Time for action  30
+Lighting the fire  32
+The workhorse—Ext.get  33
+Speed tip  34
+Summary  35
+
+Chapter 3: Forms  37
+The core components of a form  37
+Our first form  38
+Nice form—how does it work?  39
+Form fields  39
+Validation  40
+Built-in validation—vtypes  41
+Styles for displaying errors  43
+Custom validation—create your own vtype  44
+Masking—don't press that key!  45
+Radio buttons and check boxes  46
+It's not a button, it's a radio button  46
+X marks the check box  46
+The ComboBox  47
+Database-driven ComboBox  47
+TextArea and HTMLEditor  50
+Listening for form field events  51
+ComboBox events  51
+Buttons and form action  53
+Form submission  53
+Talking back—the server responses  54
+Loading a form with data  56
+Static data load  56
+Object reference or component config  58
+Instantiated  58
+Component config  58
+Summary  59
+
+Chapter 4: Buttons, Menus, and Toolbars  61
+A toolbar for every occasion  61
+Toolbars  61
+The button  63
+Menu  63
+Split button  64
+Toolbar item alignment, dividers, and spacers  65
+Shortcuts  66
+Icon buttons  66
+Button handlers—click me!  67
+Load content on menu item click  68
+Form fields in a toolbar  69
+Toolbars in windows, grids, and panels  70
+Summary  71
+
+Chapter 5: Displaying Data with Grids  73
+What is a grid anyway?  74
+Displaying structured data with a GridPanel  74
+Setting up a data store  75
+Adding data to our data store  75
+Defining your data for the data store  76
+Specifying data types  77
+Displaying the GridPanel  78
+How did that work?  80
+Configuring the GridPanel  80
+Defining a Grids column model  81
+Using cell renderers  82
+Formatting data using the built-in cell renderers  82
+Creating lookup data stores—custom cell rendering  83
+Combining two columns  84
+Generating HTML and graphics  84
+Built-in features  85
+Client-side sorting  86
+Hidden/visible columns  86
+Column reordering  86
+Displaying server-side data in the grid  88
+Loading the movie database from an XML file  88
+Loading the movie database from a JSON file  90
+Loading data from a database using PHP  91
+Programming the grid  92
+Working with cell and row selections  92
+Listening to our selection model for selections  93
+Manipulating the grid (and its data) with code  94
+Altering the grid at the click of a button  94
+Advanced grid formatting  95
+Paging the grid  96
+Grouping  98
+Grouping store  98
+Summary  100
+
+Chapter 6: Editor Grids  101
+What can I do with an editable grid?  101
+Working with editable grids  102
+Editing more cells of data  104
+Edit more field types  104
+Editing a date value  105
+Edit with a ComboBox  106
+Reacting to a cell edit  106
+What's a dirty cell?  107
+Reacting when an edit occurs  107
+Deleting and adding in the data store  108
+Removing grid rows from the data store  109
+Adding a row to the grid  110
+Saving edited data to the server  112
+Sending updates back to the server  112
+Deleting data from the server  114
+Saving new rows to the server  115
+Summary  117
+
+Chapter 7: Layouts  119
+What are layouts, regions, and viewports?  119
+Our first layout  121
+Splitting the regions  122
+I want options  123
+Tab panels  124
+Adding a tab panel  124
+Widgets everywhere  126
+Adding a grid into the tabpanel  126
+Accordions  128
+Nesting an accordion layout in a tab  128
+Placing a toolbar in your layout  129
+A form to add new movies  131
+Tricks and advanced layouts  132
+Nested layouts  132
+Icons in tabs  134
+Programmatically manipulating a layout  135
+Now you see me, now you don't  135
+Give me another tab  136
+Summary  136
+
+Chapter 8: Ext JS Does Grow on Trees  137
+Planting for the future  137
+From tiny seeds...  138
+Our first sapling  138
+Preparing the ground  139
+A tree can't grow without data  140
+JSON  141
+A quick word about ID  141
+Extra data  142
+XML  142
+Tending your trees  143
+Drag and drop  143
+Sorting  145
+Editing  146
+Trimming and pruning  147
+Selection models  147
+Round-up with context menus  148
+Handling the menu  149
+Filtering  150
+The roots  151
+TreePanel tweaks  151
+Cosmetic  152
+Tweaking TreeNode  152
+Manipulating  153
+Further methods  154
+Event capture  155
+Remembering state  156
+StateManager  156
+Caveats  157
+Summary  157
+
+Chapter 9: Windows and Dialogs  159
+Opening a dialog  159
+Dialogs  160
+Off the shelf  160
+Confirmation  162
+It's all progressing nicely  163
+Roll your own  164
+Behavior  165
+Windows  166
+Starting examples  166
+Paneling potential  167
+Layout  168
+Configuration  169
+When I'm cleaning windows  169
+The extras  169
+Desktopping  170
+Further options  171
+Framing our window  171
+Manipulating  172
+Events  173
+State handling  174
+Window management  175
+Default window manager behavior  175
+Multiple window example   175
+Customer service WindowGroups  179
+Summary  180
+
+Chapter 10: Effects  183
+It's elementary  183
+Fancy features  184
+It's ok to love  184
+Fxcellent functions  184
+Methodical madness  184
+Fading  185
+Framing  186
+Woooo: ghosting  186
+Highlighting  187
+Huffing and puffing  188
+Scaling the Ext JS heights  189
+Sliding into action  189
+Switching from seen to unseen  190
+Shifting  190
+And now, the interesting stuff  191
+The Fx is in  191
+Anchoring yourself with Ext  192
+Options  192
+Easy does it  194
+Multiple effects  195
+Chaining  195
+Queuing  196
+Concurrency  196
+Blocking and Ext.Fx utility methods  196
+Elemental  197
+Making a move  197
+Using Ext components  198
+Bring out the flash  198
+You're maskin', I'm tellin'  198
+Data binding and other tales  200
+Considering components  200
+QuickTipping  200
+Summary  202
+
+Chapter 11: Drag-and-Drop  205
+Drop what you're doing  205
+Life's a drag  206
+Sourcing a solution  206
+Approximating  206
+Snap!  207
+Drop me off  207
+But wait: Nothing's happening!  208
+Interacting the fool  209
+Zones of control  209
+Changing our lists  211
+Registering an interest  211
+Extreme drag-and-drop  212
+DataView dragging  212
+Dealing with drag data  213
+Proxies and metadata  214
+Dropping in the details  215
+Drag-drop groups  216
+Nursing our drag-drop to health  216
+It's all in the details  217
+Configuration  217
+It's all under control  217
+Managing our movement  218
+Global properties  218
+Scroll management  219
+Dragging within components  220
+TreePanel  220
+GridPanel  221
+Using it in the real world  221
+Summary  222
+
+Chapter 12: It's All about the Data  223
+Understanding data formats  223
+Basic remote panel data  223
+Gotchas with HTML data  227
+Other formats  227
+The data store object  228
+Defining data  229
+More on mapping our data  230
+Pulling data into the store  231
+Using a DataReader to map data  233
+Using a custom DataReader  234
+Getting what you want: Finding data  237
+Finding data by field value  237
+Finding data by record index  237
+Finding data by record ID  238
+Getting what you want: Filtering data  238
+Remote filtering: The why and the how  238
+Dealing with Recordset changes  244
+Many objects take a Store  246
+Store in a ComboBox  246
+Store in a DataView  247
+Stores in Grids  247
+Summary  248
+
+Chapter 13: Code for Reuse: Extending Ext JS  249
+Object-oriented JavaScript  249
+Object-oriented programming with Ext JS  251
+Inheritance  251
+Break it down and make it simple  251
+Sounds cool, but what does it mean?  253
+Now, what was this overriding stuff?  253
+Understanding packages, classes, and namespaces  254
+Packages  254
+Classes  254
+Namespaces  254
+What's next?  254
+Ok, what do we extend?  255
+Creating a custom namespace  255
+Our first custom class  256
+Overriding methods  259
+Understanding the order of events  260
+When can we do what?  261
+What is an event-driven application?  261
+Creating our own custom events  262
+Our first custom component: Complete  264
+What's next? Breaking it down  267
+Using xtype: The benefits of lazy instantiation  271
+Using our custom components within other objects  271
+Summary  272
+
+Chapter 14: The Power of Ext JS: What Else Can You Do?  273
+So much to work with  273
+Form widgets  273
+DateField  274
+TimeField  275
+NumberField  276
+CheckboxGroups and RadioGroups  276
+HtmlEditor  277
+Data formatting  278
+Basic string formatting  278
+Formatting dates  279
+Other formatting  280
+Managing application state  281
+Basic 'state'  281
+How do I get that window?  282
+Using the back button in Ext JS applications  282
+Accessing the DOM  282
+Finding DOM elements  283
+Manipulating the DOM  283
+Working with styles  284
+Ext JS for the desktop: Adobe AIR  284
+Ext JS community extensions  286
+DatePickerPlus  286
+PowerWizard  287
+TinyMCE  287
+SwfUploadPanel  288
+ColorPicker  288
+Additional resources  289
+Samples and demos  289
+Ext JS API  289
+Ext JS forums  289
+Step-by-step tutorials  290
+Community manual  290
+Spket IDE  290
+Aptana Studio  290
+Google  290
+Summary  291
+
+Where do we go from here?  291
+
+Index  293

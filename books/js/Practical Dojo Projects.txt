@@ -1,0 +1,275 @@
+﻿Practical Dojo Projects
+Copyright ? 2008 by Frank W. Zammetti
+All rights reserved. No part of this work may be reproduced or transmitted in any form or by any means,
+electronic or mechanical, including photocopying, recording, or by any information storage or retrieval
+system, without the prior written permission of the copyright owner and the publisher.
+ISBN-13 (pbk): 978-1-4302-1066-5
+ISBN-13 (electronic): 978-1-4302-1065-8
+Printed and bound in the United States of America 9 8 7 6 5 4 3 2 1
+Trademarked names may appear in this book. Rather than use a trademark symbol with every occurrence
+of a trademarked name, we use the names only in an editorial fashion and to the benefit of the trademark
+owner, with no intention of infringement of the trademark.
+Lead Editor: Steve Anglin
+Technical Reviewer: Herman van Rosmalen
+Editorial Board: Clay Andres, Steve Anglin, Ewan Buckingham, Tony Campbell, Gary Cornell,
+Jonathan Gennick, Matthew Moodie, Joseph Ottinger, Jeffrey Pepper, Frank Pohlmann, 
+Ben Renow-Clarke, Dominic Shakeshaft, Matt Wade, Tom Welsh
+Senior Project Manager: Sofia Marchant
+Copy Editor: Sharon Wilkey
+Associate Production Director: Kari Brooks-Copony
+Senior Production Editor: Laura Cheu
+Compositor: Dina Quan
+Proofreader: Liz Welch
+Indexer: Carol Burbo and Ron Strauss
+Artist: Kinetic Publishing Services, LLC
+Cover Designer: Kurt Krames
+Manufacturing Director: Tom Debolski
+Distributed to the book trade worldwide by Springer-Verlag New York, Inc., 233 Spring Street, 6th Floor,
+New York, NY 10013. Phone 1-800-SPRINGER, fax 201-348-4505, e-mail orders-ny@springer-sbm.com,or
+visit http://www.springeronline.com.
+For information on translations, please contact Apress directly at 2855 Telegraph Avenue, Suite 600,
+Berkeley, CA 94705. Phone 510-549-5930, fax 510-549-5939, e-mail info@apress.com, or visit
+http://www.apress.com.
+Apress and friends of ED books may be purchased in bulk for academic, corporate, or promotional use.
+eBook versions and licenses are also available for most titles. For more information, reference our Special
+Bulk Sales–eBook Licensing web page at http://www.apress.com/info/bulksales.
+The information in this book is distributed on an “as is” basis, without warranty. Although every precau-
+tion has been taken in the preparation of this work, neither the author(s) nor Apress shall have any
+liability to any person or entity with respect to any loss or damage caused or alleged to be caused directly
+or indirectly by the information contained in this work. 
+The source code for this book is available to readers at http://www.apress.com.
+=====================
+Contents at a Glance
+About the Author ................................................................. xiii
+About the Technical Reviewer.......................................................xv
+About the Illustrator .............................................................. xvii
+Acknowledgments ................................................................xix
+Introduction......................................................................xxi
+
+PART 1 ■■■ Setting the Table
+■ CHAPTER 1 Introduction to Dojo.............................................3
+■ CHAPTER 2 Dojo Core......................................................41
+■ CHAPTER 3 Dijit ..........................................................115
+■ CHAPTER 4 DojoX ........................................................157
+
+PART 2 ■■■ The Projects
+■ CHAPTER 5 That Human Touch: Contact Manager and Client-Side Persistence .......................................215
+■ CHAPTER 6 A Place for Your Stuff: Dojo Code Cabinet .....................265
+■ CHAPTER 7 Idiot Blob: The Game! .........................................329
+■ CHAPTER 8 When the Yellow Pages Just Isn’t Cool Enough:Local Business Search........................................379
+
+■ INDEX .......................................................................441
+========================
+Contents
+About the Author ................................................................. xiii
+About the Technical Reviewer.......................................................xv
+About the Illustrator .............................................................. xvii
+Acknowledgments ................................................................xix
+Introduction......................................................................xxi
+
+PART 1 ■■■ Setting the Table
+
+■ CHAPTER 1 Introduction to Dojo..........................................3
+JavaScript: A Study in Evolution ....................................3
+Birth of a Language ..........................................3
+Reasons for JavaScript’s Early Rise ............................5
+Something Is Rotten in the State of JavaScript ..................5
+The Unarguable Problems with JavaScript ......................6
+As Ballmer Said: “Developers! Developers! Developers!...”........7
+Standardization: The Beginning of Sanity .......................9
+The Times They Are a Changin’: The Experienced 
+Come to Bear............................................10
+What’s Old Is New Again: JavaScript in the Present .............11
+The White Knight Arrives: JavaScript Libraries..................12
+The Cream of the Crop: Introducing Dojo!...........................13
+Let’s Take It from the Top: A Brief History of Dojo...............13
+The Philosophy of Dojo...........................................15
+The Holy Trinity: The Three Components of Dojo.....................16
+Core ......................................................17
+Dijit .......................................................20
+DojoX .....................................................25
+Dojo in Action: What Else? Hello World (Sort Of) .....................30
+Getting Dojo onto the Page...................................32
+Importing Style Sheets ......................................33
+Configuring Dojo ...........................................34
+Importing Other Parts of Dojo ................................35
+Finally: Dijits! ..............................................35
+Getting Help and Information......................................36
+Summary.......................................................39
+
+■ CHAPTER 2 Dojo Core ....................................................41
+Core vs. Base ...................................................41
+The Dojo “Include” Mechanism ...................................42
+“Trimming the Fat”: Creating a Custom Dojo Build...................43
+Come Fly with Me: Core in Detail ..................................45
+dojo ......................................................46
+dojo.back..................................................90
+dojo.behavior ..............................................92
+dojo.cldr...................................................94
+dojo.colors.................................................96
+dojo.currency ..............................................96
+dojo.data ..................................................98
+dojo.date ..................................................98
+dojo.fx ...................................................101
+dojo.i18n .................................................104
+dojo.io ...................................................105
+dojo.number ..............................................107
+dojo.regexp ...............................................110
+dojo.string ................................................111
+Summary......................................................114
+
+■ CHAPTER 3 Dijit .........................................................115
+Dijit at a Glance ................................................115
+Getting Started with Dijit....................................116
+Declarative vs. Programmatic Dijits ..........................116
+Common Dijit Methods and Attributes .............................118
+Dijits Directly Under the Dijit Namespace ..........................119
+ColorPalette...............................................120
+Dialog....................................................121
+Editor ....................................................122
+InlineEditBox ..............................................123
+Menu, MenuItem, and MenuSeparator .......................125
+ProgressBar ..............................................126
+TitlePane .................................................127
+Toolbar...................................................128
+Tooltip ...................................................130
+Tree .....................................................131
+The dijit.form Package ..........................................132
+Button ...................................................132
+CheckBox ................................................133
+ComboBox................................................135
+ComboButton .............................................136
+CurrencyTextBox, DateTextBox, NumberTextBox,
+and TimeTextBox .......................................137
+DropDownButton ..........................................140
+HorizontalSlider and VerticalSlider ...........................141
+NumberSpinner ...........................................142
+RadioButton ..............................................143
+TextBox ..................................................144
+Textarea..................................................145
+ToggleButton .............................................146
+ValidationTextBox .........................................147
+The dijit.layout Package .........................................148
+AccordionContainer and AccordionPane ......................148
+ContentPane ..............................................150
+LayoutContainer ...........................................151
+StackContainer and StackController..........................152
+TabContainer .............................................154
+Summary......................................................156
+
+■ CHAPTER 4 DojoX .......................................................157
+dojox.charting .................................................158
+Line Chart ................................................159
+Area Chart ................................................160
+Fancy-Pants Line Chart (StackedLines Chart) .................161
+Bar Chart .................................................161
+dojox.collections ...............................................162
+ArrayList .................................................162
+Dictionary ................................................166
+Stack ....................................................169
+dojox.fx .......................................................171
+addClass() and removeClass() ...............................171
+crossFade() ...............................................173
+highlight() ................................................175
+sizeTo() ..................................................177
+slideBy() ..................................................178
+dojox.gfx ......................................................179
+Surface ..................................................182
+Line .....................................................182
+Polyline ..................................................183
+Rect .....................................................183
+Circle ....................................................183
+Ellipse ...................................................184
+Text .....................................................184
+applyTransform() ..........................................184
+dojox.grid .....................................................185
+dojox.math ....................................................188
+degreesToRadians() and radiansToDegrees() ..................190
+distance().................................................190
+factoral() .................................................191
+gaussian() ................................................191
+midpoint() ................................................191
+range() ...................................................192
+sd(), or Standard Deviation..................................192
+dojox.string....................................................192
+Builder ...................................................194
+sprintf() ..................................................195
+dojox.timing ...................................................195
+Timer ....................................................195
+Sequence ................................................197
+dojox.uuid .....................................................199
+dojox.validate ..................................................202
+isEmailAddress()...........................................204
+isInRange() ...............................................205
+isIpAddress() ..............................................205
+isNumberFormat() .........................................205
+isValidCreditCardNumber() ..................................205
+isValidIsbn()...............................................206
+isValidLuhn() ..............................................206
+dojox.widget ...................................................206
+Fisheye List ...............................................206
+TimeSpinner ..............................................206
+Toaster...................................................208
+Summary .....................................................211
+
+PART 2 ■■■ The Projects
+
+■ CHAPTER 5 That Human Touch: Contact Manager and 
+Client-Side Persistence....................................215
+Requirements and Goals ........................................215
+How We Will Pull It Off ..........................................216
+Dojo and Cookies ..........................................217
+The Dojo Storage System...................................218
+Gears ....................................................220
+Dissecting the Solution..........................................223
+Writing styles.css..........................................226
+Writing dojoStyles.css......................................229
+Writing index.htm..........................................230
+Writing goodbye.htm.......................................240
+Writing EventHandlers.js....................................240
+Writing Contact.js..........................................245
+Writing ContactManager.js..................................250
+Writing DataManager.js ....................................256
+Suggested Exercises............................................262
+Summary......................................................263
+
+■ CHAPTER 6 A Place for Your Stuff: Dojo Code Cabinet................265
+Requirements and Goals ........................................265
+How We Will Pull It Off ..........................................266
+The dojo.data Namespace ..................................266
+Gears Database Component ................................268
+Dissecting the Solution..........................................270
+Writing index.htm..........................................271
+Writing styles.css..........................................293
+Writing CodeCabinet.js .....................................295
+Suggested Exercises............................................327
+Summary......................................................328
+
+■ CHAPTER 7 Idiot Blob: The Game! ......................................329
+Requirements and Goals ........................................329
+How We Will Pull It Off ..........................................331
+Revenge of the Demented Video Game Designer...............332
+Dissecting the Solution..........................................333
+Writing index.htm..........................................335
+Writing styles.css..........................................342
+Writing LevelMaps.js .......................................346
+Writing GraphicsSubsystem.js...............................348
+Writing GameClass.js ......................................365
+Suggested Exercises............................................376
+Summary......................................................377
+
+■ CHAPTER 8 When the Yellow Pages Just Isn’t Cool Enough: Local Business Search ....................................379
+Application Requirements and Goals ..............................380
+The Yahoo APIs and the Dynamic <script> Tag Trick...........381
+JSON-P and Dojo ..........................................384
+Yahoo Web Services Registration ............................385
+Yahoo Local Search Service.................................386
+Yahoo Maps Map Image Service.............................389
+Dissecting the Solution..........................................391
+Writing index.htm..........................................392
+Writing styles.css..........................................408
+Writing App.js .............................................411
+Suggested Exercises............................................439
+Summary......................................................440
+
+■ INDEX .......................................................................441

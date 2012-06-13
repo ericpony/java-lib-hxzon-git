@@ -1,0 +1,376 @@
+﻿Pro JavaScript Techniques
+<<精通JavaScript>>
+Copyright 2006 by John Resig
+All rights reserved. No part of this work may be reproduced or transmitted in any form or by any means,
+electronic or mechanical, including photocopying, recording, or by any information storage or retrieval
+system, without the prior written permission of the copyright owner and the publisher.
+ISBN-13 (pbk): 978-1-59059-727-9
+ISBN-10 (pbk): 1-59059-727-3
+Printed and bound in the United States of America 9 8 7 6 5 4 3 2 1
+Trademarked names may appear in this book. Rather than use a trademark symbol with every occurrence
+of a trademarked name, we use the names only in an editorial fashion and to the benefit of the trademark
+owner, with no intention of infringement of the trademark.
+Java and all Java-based marks are trademarks or registered trademarks of Sun Microsystems, Inc., in the
+US and other countries. Apress, Inc., is not affiliated with Sun Microsystems, Inc., and this book was writ-
+ten without endorsement from Sun Microsystems, Inc. 
+Lead Editor: Chris Mills
+Technical Reviewer: Dan Webb
+Editorial Board: Steve Anglin, Ewan Buckingham, Gary Cornell, Jason Gilmore, Jonathan Gennick,
+Jonathan Hassell, James Huddleston, Chris Mills, Matthew Moodie, Dominic Shakeshaft, Jim Sumser,
+Keir Thomas, Matt Wade
+Project Manager: Tracy Brown Collins
+Copy Edit Manager: Nicole Flores
+Copy Editor: Jennifer Whipple
+Assistant Production Director: Kari Brooks-Copony
+Production Editor: Laura Esterman
+Compositor: Linda Weidemann, Wolf Creek Press
+Proofreader: April Eddy
+Indexer: Broccoli Information Management
+Artist: April Milne
+Cover Designer: Kurt Krames
+Manufacturing Director: Tom Debolski
+Distributed to the book trade worldwide by Springer-Verlag New York, Inc., 233 Spring Street, 6th Floor,
+New York, NY 10013. Phone 1-800-SPRINGER, fax 201-348-4505, e-mail orders-ny@springer-sbm.com, 
+or visit http://www.springeronline.com. 
+For information on translations, please contact Apress directly at 2560 Ninth Street, Suite 219, Berkeley,
+CA 94710. Phone 510-549-5930, fax 510-549-5939, e-mail info@apress.com, or visit http://www.apress.com. 
+The information in this book is distributed on an “as is” basis, without warranty. Although every pre-
+caution has been taken in the preparation of this work, neither the author(s) nor Apress shall have any
+liability to any person or entity with respect to any loss or damage caused or alleged to be caused directly
+or indirectly by the information contained in this work. 
+The source code for this book is available to readers at http://www.apress.com in the Source Code/
+Download section and on the book’s web site at http://jspro.org. 
+==========================
+Contents at a Glance
+
+About the Author  . . . . . . . . . . . xv
+About the Technical Reviewer  . . . . . . . . . . . xvii
+Acknowledgments  . . . . . . . . . xix
+
+PART 1 ■  Introducing Modern JavaScript
+■ CHAPTER 1 Modern JavaScript Programming . . . . . . . . . . . . . . . . . . . 3
+
+PART 2 ■  Professional JavaScript Development
+■ CHAPTER 2 Object-Oriented JavaScript . . . . . . . . . . . . 19
+■ CHAPTER 3 Creating Reusable Code . . . . . . . . . . . . . . . 39
+■ CHAPTER 4 Tools for Debugging and Testing . . . . . . . . . . . . . . . . . . . 59
+
+PART 3 ■  Unobtrusive JavaScript
+■ CHAPTER 5 The Document Object Model . . . . . . . . . . . . . . . . . . . . . . . 77
+■ CHAPTER 6 Events . . . . . . . . . . . . . . . . . . . 111
+■ CHAPTER 7 JavaScript and CSS. . . . . . . . . . . . . . . . . . . 135
+■ CHAPTER 8 Improving Forms . . . . . . . . . . . . . . . . . . . . . 169
+■ CHAPTER 9 Building an Image Gallery. . . . . . . . . . . . . 191
+
+PART 4 ■  Ajax
+■ CHAPTER 10 Introduction to Ajax . . . . . . . . . . . . . . . . . . . 215
+■ CHAPTER 11 Enhancing Blogs with Ajax . . . . . . . . . . . . 233
+■ CHAPTER 12 Autocomplete Search . . . . . . . . . . . . . . . . . 247
+■ CHAPTER 13 An Ajax Wiki . . . . . . . . 265
+
+PART 5 ■  The Future of JavaScript
+■ CHAPTER 14 Where Is JavaScript Going? . . . . . . . . . . . . . . . . . . . . . . . 287
+
+PART 6 ■  Appendixes
+■ APPENDIX A DOM Reference. . . . . . . . . . . . . . . . . . . . . . . 307
+■ APPENDIX B Events Reference . . . . . . . . . . . . . . . . . . . . . 325
+■ APPENDIX C The Browsers . . . . . .  345
+
+■ INDEX . . . . . . . . . . . . . . . . . 349
+============================
+Contents
+About the Author  . . . . . . . . . . . xv
+About the Technical Reviewer  . . . . . . . . . . . xvii
+Acknowledgments  . . . . . . . . . xix
+
+PART 1 ■  Introducing Modern JavaScript
+
+■ CHAPTER 1 Modern JavaScript Programming. . . . . . . . . . . . . . . 3
+Object-Oriented JavaScript . . . . . . . . . . . . . . . . 3
+Testing Your Code . . . . . .  5
+Packaging for Distribution . . . . . . . . . . . . . . . . . 5
+Unobtrusive DOM Scripting . . . . . . . . . . . . . . . . 7
+The Document Object Model . . . . . . . . . . . . . . . . . . . . . . 8
+Events . . . . . . . . . . . 9
+JavaScript and CSS. . . . . . . . . . . . . . . . . 10
+Ajax . . . . . . . . . . . . . . . . . . . . . . . 10
+Browser Support . . . . . .  13
+Summary. . . . . . . . . . . . . . . . . . . 16
+
+PART 2 ■  Professional JavaScript Development
+
+■ CHAPTER 2 Object-Oriented JavaScript . . . . . . . . . . . . . . . . . . . . 19
+Language Features . . . . . . . . . . . . . . . . . . . . . . 19
+References . . . . . .  19
+Function Overloading and Type-Checking. . . . . . . . . . 21
+Scope. . . . . . . . . . . 25
+Closures. . . . . . . . . 27
+Context. . . . . . . . . . 30
+Object-Oriented Basics. . . . . . . . . . . . . . . . . . . 32
+Objects. . . . . . . . . . 32
+Object Creation. . . . . . . . . . . . . . . . . . . . . 32
+Summary. . . . . . . . . . . . . . . . . . . 38
+
+■ CHAPTER 3 Creating Reusable Code . . . . . . . . . . . . 39
+Standardizing Object-Oriented Code . . . . . . . . . . . . . . . . . . . 39
+Prototypal Inheritance . . . . . . . . . . . . . . . 39
+Classical Inheritance . . . . . . . . . . . . . . . . 40
+The Base Library . . . . . . . . . . . . . . . . . . . 44
+The Prototype Library . . . . . . . . . . . . . . . 45
+Packaging . . . . . . . . . . . . . . . . . . 49
+Namespacing . . . . . . . . . . . . . . . . . . . . . . 49
+Cleaning Up Your Code . . . . . . . . . . . . . . 52
+Compression. . . . . . . . . . . . . . . . . . . . . . . 54
+Distribution . . . . . . . . . . . 56
+Summary. . . . . . . . . . . . . . . . . . . 58
+
+■ CHAPTER 4 Tools for Debugging and Testing . . . . . . . . . . . . . . 59
+Debugging . . . . . . . . . . . 59
+Error Console . . . . . . . . . . . . . . . . . . . . . . 59
+DOM Inspectors . . . . . . . . . . . . . . . . . . . . 64
+Firebug. . . . . . . . . . 67
+Venkman . . . . . . . . 67
+Testing. . . . . . . . . . . . . . . . . . . . . 68
+JSUnit. . . . . . . . . . . 69
+J3Unit. . . . . . . . . . . 71
+Test.Simple. . . . . .  72
+Summary . . . . . . . . . . . . . . . . . . 73
+
+PART 3 ■  Unobtrusive JavaScript
+
+■ CHAPTER 5 The Document Object Model . . . . . . . . . . . . . . . . . . . 77
+An Introduction to the Document Object Model . . . . . . . . . . 77
+Navigating the DOM . . . . . . . . . . . . . . . . . . . . . 77
+Handling White Space in the DOM . . . . . . . . . . . . . . . . 80
+Simple DOM Navigation . . . . . . . . . . . . . 82
+Binding to Every HTML Element . . . . . . . . . . . . . . . . . . 84
+Standard DOM Methods . . . . . . . . . . . . . 85
+Waiting for the HTML DOM to Load . . . . . . . . . . . . . . . . . . . . 87
+Waiting for the Page to Load . . . . . . . . . . . . . . . . . . . . . 87
+Waiting for Most of the DOM to Load . . . . . . . . . . . . . . 87
+Figuring Out When the DOM Is Loaded . . . . . . . . . . . . 88
+Finding Elements in an HTML Document . . . . . . . . . . . . . . . 91
+Finding Elements by Class Name . . . . . . . . . . . . . . . . . 91
+Finding Elements by CSS Selector . . . . . . . . . . . . . . . . 92
+XPath . . . . . . . . . . . 95
+Getting the Contents of an Element . . . . . . . . . . . . . . . . . . . . 96
+Getting the Text Inside an Element . . . . . . . . . . . . . . . . 96
+Getting the HTML Inside an Element . . . . . . . . . . . . . . 98
+Working with Element Attributes . . . . . . . . . . . . . . . . . . . . . . 99
+Getting and Setting an Attribute Value . . . . . . . . . . . . . 99
+Modifying the DOM . . . . . . . . . . . . . . . . . . . . . 103
+Creating Nodes Using the DOM. . . . . . . . . . . . . . . . . . 103
+Inserting into the DOM . . . . . . . . . . . . . 104
+Injecting HTML into the DOM. . . . . . . . . . . . . . . . . . . . 105
+Removing Nodes from the DOM . . . . . . . . . . . . . . . . . 108
+Summary. . . . . . . . . . . . . . . . . . 110
+
+■ CHAPTER 6 Events. . . . . . . . . . . . . . . . . . . 111
+Introduction to JavaScript Events . . . . . . . . . . . . . . . . . . . . . 111
+Asynchronous Events vs. Threads . . . . . . . . . . . . . . . 111
+Event Phases . . . . . . . . . . . . . . . . . . . . . 114
+Common Event Features . . . . . . . . . . . . . . . . 116
+The Event Object . . . . . . . . . . . . . . . . . . 116
+The this Keyword . . . . . . . . . . . . . . . . . . 117
+Canceling Event Bubbling. . . . . . . . . . . . . . . . . . . . . . . 118
+Overriding the Browser’s Default Action . . . . . . . . . . 119
+Binding Event Listeners . . . . . . . . . . . . . . . . . 122
+Traditional Binding. . . . . . . . . . . . . . . . . 122
+DOM Binding: W3C . . . . . . . . . . . . . . . . 124
+DOM Binding: IE . . . . . . . . . . . . . . . . . . . 125
+addEvent and removeEvent . . . . . . . . . . . . . . . . . . . . . 126
+Types of Events . . . . . .  129
+Unobtrusive DOM Scripting . . . . . . . . . . . . . . 129
+Anticipating JavaScript Being Disabled . . . . . . . . . . . 130
+Making Sure Links Don’t Rely on JavaScript . . . . . . 130
+Watching for When CSS Is Disabled. . . . . . . . . . . . . . 131
+Event Accessibility . . . . . . . . . . . . . . . . . 132
+Summary. . . . . . . . . . . . . . . . . . 133
+
+■ CHAPTER 7 JavaScript and CSS . . . . . . . . . . . . . . . . 135
+Accessing Style Information . . . . . . . . . . . . . 135
+Dynamic Elements. . . . . . . . . . . . . . . . . . . . . . 137
+An Element’s Position . . . . . . . . . . . . . . 137
+An Element’s Size . . . . . . . . . . . . . . . . . 147
+An Element’s Visibility. . . . . . . . . . . . . . 149
+Animations . . . . . . . . . . 151
+Slide In. . . . . . . . . 152
+Fade In. . . . . . . . . 152
+The Browser . . . . . . . . . 153
+Mouse Position. . . . . . . . . . . . . . . . . . . . 153
+The Viewport. . . . . . . . . . . . . . . . . . . . . . 155
+Drag-and-Drop. . . . . . . 157
+Libraries . . . . . . . . . . . . . . . . . . 163
+moo.fx and jQuery . . . . . . . . . . . . . . . . . 163
+Scriptaculous . . . . . . . . . . . . . . . . . . . . . 164
+Summary. . . . . . . . . . . . . . . . . . 167
+
+■ CHAPTER 8 Improving Forms . . . . . . . . . . . . . . . . . . . 169
+Form Validation . . . . . .  169
+Required Fields . . . . . . . . . . . . . . . . . . . 172
+Pattern Matching . . . . . . . . . . . . . . . . . . 174
+Rule Set . . . . . . . . 177
+Displaying Error Messages . . . . . . . . . . . . . . 179
+Validation. . . . . . . 179
+When to Validate . . . . . . . . . . . . . . . . . . 183
+Usability Improvements . . . . . . . . . . . . . . . . . 186
+Hover Labels. . . . . . . . . . . . . . . . . . . . . . 186
+Marking Required Fields. . . . . . . . . . . . 188
+Summary. . . . . . . . . . . . . . . . . . 189
+
+■ CHAPTER 9 Building an Image Gallery . . . . . . . . . . . . . . . . . . . . . 191
+Example Galleries . . . . . . . . . . . . . . . . . . . . . . 191
+Lightbox. . . . . . . . 191
+ThickBox . . . . . . . 193
+Building the Gallery . . . . . . . . . . . . . . . . . . . . . 195
+Loading Unobtrusively. . . . . . . . . . . . . . 198
+Transparent Overlay . . . . . . . . . . . . . . . 200
+Positioned Box . . . . . . . . . . . . . . . . . . . . 203
+Navigation . . . . . .  207
+Slideshow . . . . . .  209
+Summary. . . . . . . . . . . . . . . . . . 212
+
+PART 4 ■  Ajax
+
+■ CHAPTER 10 Introduction to Ajax. . . . . . . . . . . . . . . . 215
+Using Ajax . . . . . . . . . . . 215
+HTTP Requests . . . . . . . . . . . . . . . . . . . . 216
+HTTP Response . . . . . . . . . . . . . . . . . . . 221
+Handling Response Data . . . . . . . . . . . . . . . . 225
+The Complete Ajax Package . . . . . . . . . . . . . 226
+Examples of Different Data Usage . . . . . . . . . . . . . . . . . . . . 229
+An XML-Based RSS Feed . . . . . . . . . . . . . . . . . . . . . . . 229
+An HTML Injector . . . . . . . . . . . . . . . . . . 231
+JSON and JavaScript: Remote Execution . . . . . . . . . 232
+Summary . . . . . . . . . . . 232
+
+■ CHAPTER 11 Enhancing Blogs with Ajax. . . . . . . . . . . . . . . . . . . . 233
+Never-Ending Blog . . . . . . . . . . . . . . . . . . . . . 233
+The Blog Template. . . . . . . . . . . . . . . . . 234
+The Data Source . . . . . . . . . . . . . . . . . . 236
+Event Detection . . . . . . . . . . . . . . . . . . . 238
+The Request . . . . . . . . . . . . . . . . . . . . . . 238
+The Result . . . . . .  239
+Live Blogging . . . . . . . . 243
+Summary. . . . . . . . . . . . . . . . . . 245
+
+■ CHAPTER 12 Autocomplete Search. . . . . . . . . . . . . . 247
+Examples of Autocomplete Search. . . . . . . . . . . . . . . . . . . . 247
+Building the Page . . . . . . . . . . . . . . . . . . . . . . 249
+Watching for Key Input . . . . . . . . . . . . . . . . . . 251
+Retrieving the Results. . . . . . . . . . . . . . . . . . . 254
+Navigating the Result List . . . . . . . . . . . . . . . 257
+Keyboard Navigation . . . . . . . . . . . . . . . 257
+Mouse Navigation . . . . . . . . . . . . . . . . . 258
+The Final Result . . . . . .  259
+Summary. . . . . . . . . . . . . . . . . . 264
+
+■ CHAPTER 13 An Ajax Wiki . . . . . .  265
+What Is a Wiki? . . . . . .  265
+Talking With the Database. . . . . . . . . . . . . . . 266
+The Ajax Request. . . . . . . . . . . . . . . . . . . . . . . 267
+The Server-Side Code. . . . . . . . . . . . . . . . . . . 268
+Handling a Request . . . . . . . . . . . . . . . . 268
+Executing and Formatting SQL . . . . . . . . . . . . . . . . . . 270
+Handling the JSON Response . . . . . . . . . . . . 272
+An Extra Case Study: A JavaScript Blog . . . . . . . . . . . . . . . 274
+Application Code . . . . . . . . . . . . . . . . . . . . . . . 275
+Core JavaScript Code . . . . . . . . . . . . . . 276
+JavaScript SQL Library . . . . . . . . . . . . . 279
+Ruby Server-Side Code. . . . . . . . . . . . . 280
+Summary . . . . . . . . . . . 283
+
+PART 5 ■  The Future of JavaScript
+
+■ CHAPTER 14 Where Is JavaScript Going? . . . . . . . . . . . . . . . . . . . 287
+JavaScript 1.6 and 1.7 . . . . . . . . . . . . . . . . . . 287
+JavaScript 1.6 . . . . . . . . . . . . . . . . . . . . 288
+JavaScript 1.7 . . . . . . . . . . . . . . . . . . . . 291
+Web Applications 1.0 . . . . . . . . . . . . . . . . . . . 294
+Building a Clock . . . . . . . . . . . . . . . . . . . 294
+Simple Planet Simulation . . . . . . . . . . . . . . . . . . . . . . . 298
+Comet . . . . . . . . . . . . . . . . . . . . 301
+Summary. . . . . . . . . . . . . . . . . . 304
+
+PART 6 ■  Appendixes
+
+■ APPENDIX A DOM Reference. . . . . . . . . . . . . . . . . . . . . 307
+Resources . . . . . . . . . . . 307
+Terminology . . . . . . . . . 307
+Global Variables . . . . . .  309
+document . . . . . .  309
+HTMLElement . . . . . . . . . . . . . . . . . . . . . 310
+DOM Navigation. . . . . .  310
+body . . . . . . . . . . . 310
+childNodes . . . . . . . . . . . . . . . . . . . . . . . 311
+documentElement . . . . . . . . . . . . . . . . . 311
+firstChild . . . . . . . 311
+getElementById( elemID ) . . . . . . . . . . . . . . . . . . . . . . . 311
+getElementsByTagName( tagName ) . . . . . . . . . . . . . 312
+lastChild. . . . . . . . 312
+nextSibling . . . . . . . . . . . . . . . . . . . . . . . 313
+parentNode . . . . . . . . . . . . . . . . . . . . . . . 313
+previousSibling. . . . . . . . . . . . . . . . . . . . 314
+Node Information. . . . . . . . . . . . . . . . . . . . . . . 314
+innerText . . . . . . . 314
+nodeName. . . . . .  315
+nodeType. . . . . . . 315
+nodeValue . . . . . .  316
+Attributes. . . . . . . . . . . . . . . . . . 316
+className . . . . . . . . . . . . . . . . . . . . . . . 316
+getAttribute( attrName ) . . . . . . . . . . . . 317
+removeAttribute( attrName ) . . . . . . . . . . . . . . . . . . . . 317
+setAttribute( attrName, attrValue ) . . . . . . . . . . . . . . . 318
+DOM Modification . . . . . . . . . . . . . . . . . . . . . . 319
+appendChild( nodeToAppend ). . . . . . . . . . . . . . . . . . . 319
+cloneNode( true|false ) . . . . . . . . . . . . . 319
+createElement( tagName ) . . . . . . . . . . . . . . . . . . . . . . 320
+createElementNS( namespace, tagName ) . . . . . . . . 320
+createTextNode( textString ) . . . . . . . . . . . . . . . . . . . . 321
+innerHTML. . . . . .  321
+insertBefore( nodeToInsert, nodeToInsertBefore ) . . . . . . . . . . . . . . 322
+removeChild( nodeToRemove ) . . . . . . . . . . . . . . . . . . 322
+replaceChild( nodeToInsert, nodeToReplace ). . . . . . 323
+
+■ APPENDIX B Events Reference . . . . . . . . . . . . . . . . . . 325
+Resources . . . . . . . . . . . 325
+Terminology . . . . . . . . . 325
+Event Object . . . . . . . . . 326
+General Properties . . . . . . . . . . . . . . . . . 327
+Mouse Properties. . . . . . . . . . . . . . . . . . 329
+Keyboard Properties . . . . . . . . . . . . . . . 332
+Page Events . . . . . . . . . 334
+load . . . . . . . . . . . 334
+beforeunload. . . . . . . . . . . . . . . . . . . . . . 335
+error . . . . . . . . . . . 335
+resize . . . . . . . . . . 336
+scroll . . . . . . . . . . 336
+unload . . . . . . . . . 336
+UI Events . . . . . . . . . . . . . . . . . . 337
+focus . . . . . . . . . . 337
+blur . . . . . . . . . . . . . . . . . . 337
+Mouse Events. . . . . . . . 337
+click . . . . . . . . . . . 337
+dblclick . . . . . . . . 338
+mousedown . . . . . . . . . . . . . . . . . . . . . . 338
+mouseup . . . . . . . 338
+mousemove . . . . . . . . . . . . . . . . . . . . . . 338
+mouseover . . . . . . . . . . . . . . . . . . . . . . . 340
+mouseout . . . . . .  340
+Keyboard Events . . . . . . . . . . . . . . . . . . . . . . . 341
+keydown / keypress . . . . . . . . . . . . . . . 341
+keyup . . . . . . . . . . 341
+Form Events . . . . . . . . . 342
+select . . . . . . . . . . 342
+change. . . . . . . . . 342
+submit . . . . . . . . . 342
+reset . . . . . . . . . . . 343
+
+■ APPENDIX C The Browsers. . . . . . . . . . . . . . . . . . . . . . . 345
+Modern Browsers . . . . . . . . . . . . . . . . . . . . . . 345
+Internet Explorer. . . . . . . . . . . . . . . . . . . 345
+Mozilla . . . . . . . . . 346
+Safari . . . . . . . . . . 346
+Opera . . . . . . . . . . 346
+
+■ INDEX  . . . . . . . . . . . . . . . . . 349

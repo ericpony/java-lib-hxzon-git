@@ -1,0 +1,69 @@
+﻿Pro JavaScript Design Patterns
+Copyright ? 2008 by Ross Harmes and Dustin Diaz
+All rights reserved. No part of this work may be reproduced or transmitted in any form or by any means,
+electronic or mechanical, including photocopying, recording, or by any information storage or retrieval
+system, without the prior written permission of the copyright owner and the publisher.
+ISBN-13 (pbk): 978-1-59059-908-2
+ISBN-10 (pbk): 1-59059-908-X
+ISBN-13 (electronic): 978-1-4302-0495-4
+ISBN-10 (electronic): 1-4302-0495-8
+Printed and bound in the United States of America 9 8 7 6 5 4 3 2 1
+Trademarked names may appear in this book. Rather than use a trademark symbol with every occurrence
+of a trademarked name, we use the names only in an editorial fashion and to the benefit of the trademark
+owner, with no intention of infringement of the trademark.
+Java and all Java-based marks are trademarks or registered trademarks of Sun Microsystems Inc. in the
+United States and other countries. Apress Inc. is not affiliated with Sun Microsystems Inc., and this book
+was written without endorsement from Sun Microsystems Inc.
+Lead Editors: Chris Mills, Tom Welsh
+Technical Reviewer: Simon Willison
+Editorial Board: Steve Anglin, Ewan Buckingham, Tony Campbell, Gary Cornell, Jonathan Gennick,
+Jason Gilmore, Kevin Goff, Jonathan Hassell, Matthew Moodie, Joseph Ottinger, Jeffrey Pepper,
+Ben Renow-Clarke, Dominic Shakeshaft, Matt Wade, Tom Welsh
+Project Manager: Richard Dal Porto
+Copy Editor: Jennifer Whipple
+Associate Production Director: Kari Brooks-Copony
+Production Editor: Kelly Winquist
+Compositor and Artist: Kinetic Publishing Services, LLC
+Proofreader: Dan Shaw
+Indexer: Julie Grady
+Cover Designer: Kurt Krames
+Manufacturing Director: Tom Debolski
+Distributed to the book trade worldwide by Springer-Verlag New York, Inc., 233 Spring Street, 6th Floor,
+New York, NY 10013. Phone 1-800-SPRINGER, fax 201-348-4505, e-mail orders-ny@springer-sbm.com, or
+visit http://www.springeronline.com.
+For information on translations, please contact Apress directly at 2855 Telegraph Avenue, Suite 600, Berkeley,
+CA 94705. Phone 510-549-5930, fax 510-549-5939, e-mail info@apress.com, or visit  http://www.apress.com.
+The information in this book is distributed on an “as is” basis, without warranty. Although every precaution
+has been taken in the preparation of this work, neither the author(s) nor Apress shall have any liability to
+any person or entity with respect to any loss or damage caused or alleged to be caused directly or indirectly
+by the information contained in this work.
+The source code for this book is available to readers at http://www.apress.com.
+=====================
+About the Authors . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  . xv
+About the Technical Reviewer . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xvii
+Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  xix
+Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  . . . . . . xxi
+PART 1
+■ ■ ■
+Object-Oriented JavaScript
+■CHAPTER 1 Expressive JavaScript . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+■CHAPTER 2 Interfaces . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+■CHAPTER 3 Encapsulation and Information Hiding . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+■CHAPTER 4 Inheritance . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 41
+■CHAPTER 5 The Singleton Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 65
+■CHAPTER 6 Chaining . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 83
+PART 2
+■ ■ ■
+Design Patterns
+■CHAPTER 7 The Factory Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 93
+■CHAPTER 8 The Bridge Pattern. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 109
+■CHAPTER 9 The Composite Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 125
+■CHAPTER 10 The Facade Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 141
+■CHAPTER 11 The Adapter Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 149
+■CHAPTER 12 The Decorator Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 159
+■CHAPTER 13 The Flyweight Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 179
+■CHAPTER 14 The Proxy Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 197
+■CHAPTER 15 The Observer Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 215
+■CHAPTER 16 The Command Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 225
+■CHAPTER 17 The Chain of Responsibility Pattern . . . . . . . . . . . . . . . . . . . . . . . . . . . 245
+■INDEX . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  . . . . . . . 263

@@ -1,0 +1,425 @@
+﻿Pro CSS for High Traffic Websites
+高流量网站CSS开发技术
+http://www.ituring.com.cn/book/979
+Paperback: 432 pages
+Publisher: Apress; 1 edition (April 27, 2011)
+Language: English
+ISBN-10: 1430232889
+ISBN-13: 978-1430232889
+====================
+Pro CSS for High Traffic Websites 
+Copyright 2011 by Antony Kennedy and Inayaili de León 
+All rights reserved. No part of this work may be reproduced or transmitted in any form or by any means, 
+electronic or mechanical, including photocopying, recording, or by any information storage or retrieval 
+system, without the prior written permission of the copyright owner and the publisher. 
+ISBN-13 (pbk): 978-1-4302-3288-9 
+ISBN-13 (electronic): 978-1-4302-3289-6 
+Trademarked names, logos, and images may appear in this book. Rather than use a trademark symbol 
+with every occurrence of a trademarked name, logo, or image we use the names, logos, and images only 
+in an editorial fashion and to the benefit of the trademark owner, with no intention of infringement of 
+the trademark. 
+The use in this publication of trade names, trademarks, service marks, and similar terms, even if they are 
+not identified as such, is not to be taken as an expression of opinion as to whether or not they are subject 
+to proprietary rights. 
+President and Publisher: Paul Manning 
+Lead Editor: Ben Renow-Clarke 
+Technical Reviewer: David Storey 
+Editorial Board: Steve Anglin, Mark Beckner, Ewan Buckingham, Gary Cornell, Jonathan Gennick, 
+Jonathan Hassell, Michelle Lowman, Matthew Moodie, Jeff Olson, Jeffrey Pepper, Frank 
+Pohlmann, Douglas Pundick, Ben Renow-Clarke, Dominic Shakeshaft, Matt Wade, Tom Welsh 
+Coordinating Editor: Mary Tobin 
+Copy Editor: Nancy Sixsmith 
+Compositor: Bytheway Publishing Services 
+Indexer: John Collin 
+Artist: April Milne 
+Cover Designer: Anna Ishchenko 
+Distributed to the book trade worldwide by Springer Science+Business Media, LLC., 233 Spring Street, 
+6th Floor, New York, NY 10013. Phone 1-800-SPRINGER, fax (201) 348-4505, e-mail orders-ny@springer-
+sbm.com, or visit www.springeronline.com.  
+For information on translations, please e-mail rights@apress.com, or visit www.apress.com.  
+Apress and friends of ED books may be purchased in bulk for academic, corporate, or promotional use. 
+eBook versions and licenses are also available for most titles. For more information, reference our 
+Special Bulk Sales–eBook Licensing web page at www.apress.com/info/bulksales. 
+The information in this book is distributed on an “as is” basis, without warranty. Although every 
+precaution has been taken in the preparation of this work, neither the author(s) nor Apress shall have 
+any liability to any person or entity with respect to any loss or damage caused or alleged to be caused 
+directly or indirectly by the information contained in this work.  
+The source code for this book is available to readers at www.apress.com, and from 
+www.procssforhightrafficwebsites.com. 
+=======================
+Contents at a Glance 
+ ■ Foreword..................................... xvii 
+ ■ About the Authors................................................ xviii 
+ ■ About the Technical Reviewer ...................................................... xix 
+ ■ Acknowledgments ........................ xx 
+ ■ Preface......................................... xxi 
+ ■ Background Information.............................................................. xxii 
+
+ ■ Chapter 1: The Value of Process ......................................................1 
+ ■ Chapter 2: CSS Style Guide ............................................................37 
+ ■ Chapter 3: Fundamentals ......................................................................67 
+ ■ Chapter 4: Frameworks and Integration......................................101 
+ ■ Chapter 5: Brand Implementation................................................137 
+ ■ Chapter 6: CSS and Accessibility.................................................165 
+ ■ Chapter 8: Performance...............................................................223 
+ ■ Chapter 9: Dynamic CSS ..............................................................261 
+ ■ Chapter 10: Testing and Debugging.............................................301 
+ ■ Chapter 11: Creating Your CSS ....................................................331 
+
+ ■ Appendix 1: CSS Standards Guide ...............................................361 
+ ■ Appendix 2: Accessibility Guidelines...........................................369 
+ ■ Appendix 3: Browser Support Guidelines ....................................373 
+ ■ Appendix 4: Development Process ..............................................377 
+
+ ■ Index ............................................................383 
+=========================
+Contents 
+ ■ Foreword..................................... xvii 
+ ■ About the Authors................................................ xviii 
+ ■ About the Technical Reviewer ...................................................... xix 
+ ■ Acknowledgments ........................ xx 
+ ■ Preface......................................... xxi 
+ ■ Background Information.............................................................. xxii 
+
+ ■ Chapter 1: The Value of Process ......................................................1 
+The Team.........................................1 
+Getting Too Big for Your Boots....................................................................3 
+High Staff Churn Rate ................................5 
+Consistency Is More Important than Quality...............................................6 
+Tools ........................................10 
+Wikis........................................................ 10 
+Bug Reporting................................................. 12 
+Task Management .......................................... 12 
+Bug Tracking and Task Management ............................. 13 
+Source Control ................................................ 14 
+Diff Tools ................................................. 18 
+Resolving Conflicts ......................................... 20 
+Backup...........................................27 
+Online Backup ................................................ 28 
+Desktop Backup.............................................. 28 
+Prototyping ..............................................29 
+Development Methodologies ....................................................................29 
+Waterfall Development ......................................... 29 
+Agile Development.......................................... 31 
+Summary .................................................35 
+
+ ■ Chapter 2: CSS Style Guide ............................................................37 
+CSS Style Guides .....................................37 
+CSS Formatting........................................39 
+Single- versus Multiline........................................ 39 
+Indenting.................................................. 42 
+Tabs versus Spaces........................................ 43 
+Colons and Semicolons ........................................ 44 
+Commenting and CSS Metadata...............................................................44 
+Existing Standards: CSSDOC .......................................... 45 
+File Info.................................................... 47 
+Table of Contents............................................ 48 
+Sectioning................................................ 49 
+Color Palettes ................................................. 51 
+Folder Paths............................................. 53 
+Measurements................................................ 53 
+Document Hacks and Bug Fixes..................................... 55 
+Using a Template............................................ 56 
+Class and ID Naming................................56 
+Semantics................................................ 58 
+Accepted Characters ............................................ 59 
+Conventions............................................. 60 
+Case......................................................... 61 
+Namespacing...........................................62 
+Reusable Classes............................................ 64 
+CSS Namespaces Module............................................... 65 
+Summary .................................................65 
+
+ ■ Chapter 3: Fundamentals ......................................................................67 
+CSS Style Guide .......................................37 
+The Cascade: Origin, Importance, and Inheritance...................................68 
+Origin and Importance.......................................... 68 
+Inheritance............................................... 70 
+Inheritance and the Universal Selector........................... 72 
+Specificity ................................................74 
+Calculating Specificity .......................................... 74 
+The !important Declaration............................................. 75 
+Namespacing and Specificity ......................................... 76 
+Using Your Tools............................................. 77 
+Encoding........................................78 
+Localization..............................................78 
+Browser-Specific CSS..............................79 
+Hacks and Filters............................................ 80 
+CSS Expressions............................................. 83 
+Vendor-Specific Extensions............................................ 83 
+Media Queries................................................. 85 
+Conditional Comments.......................................... 86 
+When and How to Use Hacks....................................................................88 
+“Safe” Hacks ........................................... 89 
+The Real World ............................................... 90 
+Server-Side User Agent Detection ............................................................90 
+Some Examples of Browser Rendering Differences .................................93 
+Quirks Mode ............................................ 93 
+The IE Box Model ............................................ 95 
+hasLayout ................................................ 97 
+Experimental CSS........................................... 99 
+Summary ...............................................100 
+
+ ■ Chapter 4: Frameworks and Integration......................................101 
+Frameworks...........................................102 
+Blueprint CSS................................................ 105 
+960 Grid System........................................... 106 
+YUI 3 Grids ............................................. 109 
+Alternative Uses............................................ 110 
+Reset Style Sheets........................................ 112 
+Why Create Your Own Framework?.............................. 120 
+Object Oriented CSS ..............................121 
+Object Oriented Programming ...................................... 121 
+OOCSS ................................................... 121 
+Overriding CSS.......................................123 
+Playing Nicely with Third-Party Code .....................................................126 
+Defensive CSS .......................................127 
+Fragile CSS ............................................129 
+Metadata in CSS ....................................132 
+Summary ...............................................134 
+
+ ■ Chapter 5: Brand Implementation................................................137 
+What Is a Brand ■ ...................................138 
+Brand Style Guides ................................138 
+Guidelines Evolve.......................................... 140 
+Design Libraries............................................ 140 
+Typography ............................................142 
+Image Replacement versus Flexibility.......................... 143 
+Font-face ............................................... 145 
+Fallback Fonts .............................................. 150 
+Units ...................................................... 151 
+Color ............................................153 
+Multiple Color Schemes................................................ 153 
+Color Reference............................................ 155 
+Dynamic Colors............................................. 155 
+Fallback Colors ............................................. 155 
+Layout ..........................................156 
+Grids ...................................................... 156 
+Templates.............................................. 161 
+Themes ........................................161 
+Flexible CSS and Brand Evolution...........................................................163 
+Summary ...............................................164 
+
+ ■ Chapter 6: CSS and Accessibility.................................................165 
+Impairment Problems Overview .............................................................166 
+Partial Sightedness............................................. 166 
+Blindness............................................... 167 
+Colorblindness.............................................. 167 
+Motor Impairment ......................................... 167 
+Hearing Disabilities............................................. 167 
+Cognitive Impairment ......................................... 168 
+Young Age ............................................. 168 
+Old Age .................................................. 169 
+Epilepsy ................................................. 169 
+Accessibility Guidelines . ........................170 
+What’s the Law?. ......................................... 171 
+Assistive Technologies . .........................171 
+Screen Readers . .......................................... 171 
+Hiding Content with CSS. ............................................. 175 
+Keyboard-Only Users. ........................................ 176 
+Other Assistive Devices . .............................................. 176 
+Design and Layout . ................................176 
+Color . .................................................... 176 
+Fonts and Units. ........................................... 179 
+Web-fonts and Dyslexia. .............................................. 182 
+User Customization. ........................................... 182 
+Style Switchers. ........................................... 183 
+WAI-ARIA. ...............................................186 
+Device and Environment Impairments. ...................................................186 
+Progressive Enhancement or Graceful Degradation? . ............................187 
+Can CSS3 Be Harmful? . ............................................... 188 
+Graded Browser Support (GBS). ..............................................................188 
+Summary . ..............................................190 
+
+ ■ Chapter 7: Devices. ......................................................................191 
+Media Types . .........................................191 
+all. ......................................................... 193 
+braille. ................................................... 193 
+embossed . ............................................ 193 
+handheld. .............................................. 193 
+print . ..................................................... 193 
+projection. ............................................. 194 
+screen. .................................................. 194 
+speech ................................................... 194 
+tty .......................................................... 194 
+tv............................................................ 194 
+Media Queries........................................195 
+width...................................................... 198 
+height .................................................... 198 
+device-width................................................. 198 
+device-height................................................ 198 
+orientation ............................................. 199 
+aspect-ratio ........................................... 199 
+device-aspect-ratio ............................................ 199 
+color....................................................... 199 
+color-index ............................................ 199 
+monochrome ................................................ 200 
+resolution............................................... 200 
+scan....................................................... 200 
+grid ........................................................ 200 
+transform-2d ................................................ 201 
+transform-3d ................................................ 201 
+transition ............................................... 201 
+animation............................................... 201 
+Modernizr...............................................202 
+Print Style Sheets ..................................203 
+Controlling Page Breaks ............................................... 207 
+Mobile Devices ......................................212 
+Another Website ........................................... 213 
+Use Media Queries to Target Mobile Devices ................................................................ 219 
+Build an App Instead........................................... 219 
+Other Devices ........................................220 
+Search Engine Optimization (SEO) ..........................................................220 
+Summary ...............................................222 
+
+ ■ Chapter 8: Performance...............................................................223 
+The Payload—Worry About File Size......................................................223 
+Naming Conventions........................................... 224 
+File Names............................................. 225 
+Folder Structure............................................ 226 
+Syntax.................................................... 227 
+Minifying................................................ 235 
+Compression................................................. 238 
+Apache................................................... 239 
+Microsoft IIS (Internet Information Services) ................................................................. 240 
+Content Distribution Networks (CDNs) and Domains..................................................... 243 
+Having Fewer Requests Is More Important than File Size............................................. 246 
+Domain Name Server (DNS) Lookup............................. 247 
+Connecting............................................. 248 
+Sending ................................................. 248 
+Waiting .................................................. 248 
+Receiving............................................... 249 
+Concatenation............................................... 249 
+CSS Sprites............................................ 250 
+Data URIs (Uniform Resource Indicators)................................................252 
+Caching........................................252 
+What Should We Cache?........................255 
+Versioning..............................................256 
+What About Offline Storage? ..................................................................256 
+Rendering and Parsing ..........................257 
+Changing Properties via JavaScript........................................................258 
+Animation...............................................259 
+Hardware Acceleration ..........................259 
+Summary ...............................................260 
+
+ ■ Chapter 9: Dynamic CSS ..............................................................261 
+CSS Extensions and Preprocessors ........................................................261 
+LESS ............................................262 
+Variables................................................ 264 
+Mixins .................................................... 266 
+Nested Rules ................................................ 268 
+Operations ............................................. 271 
+Color Functions............................................. 273 
+Namespaces................................................. 275 
+Commenting ................................................. 276 
+Importing ............................................... 276 
+Conclusion............................................. 277 
+Sass .............................................279 
+Variables................................................ 281 
+Nested Selectors .......................................... 283 
+Conditional Logic .......................................... 284 
+Looping.................................................. 285 
+Commenting ................................................. 287 
+Accessors .............................................. 287 
+Mixins .................................................... 288 
+Colors .................................................... 289 
+Importing ............................................... 293 
+Conclusion............................................. 293 
+Evaluating Third-Party Technologies ......................................................293 
+Serving CSS with Server-Side Technologies ..........................................295 
+Continuous Integration (CI) .....................................................................295 
+Clever Build Scripts ...............................297 
+Caching Considerations .........................298 
+Summary ...............................................299 
+
+ ■ Chapter 10: Testing and Debugging.............................................301 
+Fast Development ..................................301 
+Build Scripts that Concatenate CSS.............................. 302 
+Build Scripts that Compress CSS.................................. 302 
+Pages That Don’t Like to be Refreshed or Time Out Frequently.................................... 302 
+Cached Files ................................................. 304 
+Internet Explorer Bugs........................................ 304 
+Debugging .............................................304 
+Firebug (Firefox) ........................................... 304 
+Web Developer (Firefox or Chrome).............................. 313 
+Developer Tools (Internet Explorer 8) ........................... 313 
+Web Inspector (Safari) ........................................ 317 
+Developer Tools (Chrome) ............................................ 318 
+Internet Explorer Developer Toolbar ............................. 319 
+Opera Dragonfly............................................ 319 
+Proxy Tools ............................................321 
+Fiddler ................................................... 321 
+Charles .................................................. 323 
+Testing.........................................325 
+Graded Browser Support .............................................. 325 
+Running Multiple Versions of Internet Explorer ............................................................. 326 
+Emulating Other Devices .............................................. 328 
+Automatically Generating Screenshots ........................ 328 
+Summary ...............................................330 
+
+ ■ Chapter 11: Creating Your CSS ....................................................331 
+Igloo Refrigerator Parts Inc. Website......................................................331 
+Analyzing the Design .............................334 
+The Grid ................................................. 335 
+Reusable Components........................................ 337 
+The Color Palette .......................................... 339 
+Accessibility Concerns........................................ 340 
+Communication Is Important ........................................ 340 
+Creating the CSS....................................340 
+Commenting ................................................. 341 
+Units ...................................................... 343 
+Baseline Styles ............................................. 343 
+Structure................................................ 344 
+Typographic Defaults.......................................... 346 
+Global Elements............................................ 347 
+Components and Reusable Classes.............................. 348 
+One-offs................................................. 350 
+Compromises................................................ 352 
+Cross-browser Consistency.......................................... 353 
+Accessibility and Links ................................................. 357 
+Documentation and Design Library ........................................................358 
+Summary ...............................................360 
+
+ ■ Appendix 1: CSS Standards Guide ...............................................361 
+Igloo Refrigerator Parts Inc. CSS Standards Guide.................................361 
+1. Introduction and Conventions................................... 361 
+2. Implementation......................................... 362 
+3. General Rules ........................................... 363 
+4. Comments ................................................ 364 
+5. Formatting ................................................ 365 
+6. Naming .............................................. 366 
+7. Typography............................................... 366 
+8. Color .................................................. 366 
+CSS Coding Standards References.........................................................367 
+
+ ■ Appendix 2: Accessibility Guidelines...........................................369 
+Igloo Refrigerator Parts Inc. CSS Accessibility Guidelines.............................................369 
+1. Introduction and Conventions................................... 369 
+2. General Rules ........................................... 370 
+3. Typography............................................... 370 
+4. Links .................................................. 370 
+5. Color .................................................. 371 
+
+ ■ Appendix 3: Browser Support Guidelines ....................................373 
+Igloo Refrigerator Parts Inc. Browser Support Guidelines .............................................373 
+1. Introduction and Conventions................................... 373 
+2. General Rules ........................................... 374 
+3. Avoiding Common Bugs............................................ 374 
+4. Hacks and Filters............................................ 374 
+5. Devices .............................................. 375 
+
+ ■ Appendix 4: Development Process ..............................................377 
+Igloo Refrigerator Parts Inc. Development Process ................................377 
+The Team............................................... 377 
+Iterations ............................................... 377 
+Stories ................................................... 378 
+Structure and Version Control ...................................... 378 
+Planning Meeting.......................................... 379 
+Stand-up Meeting......................................... 380 
+Day-to-Day Development ............................................. 380 
+Tidy-up Meeting ........................................... 380 
+Retrospective................................................ 381 
+Scheduling............................................. 381 
+Warranty ................................................ 382 
+
+ ■ Index ...........................................383 

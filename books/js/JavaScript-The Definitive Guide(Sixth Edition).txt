@@ -1,0 +1,250 @@
+﻿JavaScript: The Definitive Guide, Sixth Edition
+by David Flanagan
+Copyright ? 2011 David Flanagan. All rights reserved.
+Printed in the United States of America.
+Published by O’Reilly Media, Inc., 1005 Gravenstein Highway North, Sebastopol, CA 95472.
+O’Reilly books may be purchased for educational, business, or sales promotional use. Online editions
+are also available for most titles (http://my.safaribooksonline.com). For more information, contact our
+corporate/institutional sales department: (800) 998-9938 or corporate@oreilly.com.
+Editor: Mike Loukides
+Production Editor: Teresa Elsey
+Proofreader: Teresa Elsey
+Indexer: Ellen Troutman Zaig
+Cover Designer: Karen Montgomery
+Interior Designer: David Futato
+Illustrator: Robert Romano
+Printing History:
+August 1996: Beta Edition. 
+January 1997: Second Edition. 
+June 1998: Third Edition. 
+January 2002: Fourth Edition. 
+August 2006: Fifth Edition. 
+March 2011: Sixth Edition. 
+Nutshell Handbook, the Nutshell Handbook logo, and the O’Reilly logo are registered trademarks of
+O’Reilly Media, Inc. JavaScript: The Definitive Guide, the image of a Javan rhinoceros, and related trade
+dress are trademarks of O’Reilly Media, Inc.
+Many of the designations used by manufacturers and sellers to distinguish their products are claimed as
+trademarks. Where those designations appear in this book, and O’Reilly Media, Inc., was aware of a
+trademark claim, the designations have been printed in caps or initial caps.
+While every precaution has been taken in the preparation of this book, the publisher and authors assume
+no responsibility for errors or omissions, or for damages resulting from the use of the information con-
+tained herein.
+ISBN: 978-0-596-80552-4
+[LSI]
+1302719886
+-----------------------------
+Table of Contents
+Preface  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  xiii
+1. Introduction to JavaScript  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  1
+1.1 Core JavaScript 4
+1.2 Client-Side JavaScript 8
+
+Part I. Core JavaScript 
+2. Lexical Structure  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  21
+2.1 Character Set 21
+2.2 Comments 23
+2.3 Literals 23
+2.4 Identifiers and Reserved Words 23
+2.5 Optional Semicolons 25
+
+3. Types, Values, and Variables  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  29
+3.1 Numbers 31
+3.2 Text 36
+3.3 Boolean Values 40
+3.4 null and undefined 41
+3.5 The Global Object 42
+3.6 Wrapper Objects 43
+3.7 Immutable Primitive Values and Mutable Object References 44
+3.8 Type Conversions 45
+3.9 Variable Declaration 52
+3.10 Variable Scope 53
+
+4. Expressions and Operators  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 57
+4.1 Primary Expressions 57
+4.2 Object and Array Initializers 58
+4.3 Function Definition Expressions 59
+4.4 Property Access Expressions 60
+4.5 Invocation Expressions 61
+4.6 Object Creation Expressions 61
+4.7 Operator Overview 62
+4.8 Arithmetic Expressions 66
+4.9 Relational Expressions 71
+4.10 Logical Expressions 75
+4.11 Assignment Expressions 77
+4.12 Evaluation Expressions 79
+4.13 Miscellaneous Operators 82
+
+5. Statements  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  87
+5.1 Expression Statements 88
+5.2 Compound and Empty Statements 88
+5.3 Declaration Statements 89
+5.4 Conditionals 92
+5.5 Loops 97
+5.6 Jumps 102
+5.7 Miscellaneous Statements 108
+5.8 Summary of JavaScript Statements 112
+
+6. Objects  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  115
+6.1 Creating Objects 116
+6.2 Querying and Setting Properties 120
+6.3 Deleting Properties 124
+6.4 Testing Properties 125
+6.5 Enumerating Properties 126
+6.6 Property Getters and Setters 128
+6.7 Property Attributes 131
+6.8 Object Attributes 135
+6.9 Serializing Objects 138
+6.10 Object Methods 138
+
+7. Arrays  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  141
+7.1 Creating Arrays 141
+7.2 Reading and Writing Array Elements 142
+7.3 Sparse Arrays 144
+7.4 Array Length 144
+7.5 Adding and Deleting Array Elements 145
+7.6 Iterating Arrays 146
+7.7 Multidimensional Arrays 148
+7.8 Array Methods 148
+7.9 ECMAScript 5 Array Methods 153
+7.10 Array Type 157
+7.11 Array-Like Objects 158
+7.12 Strings As Arrays 160
+
+8. Functions  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  163
+8.1 Defining Functions 164
+8.2 Invoking Functions 166
+8.3 Function Arguments and Parameters 171
+8.4 Functions As Values 176
+8.5 Functions As Namespaces 178
+8.6 Closures 180
+8.7 Function Properties, Methods, and Constructor 186
+8.8 Functional Programming 191
+
+9. Classes and Modules  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 199
+9.1 Classes and Prototypes 200
+9.2 Classes and Constructors 201
+9.3 Java-Style Classes in JavaScript 205
+9.4 Augmenting Classes 208
+9.5 Classes and Types 209
+9.6 Object-Oriented Techniques in JavaScript 215
+9.7 Subclasses 228
+9.8 Classes in ECMAScript 5 238
+9.9 Modules 246
+
+10. Pattern Matching with Regular Expressions  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  251
+10.1 Defining Regular Expressions 251
+10.2 String Methods for Pattern Matching 259
+10.3 The RegExp Object 261
+
+11. JavaScript Subsets and Extensions  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  265
+11.1 JavaScript Subsets 266
+11.2 Constants and Scoped Variables 269
+11.3 Destructuring Assignment 271
+11.4 Iteration 274
+11.5 Shorthand Functions 282
+11.6 Multiple Catch Clauses 283
+11.7 E4X: ECMAScript for XML 283
+
+12. Server-Side JavaScript  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  289
+12.1 Scripting Java with Rhino 289
+12.2 Asynchronous I/O with Node 296
+
+Part II. Client-Side JavaScript 
+
+13. JavaScript in Web Browsers  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  307
+13.1 Client-Side JavaScript 307
+13.2 Embedding JavaScript in HTML 311
+13.3 Execution of JavaScript Programs 317
+13.4 Compatibility and Interoperability 325
+13.5 Accessibility 332
+13.6 Security 332
+13.7 Client-Side Frameworks 338
+
+14. The Window Object  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  341
+14.1 Timers 341
+14.2 Browser Location and Navigation 343
+14.3 Browsing History 345
+14.4 Browser and Screen Information 346
+14.5 Dialog Boxes 348
+14.6 Error Handling 351
+14.7 Document Elements As Window Properties 351
+14.8 Multiple Windows and Frames 353
+
+15. Scripting Documents  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  361
+15.1 Overview of the DOM 361
+15.2 Selecting Document Elements 364
+15.3 Document Structure and Traversal 371
+15.4 Attributes 375
+15.5 Element Content 378
+15.6 Creating, Inserting, and Deleting Nodes 382
+15.7 Example: Generating a Table of Contents 387
+15.8 Document and Element Geometry and Scrolling 389
+15.9 HTML Forms 396
+15.10 Other Document Features 405
+
+16. Scripting CSS  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  413
+16.1 Overview of CSS 414
+16.2 Important CSS Properties 419
+16.3 Scripting Inline Styles 431
+16.4 Querying Computed Styles 435
+16.5 Scripting CSS Classes 437
+16.6 Scripting Stylesheets 440
+
+17. Handling Events  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  445
+17.1 Types of Events 447
+17.2 Registering Event Handlers 456
+17.3 Event Handler Invocation 460
+17.4 Document Load Events 465
+17.5 Mouse Events 467
+17.6 Mousewheel Events 471
+17.7 Drag and Drop Events 474
+17.8 Text Events 481
+17.9 Keyboard Events 484
+
+18. Scripted HTTP  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  491
+18.1 Using XMLHttpRequest 494
+18.2 HTTP by <script>: JSONP 513
+18.3 Comet with Server-Sent Events 515
+
+19. The jQuery Library  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  523
+19.1 jQuery Basics 524
+19.2 jQuery Getters and Setters 531
+19.3 Altering Document Structure 537
+19.4 Handling Events with jQuery 540
+19.5 Animated Effects 551
+19.6 Ajax with jQuery 558
+19.7 Utility Functions 571
+19.8 jQuery Selectors and Selection Methods 574
+19.9 Extending jQuery with Plug-ins 582
+19.10 The jQuery UI Library 585
+
+20. Client-Side Storage  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 587
+20.1 localStorage and sessionStorage 589
+20.2 Cookies 593
+20.3 IE userData Persistence 599
+20.4 Application Storage and Offline Webapps 601
+
+21. Scripted Media and Graphics  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  613
+21.1 Scripting Images 613
+21.2 Scripting Audio and Video 615
+21.3 SVG: Scalable Vector Graphics 622
+21.4 Graphics in a <canvas> 630
+
+22. HTML5 APIs  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  667
+22.1 Geolocation 668
+22.2 History Management 671
+22.3 Cross-Origin Messaging 676
+22.4 Web Workers 680
+22.5 Typed Arrays and ArrayBuffers 687
+22.6 Blobs 691
+22.7 The Filesystem API 700
+22.8 Client-Side Databases 705
+22.9 Web Sockets 712
+
+Part III. Core JavaScript Reference 
+Core JavaScript Reference  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  719
+
+Part IV. Client-Side JavaScript Reference 
+Client-Side JavaScript Reference  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  859
+
+Index  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  1019

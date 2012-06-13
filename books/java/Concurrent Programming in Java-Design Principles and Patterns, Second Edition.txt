@@ -1,0 +1,37 @@
+﻿Concurrent Programming in Java: Design Principles and Patterns, Second Edition
+Doug Lea 
+Publisher: Addison Wesley 
+Second Edition October 01, 1999
+ISBN: 0-201-31009-0, 432 pages
+============
+Acknowledgments
+
+1. Concurrent Object-Oriented Programming
+   1.1 Using Concurrency Constructs
+   1.2 Objects and Concurrency
+   1.3 Design Forces
+   1.4 Before/After Patterns
+
+2. Exclusion
+   2.1 Immutability
+   2.2 Synchronization
+   2.3 Confinement
+   2.4 Structuring and Refactoring Classes
+   2.5 Using Lock Utilities
+
+3. State Dependence
+   3.1 Dealing with Failure
+   3.2 Guarded Methods
+   3.3 Structuring and Refactoring Classes
+   3.4 Using Concurrency Control Utilities
+   3.5 Joint Actions
+   3.6 Transactions
+   3.7 Implementing Utilities
+
+4. Creating Threads
+   4.1 Oneway Messages
+   4.2 Composing Oneway Messages
+   4.3 Services in Threads
+   4.4 Parallel Decomposition
+   4.5 Active Objects
+

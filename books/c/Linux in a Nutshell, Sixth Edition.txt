@@ -1,0 +1,506 @@
+﻿Linux in a Nutshell, Sixth Edition
+by Ellen Siever, Stephen Figgins, Robert Love, and Arnold Robbins
+Copyright ? 2009 Ellen Siever, Stephen Figgins, and Robert Love. All rights reserved.
+Printed in the United States of America.
+Published by O’ReillyMedia, Inc., 1005 Gravenstein Highway North, Sebastopol, CA 95472.
+O’Reilly booksmay be purchased for educational, business, or sales promotional use.Online
+editions are also available for most titles (http://my.safaribooksonline.com). For more
+information, contact our corporate/institutional sales department: (800) 998-9938 or
+corporate@oreilly.com.
+Editors: Simon St.Laurent and
+Andy Oram
+Production Editor: Rachel Monaghan
+Indexer: Angela Howard
+Production Services: Octal Publishing, Inc.
+Cover Designer: Karen Montgomery
+Interior Designer: David Futato
+Illustrator: Robert Romano
+Printing History:
+January 1997: First Edition.
+February 1999: Second Edition.
+August 2000: Third Edition.
+June 2003: Fourth Edition.
+July 2005: Fifth Edition.
+September 2009: Sixth Edition.
+Nutshell Handbook, the Nutshell Handbook logo, and the O’Reilly logo are registered
+trademarks of O’Reilly Media, Inc. The In a Nutshell series designation, Linux in a Nutshell,
+the image of an Arabian horse, and related trade dress are trademarks of O’ReillyMedia, Inc.
+Many of the designations used by manufacturers and sellers to distinguish their products are
+claimed as trademarks. Where those designations appear in this book, and O’Reilly Media,
+Inc. was aware of a trademark claim, the designations have been printed in caps or initial
+caps.
+While every precaution has been taken in the preparation of this book, the publisher and
+authors assume no responsibility for errors or omissions, or for damages resulting from the
+use of the information contained herein.
+ISBN: 978-0-596-15448-6
+[M]
+====================
+By Ellen Siever, Stephen Figgins, Robert Love, Arnold Robbins
+Publisher: O'Reilly Media
+Released: September 2009
+Pages: 944
+http://shop.oreilly.com/product/9780596154493.do
+===================================
+Table of Contents
+Preface  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xv
+
+1. Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+2. System and Network Administration Overview . . . . . . . . . . . . . . . . . 14
+
+3. Linux Commands . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 33
+
+4. Boot Methods . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 504
+5. Package Management  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 542
+
+6. The Bash Shell  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 596
+7. Pattern Matching . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 654
+
+8. The Emacs Editor  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 661
+9. The vi, ex, and vim Editors . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 677
+10. The sed Editor . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 711
+11. The gawk Programming Language  . . . . . . . . . . . . . . . . . . . . . . . . . . 726
+
+12. Source Code Management: An Overview  . . . . . . . . . . . . . . . . . . . . . 749
+13. The Subversion Version Control System . . . . . . . . . . . . . . . . . . . . . . . 755
+14. The Git Version Control System . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 805
+
+15. Virtualization Command-Line Tools . . . . . . . . . . . . . . . . . . . . . . . . . . 837
+
+Index . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 875
+===================================
+    Chapter 1 Introduction
+        The Excitement of Linux
+        Distribution and Support
+        Commands on Linux
+        What This Book Offers
+        Sources and Licenses
+        Beginner's Guide
+    Chapter 2 System and Network Administration Overview
+        Common Commands
+        Overview of Networking
+        Overview of TCP/IP
+        Overview of Firewalls and Masquerading
+        Overview of NFS
+        Overview of NIS
+        Administering NIS
+        RPC and XDR
+    Chapter 3 Linux Commands
+        Alphabetical Summary of Commands
+    Chapter 4 Boot Methods
+        The Boot Process
+        LILO: The Linux Loader
+        GRUB: The Grand Unified Bootloader
+        GRUB Commands
+        Dual-Booting Linux and Windows 2000/XP/Vista
+        Boot-Time Kernel Options
+        initrd: Using a RAM Disk
+    Chapter 5 Package Management
+        Yum: Yellowdog Updater Modified
+        The Red Hat Package Manager
+        The Debian Package Manager
+    Chapter 6 The Bash Shell
+        Overview of Features
+        Invoking the Shell
+        Syntax
+        Functions
+        Variables
+        Arithmetic Expressions
+        Command History
+        Job Control
+        Command Execution
+        Restricted Shells
+        Built-in Commands
+    Chapter 7 Pattern Matching
+        Filenames Versus Patterns
+        Metacharacters
+        Metacharacters, Listed by Program
+        Examples of Searching
+    Chapter 8 The Emacs Editor
+        Conceptual Overview
+        Command-Line Syntax
+        Summary of Commands by Group
+        Summary of Commands by Key
+        Summary of Commands by Name
+    Chapter 9 The vi, ex, and vim Editors
+        Conceptual Overview
+        Command-Line Syntax
+        Review of vi Operations
+        vi Commands
+        vi Configuration
+        ex Basics
+        Alphabetical Summary of ex Commands
+    Chapter 10 The sed Editor
+        Conceptual Overview
+        Command-Line Syntax
+        Syntax of sed Commands
+        Group Summary of sed Commands
+        Alphabetical Summary of sed Commands
+    Chapter 11 The gawk Programming Language
+        Conceptual Overview
+        Command-Line Syntax
+        Patterns and Procedures
+        Built-in Variables
+        Operators
+        Variable and Array Assignment
+        User-Defined Functions
+        gawk-Specific Features
+        Implementation Limits
+        Group Listing of awk Functions and Commands
+        Alphabetical Summary of awk Functions and Commands
+
+    Chapter 12 Source Code Management: An Overview
+        Introduction and Terminology
+        Usage Models
+        Source Code Management Systems
+        Other Source Code Management Systems
+    Chapter 13 The Subversion Version Control System
+        Conceptual Overview
+        The Subversion Command Line Client: svn
+        Repository Administration: svnadmin
+        Examining the Repository: svnlook
+        Providing Remote Access: svnserve
+    Chapter 14 The Git Version Control System
+        Conceptual Overview
+        Using Git: A Quick Tour
+        The Git Command Line Client: git
+    Chapter 15 Virtualization Command-Line Tools
+        Conceptual Overview
+        Basic Virtualization Operations
+        Xen
+        KVM
+        libvirt and Red Hat Virtual Machine Manager
+        libvirt and Virtual Machine Manager Commands
+        VMware ESX 3.5
+        VMware Networking
+===================================
+Table of Contents
+Preface  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xv
+
+1. Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+The Excitement of Linux  2
+Distribution and Support  3
+Commands on Linux  3
+What This Book Offers  4
+Sources and Licenses  6
+Beginner’s Guide  7
+Communication  7
+Comparisons  8
+File Management  8
+Media  9
+Printing  9
+Programming  9
+Program Maintenance  10
+Searching  10
+Shell Programming  11
+Storage  11
+System Status  11
+Text Processing  12
+Miscellaneous  13
+
+2. System and Network Administration Overview . . . . . . . . . . . . . . . . . 14
+Common Commands  14
+Clocks  14
+Daemons  14
+Hardware  15
+Host Information  15
+Installation  16
+Mail  16
+Managing Filesystems  16
+Managing the Kernel  17
+Networking  18
+Printing  18
+Security and System Integrity  18
+Starting and Stopping the System  19
+System Activity and Process Management  19
+Users  20
+Miscellaneous  20
+Overview of Networking  21
+TCP/IP Administration  21
+NFS and NIS Administration  22
+Overview of TCP/IP  22
+IP Addresses  23
+Gateways and Routing  25
+Name Service  26
+Configuring TCP/IP  27
+Troubleshooting TCP/IP  28
+Overview of Firewalls and Masquerading  28
+Overview of NFS  29
+Administering NFS  30
+Daemons  30
+Exporting Filesystems  30
+Mounting Filesystems  30
+Overview of NIS  31
+Servers  31
+Domains  31
+NIS Maps  31
+Map Manipulation Utilities  31
+Administering NIS  32
+Setting Up an NIS Server  32
+Setting Up an NIS Client  32
+NIS User Accounts  32
+RPC and XDR  32
+
+3. Linux Commands . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 33
+Alphabetical Summary of Commands  34
+
+4. Boot Methods . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 504
+The Boot Process  505
+LILO: The Linux Loader  506
+The LILO Configuration File  507
+The lilo Command  514
+lilo Command Options  515
+LILO Boot Errors  516
+GRUB: The Grand Unified Bootloader  516
+Installing GRUB  518
+The GRUB Configuration File  521
+Using the Menu Interface  523
+The GRUB Shell  523
+GRUB Commands  525
+Command-Line and Global Menu Commands  526
+Command-Line and Menu-Entry Commands  530
+Dual-Booting Linux and Windows 2000/XP/Vista  536
+Boot-Time Kernel Options  539
+initrd: Using a RAM Disk  541
+
+5. Package Management  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 542
+Yum: Yellowdog Updater Modified  545
+The yum Command  545
+yum Command Summary  547
+Plugins and yum-utils  551
+The Red Hat Package Manager  552
+RPM Package Concepts  552
+The rpm Command  553
+RPM Examples  563
+The rpmbuild Command  564
+The Debian Package Manager  565
+Files  565
+Package Priorities  566
+Package and Selection States  567
+Package Flags  567
+Scripts  568
+Debian Package Manager Command Summary  569
+
+6. The Bash Shell  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 596
+Overview of Features  597
+Invoking the Shell  597
+Options  598
+Arguments  599
+Syntax  599
+Special Files  599
+Filename Metacharacters  599
+Quoting  600
+Command Forms  602
+Redirection Forms  602
+Coprocesses  604
+Functions  605
+Variables  606
+Variable Substitution  606
+Built-in Shell Variables  607
+Other Shell Variables  609
+Arrays  611
+Special Prompt Strings  612
+Arithmetic Expressions  613
+Operators  613
+Examples  613
+Command History  614
+Line-Edit Mode  614
+The fc Command  614
+Programmable Completion  615
+Job Control  617
+Command Execution  618
+Restricted Shells  619
+Built-in Commands  619
+
+7. Pattern Matching . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 654
+Filenames Versus Patterns  654
+Metacharacters  655
+Search Patterns  655
+Replacement Patterns  656
+Metacharacters, Listed by Program  657
+Examples of Searching  658
+Examples of Searching and Replacing  659
+
+8. The Emacs Editor  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 661
+Conceptual Overview  661
+Modes  661
+Buffer and Window  662
+Point and Mark  662
+Kill and Yank  662
+Notes on the Tables  662
+Absolutely Essential Commands  663
+Command-Line Syntax  663
+Summary of Commands by Group  663
+File-Handling Commands  663
+Cursor-Movement Commands  664
+Deletion Commands  664
+Paragraphs and Regions  665
+Stopping and Undoing Commands  665
+Transposition Commands  665
+Search Commands  665
+Capitalization Commands  666
+Word-Abbreviation Commands  666
+Buffer-Manipulation Commands  666
+Window Commands  666
+Special Shell Characters  667
+Indentation Commands  667
+Centering Commands  668
+Macro Commands  668
+Detail Information Help Commands  668
+Help Commands  669
+Summary of Commands by Key  669
+Control-Key Sequences  669
+Meta-Key Sequences  671
+Summary of Commands by Name  672
+
+9. The vi, ex, and vim Editors . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 677
+Conceptual Overview  677
+Command-Line Syntax  678
+Command-Line Options  678
+Review of vi Operations  681
+Command Mode  681
+Insert Mode  681
+Syntax of vi Commands  681
+Status-Line Commands  683
+vi Commands  683
+Movement Commands  683
+Insert Commands  686
+Edit Commands  687
+Saving and Exiting  688
+Accessing Multiple Files  689
+Window Commands  689
+Interacting with the System  690
+Macros  691
+Miscellaneous Commands  691
+vi Configuration  692
+The :set Command  692
+Options Used by :set  692
+Sample .exrc File  696
+ex Basics  696
+Syntax of ex Commands  696
+Addresses  696
+Address Symbols  697
+Options  697
+Alphabetical Summary of ex Commands  697
+
+10. The sed Editor . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 711
+Conceptual Overview  711
+Typical Uses of sed  711
+sed Operation  712
+Command-Line Syntax  712
+Standard Options  712
+GNU sed Options  713
+Syntax of sed Commands  713
+Pattern Addressing  714
+Pattern Addressing Examples  714
+GNU sed Regular Expression Extensions  715
+Group Summary of sed Commands  715
+Basic Editing  716
+Line Information  716
+Input/Output Processing  716
+Yanking and Putting  716
+Branching Commands  717
+Multiline Input Processing  717
+Alphabetical Summary of sed Commands  717
+
+11. The gawk Programming Language  . . . . . . . . . . . . . . . . . . . . . . . . . . 726
+Conceptual Overview  726
+Command-Line Syntax  727
+Standard Options  728
+Important gawk Options  728
+Patterns and Procedures  729
+Patterns  729
+Procedures  730
+Simple Pattern-Procedure Examples  730
+Built-in Variables  731
+Operators  732
+Variable and Array Assignment  732
+Escape sequences  733
+Octal and Hexadecimal Constants in gawk  734
+User-Defined Functions  734
+gawk-Specific Features  735
+Coprocesses and Sockets  735
+Profiling  735
+File Inclusion  736
+Internationalization  736
+Implementation Limits  737
+Group Listing of awk Functions and Commands  737
+Alphabetical Summary of awk Functions and Commands 738
+Output Redirections  746
+printf Formats  746
+
+12. Source Code Management: An Overview  . . . . . . . . . . . . . . . . . . . . . 749
+Introduction and Terminology  749
+Usage Models  751
+Source Code Management Systems  752
+Other Source Code Management Systems  753
+
+13. The Subversion Version Control System . . . . . . . . . . . . . . . . . . . . . . . 755
+Conceptual Overview  755
+Basic Version-Control Operations  755
+Key Features  756
+Special File Properties  757
+Obtaining Subversion  759
+Using Subversion: A Quick Tour  759
+The Subversion Command Line Client: svn  761
+Common svn Options  761
+svn Subcommands  766
+Repository Administration: svnadmin  794
+Common svnadmin Options  794
+Common svnadmin Subcommands  795
+Examining the Repository: svnlook  799
+svnlook Options  799
+svnlook Subcommands  800
+Providing Remote Access: svnserve  803
+svnserve Options  804
+
+14. The Git Version Control System . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 805
+Conceptual Overview  805
+Git Repository Format  806
+Referring to Commits  806
+Using Git: A Quick Tour  808
+Before You Start  808
+Example: The Linux Kernel Repository  809
+Creating and Sharing a New Repository  810
+The Git Command Line Client: git  811
+The git Command  811
+Accessing Git’s Online Help  812
+git Subcommands  812
+
+15. Virtualization Command-Line Tools . . . . . . . . . . . . . . . . . . . . . . . . . . 837
+Conceptual Overview  838
+System Requirements  838
+Virtualization Technology  839
+Network Concepts  839
+libvirt Tools and Terminology  839
+Basic Virtualization Operations  840
+Creating Virtual Systems  840
+Managing Virtual Systems  841
+Graphic and Console Interfaces  842
+Configuring Networks  842
+MAC Addresses  844
+Making Changes to Virtual Machines  844
+Creating and Manipulating Disk Image Files  844
+Xen  845
+Paravirtualization and Architecture  846
+Xen Networking  846
+Xen Commands  846
+KVM  849
+QEMU 849
+Ubuntu Builder Scripts  850
+libvirt and Red Hat Virtual Machine Manager  850
+XML Configuration Files  850
+Connection URIs  850
+Connection URI Examples  850
+Remote GUI control  851
+IP Forwarding and libvirt Networking  851
+libvirt and Virtual Machine Manager Commands  852
+VMware ESX 3.5  862
+ESX Management Client  862
+Virtual Center  862
+VMware Networking  863
+Shared Disks  863
+Snapshots  863
+VMware Tools  864
+ESX Server Commands  864
+
+Index . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 875

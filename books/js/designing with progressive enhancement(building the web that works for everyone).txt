@@ -1,0 +1,300 @@
+﻿designing with progressive enhancement(building the web that works for everyone)
+构建多平台可用的网站——渐进增强设计实践
+----
+DeSigning WiTh ProgreSSive enhanCeMenT:  
+BuilDing The WeB ThaT WorkS for everyone
+Todd Parker, Patty Toland, Scott Jehl, Maggie Costello Wachs
+neW riDerS
+1249 Eighth Street
+Berkeley, CA 94710
+510/524-2178
+510/524-2221 (fax)
+Find us on the Web at www.newriders.com
+To repor t e r ror s , pl e a s e s end a not e to e r ra t a@pe a chpi t . com 
+New Riders is an imprint of Peachpit, a division of Pearson Education
+Copyright ? 2010 by Filament Group, Inc. 
+The Filament Group, Inc. is Todd Parker, Patty Toland, Scott Jehl, and Maggie Costello Wachs.
+acquisitions editor: Wendy Sharp
+Project editor: Wendy G. Katz
+Technical editor: James Craig
+Production editor: Myrna Vladic
+Composition: David Van Ness
+indexer: Jack Lewis 
+interior Design: Mimi Heft
+Cover Design: Aren Howell
+noTiCe of righTS
+All rights reserved. No part of this book may be reproduced or transmitted in any form by any means, electronic, 
+mechanical, photocopying, recording, or otherwise, without the prior written permission of the publisher. For information 
+on getting permission for reprints and excerpts, contact permissions@peachpit.com.
+noTiCe of liaBiliTy
+The information in this book is distributed on an “As Is” basis, without warranty. While every precaution has been taken 
+in the preparation of the book, neither the authors nor Peachpit shall have any liability to any person or entity with 
+respect to any loss or damage caused or alleged to be caused directly or indirectly by the instructions contained in this 
+book or by the computer software and hardware products described in it.
+TraDeMarkS
+Many of the designations used by manufacturers and sellers to distinguish their products are claimed as trademarks. 
+Where those designations appear in this book, and Peachpit was aware of a trademark claim, the designations appear as 
+requested by the owner of the trademark. All other product names and services identified throughout this book are used 
+in editorial fashion only and for the benefit of such companies with no intention of infringement of the trademark. No 
+such use, or the use of any trade name, is intended to convey endorsement or other affiliation with this book.
+ISBN-13:  978-0-321-65888-3
+ISBN–10:  0-321-65888-4
+9  8  7  6  5  4  3  2  1
+Printed and bound in the United States of America
+---------------------------
+Contents
+acknowledgments  . .............................................................................. x
+introduction  . ....................................................................................... xiii
+SeCTion i  The TeST-Driven ProgreSSive  
+enhanCeMenT aPProaCh
+
+chapter 1  our approach  3
+Testing browser capabilities  . ............................................................... 4 
+Planning for progressive enhancement: the x-ray perspective ... 7
+From x-ray to action: the building blocks of  
+progressive enhancement development  . ......................................... 8 
+Putting theory into action . .................................................................. 10
+
+chapter 2  progressive enhancement in action:  
+the x-ray perspective  11
+An overview of the x-ray perspective   . ............................................ 12
+Defining content hierarchy and mapping  
+components to HTML   . .................................................................... 13
+Building foundation markup and minimal, safe styles   . ........... 15 
+Applying markup, style, and script enhancements  . .................. 17
+Case 1: Planning structure and organization  
+in a news website  . ................................................................................ 18
+Evaluating content organization and naming  . ............................ 19 
+Leveraging native HTML hierarchy features  
+for content organization   . ............................................................... 20 
+Structuring navigation   . ................................................................... 20 
+Accommodating layered and animated content  . ...................... 21 
+Supporting dynamic filtering and sorting   . ................................. 22
+Case 2: Workflows, validation, and data submission  
+in a checkout form  . .............................................................................. 23
+Breaking down the checkout form design  . ................................. 24 
+Marking up the form to ensure accessibility   . ........................... 29 
+Applying constraints and validation  . ............................................ 31 
+Assembling the basic and enhanced experiences . ................... 32
+Case 3: Interactive data visualization in a budget  
+calculator  . .............................................................................................. 32
+Choosing basic markup for the budget line components    .... 33
+Creating accessible sliders from the foundation markup    .... 35
+Building the pie chart ......................................................................... 36
+Case 4: Supporting full-featured application capabilities  
+in the browser—the Photo Manager  . ............................................. 37
+Marking up global navigation elements . ..................................... 38 
+Supporting complex album and multi-photo interactions . . .  40
+Creating custom forms and overlays  . ......................................... 44 
+Building in Back-button support   . ................................................. 46
+Checklist for implementing the x-ray in action  . .......................... 46
+
+chapter 3  writing meaningful markup  49
+Marking up text and images   . ........................................................... 50
+Elements for meaningfully marking up text   . .............................. 51 
+Lists   . .................................................................................................... 56 
+Tabul a r da t a   . ...................................................................................... 57 
+Images  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  60 
+Embedded rich media   . .................................................................... 61 
+Embedding external page content . ............................................... 63
+Marking up interactive content . ....................................................... 64
+Anchor links  . ...................................................................................... 65 
+Form structure  . .................................................................................. 65 
+Form controls  . .................................................................................... 67
+Creating context in the page  . ........................................................... 73
+Know when to use block-level vs. inline elements   . ................. 73 
+Identify elements with IDs and classes  . ..................................... 75 
+Identify main page sections with WAI-ARIA  
+landmark roles  . .................................................................................. 76 
+Maintain legible source order . ....................................................... 77 
+Use the title attribute  . ..................................................................... 79
+Setting up an HTML document . ....................................................... 80
+The DOCTYPE  . .................................................................................. 81 
+The document header   . ................................................................... 82
+Building in accessibility  . ...................................................................... 87
+Accessibility guidelines and legal standards   . ........................... 88 
+Web Content Accessibi l ity Guidel ines (WCAG) . .................... 89
+
+chapter 4  applying styles effectively  91
+Applying CSS to the page . ................................................................. 92
+Maintaining styles in external style sheets  . ............................... 92 
+Linking to external style sheets  . ................................................... 93 
+Using meaningful naming conventions   . ..................................... 95
+Styling the basic and enhanced experiences  . ............................... 96
+Safe styles for the basic experience  . ........................................... 96 
+Styling the enhanced experience  . ................................................. 98
+Accessibility considerations   . ........................................................... 99 
+Dealing with bugs and browser inconsistencies  . ........................ 101
+Conditional comments . .................................................................. 101 
+Common issues and workarounds   . ........................................... 102
+
+chapter 5  scripting enhancements  
+and interactivity  107
+How to properly reference JavaScript  . ......................................... 108
+Avoiding inline JavaScript  . ........................................................... 108 
+Referencing external JavaScript  . ................................................. 108
+Understanding JavaScript’s place in the basic experience  . . .  109
+Best practices for scripting enhancements   . ............................... 109
+Running scripts when content is ready   . .................................... 110 
+Applying behavior to markup  . ...................................................... 110 
+Building enhanced markup with JavaScript   . ............................ 113 
+Managing content visibility . ........................................................... 115 
+Applying style enhancements   . .................................................... 116
+Preserving and enhancing usability and accessibility   . .............. 117
+Implementing keyboard access  . .................................................. 118 
+Assigning WAI-ARIA attributes   . ............................................... 120 
+Te s t ing a c ce s s ibi l i ty   . ...................................................................... 120 
+Maintaining state and preserving the Back button  . ................ 121
+
+chapter 6  testing browser capabilities  123
+EnhanceJS: a capabilities testing framework  . ............................. 124
+The mechanics of EnhanceJS: how the tests work  . ............... 125 
+Applying enhancements with EnhanceJS  . ................................... 128 
+Configuring EnhanceJS  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 130
+Loading additional style sheets  . ................................................... 131 
+Loading additional scripts  . ............................................................ 134
+
+Customizing the experience toggle link  . ................................... 134 
+Forcing EnhanceJS to pass or fail . ............................................... 136
+Extending the EnhanceJS test suite  . ............................................. 136
+Modifying the test suite with EnhanceJS options  . ................. 137 
+Creating new or multiple instances of EnhanceJS . ................. 137 
+Enabling the capabilities test alert for debugging  . ................. 138
+Optimizing EnhanceJS on the server  . ........................................... 139
+SeCTion ii  ProgreSSive enhanCeMenT in aCTion
+
+chapter 7  building widgets with  
+progressive enhancement  143
+How the widgets are coded  . ............................................................ 143 
+Navigating the widget chapters   . ................................................... 145 
+Example code for download   . ......................................................... 146
+
+chapter 8  collapsible content  147
+X-ray perspective  . .............................................................................. 148 
+Creating accessible collapsible content  . ..................................... 150
+Foundation markup and style  . ..................................................... 150 
+Enhanced markup and style  . ......................................................... 151 
+Collapsible enhancement script   . ................................................ 155
+Using the collapsible script   . ............................................................ 158
+
+chapter 9  tabs  161
+X-ray perspective  . .............................................................................. 162 
+Creating the tabs   . .............................................................................. 164
+Foundation markup and style  . ..................................................... 164 
+Enhanced markup and style  . ........................................................ 167 
+Tabs s c r ipt  . ........................................................................................ 172
+Ta k ing the t abs fur the r   . .................................................................... 176
+Bookmarking and history (Back button) tracking  . ................. 176 
+Auto-rotating tabs   . ......................................................................... 181 
+Referencing external tab content   . ............................................. 182 
+Displaying tabs as an accordion   . ............................................... 182
+Using the tabs script  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 183
+
+chapter 10  tooltips  185
+X-ray perspective  . .............................................................................. 186 
+Creating a tooltip from title content   . ........................................... 189
+Foundation markup and style  . ..................................................... 189 
+Enhanced markup and style  . ....................................................... 190 
+Enhanced tooltip script   . ................................................................ 193
+Creating a tooltip from an anchor link . ......................................... 195 
+Creating a tooltip from an external source   . ............................... 197 
+Using the tooltip script  . .................................................................... 199
+
+chapter 11  tree control  201
+X-ray perspective  . ............................................................................. 202 
+Creating the tree control   . .............................................................. 204
+Foundation markup and style  . .................................................... 204 
+Enhanced markup and style  . ...................................................... 206 
+Enhanced tree script  . ...................................................................... 210
+Using the tree script   . ....................................................................... 220
+
+chapter 12  charts with html5 canvas	 223
+X-ray perspective  . ............................................................................. 225 
+Foundation markup   . ......................................................................... 226 
+Creating an accessible chart  . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  229
+Parsing the table data . ................................................................... 230 
+Using canvas to visualize data . ................................................... 236
+Adding enhanced table styles   . ................................................... 246 
+Keeping the data accessible  . ....................................................... 247
+Ta k ing c anva s cha r t s fur the r : the v i sua l i ze . j s plug in   . .............. 249
+
+chapter 13  dialogs and overlays  253
+X-ray perspective  . ............................................................................. 254 
+Creating the dialog . ........................................................................... 256
+Foundation markup and style  . ..................................................... 256 
+Enhanced markup and style  . ....................................................... 258 
+Enhanced dialog script  . ................................................................. 265
+Ta k ing di a log fur the r  . ........................................................................ 271
+Using the dialog script   . .................................................................... 271
+
+chapter 14  buttons  277
+X-ray perspective  . ............................................................................. 278 
+Styling input-based buttons . ........................................................... 279
+Foundation markup and style  . .................................................... 280 
+Enhanced markup and style  . ....................................................... 282 
+Enhanced hover state script  . ....................................................... 286
+Creating buttons with complex visual formatting   . .................. 287
+Foundation markup and style  . ..................................................... 288 
+Enhanced markup and style  . ....................................................... 289 
+Enhanced input-to-button script  . .............................................. 290
+Using the input-to-button script . ................................................... 293 
+Ta k ing the but ton fur the r  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  294
+
+chapter 15  checkboxes, radio buttons,  
+and star rating  297
+X-ray perspective  . ............................................................................. 298 
+Creating the custom checkbox  . .................................................... 300
+Foundation markup  . ........................................................................ 301 
+Enhanced markup and style  . ....................................................... 303 
+Checkbox script  . ............................................................................. 306
+Creating custom radio buttons  . .................................................... 309
+Foundation markup  . ....................................................................... 309 
+Enhanced markup and style  . ....................................................... 310 
+Radio button script  . ........................................................................ 312
+Ta k ing cus tom input s fur the r : a s t a r ra t ing widge t   . ................. 316
+Foundation markup  . ........................................................................ 316 
+Enhanced markup and style  . ........................................................ 318 
+Scripting the star rating widget  . ................................................ 320
+Using the custom input and star rating scripts  . ......................... 323
+
+chapter 16  slider  325
+X-ray perspective  . ............................................................................. 326 
+Creating the slider  . ........................................................................... 330
+Foundation markup and style  . ..................................................... 330 
+Enhanced markup and style  . ........................................................ 331 
+Slider script  . ..................................................................................... 339
+Using the slider script  . ..................................................................... 345
+
+chapter 17  select menu  349
+X-ray perspective  . ............................................................................. 350 
+Creating an accessible custom select  . ......................................... 352
+Foundation markup and styles  . ................................................... 352 
+Enhanced markup and styles  . ..................................................... 353 
+Enhanced custom select script   . ................................................. 363
+Ta k ing the cus tom s e l e c t fur the r : advanced opt ion s ty l ing  . . .  375
+Using the custom select script  . ..................................................... 377
+
+chapter 18  list builder  379
+X-ray perspective  . ............................................................................. 380 
+Creating the list builder   . .................................................................. 381
+Foundation markup and style  . ..................................................... 382 
+Enhanced markup and style  . ....................................................... 383 
+List builder script  . ........................................................................... 387
+Ta k ing the l i s t bui lde r fur the r : mul t i - s e l e c t , sor t ing ,  auto- com-
+plete, and contextual menus  . ......................................................... 394
+Multiple selection  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  394 
+Drag-and-drop sorting  . ................................................................. 394 
+Auto-complete . ............................................................................... 394 
+Contextual menus  . ......................................................................... 395
+Using the list builder script   . ........................................................... 395
+
+chapter 19  file input  397
+X-ray perspective  . ............................................................................. 398 
+Creating the custom file input . ....................................................... 401
+Foundation markup and style  . ..................................................... 401 
+Enhanced markup and style  . ...................................................... 402 
+Custom file input script  . .............................................................. 406
+Using the custom file input script   . .............................................. 409
+
+summary . ............................................................................................. 411
+index  . .................................................................................................... 413

@@ -1,0 +1,283 @@
+﻿OSGi and Equinox: Creating Highly Modular Java Systems
+http://www.informit.com/store/product.aspx?isbn=0321585712
+    By Jeff McAffer, Paul VanderLei, Simon Archer
+    Published Feb 14, 2010 by Addison-Wesley Professional. Part of the Eclipse Series series.
+        Copyright 2010
+        Dimensions: 7 X 9-1/8
+        Pages: 528
+        Edition: 1st
+        Book
+        ISBN-10: 0-321-58571-2
+        ISBN-13: 978-0-321-58571-4
+===============================
+A Hands-On Guide to Equinox and the OSGi Framework
+
+ In OSGI and Equinox: Creating Highly Modular Java? Systems, three leading experts show developers—for the first time—exactly how to make the most of these breakthrough technologies for building highly modular dynamic systems.
+
+You’ll quickly get started with Eclipse bundle tooling, create your first OSGi-based system, and move rapidly to sophisticated production development. Next, you’ll master best practices and techniques for creating systems with exceptional modularity and maintainability. You’ll learn all about OSGi’s Declarative Services and how to use them to solve a wide variety of real-world problems. Finally, you’ll see everything that you’ve learned implemented in a complete case study project that takes you from early prototype through application delivery.
+
+For every Eclipse developer, regardless of previous experience, this book
+
+    Combines a complete hands-on tutorial, online sample code at every step, and deep technical dives for working developers
+    Covers the OSGi programming model, component development, OSGi services, Eclipse bundle tooling, server-side Equinox, and much more
+    Offers knowledge, guidance, and best practices for overcoming the complexities of building modular systems
+    Addresses practical issues ranging from integrating third-party code libraries to server-side programming
+    Includes a comprehensive case study that goes beyond prototyping to deliver a fully refined
+    and refactored production system
+
+Whatever your application, industry, or problem domain, if you want to build state-of-the-art software systems with OSGi and Equinox, you will find this book to be an essential resource. 
+=========================
+Table of Contents
+Foreword         xxi
+Preface        xxv
+Acknowledgments         xxix
+About the Authors        xxxiii
+
+Part I:  Introduction        1
+Chapter 1: OSGi, Equinox, and Eclipse         3
+Chapter 2: OSGi Concepts         13
+
+Part II: OSGi by Example         29
+Chapter 3: Tutorial Introduction          31
+Chapter 4: Hello, Toast          49
+Chapter 5: Services         67
+Chapter 6: Dynamic Services          85
+Chapter 7: Client/Server Interaction         107
+Chapter 8: Testing         125
+Chapter 9: Packaging          141
+Chapter 10: Pluggable Services          161
+Chapter 11: Extensible User Interface            173
+Chapter 12: Dynamic Configuration         197
+Chapter 13: Web Portal             207
+Chapter 14: System Deployment with p2              217
+ 
+Part III: Deep Dives         245
+Chapter 16: Extensions         275
+Chapter 17: Logging          295
+Chapter 18: HTTP Support         307
+Chapter 19: Server Side          321
+Chapter 20: Release Engineering         343
+
+Part IV: Reference         369
+Chapter 21: Dynamic Best Practices         371
+Chapter 22: Integrating Code Libraries         387
+Chapter 23: Advanced Topics          405
+Chapter 24: Declarative Services Reference         435
+ 
+Index         459
+============================
+Table of Contents
+Foreword         xxi
+Preface        xxv
+Acknowledgments         xxix
+About the Authors        xxxiii
+
+Part I:  Introduction        1
+
+Chapter 1: OSGi, Equinox, and Eclipse         3
+1.1 A Bit of History   3
+1.2 Collaboration   4
+1.3 Modularity and Freedom of Action   5
+1.4 Platforms   7
+1.5 Ecosystems   7
+1.6 OSGi in Context   8
+1.7 OSGi and Equinox in Practice   10
+1.8 Summary   11
+
+Chapter 2: OSGi Concepts         13
+2.1 A Community of Bundles   13
+2.2 Why OSGi?   15
+2.3 The Anatomy of a Bundle   18
+2.4 Modularity   19
+2.5 Modular Design Concepts   21
+2.6 Lifecycle   22
+2.7 Collaboration   24
+2.8 The OSGi Framework   26
+2.9 Security   27
+2.10 OSGi Framework Implementations   27
+2.11 Summary   28
+
+Part II: OSGi by Example         29
+
+Chapter 3: Tutorial Introduction          31
+3.1 What Is Toast?   31
+3.2 The Evolution of Toast   34
+3.3 Development Environment Installation   36
+3.4 Sample Code   36
+3.5 Target Platform Setup   39
+3.6 Learning by Example   46
+3.7 Summary   48
+ 
+Chapter 4: Hello, Toast          49
+4.1 A Simple Scenario   49
+4.2 Slicing Toast into Bundles   56
+4.3 Summary   65
+ 
+Chapter 5: Services         67
+5.1 Moving to Services   67
+5.2 Registering the GPS Service   69
+5.3 Registering the Airbag Service   75
+5.4 Acquiring Services   79
+5.5 Launching   81
+5.6 Troubleshooting   82
+5.7 Summary   83
+ 
+Chapter 6: Dynamic Services          85
+6.1 Introduction to Dynamic Services   85
+6.2 Using Service Trackers   87
+6.4 Using Declarative Services   97
+6.5 Summary   105
+ 
+Chapter 7: Client/Server Interaction         107
+7.1 The Back End   108
+7.2 The Client Side   111
+7.3 Utility Classes   119
+7.4 Running Toast   121
+7.5 Summary   123
+ 
+Chapter 8: Testing         125
+8.1 Making Toast Testable   126
+8.2 Unit-Testing Toast   126
+8.3 System-Testing Toast   131
+8.4 Summary   139
+ 
+Chapter 9: Packaging          141
+9.1 Defining a Toast Product   141
+9.2 Exporting Toast   149
+9.3 Packaging for Other Platforms   152
+9.4 Getting Serious about Component Definition   154
+9.5 Summary   158
+ 
+Chapter 10: Pluggable Services          161
+10.1 Separating Interface from Implementation   162
+10.2 Device Simulation   165
+10.3 Simulated Devices as Pluggable Services   167
+10.4 Running with Simulated Devices   169
+10.5 Summary   171
+ 
+Chapter 11: Extensible User Interface            173
+11.1 Crust   173
+11.2 Emergency   175
+11.3 Climate and Audio   181
+11.4 The OSGi Application Model   184
+11.5 Navigation and Mapping   187
+11.6 Summary   195
+ 
+Chapter 12: Dynamic Configuration         197
+12.1 The Tracking Scenario   197
+12.2 Installing the Tracking Code   198
+12.3 Running the Basic Tracking Scenario   201
+12.4 Configuration   201
+12.5 Summary   205
+ 
+Chapter 13: Web Portal             207
+13.1 Portal   207
+13.2 The PortalServlet   208
+13.3 Action Lookup Using Services   210
+13.4 Declaring a Portal Action   213
+13.5 Whiteboard Pros and Cons   215
+13.6 Summary   216
+ 
+Chapter 14: System Deployment with p2              217
+14.1 Introduction to Equinox p2   217
+14.2 Refining the Toast Structure   221
+14.3 Writing a Provisioner   229
+14.4 Adding a Deployment Web UI   233
+14.5 Exporting, Running, and Provisioning   235
+14.6 Client-Side Dynamic Deployment   241
+14.7 Summary   242
+ 
+Part III: Deep Dives         245
+
+Chapter 15: Declarative Services          247
+15.1 The Declarative Services Model   247
+15.2 Common Scenarios   248
+15.3 Launching and Debugging DS Applications   269
+15.4 PDE Tooling   270
+15.5 Summary   273
+ 
+Chapter 16: Extensions         275
+16.1 The Extension Registry   275
+16.2 Extension Points   278
+16.3 Extensions   280
+16.4 Advanced Extension Topics   281
+16.5 Extension Registry Lifecycle   283
+16.6 Dynamic Extension Scenarios   284
+16.7 Services and Extensions   290
+16.8 Extension Registry Myths   293
+16.9 Summary   293
+ 
+Chapter 17: Logging          295
+17.1 The Log Service Specification   295
+17.2 Using the LogService in Toast   298
+17.3 Using the LogReaderService   301
+17.4 Toast’s LogUtility Class   303
+17.5 Equinox’s LogService Implementations   304
+17.6 Summary   306
+ 
+Chapter 18: HTTP Support         307
+18.1 The HttpService   308
+18.2 Registering and Unregistering a Servlet   309
+18.3 Declarative HTTP Content Registrations   312
+18.4 Using Jetty   313
+18.5 HTTP Contexts and JAAS Integration   314
+18.6 Troubleshooting   318
+18.7 Summary   320
+ 
+Chapter 19: Server Side          321
+19.1 Servers and OSGi   322
+19.2 Embedding the Back End in a Web Application   323
+19.3 Remote Services in OSGi   333
+19.4 Summary   341
+ 
+Chapter 20: Release Engineering         343
+20.1 What Is PDE Build?   344
+20.2 Bundle build.properties 3  45
+20.3 Setting Up a Builder   347
+20.4 Running the Builder   353
+20.5 Tweaking the Build   356
+20.6 Building Add-on Features   363
+20.7 Building WARs   367
+20.8 Summary   367
+ 
+Part IV: Reference         369
+
+Chapter 21: Dynamic Best Practices         371
+21.1 Dynamism and You   371
+21.2 Dynamic Aspects of Toast   372
+21.3 Dynamic Challenges   374
+21.4 Dynamic Awareness  374
+21.5 The Extender Pattern and BundleTracker   378
+21.6 Dynamic Enablement   379
+21.7 The Dynamics of Startup and Shutdown   382
+21.8 Summary   385
+ 
+Chapter 22: Integrating Code Libraries         387
+22.1 JARs as Bundles   388
+22.2 Bundling by Injection   388
+22.3 Bundling by Wrapping   390
+22.4 Bundling by Reference   392
+22.5 Bundling Using bnd   394
+22.6 Troubleshooting Class Loading Problems   394
+22.7 Summary   403
+ 
+Chapter 23: Advanced Topics          405
+23.1 The Equinox Console   406
+23.2 Roles in OSGi   409
+23.3 The Shape of Bundles   411
+23.4 Fragments   413
+23.5 Singletons   415
+23.6 Bundle Lifecycle   416
+23.7 Bundle Activation Policy   419
+23.8 Controlling Bundle Start   421
+23.9 Class Loading   423
+23.10 Configuring and Running Equinox   428
+23.11 Data Areas   432
+23.12 Summary   434
+ 
+Chapter 24: Declarative Services Reference         435
+24.1 Component XML Schema v1.1.0   435
+24.2 The Component Lifecycle   444
+24.3 Summary   457
+ 
+Index         459

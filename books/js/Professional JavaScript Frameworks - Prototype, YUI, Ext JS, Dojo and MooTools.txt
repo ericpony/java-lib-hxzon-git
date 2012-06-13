@@ -1,0 +1,725 @@
+﻿Professional JavaScript Frameworks : Prototype, YUI, Ext JS, Dojo and MooTools
+Leslie Michael Orchard
+Ara Pehlivanian
+Scott Koon
+Harley Jones
+Published by
+Wiley Publishing, Inc.
+10475 Crosspoint Boulevard
+Indianapolis, IN 46256
+www.wiley.com
+Copyright ? 2009 by Wiley Publishing, Inc., Indianapolis, Indiana
+Published simultaneously in Canada
+ISBN: 978-0-470-38459-6
+Manufactured in the United States of America
+10 9 8 7 6 5 4 3 2 1
+No part of this publication may be reproduced, stored in a retrieval system or transmitted in any form or by 
+any means, electronic, mechanical, photocopying, recording, scanning or otherwise, except as permitted 
+under Sections 107 or 108 of the 1976 United States Copyright Act, without either the prior written 
+permission of the Publisher, or authorization through payment of the appropriate per-copy fee to the 
+Copyright Clearance Center, 222 Rosewood Drive, Danvers, MA 01923, (978) 750-8400, fax (978) 646-8600. 
+Requests to the Publisher for permission should be addressed to the Permissions Department, John Wiley & 
+Sons, Inc., 111 River Street, Hoboken, NJ 07030, (201) 748-6011, fax (201) 748-6008, or online at http://www
+.wiley.com/go/permissions.
+Limit of Liability/Disclaimer of Warranty: The publisher and the author make no representations or 
+warranties with respect to the accuracy or completeness of the contents of this work and specifically 
+disclaim all warranties, including without limitation warranties of fitness for a particular purpose. No 
+warranty may be created or extended by sales or promotional materials. The advice and strategies contained 
+herein may not be suitable for every situation. This work is sold with the understanding that the publisher is 
+not engaged in rendering legal, accounting, or other professional services. If professional assistance is 
+required, the services of a competent professional person should be sought. Neither the publisher nor the 
+author shall be liable for damages arising herefrom. The fact that an organization or Web site is referred to in 
+this work as a citation and/or a potential source of further information does not mean that the author or the 
+publisher endorses the information the organization or Web site may provide or recommendations it may 
+make. Further, readers should be aware that Internet Web sites listed in this work may have changed or 
+disappeared between when this work was written and when it is read.
+For general information on our other products and services please contact our Customer Care Department 
+within the United States at (877) 762-2974, outside the United States at (317) 572-3993 or fax (317) 572-4002.
+Wiley also publishes its books in a variety of electronic formats. Some content that appears in print may not 
+be available in electronic books.
+Library of Congress Control Number: 2009932978
+Trademarks: Wiley, the Wiley logo, Wrox, the Wrox logo, Wrox Programmer to Programmer, and related 
+trade dress are trademarks or registered trademarks of John Wiley & Sons, Inc. and/or its affiliates, in the 
+United States and other countries, and may not be used without written permission. JavaScript is a 
+registered trademark of Sun Microsystems, Inc. All other trademarks are the property of their respective 
+owners. Wiley Publishing, Inc., is not associated with any product or vendor mentioned in this book.
+===============================
+Introduction ............................................................................................... xxv
+
+Part I: Prototype  1
+Chapter 1: Extending and Enhancing DOM Elements ........................................3
+Chapter 2: Handling Cross-Browser Events ....................................................23
+Chapter 3: Simplifying AJAX and Dynamic Data .............................................33
+Chapter 4: Working with Forms .....................................................................43
+Chapter 5: Manipulating Common Data Structures and Functions ..................53
+Chapter 6: Extending Prototype ....................................................................71
+
+Part II: Yahoo! User Interface Library  89
+Chapter 7: Traversing and Manipulating the DOM with YUI .............................93
+Chapter 8: Handling Cross-Browser Events ..................................................113
+Chapter 9: Using Animation and Drag and Drop .......................................... 147
+Chapter 10: Simplifying AJAX and Dynamic Loading .................................... 173
+Chapter 11: Building User Interfaces with Widgets (Part I) ......................... 189
+Chapter 12: Building User Interfaces with Widgets (Part II) ........................ 225
+Chapter 13: Enhancing Development with the YUI Core .............................. 269
+Chapter 14: Dealing with Data, Tables, and Charts ..................................... 291
+Chapter 15: Working with YUI CSS Tools .................................................... 317
+Chapter 16: Building and Deploying ............................................................ 329
+
+Part III: Ext JS  335
+Chapter 17: Architecture and Library Conventions ...................................... 337
+Chapter 18: Elements, DomHelper, and Templates ...................................... 351
+Chapter 19: Components, Layouts, and Windows ........................................ 373
+Chapter 20: Handling Data and Talking with the Server ............................... 395
+Chapter 21: DataViews and Grids ............................................................... 415
+Chapter 22: Form Controls, Validation, and a Whole Lot More ..................... 431
+
+Part IV: Dojo  451
+Chapter 23: Enhancing Development with Dojo Core ....................................453
+Chapter 24: Manipulating the Dom ..............................................................473
+Chapter 25: Handling Events .......................................................................499
+Chapter 26: Composing Animations ............................................................525
+Chapter 27: Working with Ajax and Dynamic Data .......................................547
+Chapter 28: Building User Interfaces with Widgets ......................................595
+Chapter 29: Building and Deploying Dojo .....................................................655
+Chapter 30: Expanding Dojo ........................................................................663
+
+Part V: MooTools  689
+Chapter 31: Enhancing Development with MooTools ....................................691
+Chapter 32: Manipulating the Dom and Handling Events ..............................725
+Chapter 33: Simplifying Ajax and Handling Dynamic Data .............................763
+Chapter 34: Building User Interfaces and Using Animation ...........................787
+Index .........................................................................................................835
+====================================
+Contents
+Introduction xxv
+
+Part I: Prototype
+
+Chapter 1: Extending and Enhancing DOM Elements  3
+Extending a DOM element  3
+$() — “The dollar function”  4
+$$()  4
+Element.extend()  5
+Element as a Constructor  5
+Navigating the DOM  7
+adjacent  7
+ancestors  8
+up/down/next/previous 9
+descendants/descendantOf/firstDescendant/immediateDescendants 11
+getElementsBySelector/getElementsByClassName 12
+childElements  12
+Altering Page Content  12
+inser t(element, content), inser t(element, {position:content)  12
+remove  12
+replace  13
+update  13
+Manipulating Element Size, Position, and Visibility  14
+Positioning an Element  14
+Dealing with Offsets  15
+Showing/Hiding Elements  16
+Sizing an Element  17
+Working with CSS and Styles  17
+addClassName, removeClassName, toggleClassNames  18
+hasClassName, classNames  20
+setStyle, getStyle  20
+Extending an Element with Your Own Methods  21
+Summary  22
+
+Chapter 2: Handling Cross-Browser Events  23
+Registering Event Handlers  23
+Event.observe()  24
+Responding to Events  25
+Event.target, this, and Event.element  26
+Event.extend(event) 28
+Event.stop(event) 28
+Firing Scheduled Events  29
+PeriodicalExecuter 29
+Summary  32
+
+Chapter 3: Simplifying AJAX and Dynamic Data  33
+Making Requests to a Server  34
+Ajax.Request  34
+Callbacks  36
+Ajax.Response  36
+Responding Globally to Changing Data  37
+Ajax.Responders  38
+Updating a Page Dynamically  38
+Ajax.Updater  38
+Ajax.PeriodicalUpdater 40
+Summary  41
+
+Chapter 4: Working with Forms  43
+Manipulating Form Elements and Data  43
+Form  44
+How It All Works Together 45
+Validating Form Data  49
+Form.Elements  49
+Submitting a Form Using AJAX  52
+Summary  52
+
+Chapter 5: Manipulating Common Data Structures and Functions  53
+Enhancing Native Objects and Introducing Classes  53
+Extensions to Object  54
+Class  55
+Munging and Parsing Strings  56
+Generating Templated Content  59
+Template.evaluate() 59
+Binding and Manipulating Functions  60
+Binding Functions  60
+Other Methods That Manipulate Functions  62
+Improving Arrays, Hashes, and Iterators  63
+Enumerable  63
+Improvements to Array 67
+Introducing Hash 68
+Dealing with Numbers and Dates  69
+Numbers  69
+Dates  70
+Summary  70
+
+Chapter 6: Extending Prototype  71
+Script.aculo.us 71
+Effects  72
+Moo.fx for Prototype  79
+Fx.Tween  80
+Fx.Morph  81
+Fx.Transitions  81
+Fx.Slide  81
+Rico  81
+Components  82
+Accordion component 83
+Animation Effects 86
+Rounded Corners 86
+Drag and Drop  87
+Summary  87
+
+Part II: Yahoo! User Interface Library 
+
+Chapter 7: Traversing and Manipulating the DOM with YUI  93
+Traversing the DOM and Finding Elements  93
+get  94
+getElementsByClassName 94
+getFirstChild/getLastChild 95
+getFirstChildBy/getLastChildBy 96
+getChildren/getChildrenBy 97
+getElementsBy  98
+getAncestorByTagName 100
+getAncestorByClassName 102
+getAncestorBy  103
+Element  105
+Selector  106
+Manipulating Content  107
+inser tBefore  108
+inser tAfter  108
+Working with Class Names 108
+setStyle  110
+getStyle  111
+setXY  111
+Summary 112
+
+Chapter 8: Handling Cross-Browser Events  113
+Registering Events on Page and Element Readiness  113
+onDOMReady  115
+A Word on Execution Scope and Parameter Passing 117
+onAvailable  119
+onContentReady 120
+on/addListener 121
+removeListener 123
+Handling Keyboard and Mouse Input  124
+KeyListener  124
+getCharCode  127
+getXY  129
+getTarget  130
+getRelatedTarget 131
+preventDefault  133
+stopPropagation 134
+stopEvent  136
+Working with Custom Events  136
+CustomEvent and subscribe  137
+unsubscribe  140
+subscribeEvent  141
+Managing Browser History and Fixing the Back Button  141
+Summary 145
+
+Chapter 9: Using Animation and Drag and Drop  147
+Composing Basic Animation Sequences  148
+Anim  148
+Motion  151
+Scroll  154
+ColorAnim  155
+Smoothing Animation Paths and Motion  159
+Easing  159
+Curved Paths (Bezier) 163
+Interactive Animation with Drag and Drop  167
+DD  167
+DDProxy  168
+Summary 172
+
+Chapter 10: Simplifying AJAX and Dynamic Loading  173
+Making HTTP Requests and Fetching Data  173
+asyncRequest  174
+JSON  178
+Dynamically Loading Libraries and Components  181
+Get Utility  181
+YUI Loader Utility 183
+Summary 188
+
+Chapter 11: Building User Interfaces with Widgets (Part I)  189
+Using AutoComplete with Form Fields  190
+AutoComplete and DataSource  190
+Building Containers for Content  195
+Module  196
+Overlay  198
+Panel  199
+Presenting Content in Tabs and Trees  202
+TabView  203
+TreeView  212
+Summary 224
+
+Chapter 12: Building User Interfaces with Widgets (Part II)  225
+Wiring up Buttons, Sliders, and Menus  225
+Buttons  225
+Styling  226
+Sliders  233
+Menus  241
+Offering Date Selection  251
+A Simple Calendar  252
+Events  255
+Multiple Pages  257
+Enabling Rich Content Editing  258
+Events  265
+Putting It to Use 267
+Summary 268
+
+Chapter 13: Enhancing Development with the YUI Core  269
+Applying Namespaces and Modularity  269
+Namespacing  269
+Language Extensions 270
+Simulating Classical Inheritance 271
+Detecting Browser Environment and Available Modules  282
+YAHOO.env.ua  282
+YAHOO.env.getVersion 283
+YAHOO_config  285
+Logging and Debugging  287
+Summary 290
+
+Chapter 14: Dealing with Data, Tables, and Charts  291
+Formatting Dates and Numbers  291
+Dates  291
+Numbers  293
+Acquiring Sources of Data  295
+Presenting Tabular Data  303
+Drawing Charts and Graphs  307
+Summary 316
+
+Chapter 15: Working with YUI CSS Tools  317
+Establishing Cross-Browser Consistency  317
+Getting Control of Typography  320
+Building Layouts from Grids  321
+Templates  323
+Nesting Grids  324
+Summary 327
+
+Chapter 16: Building and Deploying  329
+Shared YUI Files from Yahoo!  329
+Combining Files  331
+Shrink and Optimize Loading Times  332
+When and Where to Run It  333
+Summary 334
+
+Part III: Ext JS
+
+Chapter 17: Architecture and Library Conventions  337
+When to Use Ext JS  337
+How to Use Ext JS  338
+Stylistic Conventions  339
+Ext JS’s Object-Oriented Design  340
+Ext.namespace  340
+Ext.override  341
+Ext.extend and Constructor Conventions 342
+Ext.apply  343
+Ext.applyIf  343
+Utility Functions to Take Over the World  344
+Function.createCallback 344
+Function.createDelegate 345
+Function.createInterceptor 346
+Function.createSequence 346
+Function.defer  347
+Ext JS’s Event-Based Design  347
+Ext.util.Observable.addEvents 347
+Ext.util.Observable.addListener/.on 348
+Ext.util.Observable.removeListener/.un 349
+Ext.util.Observable.fireEvent 349
+Ext.util.Observable.hasListener 349
+Ext.util.Observable.purgeListeners 349
+Ext.util.Observable.relayEvents 349
+Ext.util.Observable.suspendEvents/.resumeEvents 350
+Ext.util.Observable.capture/.releaseCapture 350
+Summary 350
+
+Chapter 18: Elements, DomHelper, and Templates  351
+Element Manipulation  351
+Ext.Element  352
+Ext.Element Methods 355
+DOM Traversal  360
+Ext.DomQuery  360
+Ext.DomQuery methods 361
+DOM Manipulation  363
+Ext.DomHelper  363
+Ext.Template  365
+Ext.XTemplate  368
+CSS Manipulation  369
+Ext.util.CSS  369
+Summary 371
+
+Chapter 19: Components, Layouts, and Windows  373
+The Ext JS Component System  374
+Ext.Component  374
+Ext.ComponentMgr 374
+Ext.BoxComponent 376
+Ext.Container  377
+The Ext JS Component Life Cycle  378
+Initialization  378
+Rendering  379
+Destruction  380
+Ext.Viewport 380
+Ext.Container Layouts  381
+Ext.layout.ContainerLayout 382
+Ext.layout.BorderLayout 383
+Ext.layout.ColumnLayout 383
+Ext.layout.TableLayout 384
+Ext.layout.AnchorLayout 385
+Ext.layout.AbsoluteLayout 385
+Ext.layout.FormLayout 386
+Ext.layout.FitLayout 388
+Ext.layout.Accordion 388
+Ext.layout.CardLayout 389
+Creating Your Own Custom Layouts 390
+Panels and Windows  391
+Ext.Panel  391
+Ext.Window  392
+Ext.WindowGroup 393
+Ext.WindowMgr  393
+Summary 393
+
+Chapter 20: Handling Data and Talking with the Server  395
+Getting the Data  396
+Ext.data.DataProxy 396
+Ext.data.HttpProxy 396
+Ext.data.MemoryProxy 400
+Ext.data.ScriptTagProxy 401
+Remodeling the Data  402
+Ext.data.Record 402
+Ext.data.DataReader 404
+Storing the Data Locally  408
+Ext.data.Store  408
+Ext.data.Record (Revisited) 412
+Ext.StoreMgr  413
+Putting It All Together  413
+Summary 414
+
+Chapter 21: DataViews and Grids  415
+Ext.DataView 415
+Manipulating the DataView  418
+DataView Events  421
+Ext.grid.GridPanel 422
+Ext.grid.ColumnModel 423
+Ext.grid.AbstractSelectionModel 426
+Ext.grid.CellSelectionModel 427
+Ext.grid.RowSelectionModel 427
+Ext.grid.CheckboxSelectionModel 427
+Ext.grid.GridView 428
+Ext.grid.GroupingView 428
+Other Avenues for Customization 429
+Summary 429
+
+Chapter 22: Form Controls, Validation, and a Whole Lot More  431
+Introduction to the Form Controls  431
+Ext.form.Label  432
+Ext.form.Field  433
+Ext.form.TextField 434
+Ext.form.FormPanel & Ext.form.BasicForm 435
+Other Form Controls 437
+Ext.form.NumberField 437
+Ext.form.TextArea 437
+Ext.form.TriggerField 438
+Ext.form.DateField 438
+Ext.form.ComboBox 439
+Ext.form.TimeField 439
+Ext.form.Checkbox 440
+Ext.form.Radio  440
+Ext.form.CheckboxGroup 440
+Ext.form.RadioGroup 441
+Ext.form.HtmlEditor 442
+Ext.form.Hidden 443
+Field and Form Validation  443
+Validation Messages  443
+Advanced Validation Techniques  445
+Form-Level Validation  445
+The Other Stuff  446
+State Management  446
+Browser History  447
+Visual Effects  448
+Drag and Drop  448
+Toolbars and Menus  449
+Themes  449
+Trees  449
+Keyboard Navigation  449
+Too Much to List  450
+Summary 450
+
+Part IV: Dojo
+
+Chapter 23: Enhancing Development with Dojo Core  453
+Getting Dojo  453
+Using Dojo via the AOL CDN  453
+Downloading the Latest Dojo Release  454
+Trying Dojo Under Development 454
+Sampling Dojo  455
+Getting to Hello World  455
+Examining Dojo Core  460
+Declaring, Loading, and Providing Dependencies  460
+Defining Classes and Using Inheritance  463
+Declaring Objects in Markup  466
+Summary 472
+
+Chapter 24: Manipulating the DOM  473
+Finding DOM Elements  474
+Finding Elements with dojo.byId  474
+Finding Elements with dojo.query  474
+Handling Lists of DOM Elements  477
+Filtering and Refining Lists of Nodes  478
+Editing NodeLists in Place with splice()  486
+Processing Lists of Nodes 488
+Summary 497
+
+Chapter 25: Handling Events  499
+Reacting to Page Load and Unload  500
+Connecting to DOM Events  501
+Connecting Inline Handlers to Events  502
+Connecting Global Functions to Events  503
+Connecting Object Methods to Events 504
+Disconnecting from Events 504
+Special Event Handling and Event Objects 505
+Connecting to Methods  507
+Making Connections with NodeLists  509
+Publishing and Subscribing to Event Topics  512
+Using Event Topics with DOM Event Handlers  513
+Using Object Methods as Subscribers  516
+Unsubscribing from Published Messages  517
+Turning Object Methods into Publishers  518
+Using Dojo Behaviors  519
+Using Behaviors to Find Nodes and Make Connections  520
+Using Behaviors to Connect Object Methods  521
+Using Behaviors to Publish Event Topics  522
+Summary 524
+
+Chapter 26: Composing Animations  525
+Animating CSS Style Properties  526
+Using Fade Transitions  528
+Using Wipe Transitions  529
+Using Slide Animations to Move Elements  531
+Controlling Motion with Easings  533
+Chaining Animations in Serial  536
+Combining Animations in Parallel  537
+Using NodeList Animation Methods  538
+Examining Animation Objects  541
+Summary 546
+
+Chapter 27: Working with AJAX and Dynamic Data  547
+Making Simple Web Requests  548
+Making Simple Requests and Handling Responses  548
+Using a Single Handler for Both Error and Success  550
+Handling Web Responses with Deferreds  551
+Registering Handlers for Success and Error Responses  551
+Registering Error and Success Handlers in One Call  553
+Registering a Single Handler for both Error and Success  553
+Working with Response Formats  554
+Working with Text Responses  555
+Working with XML Responses  555
+Working with JSON Responses  556
+Working with Comment-Filtered JSON Responses  557
+Working with JavaScript Responses  558
+Specifying Request Methods  559
+Building a Server-Side Request Echo Tool  560
+Trying Out Request Methods  562
+Using Request Parameters and Content  565
+Making GET Request with Query Parameters  565
+Making POST Requests with Response Body Parameters  567
+Making POST Requests with Raw Body Content  568
+Augmenting Forms with In-Place Requests  569
+Using Cross-Domain JSON Feeds  577
+Loading JSON by Polling Variables  577
+Loading JSON with Callbacks  580
+Making Requests with IFrames  583
+Using a Proxy Script to Package IFrame Data  583
+Handling Response Formats with IFrames  584
+Uploading Files with Forms and IFrames  585
+Summary 593
+
+Chapter 28: Building User Interfaces with Widgets  595
+Building and Validating Forms  596
+Instantiating Widgets with JavaScript  598
+Declaring Widgets in HTML Markup  600
+Validating Input with a Regular Expression  601
+Enforcing Form Validation on Submit  602
+Handling Numbers and Currency Values  605
+Working with Date and Time Fields  607
+Enhancing Radio Buttons and Checkboxes  609
+Working with Selection Fields and Data Sources  611
+Using Sliders to Allow Discrete Value Selection  615
+Using Dynamic Textareas and Rich Text Editors  617
+Managing Application Layout  619
+Setting Up an Application Layout Page  620
+Using ContentPanes as Layout Building Blocks  621
+Managing Layout Regions with BorderContainer  622
+Managing Content Visibility with StackContainer  625
+Swapping Content Panes with AccordionContainer  632
+Building Tabbed Content Panes with TabContainer  634
+Dividing Up Layout Regions with SplitContainer  636
+Creating Application Controls and Dialogs  638
+Building and Scripting Clickable Buttons  640
+Composing Pop-up Context Menus  642
+Combining Buttons and Menus  645
+Building Toolbars from Buttons and Menus  646
+Giving Feedback on Completion with Progress Bars  648
+Applying Themes to Widgets  650
+Examining Widget DOM Structure  650
+Loading and Applying a Theme to Widgets  651
+Customizing and Examining Available Themes  653
+Summary 654
+
+Chapter 29: Building and Deploying Dojo  655
+Explaining Dojo Builds  655
+Finding the Build System  656
+Creating a Custom Build Profile  656
+Producing a Custom Build  659
+Examining and Using a Custom Build  660
+Summary 662
+
+Chapter 30: Expanding Dojo  663
+Exploring the DojoX Subproject  663
+Trying Out Advanced Widgets  664
+Building Fisheye Menus  664
+Creating Animated Notifications with the Toaster Widget  666
+Employing Advanced Form Validation Helpers  667
+Producing Content from Templates  670
+Drawing Shapes and Rendering Charts  674
+Drawing Shapes and Lines  675
+Rendering Char ts and Graphs  676
+Using Encoding and Crypto Routines  679
+Generating MD5 Hashes  679
+Encoding Data with Base64  680
+Encrypting Data with Blowfish  682
+Navigating JSON Data Structures  683
+Exploring Further DojoX Offerings  686
+Summary 687
+
+Part V: MooTools
+
+Chapter 31: Enhancing Development with MooTools  691
+Getting MooTools  691
+Downloading the Latest MooTools Release  691
+Trying MooTools Under Development  694
+Examining MooTools Core  694
+Checking the MooTools Version  695
+Determining Types  695
+Checking for Defined Values  696
+Picking a Defined Value  696
+Choosing Random Numbers  696
+Getting the Current Time  697
+Clearing Timers and Intervals  697
+Merging and Extending Objects  697
+Using Array Extensions  699
+Processing Array Items with .each() and .forEach()  699
+Filtering and Mapping Array Items  701
+Checking the Content of Array Items  702
+Conver ting Array Items into Object Proper ties  704
+Extending and Combining Arrays  704
+Flattening Nested Arrays  705
+Applying Selection Rules with .link()  706
+Using Hash Data Structures  706
+Defining Hashes and the Hash Shor tcut  707
+Getting and Setting Keys and Values  707
+Mapping and Filtering Hashes  708
+Checking Hashes with .every() and .some()  709
+Extending and Combining Hashes  709
+Conver ting Hashes into URL Query Strings  710
+Using String Extensions  710
+Checking String Contents  710
+Conver ting Strings to Numbers and Colors  711
+Using Simple Substitution Templates  712
+Per forming Miscellaneous Transformations  712
+Using Function Extensions  713
+Binding Functions to Object Contexts  713
+Delaying and Setting Function Calls on Intervals  714
+Attempting Function Calls with Potential Exceptions  715
+Using Object-Oriented Programming  715
+Building Classes and Subclasses  716
+Injecting Methods and Proper ties into Existing Classes  718
+Implementing Mixin Classes  719
+Summary 723
+
+Chapter 32: Manipulating the DOM and Handling Events  725
+Finding Elements in the DOM  725
+Finding Elements with $() and IDs  726
+Finding Elements with $$() and CSS Selectors  726
+Navigating the DOM Structure 728
+Manipulating Styles and Properties  730
+Manipulating Element CSS Classes  731
+Manipulating Element Visual Styles  733
+Manipulating Element Proper ties and Attributes  735
+Manipulating Extended Element Proper ties  738
+Using Element Storage to Safely Manage Metadata  742
+Modifying DOM Structure  743
+Creating New Elements  744
+Cloning Elements  744
+Grabbing Elements  745
+Injecting Elements  746
+Creating and Appending Text Nodes  746
+Replacing and Wrapping Elements  746
+Adopting Elements  747
+Destroying and Emptying Elements  748
+Attaching Listeners and Handling Events  748
+Reacting to Page Load and Unload  748
+Adding and Removing Event Handlers  750
+Investigating the Event Wrapper Object  755
+Summary 761
+
+Chapter 33: Simplifying AJAX and Handling Dynamic Data 763
+Manipulating Browser Cookies  763
+Using Cookie Functions  764
+Using Cookie-Backed Hashes  766
+Dynamically Loading Page Assets  767
+Loading JavaScript and JSON Feeds  767
+Including Additional CSS Style Sheets  769
+Fetching Images and Image Sets 769
+Making Web Requests  772
+Per forming Basic Web Requests  773
+Fetching and Updating HTML Content  780
+Requesting and Using JavaScript and JSON Data  782
+Summary 786
+
+Chapter 34: Building User Interfaces and Using Animation  787
+Composing Animations  787
+Examining Element Size and Position  789
+Using MooTools Fx to Compose Animations  791
+Exploring Pre-Built Animations and Effects  796
+Using Fx.Slide Animations  797
+Using Fx.Scroll Animations  799
+Exploring MooTools Fx.Transitions  800
+Exploring Animation Events  804
+Animating Multiple Proper ties with Fx.Morph  807
+Animating Multiple Elements with Fx.Elements  809
+Using User Interface Widgets  811
+Building Accordion Layouts  811
+Adding Smooth Scrolling to Page Navigation  815
+Enabling Draggable Elements  816
+Automatically Scrolling the Window and Elements  821
+Enabling Drag-and-Drop Targets  822
+Building Sor table Lists  824
+Using Tool Tips  827
+Building Slider Controls  830
+Summary 833
+
+Index 835

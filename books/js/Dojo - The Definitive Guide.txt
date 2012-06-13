@@ -1,0 +1,211 @@
+﻿Dojo: The Definitive Guide
+by Matthew A. Russell
+Copyright ? 2008 Matthew A. Russell. All rights reserved.
+Printed in the United States of America.
+Published by O’Reilly Media, Inc., 1005 Gravenstein Highway North, Sebastopol, CA 95472.
+O’Reilly books may be purchased for educational, business, or sales promotional use. Online editions
+are also available for most titles (safari.oreilly.com). For more information, contact our
+corporate/institutional sales department: (800) 998-9938 or corporate@oreilly.com.
+Editor: Simon St.Laurent
+Production Editor: Sumita Mukherji
+Copyeditor: Colleen Gorman
+Proofreader: Sumita Mukherji
+Indexer: Lucie Haskins
+Cover Designer: Karen Montgomery
+Interior Designer: David Futato
+Illustrator: Robert Romano
+Printing History:
+June 2008: First Edition.
+Nutshell Handbook, the Nutshell Handbook logo, and the O’Reilly logo are registered trademarks of
+O’Reilly Media, Inc. Dojo: The Definitive Guide, the image of a lion-tailed monkey, and related trade
+dress are trademarks of O’Reilly Media, Inc.
+Java? is a trademark of Sun Microsystems, Inc.
+Many of the designations used bymanufacturers and sellers to distinguish their products are claimed as
+trademarks. Where those designations appear in this book, and O’Reilly Media, Inc. was aware of a
+trademark claim, the designations have been printed in caps or initial caps.
+While every precaution has been taken in the preparation of this book, the publisher and author assume
+no responsibility for errors or omissions, or for damages resulting from the use of the information
+contained herein.
+This book uses RepKover? , a durable and flexible lay-flat binding.
+ISBN: 978-0-596-51648-2
+[M]
+======================
+Table of Contents
+Foreword . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xiii
+Preface  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xv
+
+Part I. Base and Core
+
+1. Toolkit Overview  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+2. Language and Browser Utilities  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 32
+3. Event Listeners and Pub/Sub Communication  . . . . . . . . . . . . . . . . . . . . . . . . . 67
+4. AJAX and Server Communication  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 80
+5. Node Manipulation  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 114
+6. Internationalization (i18n)  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 136
+7. Drag-and-Drop  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 144
+8. Animation and Special Effects . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 165
+9. Data Abstraction  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 196
+10. Simulated Classes and Inheritance . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 222
+
+Part II. Dijit and Util
+
+11. Dijit Overview . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 245
+12. Dijit Anatomy and Lifecycle  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 272
+13. Form Widgets  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 297
+14. Layout Widgets . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 340
+15. Application Widgets  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 359
+16. Build Tools, Testing, and Production Considerations . . . . . . . . . . . . . . . . . . . 396
+
+A. A Firebug Primer  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 417
+B. A Brief Survey of DojoX  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 428
+
+Index  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 431
+======================
+Table of Contents
+Foreword . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xiii
+Preface  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xv
+
+Part I. Base and Core
+
+1. Toolkit Overview  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+Overview of Dojo’s Architecture  3
+Prepping for Development  7
+Terminology  12
+Bootstrapping  15
+Exploring Dojo with Firebug  21
+Summary  31
+
+2. Language and Browser Utilities  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 32
+Looking Up DOM Nodes  32
+Type Checking  33
+String Utilities  34
+Array Processing  35
+Managing Source Code with Modules  40
+JavaScript Object Utilities  48
+Manipulating Object Context  52
+DOM Utilities  55
+Browser Utilities  62
+Summary  66
+
+3. Event Listeners and Pub/Sub Communication  . . . . . . . . . . . . . . . . . . . . . . . . . 67
+Event and Keyboard Normalization  67
+Event Listeners  70
+Publish/Subscribe Communication  76
+Summary  79
+
+4. AJAX and Server Communication  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 80
+Quick Overview of AJAX  80
+AJAX Made Easy  82
+Deferreds  89
+Form and HTTP Utilities  98
+Cross-Site Scripting with JSONP  99
+Core IO  101
+JSON Remote Procedure Calls  110
+OpenAjax Hub  112
+Summary  113
+
+5. Node Manipulation  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 114
+Query: One Size Fits All  115
+NodeList  121
+Creating NodeList Extensions  130
+Behavior 131
+Summary  135
+
+6. Internationalization (i18n)  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 136
+Introduction  136
+Internationalizing a Module  137
+Dates, Numbers, and Currency  140
+Summary  143
+
+7. Drag-and-Drop  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 144
+Dragging  144
+Dropping 155
+Summary 164
+
+8. Animation and Special Effects . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 165
+Animation  165
+Core fx  176
+Animation + Drag-and-Drop = Fun!  185
+Colors  186
+Summary  194
+
+9. Data Abstraction  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 196
+Shifting the Data Paradigm  196
+Data API Overview  197
+The APIs  198
+Core Implementations of Data APIs  204
+Summary  221
+
+10. Simulated Classes and Inheritance . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 222
+JavaScript Is Not Java  222
+One Problem, Many Solutions  223
+Simulating Classes with Dojo  227
+Multiply Inheriting with Mixins  237
+Summary  241
+
+Part II. Dijit and Util
+
+11. Dijit Overview . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 245
+Motivation for Dijit  245
+Accessibility (a11y)  248
+Dijit for Designers  251
+The Parser  257
+Hands-on Dijit with NumberSpinner  261
+Overview of Stock Dijits  266
+Dijit API Drive-By  270
+Summary  271
+
+12. Dijit Anatomy and Lifecycle  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 272
+Dijit Anatomy  272
+Dijit Lifecycle Methods  275
+Your First Dijit: HelloWorld  282
+Parent-Child Relationships with _Container and _Contained  293
+Rapidly Prototyping Widgets in Markup  293
+Summary  295
+
+13. Form Widgets  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 297
+Drive-By Form Review  297
+Form Dijits  300
+TextBox Variations  304
+FilteringSelect  323
+MultiSelect  324
+Textarea Variations  325
+Button Variations  325
+Slider 333
+Form  338
+Summary  339
+
+14. Layout Widgets . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 340
+Layout Dijit Commonalities  340
+ContentPane  342
+BorderContainer  346
+StackContainer 351
+TabContainer 353
+AccordionContainer  355
+Rendering and Visibility Considerations  357
+Summary  358
+
+15. Application Widgets  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 359
+Tooltip  359
+Dialog Widgets 360
+ProgressBar 364
+ColorPalette 366
+Toolbar 367
+Menu 369
+TitlePane 374
+InlineEditBox 375
+Tree 377
+Editor 388
+Summary 395
+
+16. Build Tools, Testing, and Production Considerations . . . . . . . . . . . . . . . . . . . 396
+Building  396
+Dojo Objective Harness (DOH) 407
+Browser-Based Test Harness 411
+Performance Considerations  413
+Summary  415
+
+A. A Firebug Primer  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 417
+B. A Brief Survey of DojoX  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 428
+
+Index  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 431

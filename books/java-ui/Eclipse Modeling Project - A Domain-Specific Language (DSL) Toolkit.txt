@@ -1,0 +1,57 @@
+﻿Eclipse Modeling Project: A Domain-Specific Language (DSL) Toolkit
+http://www.informit.com/store/product.aspx?isbn=0321534077
+    By Richard C. Gronback
+    Published Mar 6, 2009 by Addison-Wesley Professional. Part of the Eclipse Series series.
+        Copyright 2009
+        Dimensions: 7x9-1/4
+        Pages: 736
+        Edition: 1st
+        Book
+        ISBN-10: 0-321-53407-7
+        ISBN-13: 978-0-321-53407-1
+=========================
+Achieve Breakthrough Productivity and Quality with MDD and Eclipse-Based DSLs
+
+Domain-specific languages (DSLs) and model-driven development (MDD) offer software engineers powerful new ways to improve productivity, enhance quality, and insulate systems from rapid technological change. Now, there’s a pragmatic, start-to-finish guide to creating DSLs and using MDD techniques with the powerful open source Eclipse platform. In Eclipse Modeling Project, Richard C. Gronback illuminates both the principles and techniques software professionals need to master, offering insights that will be invaluable to developers working with any tool or platform.
+
+As coleader of the Eclipse Modeling Project, Gronback is singularly well-positioned to demonstrate DSLs and MDD at work in Eclipse. Gronback systematically introduces each of the Eclipse technologies that can be used in DSL and MDD development. Throughout, he introduces key concepts and technologies in the context of a complete worked example and presents new best practices and never-before published techniques. He also covers Eclipse projects discussed in no other book, including Query/View/Transformation (QVT) and the Graphical Modeling Framework (GMF)–a project the author personally leads.
+
+Eclipse Modeling Project gives software practitioners all the knowledge they need to explore the remarkable potential of DSLs and MDD–and includes coverage of
+
+    Why a model-based approach enables the rapid customization of high-quality solutions within the product line paradigm
+    How the Eclipse Modeling Project’s capabilities can be used to efficiently create new DSLs
+    Powerful techniques for developing DSL abstract syntax, graphical notation, and textual syntax
+    How to build Model-to-Model (M2M) and Model-to-Text (M2T) transformations–including a powerful new M2M implementation of the Object Management Group’s QVT Operational Mapping Language (OML)
+    Efficiently packaging and deploying DSLs with Eclipse
+    Complete reference sections for the Graphical Editing Framework (GEF), GMF runtime and tooling, QVT OML, Xpand, and more
+=========================
+Foreword     xix
+Preface     xxi
+Acknowledgments     xxiii
+About the Author     xxv
+ 
+Part I: Introduction     1
+Chapter 1: Introduction     3
+Chapter 2: Modeling Project as a DSL Toolkit     17
+ 
+Part II: Developing Domain-Specific Languages     27
+Chapter 3: Developing a DSL Abstract Syntax     29
+Chapter 4: Developing a DSL Graphical Notation     55
+Chapter 5: Developing a DSL Textual Syntax     227
+Chapter 6: Developing Model-to-Model Transformations     231
+Chapter 7: Developing Model-to-Text Transformations     277
+Chapter 8: DSL Packaging and Deployment     303
+ 
+Part III: Reference     315
+Chapter 9: Graphical Editing Framework     317
+Chapter 10: Graphical Modeling Framework Runtime     353
+Chapter 11: Graphical Modeling Framework Tooling     503
+Chapter 12: Graphical Modeling Framework FAQs     545
+Chapter 13: Query/View/Transformation Operational Mapping Language     549
+Chapter 14: Xpand Template Language     605
+ 
+Part IV: Appendixes     651
+Appendix A: Graphical Modeling Framework Key Bindings     653
+Appendix B: Model-Driven Architecture at Eclipse     661
+ 
+References     671

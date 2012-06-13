@@ -1,0 +1,37 @@
+﻿Activiti in Action-Executable business processes in BPMN 2.0
+http://www.manning.com/rademakers2/
+May 2012 (est.)
+475 pages
+ISBN: 9781617290121
+==================
+http://www.infoq.com/cn/articles/bpmn2-activiti5
+http://www.infoq.com/cn/news/2011/04/jbpm_5
+http://www.infoq.com/cn/articles/rh-jbpm5-activiti5
+==================
+Table of Contents
+Part 1 Introducing BPMN 2.0 and Activiti
+  1. Introducing the Activiti framework 
+  2. BPMN 2.0: what's in it for developers? 
+  3. Introducing the Activiti tool stack 
+  4. Working with the Activiti process engine 
+
+Part 2 Implementing BPMN 2.0 processes with Activiti
+  5. Implementing a BPMN 2.0 process 
+  6. Applying advanced BPMN 2.0 and extensions 
+  7. Dealing with error handling 
+  8. Deploying and configuring the Activiti Engine 
+  9. Exploring additional Activiti modules 
+
+Part 3 Enhancing BPMN 2.0 processes
+10. Implementing advanced workflow 
+11. Integrating services with a BPMN 2.0 process 
+12. Ruling the business rule engine 
+13. Document management using Alfresco 
+14. Business monitoring and Activiti 
+
+Part 4 Managing and monitoring BPMN 2.0 processes
+15. Managing the Activiti Engine 
+
+Appendixes
+  A Working with the source code 
+  B BPMN 2.0 supported elements in Activiti 

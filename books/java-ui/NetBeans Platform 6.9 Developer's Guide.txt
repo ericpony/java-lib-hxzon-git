@@ -1,0 +1,208 @@
+﻿NetBeans Platform 6.9 Developer's Guide
+Copyright ? 2010 Packt Publishing
+All rights reserved. No part of this book may be reproduced, stored in a retrieval 
+system, or transmitted in any form or by any means, without the prior written 
+permission of the publisher, except in the case of brief quotations embedded in 
+critical articles or reviews.
+Every effort has been made in the preparation of this book to ensure the accuracy 
+of the information presented. However, the information contained in this book is 
+sold without warranty, either express or implied. Neither the author, nor Packt 
+Publishing, and its dealers and distributors will be held liable for any damages 
+caused or alleged to be caused directly or indirectly by this book.
+Packt Publishing has endeavored to provide trademark information about all of the 
+companies and products mentioned in this book by the appropriate use of capitals. 
+However, Packt Publishing cannot guarantee the accuracy of this information.
+First published: August 2010
+Production Reference: 1020810
+Published by Packt Publishing Ltd. 
+32 Lincoln Road 
+Olton 
+Birmingham, B27 6PA, UK.
+ISBN 978-1-849511-76-6
+www.packtpub.com
+Cover Image by Vinayak Chittar (vinayak.chittar@gmail.com)
+Create professional desktop rich-client Swing 
+applications using the world's only modular Swing 
+application framework
+=========================
+Table of Contents
+Preface  1
+
+Chapter 1: Modules  7
+Chapter 2: Forms  25
+Chapter 3: Window System  37
+Chapter 4: Lookup  67
+Chapter 5: Actions  99
+Chapter 6: Nodes and Explorer Views  111
+Chapter 7: File System  175
+Chapter 8: Data System  183
+Chapter 9: Dialogs  203
+Chapter 10: Settings  231
+Chapter 11: Help  239
+Chapter 12: Branding  251
+Chapter 13: Distribution and Updates  259
+
+Index  267
+=========================
+Table of Contents
+Preface  1
+
+Chapter 1: Modules  7
+Modular application development  7
+Characteristics of a module  8
+Deployment format  8
+Uniqueness  9
+Versioning  9
+Exposed interfaces  9
+Declarative dependencies  10
+Lifecycle  10
+Creating an application  10
+Setting dependencies  13
+Versioning  16
+Installing modules  18
+Integrating OSGi Bundles  19
+The sample application  20
+Summary  24
+
+Chapter 2: Forms  25
+Form Builder  25
+Creating a form   27
+Laying out a form  29
+Aligning components on a form   29
+Space distribution  30
+Properties window  31
+Event handling   32
+Modification of generated code  34
+Extending the palette   35
+Summary  36
+
+Chapter 3: Window System  37
+Creating a window  38
+Examining the generated files  41
+Automatic window lifecycle management  48
+Programmatically managing the Window lifecycle  50
+Positioning of windows  52
+Creating custom modes  56
+Creating window groups  60
+Extending the default TopComponent persistence  63
+Summary  66
+
+Chapter 4: Lookup  67
+Registering and finding services  67
+Creating extension points  70
+Using extension points externally  73
+Enabling loosely-coupled communication  74
+Loosely-coupled consumption  75
+Creating new tasks  78
+Dynamic changes and notifications  82
+Creating an additional TaskProvider  85
+Proxy Lookups  88
+Listening to the selection  91
+Creating a service facade  92
+Summary  97
+
+Chapter 5: Actions  99
+Preparing to work with global actions  100
+Creating global actions  103
+Examining the created files  106
+Enabling Users to Invoke actions  107
+Toolbar  107
+Keyboard  108
+Summary  109
+
+Chapter 6: Nodes and Explorer Views  111
+Multiple models in pure Swing  111
+Nodes and the global Lookup  112
+Multiple node implementations  113
+Creating a node  114
+Multiple explorer view implementations  120
+Creating an explorer view  121
+Controlling views with the ExplorerManager  122
+Creating an ExplorerManager  123
+Key-based node hierarchies  126
+Creating a key-based node hierarchy  127
+Displaying nodes in an explorer view  131
+Exchanging explorer views  134
+Lazy child creation  136
+Context-sensitive actions  140
+Creating the Edit Task Action  142
+Creating the Add Task Action  148
+Creating the Copy Task Action  150
+Creating the Delete Task Action  152
+Connecting the Actions to the User Interface  154
+Decorating nodes  156
+Creating a FilterNode  157
+Displaying properties  162
+Creating a Property sheet  163
+Inplace property editors  167
+Adding widgets  170
+Creating a first scene  171
+Integrating a scene into the Task Manager  172
+Summary  174
+
+Chapter 7: File System  175
+Central registry  176
+Accessing the local FileSystem  176
+Providing additional attributes  181
+Listening to file changes  182
+Summary  182
+
+Chapter 8: Data System  183
+Support for new file types  183
+Creating support for Task files  184
+Examining the generated files  185
+Customizing the DataObject  186
+Refactoring the DueList module  190
+Refactoring the TaskEditor module  191
+Refactoring the TaskActions module  191
+Refactoring the Overview module  192
+Trying out the New Task File Support  192
+Context-sensitive capabilities  194
+Creating a save capability  195
+Invoking the Save capability  197
+Providing Icon Badging  200
+Summary  202
+
+Chapter 9: Dialogs  203
+Notifications  203
+Standard dialogs  205
+Custom dialogs  207
+Wizards  211
+Creating a wizard  212
+Designing the wizard panels  214
+Controlling the wizard panels  218
+Validating entered values  220
+Invoking the wizard  224
+Summary  230
+
+Chapter 10: Settings  231
+Options window  231
+Integrating with the Options window  232
+Preferences  232
+Setting and using a Preference  233
+Summary  238
+
+Chapter 11: Help  239
+Creating a helpset  239
+Creating context-sensitive help  242
+Combining help sets from different modules  243
+Removing help sets provided by other modules  248
+Summary  249
+
+Chapter 12: Branding  251
+Application launcher  251
+Limiting the set of modules  252
+Branding editor  253
+Application title and icons  253
+Splash screen  254
+Window system features  255
+Display texts  256
+Summary  257
+
+Chapter 13: Distribution and Updates  259
+Creating a ZIP distribution  259
+Creating an installer  261
+Enabling online updates  261
+Summary  265
+
+Index  267

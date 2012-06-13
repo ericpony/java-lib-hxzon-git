@@ -1,0 +1,633 @@
+﻿Eclipse Rich Client Platform, 2nd Edition
+http://www.informit.com/store/product.aspx?isbn=0321603788
+    By Jeff McAffer, Jean-Michel Lemieux, Chris Aniszczyk
+    Published May 12, 2010 by Addison-Wesley Professional. Part of the Eclipse Series series.
+        Copyright 2010
+        Dimensions: 7 X 9-1/8
+        Pages: 552
+        Edition: 2nd
+        Book
+        ISBN-10: 0-321-60378-8
+        ISBN-13: 978-0-321-60378-4
+Many of the designations used by manufacturers and sellers to distinguish their products are claimed as 
+trademarks. Where those designations appear in this book, and the publisher was aware of a trademark 
+claim, the designations have been printed with initial capital letters or in all capitals.
+The authors and publisher have taken care in the preparation of this book, but make no expressed or 
+implied warranty of any kind and assume no responsibility for errors or omissions. No liability is assumed 
+for incidental or consequential damages in connection with or arising out of the use of the information or 
+programs contained herein.
+The publisher offers excellent discounts on this book when ordered in quantity for bulk purchases or 
+special sales, which may include electronic versions and/or custom covers and content particular to your 
+business, training goals, marketing focus, and branding interests. For more information, please contact:
+U.S. Corporate and Government Sales 
+(800) 382-3419 
+corpsales@pearsontechgroup.com
+For sales outside the United States please contact:
+International Sales 
+international@pearson.com
+Visit us on the Web: informit.com/aw
+Library of Congress Cataloging-in-Publication Data
+McAffer, Jeff.
+Eclipse Rich Client Platform / Jeff McAffer, Jean-Michel Lemieux, Chris Aniszczyk.—2nd ed.
+p. cm.
+Includes index.
+ISBN 0-321-60378-8 (pbk. : alk. paper)
+1. Computer software—Development. 2. Java (Computer program language) 
+3.Application software—Development. I. Lemieux, Jean-Michel. II. Aniszczyk, 
+Chris. III. Title.
+QA76.76.D47M383 2010
+005.13’3—dc22 2010006689
+Copyright 2010 Pearson Education, Inc.
+All rights reserved. Printed in the United States of America. This publication is protected by copyright, 
+and permission must be obtained from the publisher prior to any prohibited reproduction, storage in a 
+retrieval system, or transmission in any form or by any means, electronic, mechanical, photocopying, 
+recording, or likewise. For information regarding permissions, write to:
+Pearson Education, Inc.
+Rights and Contracts Department 
+501 Boylston Street, Suite 900 
+Boston, MA 02116 
+Fax: (617) 671-3447
+ISBN-13: 978-0-321-60378-4
+ISBN-10:  0-321-60378-8
+Text printed in the Uni ted States on recycled paper at RR Donnel ley in Crawfordsvi l le, Indiana. 
+First printing, May 2010
+=====================
+Eclipse is a universal, multilanguage software development environment— 
+an open, extensible, integrated development environment (IDE)—that 
+can be used for anything. Eclipse represents one of the most exciting 
+initiatives to come from the world of application development, and it has 
+the support of leading companies and organizations in the technology 
+sector. Eclipse is gaining widespread acceptance in both commercial 
+and academic arenas.
+The Eclipse Series is the definitive collection of publications dedicated 
+to the Eclipse platform. Books in this series bring you key technical 
+information, critical insight, and the practical advice you need to build tools 
+to support this revolutionary open-source platform. 
+Visit  informit.com/series/eclipse  for a complete list of available publications.
+The Eclipse Series
+Eric McAffer, Erich Gamma, John Wiegand, Series Editors
+======================
+The Definitive Guide to Eclipse Rich Client Development
+
+In Eclipse Rich Client Platform, Second Edition, three Eclipse Rich Client Platform (RCP) project leaders show how to use Eclipse 3.5 (“Galileo”) to rapidly deliver cross-platform applications with rich, native-feel GUIs.
+
+The authors fully reveal the power of Eclipse as a desktop application development platform; introduce important new improvements in Eclipse 3.5; and walk through developing a full-featured, branded RCP application for Windows, Linux, Mac, and other platforms—including handheld devices and kiosks.
+
+Drawing on their extensive experience, the authors cover building, refining, and refactoring prototypes; customizing user interfaces; adding help and software management features; and building, branding, testing, and shipping finished software. They demonstrate current best practices for developing modular and dynamically extensible systems, using third-party code libraries, packaging applications for diverse environments, and much more.
+
+For Java programmers at all levels of experience, this book
+
+    Introduces important new RCP features such as p2, Commands, and Databinding
+    Thoroughly covers key RCP-related technologies such as Equinox, SWT, JFace, and OSGi
+    Shows how to effectively brand and customize RCP application look-and-feel
+    Walks through user interface testing for RCP applications with SWTBot
+    Illuminates key similarities and differences between RCP and conventional plug-in development
+
+Hands-on, pragmatic, and comprehensive, this book offers all the real-world, nontrivial code examples working developers need—as well as “deep dives” into key technical areas that are essential to your success.
+======================
+Contents
+Foreword  xxi
+Preface  xxv
+Acknowledgments  xxix
+About the Authors  xxxi
+
+Part I  Introduction  1
+Chapter 1 Eclipse as a Rich Client Platform  3
+Chapter 2 Eclipse RCP Concepts  15
+
+Part II  RCP by Example  29
+Chapter 3 Tutorial Introduction  31
+Chapter 4 The Hyperbola Application  45
+Chapter 5 Starting the Hyperbola Prototype  63
+Chapter 6 Adding Actions  83
+Chapter 7 Adding a Chat Editor  103
+Chapter 8 Branding Hyperbola  115
+Chapter 9 Packaging Hyperbola  129
+Chapter 10 Messaging Support  137
+Chapter 11 Adding a Login Dialog  155
+Chapter 12 Adding Key Bindings  177
+Chapter 13 Adding Help  187
+Chapter 14 Adding Software Management  199
+
+Part III  The Workbench  217
+Chapter 15 Workbench Advisors  219
+Chapter 16 Perspectives, Views, and Editors  239
+Chapter 17 Actions  263
+Chapter 18 Commands  291
+Chapter 19 Customizing Workbench Windows  303
+Chapter 20 Customizing the Presentation of Views and Editors  319
+
+Part IV  Development Processes  335
+Chapter 21 Installing and Updating with p2  337
+Chapter 22 Dynamic Plug-ins  353
+Chapter 23 RCP Everywhere  369
+Chapter 24 Building Hyperbola  397
+Chapter 25 Testing  423
+Chapter 26 The Last Mile  431
+
+Part V  Reference  447
+Chapter 27 OSGi  449
+Chapter 28 Eclipse Databinding  473
+Chapter 29 Eclipse Ecosystem  489
+
+Index  505
+=============================
+Contents
+Foreword  xxi
+Preface  xxv
+Acknowledgments  xxix
+About the Authors  xxxi
+
+Part I  Introduction  1
+
+Chapter 1 Eclipse as a Rich Client Platform  3
+1.1 Eclipse  5
+1.2 The Eclipse Rich Client Platform  5
+1.3 Eclipse RCP over the Years  6
+1.4 Uses of RCP  7
+1.4.1 IBM Lotus and Eclipse RCP  7
+1.4.2 NASA and the Eclipse RCP  10
+1.5 Summary  12
+1.6 Pointers  13
+
+Chapter 2 Eclipse RCP Concepts  15
+2.1 A Community of Plug-ins  15
+2.2 Inside Plug-ins  18
+2.3 Putting a System Together  19
+2.4 OSGi Framework  20
+2.5 Equinox  21
+2.5.1 Applications  22
+2.5.2 Products  22
+2.5.3 Extension Registry  23
+2.6 Standard Widget Toolkit (SWT)  25
+2.7 JFace  25
+2.8 UI Workbench  25
+2.8.1 Contribution-Based Extensibility  26
+2.8.2 Perspectives, Views, and Editors  26
+2.9 Summary  27
+2.10 Pointers  27
+
+Part II  RCP by Example  29
+
+Chapter 3 Tutorial Introduction  31
+3.1 What Is Hyperbola 31
+3.2 The Evolution of Hyperbola  32
+3.3 Development Environment Installation  33
+3.4 Sample Code  34
+3.4.1 Moving from Chapter to Chapter  35
+3.4.2 Comparing  35
+3.5 Target Platform Setup  36
+3.5.1 The Predefined Target  37
+3.5.2 Defining Target Platforms  38
+3.6 Learning by Example  42
+3.7 Summary  44
+3.8 Pointers  44
+
+Chapter 4 The Hyperbola Application  45
+4.1 Hyperbola “Hello, World”  45
+4.2 Tour of the Code  51
+4.2.1 Application  51
+4.2.2  WorkbenchAdvisor  53
+4.2.3 Perspective  53
+4.2.4  WorkbenchWindowAdvisor  54
+4.2.5  ActionBarAdvisor  55
+4.2.6 Summary  55
+4.3 Running and Debugging  55
+4.3.1 Debugging  56
+4.3.2 Launch Configurations  60
+4.4 Summary 62
+4.5 Pointers  62
+
+Chapter 5 Starting the Hyperbola Prototype  63
+5.1 Continuing from the Shell  64
+5.1.1 Saving Window Location and Size  65
+5.2 Adding a Contacts View  65
+5.2.1 Adding the Contacts View to a Perspective  67
+5.3 The Chat Model  70
+5.4 Filling in the Contacts View  72
+5.4.1 The ContactsView  72
+5.4.2 Content Providers Overview  74
+5.4.3 The Label Provider  77
+5.5 Adding Images  78
+5.6 Summary  81
+5.7 Pointers  82
+
+Chapter 6 Adding Actions  83
+6.1 Adding to the Menus and Toolbar  84
+6.1.1 Create a Top-Level Menu  85
+6.1.2 Menu Managers  87
+6.1.3 The Add Contact Action  88
+6.1.4 Adding the Add Contact Action  91
+6.1.5 Customizable Toolbars  93
+6.2 Adding to the Status Line  93
+6.2.1 Status Line—A Shared Resource  95
+6.3 System Tray Integration  96
+6.3.1 Obtaining a Display  97
+6.3.2 Creating the Tray Item  98
+6.4 Summary  100
+6.5 Pointers  101
+
+Chapter 7 Adding a Chat Editor  103
+7.1 Views and Editors  104
+7.2 Defining the Chat Editor  105
+7.2.1 Editor Input  109
+7.2.2 The Chat Action  110
+7.3 Checkpoint  113
+7.4 Summary  114
+7.5 Pointers  114
+
+Chapter 8 Branding Hyperbola  115
+8.1 Defining the Hyperbola Product  115
+8.2 Window Images  120
+8.3 Customizing the Launcher  121
+8.4 Splash Screen  122
+8.5 About Information  124
+8.5.1 Product About Information  124
+8.5.2 Installation Details About Information  126
+8.6 Summary  127
+8.7 Pointers  127
+
+Chapter 9 Packaging Hyperbola  129
+9.1 Exporting Hyperbola  129
+9.2 Exporting for Other Platforms  132
+9.3 Summary  134
+9.4 Pointers  135
+
+Chapter 10 Messaging Support  137
+10.1 Integrating a Third-Party Library  138
+10.1.1 Bundling Smack  138
+10.1.2 Testing the Bundling  141
+10.2 Refactoring the Model  143
+10.2.1 Introduction to Smack  144
+10.2.2 Design Objectives  145
+10.2.3 Deleting Prototype Classes  146
+10.2.4 Adding Chats  147
+10.3 Updating the UI  149
+10.3.1 The Content Provider  150
+10.3.2 The Label Provider  151
+10.4 Chatting with Eliza  152
+10.5 Summary  153
+10.6 Pointers  154
+
+Chapter 11 Adding a Login Dialog  155
+11.1 Adding the Login Dialog  155
+11.1.1 Branding the Dialog  159
+11.2 Remembering Login Settings  161
+11.2.1 The Basics  161
+11.2.2 Using Preferences  164
+11.2.3 Storing Preferences Securely  168
+11.3 Adding Auto-login Preferences  170
+11.3.1 Creating a Preference Page  170
+11.3.2 Adding the Action  172
+11.3.3 Accessing Preferences  173
+11.3.4 Default Preference Values  173
+11.3.5 Preferences on the Login Dialog  174
+11.4 Summary  175
+11.5 Pointers  175
+
+Chapter 12 Adding Key Bindings  177
+12.1 Defining Commands  177
+12.2 Checkpoint  182
+12.3 Adding Key Bindings for Workbench Actions  182
+12.4 Key Schemes  184
+12.5 Keys Preference Page  185
+12.6 Summary  186
+12.7 Pointers  186
+
+Chapter 13 Adding Help  187
+13.1 Adding to the Target Platform  187
+13.1.1 Getting Plug-ins  188
+13.1.2 Adding Plug-ins  188
+13.2 Configuring the Help Plug-ins  190
+13.3 Add the Help Action  190
+13.4 Adding Help Content  191
+13.5 Help Content Structure  195
+13.6 Infopops or F1 Help  196
+13.7 Exporting Plug-ins with Help  197
+13.8 Summary  198
+13.9 Pointers  198
+
+Chapter 14 Adding Software Management  199
+14.1 Getting p2  199
+14.2 Features  200
+14.2.1 Uses of Features  200
+14.2.2 What Is a Feature 201
+14.3 Defining Features  204
+14.4 Branding Features  209
+14.5 Updating Hyperbola  210
+14.6 Customizing the p2 UI  211
+14.7 Defining Categories  213
+14.8 Automatic Updates  214
+14.9 Summary  215
+14.10 Pointers  215
+
+Part III  The Workbench  217
+
+Chapter 15 Workbench Advisors  219
+15.1 Workbench Advisors  219
+15.1.1 Workbench Lifecycle  221
+15.2  WorkbenchAdvisor  223
+15.2.1 Lifecycle API  224
+15.2.2 Exceptions and Idleness API  227
+15.2.3 Configuration API  228
+15.3  WorkbenchWindowAdvisor  229
+15.3.1  IWorkbenchWindowConfigurer  230
+15.4  ActionBarAdvisor  231
+15.4.1  IActionBarConfigurer  232
+15.5 Workbench Overview  232
+15.5.1 Workbench Extension Point Reference  234
+15.5.2 Actions  234
+15.5.3 Scalability  235
+15.5.4 Contributions  236
+15.5.5 Perspectives  237
+15.5.6 Startup  238
+15.6 Summary  238
+15.7 Pointers  238
+
+Chapter 16 Perspectives, Views, and Editors  239
+16.1 Perspectives  240
+16.1.1 Adding Perspectives  240
+16.1.2 Adding the Debug Perspective and Console View  242
+16.1.3  IPageLayout Reference  244
+16.1.4 Perspective Bar  247
+16.1.5 Perspective Menu  248
+16.1.6 Programmatic Perspective Control  249
+16.2 Views and Editors  251
+16.2.1 Multiple Instances of the Same View  251
+16.2.2 Sticky Views  253
+16.2.3 Showing Contributed Views  254
+16.2.4 View Registry  254
+16.2.5 Connecting Parts Together  255
+16.3 Multiple Workbench Windows  258
+16.3.1 Window Navigation Menu  258
+16.4 Drag and Drop with Editors  259
+16.5 Summary  262
+16.6 Pointers  262
+
+Chapter 17 Actions  263
+17.1 Overview  263
+17.2 Declarative Actions in Hyperbola  265
+17.2.1 Declarative Actions  266
+17.2.2 Allowing Contributions  267
+17.2.3 Declaring Actions  269
+17.2.4 Context Menus  272
+17.3 Standard Workbench Actions  274
+17.4 Retargetable Actions  275
+17.5 Consolidating Declarative Actions  277
+17.6 Toolbar Action Tricks  278
+17.6.1 Showing Images and Text  279
+17.6.2 Adding Controls to the Toolbar  280
+17.7 Adding Contributions to the Status Line  281
+17.8 Reporting Progress  282
+17.8.1 Nonmodal Progress  284
+17.8.2 Progress View  285
+17.8.3 Customizing Progress  286
+17.8.4 Writing a ProgressProvider  288
+17.9 Summary  289
+
+Chapter 18 Commands  291
+18.1 The Problem with Actions  292
+18.2 Commands  293
+18.3 Contributions  294
+18.3.1 Menu Contributions  294
+18.3.2 Standard Workbench Contributions  297
+18.3.3 Contribution Visibility  299
+18.4 Handlers  299
+18.5 Summary  301
+18.6 Pointers  302
+
+Chapter 19 Customizing Workbench Windows  303
+19.1 Customization Defined  303
+19.2 Customizing a Workbench Window  304
+19.2.1 Example: Hide and Show  307
+19.2.2  FormLayout  307
+19.2.3 Hiding the Toolbar  309
+19.2.4 Adding the Toggle Actions  309
+19.2.5 Quick Search Panel  311
+19.2.6 Checkpoint  312
+19.3 Custom Window Shapes  312
+19.3.1 Creating the Shape  314
+19.3.2 Creating the Window  315
+19.3.3 Defining the Window Contents  317
+19.4 Summary  318
+19.5 Pointers  318
+
+Chapter 20 Customizing the Presentation of Views and Editors  319
+20.1 Presentations  319
+20.2 Sample Presentations  320
+20.2.1 The R21 Presentation  321
+20.2.2 Example Presentations  322
+20.3 Writing a Presentation  322
+20.3.1 Widget Hierarchy  324
+20.3.2  StackPresentation  324
+20.4 Example Presentation  326
+20.4.1 The Presentation Factory  327
+20.4.2 The Stack Presentation  328
+20.4.3 Size and Position  330
+20.4.4 Adding, Selecting, and Removing Parts  331
+20.4.5 Menus  333
+20.5 Summary  333
+20.6 Pointers  334
+
+Part IV  Development Processes  335
+
+Chapter 21 Installing and Updating with p2  337
+21.1 The Roles of p2  337
+21.2 Architecture  338
+21.2.1 Installable Units  339
+21.2.2 Artifacts  340
+21.2.3 Repositories  340
+21.2.4 Profiles  341
+21.2.5 Director  341
+21.2.6 Engine  341
+21.3 Using the p2 API  342
+21.3.1 Adding Repositories  342
+21.3.2 Loading Repositories  342
+21.3.3 Searching Repositories  343
+21.3.4 Executing a Provisioning Plan  344
+21.4 Metadata Management  345
+21.4.1 Publishing Metadata  345
+21.4.2 Customizing Metadata  346
+21.4.3 Touchpoint Instructions  347
+21.5 Repository Management  349
+21.5.1 Mirroring Repositories  349
+21.5.2 Composite Repositories  350
+21.5.3 Content Categorization  350
+21.6 Installation Management  350
+21.7 Summary  351
+21.8 Pointers  351
+
+Chapter 22 Dynamic Plug-ins  353
+22.1 Making Hyperbola Dynamic  353
+22.2 Dynamic Challenges  355
+22.3 Dynamic Awareness  355
+22.3.1 Dynamic Extension Scenarios  355
+22.3.2 Object Handling  362
+22.3.3 Bundle Listeners  363
+22.4 Dynamic Enablement  364
+22.4.1 Cleaning Up after Yourself  365
+22.5 Summary  367
+22.6 Pointers  367
+
+Chapter 23 RCP Everywhere  369
+23.1 Sample Code  369
+23.2 The Scenario  370
+23.2.1 About the Scenario  370
+23.3 Product Configurations  371
+23.3.1 Restructuring Hyperbola  372
+23.3.2 Hyperbola Projects  374
+23.3.3 Project Naming  375
+23.3.4 Why So Many Projects 376
+23.4 Hyperbola Product Configurations  376
+23.4.1 The JFace Configuration  377
+23.4.2 The PDA Configuration  379
+23.4.3 The Extension Configuration (IDE)  379
+23.4.4 The Workbench Configuration  380
+23.4.5 A Hyperbola Kiosk  381
+23.5 Code Structure  383
+23.5.1 Hyperbola Layering  383
+23.5.2 Workbench Contributions  384
+23.5.3 Commands and Actions  386
+23.5.4 Key Bindings  386
+23.5.5 Views and Editors  387
+23.5.6 Wizards, Preferences, and Property Pages 388
+23.5.7 Optional Dependencies  388
+23.5.8 Icons and Images  389
+23.6 Designing a Platform  390
+23.6.1 Extension Points  390
+23.6.2 Extension Factories  392
+23.6.3 Named and Anonymous Extensions  393
+23.7 RCP-Friendly Plug-ins  394
+23.8 Summary  394
+23.9 Pointers  395
+
+Chapter 24 Building Hyperbola  397
+24.1 What Is PDE Build 398
+24.2 Plug-in build.properties  399
+24.2.1 Control Properties  399
+24.2.2 Using Custom Build Scripts  400
+24.3 Setting Up a Builder  401
+24.3.1 Tweaking the Target for PDE Build  401
+24.3.2  build.properties  402
+24.4 Running the Builder  407
+24.5 Tweaking the Build  410
+24.5.1 Customizing the Build Scripts  410
+24.5.2 Repositories and Additional Dependencies 410
+24.5.3 Fetching from an SCM System  411
+24.5.4 Fetching the Maps  413
+24.5.5 Auto-substitution of Version Numbers  414
+24.5.6 Qualifying Version Numbers  414
+24.5.7 Identifying and Placing Root Files  415
+24.6 Building Add-on Features  417
+24.6.1 Setting Up a Feature Builder  417
+24.6.2  build.properties  417
+24.6.3 Running the Feature Build  418
+24.7 Assembling Multiple Configurations  420
+24.7.1 What Is an SDK 420
+24.7.2 Building an SDK Feature  420
+24.7.3 Simultaneously Assembling Multiple Configurations  421
+24.8 Summary  422
+
+Chapter 25 Testing  423
+25.1 Making Hyperbola Testable  423
+25.2 Unit Testing Hyperbola  424
+25.2.1 Test Strategy  424
+25.2.2 Writing the Test Case  424
+25.2.3 Running the Test Case  425
+25.3 User Interface Testing Hyperbola  426
+25.3.1 SWTBot  426
+25.3.2 Test Strategy  426
+25.3.3 Writing the Test Case  426
+25.3.4 Running the Test Case  427
+25.4 Summary  429
+25.5 Pointers  429
+
+Chapter 26 The Last Mile  431
+26.1 Archives 431
+26.2 Native Installers  432
+26.3 p2 Installer  433
+26.4 Java Web Start (JNLP)  433
+26.4.1 How Java Web Start Works  433
+26.4.2 Hyperbola and Java Web Start  435
+26.4.3 JAR Signing  436
+26.4.4 Exporting for Java Web Start  437
+26.4.5 Building JNLP Manifests  439
+26.4.6 Java Web Start and p2  439
+26.5 Initializing the Install  439
+26.6 Preinitialized Configurations  440
+26.7 Multiuser Install Scenarios  441
+26.7.1 Shared Installs  442
+26.7.2 Bundle Pooling  443
+26.8 Summary  445
+26.9 Pointers  445
+
+Part V  Reference  447
+
+Chapter 27 OSGi  449
+27.1 OSGi and the Eclipse Runtime  450
+27.2 The Shape of Plug-ins  452
+27.3 Fragments  454
+27.4 Version Numbering  457
+27.5 Services  459
+27.6 Bundle Lifecycle  460
+27.6.1  BundleActivator  462
+27.6.2 The Downside of Activators  463
+27.6.3 Uses for Activators  464
+27.7 Early Activation  465
+27.7.1 Early Activation Extensions  465
+27.7.2  osgi.bundles  466
+27.7.3 Start Levels  467
+27.8 Lazy Activation  467
+27.9 Data Areas  469
+27.10 Summary  471
+27.11 Pointers  472
+
+Chapter 28 Eclipse Databinding  473
+28.1 Getting Started  473
+28.2 Why Databinding 474
+28.3 Architecture  474
+28.4 Observables  475
+28.4.1  PojoObservables  475
+28.4.2  BeansObservables  477
+28.4.3  SWTObservables  478
+28.4.4  ViewersObservables  479
+28.4.5  MasterDetailObservables  479
+28.4.6  WorkbenchObservables  480
+28.4.7 Realms  480
+28.5 Properties  480
+28.5.1  PojoProperties  481
+28.5.2  BeanProperties  481
+28.5.3  WidgetProperties  482
+28.5.4  WorkbenchProperties  482
+28.6 Bindings  483
+28.6.1 Conversion  484
+28.6.2 Validation  485
+28.6.3 Support Classes  487
+28.7 Summary  487
+28.8 Pointers  487
+
+Chapter 29 Eclipse Ecosystem  489
+29.1 Where to Find Plug-ins  489
+29.2 Eclipse Platform Plug-ins  491
+29.3 Product Introduction  491
+29.4 Resources  492
+29.4.1 Overview of Resources Key Features  493
+29.4.2 Getting Started with Resources  494
+29.4.3 Resources in the Workbench  494
+29.5 Text Editing  495
+29.5.1 Text Plug-ins  495
+29.5.2 Editing versus Editor  496
+29.5.3  Text and StyledText  497
+29.5.4  IDocument 497
+29.5.5  TextViewers and TextEditors  498
+29.5.6 What Is Missing 499
+29.6 Consoles  499
+29.7 Variables  500
+29.8 Outline and Property Views  501
+29.9 Forms  501
+29.10 Browser  502
+29.11 The Common Navigator Framework  502
+29.12 Declarative Services  503
+29.13 Summary  503
+
+Index  505

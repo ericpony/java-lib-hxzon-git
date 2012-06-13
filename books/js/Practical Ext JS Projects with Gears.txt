@@ -1,0 +1,260 @@
+﻿Practical Ext JS Projects with Gears
+Copyright ? 2009 by Frank W. Zammetti
+All rights reserved. No part of this work may be reproduced or transmitted in any form or by any means, 
+electronic or mechanical, including photocopying, recording, or by any information storage or retrieval 
+system, without the prior written permission of the copyright owner and the publisher.
+ISBN-13 (pbk): 978-1-4302-1924-8
+ISBN-13 (electronic): 978-1-4302-1925-5
+Printed and bound in the United States of America 9 8 7 6 5 4 3 2 1
+Trademarked names may appear in this book. Rather than use a trademark symbol with every occurrence 
+of a trademarked name, we use the names only in an editorial fashion and to the benefit of the trademark 
+owner, with no intention of infringement of the trademark.
+Java? and all Java-based marks are trademarks or registered trademarks of Sun Microsystems, Inc., in the 
+US and other countries. Apress, Inc., is not affiliated with Sun Microsystems, Inc., and this book was writ-
+ten without endorsement from Sun Microsystems, Inc.
+Lead Editor: Steve Anglin
+Development Editor: Douglas Pundick
+Technical Reviewer: Herman van Rosmalen
+Editorial Board: Clay Andres, Steve Anglin, Mark Beckner, Ewan Buckingham, Tony Campbell,  
+Gary Cornell, Jonathan Gennick, Michelle Lowman, Matthew Moodie, Jeffrey Pepper, Frank Pohlmann, 
+Ben Renow-Clarke, Dominic Shakeshaft, Matt Wade, Tom Welsh
+Project Manager: Richard Dal Porto
+Copy Editor: Liz Welch
+Associate Production Director: Kari Brooks-Copony
+Production Editor: Katie Stence
+Compositor: Linda Weidemann, Wolf Creek Publishing Services
+Proofreader: Kim Burton
+Indexer: Brenda Miller
+Artist: Anthony Volpe
+Cover Designer: Kurt Krames
+Manufacturing Director: Tom Debolski
+Distributed to the book trade worldwide by Springer-Verlag New York, Inc., 233 Spring Street, 6th Floor, 
+New York, NY 10013. Phone 1-800-SPRINGER, fax 201-348-4505, e-mail orders-ny@springer-sbm.com, or 
+visit http://www.springeronline.com. 
+For information on translations, please contact Apress directly at 2855 Telegraph Avenue, Suite 600, 
+Berkeley, CA 94705. Phone 510-549-5930, fax 510-549-5939, e-mail info@apress.com, or visit  
+http://www.apress.com. 
+Apress and friends of ED books may be purchased in bulk for academic, corporate, or promotional use. 
+eBook versions and licenses are also available for most titles. For more information, reference our Spe-
+cial Bulk Sales–eBook Licensing web page at http://www.apress.com/info/bulksales.
+The information in this book is distributed on an “as is” basis, without warranty. Although every pre-
+caution has been taken in the preparation of this work, neither the author(s) nor Apress shall have any 
+liability to any person or entity with respect to any loss or damage caused or alleged to be caused directly 
+or indirectly by the information contained in this work. 
+The source code for this book is available to readers at http://www.apress.com. You may need to answer 
+questions pertaining to this book in order to successfully download the code.
+==========================
+Contents at a Glance
+About the Author .................................................................. xiii
+About the Technical Reviewer . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xv
+About the Illustrator . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xvii
+Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xix
+Introduction ...................................................................... xxi
+
+PART 1 ■ ■ ■ The Preliminaries
+Chapter 1  Introducing Web Development with Ext JS ........................ 3
+Chapter 2  Widgets and Advanced Ext JS  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 57
+
+PART 2 ■ ■ ■ The Projects
+Chapter 3  Ext JS for a Busy Lifestyle: OrganizerExt ........................ 131
+Chapter 4  Making Project Management Cool: TimekeeperExt .............. 195
+Chapter 5  A Place for Your Stuff: Code Cabinet Ext ........................ 259
+Chapter 6  When the Yellow Pages Just Isn’t Cool Enough:  Local Business Search  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 309
+Chapter 7  Your Dad Had a Workbench, Now So Do You: SQL Workbench . . . . . 371
+Chapter 8  All Work and No Play: Dueling Cards  . . . . . . . . . . . . . . . . . . . . . . . . . . . 437
+Chapter 9  Managing Your Finances: Finance Master . . . . . . . . . . . . . . . . . . . . . . 497
+Index . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 559
+==================================
+Contents
+About the Author .................................................................. xiii
+About the Technical Reviewer . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xv
+About the Illustrator . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xvii
+Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xix
+Introduction ...................................................................... xxi
+
+PART 1 ■ ■ ■ the Preliminaries
+
+Chapter 1  Introducing Web development with Ext JS ................. 3
+The Evolution of the Web: Web Sites vs. Web Applications ............. 3
+The Rise of the Cool: Rich Internet Applications ....................... 6
+Enter Ajax: The Driving Force behind RIAs  . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+Ajax (for Those Living under a Rock the Past 2–3 Years) .......... 9
+The Benefits of Ajax (and by Extension, RIAs) ................... 10
+The Evolution of Web Development . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+Choice Is Good: Toolkits Make It a Breeze  . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+Enter Ext JS: The Best of the Bunch ................................ 16
+Fisher Price? My First Ext JS Application ........................... 19
+Ext JS’s High-Level Organizational Structure ........................ 20
+Global-Scope Classes . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21
+The Ext Namespace. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 34
+Ext.Ajax  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 34
+Ext.DomHelper . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 36
+Ext.DomQuery .............................................. 39
+Ext.Updater . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 43
+The Ext.util Namespace . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 44
+Ext.util.CSS . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 44
+Ext.util.DelayedTask  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 45
+Ext.util.Format  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 46
+Ext.util.JSON ............................................... 49
+Ext.util.MixedCollection ...................................... 50
+Ext.util.TaskRunner . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 53
+Ext.util.TextMetrics  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 54
+But...but...What About the Widgets?  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 55
+One Last Tangential Thing: Ext Core  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 55
+Summary ....................................................... 56
+
+Chapter 2  Widgets and advanced Ext JS .............................. 57
+Ext JS Widgets: An Overview ...................................... 57
+The Hierarchy of Widgets . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 58
+The Basics of Widget Usage .................................. 60
+Layout and Containers in Ext JS . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 62
+Form Widgets . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 75
+Menus and Toolbars (Oh My!)  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 87
+Trees in Ext JS . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 90
+Grids in Ext JS  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 93
+The Other Widgets .......................................... 95
+Working with Data in Ext JS. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 101
+The Template and XTemplate Classes ............................. 105
+Drag and Drop . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 109
+The “State” of Things ........................................... 116
+For Your Date in the Boardroom: Ext JS Charting . . . . . . . . . . . . . . . . . . . 118
+Plug-ins ....................................................... 122
+These Are the Gears That Power the Tubes!. . . . . . . . . . . . . . . . . . . . . . . . 123
+LocalServer ............................................... 124
+WorkerPool  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 124
+Database . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 124
+Summary ...................................................... 127
+
+PART 2 ■ ■ ■ the Projects
+
+Chapter 3  Ext JS for a Busy Lifestyle: OrganizerExt ................. 131
+What’s This Application Do Anyway? .............................. 131
+Overall Structure and Files ....................................... 133
+The Markup .................................................... 134
+The Style Sheet  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 141
+The Code ...................................................... 144
+The DAO Class . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 144
+The OrganizerExt Class ..................................... 153
+Suggested Exercises ............................................ 192
+Summary ...................................................... 193
+
+Chapter 4  Making Project Management Cool: timekeeperExt ...... 195
+What’s This Application Do Anyway? .............................. 195
+Overall Structure and Files ....................................... 198
+The Markup .................................................... 200
+The Style Sheet  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 201
+The Code ...................................................... 203
+DAO.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 203
+StoresAndRecords.js ....................................... 209
+TimekeeperExt.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 211
+ProjectSummary.js, ResourceSummary.js, and  
+TaskSummary.js ........................................ 225
+ProjectsTree.js, TasksTree.js, and ResourcesTree.js  . . . . . . . . . . . 227
+Menu.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 229
+NewProjectDialog.js, NewTaskDialog.js, and  
+NewResourceDialog.js ................................... 233
+ModifyProjectDialog.js ...................................... 242
+ModifyResourceDialog.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 248
+ModifyTaskDialog.js. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 254
+DeleteProjectDialog.js, DeleteResourceDialog.js, and 
+DeleteTaskDialog.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 254
+Suggested Exercises ............................................ 257
+Summary ...................................................... 258
+
+Chapter 5  a Place for Your Stuff: Code Cabinet Ext . . . . . . . . . . . . . . . . . 259
+What’s This Application Do, Anyway? . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 260
+Overall Structure and Files ....................................... 261
+The Markup .................................................... 263
+The Style Sheet  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 264
+The Code ...................................................... 264
+DAO.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 265
+StoresAndRecords.js ....................................... 272
+CodeCabinetExt.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 275
+Viewport.js ................................................ 282
+Toolbar.js ................................................. 285
+Tree.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 291
+Details.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 293
+SearchForm.js. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 301
+SearchResults.js ........................................... 306
+Suggested Exercises ............................................ 308
+Summary ...................................................... 308
+
+Chapter 6  When the Yellow Pages Just Isn’t Cool Enough:  
+Local Business Search ..................................... 309
+What’s This Application Do Anyway? .............................. 310
+The <script> Tag Injection Technique and JSON-P . . . . . . . . . . . . . . . . . 312
+Meet the Yahoo! Web Services . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 317
+The Yahoo! Local Search Service . . . . . . . . . . . . . . . . . . . . . . . . . . . . 317
+The Yahoo! Map Image Service .............................. 320
+Overall Structure and Files ....................................... 322
+The Markup .................................................... 323
+The Style Sheet  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 326
+The Code ...................................................... 327
+DAO.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 327
+StoresAndRecords.js ....................................... 328
+LocalBusinessSearch.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 334
+Viewport.js ................................................ 340
+Header.js ................................................. 341
+Details.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 350
+Favorites.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 358
+Search.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 360
+Suggested Exercises ............................................ 369
+Summary ...................................................... 370
+
+Chapter 7  Your dad had a Workbench, now So do You:   
+SQL Workbench .............................................. 371
+What’s This Application Do Anyway? .............................. 371
+Overall Structure and Files ....................................... 373
+The Markup .................................................... 374
+The Style Sheet  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 377
+The Code ...................................................... 379
+SQLWorkbench.js .......................................... 379
+StoresAndRecords.js ....................................... 383
+DatabasesWindow.js ....................................... 385
+TablesWindow.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 393
+CreateTableWindow.js ...................................... 397
+TableDetailsWindow.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 403
+QueryToolWindow.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 422
+Help.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 430
+Suggested Exercises ............................................ 434
+Summary ...................................................... 435
+
+Chapter 8  all Work and no Play: dueling Cards . . . . . . . . . . . . . . . . . . . . . 437
+What’s This Application Do Anyway? .............................. 437
+More Fun with Gears: WorkerPool, Worker, and Timer ............... 440
+Some WorkerPool Code  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 442
+Limitations and Solutions ................................... 443
+Overall Structure and Files ....................................... 444
+The Markup .................................................... 446
+The Style Sheet  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 447
+The Code ...................................................... 447
+Data.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 449
+SetupCode.js .............................................. 452
+IndicatorsCode.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 460
+MenuCode.js .............................................. 464
+DuelingCards.js  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 471
+OpponentCode.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 486
+Suggested Exercises ............................................ 495
+Summary ...................................................... 495
+
+Chapter 9  Managing Your Finances: Finance Master  . . . . . . . . . . . . . . . 497
+What’s This Application Do Anyway? .............................. 497
+A Warning About Warnings .................................. 499
+Overall Structure and Files ....................................... 500
+The Markup .................................................... 501
+The Style Sheet  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 503
+Preliminaries Part I: A Brief History of Portals and Portlets  (Apologies to Professor Hawking)  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 504
+Preliminaries Part II: The Publish/Subscribe Model .................. 505
+The Code ...................................................... 506
+StoresAndRecords.js ....................................... 506
+DataAccess.js ............................................. 509
+FinanceMaster.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 518
+OpenPortfolioWindow.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 526
+PortfolioOverviewPortlet.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 531
+PortfolioDistributionPortlet.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 538
+AccountActivityPortlet.js .................................... 542
+AccountHistoryPortlet.js . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 553
+Suggested Exercises ............................................ 557
+Summary ...................................................... 557
+
+Index . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 559

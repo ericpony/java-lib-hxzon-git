@@ -1,0 +1,254 @@
+﻿JavaScript Web Applications
+JavaScript Web 富应用开发
+by Alex MacCaw
+Copyright ? 2011 Alex MacCaw. All rights reserved.
+Printed in the United States of America.
+Published by O’Reilly Media, Inc., 1005 Gravenstein Highway North, Sebastopol, CA 95472.
+O’Reilly books may be purchased for educational, business, or sales promotional use. Online editions
+are also available for most titles (http://my.safaribooksonline.com). For more information, contact our
+corporate/institutional sales department: (800) 998-9938 or corporate@oreilly.com.
+Editor: Mary Treseler
+Production Editor: Holly Bauer
+Copyeditor: Marlowe Shaeffer
+Proofreader: Stacie Arellano
+Indexer: Fred Brown
+Cover Designer: Karen Montgomery
+Interior Designer: David Futato
+Illustrator: Robert Romano
+Printing History:
+August 2011: First Edition. 
+Nutshell Handbook, the Nutshell Handbook logo, and the O’Reilly logo are registered trademarks of
+O’Reilly Media, Inc. JavaScript Web Applications, the image of a Long-eared owl, and related trade dress
+are trademarks of O’Reilly Media, Inc.
+Many of the designations used by manufacturers and sellers to distinguish their products are claimed as
+trademarks. Where those designations appear in this book, and O’Reilly Media, Inc., was aware of a
+trademark claim, the designations have been printed in caps or initial caps.
+While every precaution has been taken in the preparation of this book, the publisher and author assume
+no responsibility for errors or omissions, or for damages resulting from the use of the information con-
+tained herein.
+ISBN: 978-1-449-30351-8
+[LSI]
+1313086859
+
+-----------------
+Table of Contents
+Preface . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xi
+
+1. MVC and Classes . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+Early Days 1
+Adding Structure 2
+What Is MVC? 2
+The Model 3
+The View 4
+The Controller 5
+Toward Modularity, Creating Classes 6
+Adding Functions to Classes 7
+Adding Methods to Our Class Library 8
+Class Inheritance Using Prototype 10
+Adding Inheritance to Our Class Library 11
+Function Invocation 12
+Controlling Scope in Our Class Library 14
+Adding Private Functions 16
+Class Libraries 16
+
+2. Events and Observing . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+Listening to Events 19
+Event Ordering 20
+Canceling Events 21
+The Event Object 21
+Event Libraries 23
+Context Change 24
+Delegating Events 24
+Custom Events 25
+Custom Events and jQuery Plug-Ins 25
+Non-DOM Events 27
+
+3. Models and Data . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31
+MVC and Namespacing 31
+Building an ORM 32
+Prototypal Inheritance 33
+Adding ORM Properties 34
+Persisting Records 35
+Adding ID Support 36
+Addressing References 37
+Loading in Data 38
+Including Data Inline 39
+Loading Data with Ajax 39
+JSONP 43
+Security with Cross-Domain Requests 43
+Populating Our ORM 44
+Storing Data Locally 44
+Adding Local Storage to Our ORM 46
+Submitting New Records to the Server 47
+
+4. Controllers and State . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 49
+Module Pattern 50
+Global Import 50
+Global Export 50
+Adding a Bit of Context 51
+Abstracting into a Library 52
+Loading Controllers After the Document 53
+Accessing Views 55
+Delegating Events 56
+State Machines 58
+Routing 60
+Using the URL’s Hash 60
+Detecting Hash Changes 61
+Ajax Crawling 62
+Using the HTML5 History API 63
+
+5. Views and Templating . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 65
+Dynamically Rendering Views 65
+Templates 66
+Template Helpers 68
+Template Storage 69
+Binding 70
+Binding Up Models 71
+
+6. Dependency Management . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 73
+CommonJS 74
+Declaring a Module 74
+Modules and the Browser 75
+Module Loaders 76
+Yabble 76
+RequireJS 77
+Wrapping Up Modules 78
+Module Alternatives 79
+LABjs 80
+FUBCs 80
+
+7. Working with Files . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 81
+Browser Support 81
+Getting Information About Files 81
+File Inputs 82
+Drag and Drop 83
+Dragging 84
+Dropping 85
+Cancel Default Drag/Drop 86
+Copy and Paste 87
+Copying 87
+Pasting 88
+Reading Files 89
+Blobs and Slices 90
+Custom Browse Buttons 91
+Uploading Files 91
+Ajax Progress 93
+jQuery Drag and Drop Uploader 95
+Creating a Drop Area 95
+Uploading the File 95
+
+8. The Real-Time Web . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 97
+Real Time’s History 97
+WebSockets 98
+Node.js and Socket.IO 101
+Real-Time Architecture 103
+Perceived Speed 105
+
+9. Testing and Debugging . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 107
+Unit Testing 109
+Assertions 109
+QUnit 110
+Jasmine 113
+Drivers 115
+Headless Testing 118
+Zombie 119
+Ichabod 121
+Distributed Testing 121
+Providing Support 122
+Inspectors 122
+Web Inspector 123
+Firebug 124
+The Console 125
+Console Helpers 126
+Using the Debugger 127
+Analyzing Network Requests 128
+Profile and Timing 129
+
+10. Deploying . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 133
+Performance 133
+Caching 134
+Minification 136
+Gzip Compression 137
+Using a CDN 138
+Auditors 138
+Resources 139
+
+11. The Spine Library . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 141
+Setup 141
+Classes 142
+Instantiation 142
+Extending Classes 143
+Context 144
+Events 145
+Models 145
+Fetching Records 147
+Model Events 147
+Validation 148
+Persistence 148
+Controllers 150
+Proxying 151
+Elements 152
+Delegating Events 152
+Controller Events 153
+Global Events 153
+The Render Pattern 154
+The Element Pattern 154
+Building a Contacts Manager 156
+Contact Model 157
+Sidebar Controller 158
+Contacts Controller 160
+App Controller 163
+
+12. The Backbone Library . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 165
+Models 165
+Models and Attributes 166
+Collections 167
+Controlling a Collection’s Order 169
+Views 169
+Rendering Views 170
+Delegating Events 170
+Binding and Context 171
+Controllers 172
+Syncing with the Server 174
+Populating Collections 175
+On the Server Side 175
+Custom Behavior 176
+Building a To-Do List 178
+
+13. The JavascriptMVC Library . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 185
+Setup 186
+Classes 186
+Instantiation 186
+Calling Base Methods 187
+Proxies 187
+Static Inheritance 187
+Introspection 188
+A Model Example 188
+Model 189
+Attributes and Observables 189
+Extending Models 191
+Setters 191
+Defaults 192
+Helper Methods 192
+Service Encapsulation 193
+Type Conversion 196
+CRUD Events 196
+Using Client-Side Templates in the View 197
+Basic Use 197
+jQuery Modifiers 198
+Loading from a Script Tag 198
+$.View and Subtemplates 198
+Deferreds 199
+Packaging, Preloading, and Performance 199
+$.Controller: The jQuery Plug-in Factory 200
+Overview 202
+Controller Instantiation 202
+Event Binding 203
+Templated Actions 204
+Putting It All Together: An Abstract CRUD List 205
+
+A. jQuery Primer . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 207
+B. CSS Extensions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 217
+C. CSS3 Reference . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 223
+
+Index . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 243

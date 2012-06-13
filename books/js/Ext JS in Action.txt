@@ -1,0 +1,379 @@
+﻿Ext JS in Action
+For online information and ordering of this and other Manning books, please visit 
+www.manning.com. The publisher offers discounts on this book when ordered in quantity. 
+For more information, please contact
+Special Sales Department 
+Manning Publications Co. 
+180 Broad St.
+Suite 1323 
+Stamford, CT 06901 
+Email: orders@manning.com
+?2011 by Manning Publications Co. All rights reserved.
+No part of this publication may be reproduced, stored in a retrieval system, or transmitted, in 
+any form or by means electronic, mechanical, photocopying, or otherwise, without prior written 
+permission of the publisher.
+Many of the designations used by manufacturers and sellers to distinguish their products are 
+claimed as trademarks. Where those designations appear in the book, and Manning 
+Publications was aware of a trademark claim, the designations have been printed in initial caps 
+or all caps.
+Recognizing the importance of preserving what has been written, it is Manning’s policy to have 
+the books we publish printed on acid-free paper, and we exert our best efforts to that end. 
+Recognizing also our responsibility to conserve the resources of our planet, Manning books 
+are printed on paper that is at least 15 percent recycled and processed without the use of 
+elemental chlorine.
+Manning Publications Co.  Development editor: Sebastian Stirling 
+180 Broad St.  Copyeditor: Linda Recktenwald 
+Suite 1323  Proofreader: Katie Tennant
+Stamford, CT 06901  Typeset ter: Dot t ie Marsico 
+Cover designer: Marija Tudor 
+ISBN 978-1-935182-11-5
+Printed in the United States of America 
+12 34567 8910– MAL–15 141312 1110
+=========================
+brief contents
+PART 1 INTRODUCTION TO EXT JS............................................1
+1 ■ A framework apart 3
+2 ■ Back to the basics 30
+3 ■ Events, Components, and Containers 46
+PART 2 EXT JS COMPONENTS..................................................69
+4 ■ A place for Components 71
+5 ■ Organizing Components 92
+6 ■ Ext JS takes form 121
+PART 3 DATA-DRIVEN COMPONENTS  . .....................................151
+7 ■ The venerable GridPanel 153
+8 ■ The EditorGridPanel 176
+9 ■ DataView and ListView 204
+10 ■ Charts 225 
+11 ■ Taking root with trees 250 
+12 ■ Menus, Buttons, and Toolbars 270
+PART 4 ADVANCED EXT .........................................................297
+13 ■ Drag-and-drop basics 299 
+14 ■ Drag and drop with widgets 320 
+15 ■ Extensions and plug-ins 350
+PART 5 BUILDING APPLICATIONS ...........................................375
+16 ■ Developing for reusability 377 
+17 ■ The application stack 426
+==========================
+contents
+preface xv 
+acknowledgments xx 
+about the cover illustration xxii
+
+PART 1 INTRODUCTION TO EXT JS...................................1
+
+1 A framework apart 3
+1.1 Looking at Ext JS 4 
+■ Integration with existing sites 5 
+■ Rich API documentation 5 
+■ Rapid development with prebuilt widgets 7 
+■ Works with Prototype, jQuery, and YUI, and inside AIR 7
+1.2 What you need to know 8
+1.3 A bird’s-eye view of the framework 8 
+■ Containers and layouts at a glance 10 
+■ Other Containers in action 11 
+■ Grids, DataView, and ListView 12 
+■ Make like a TreePanel and leaf 13 
+■ Form input fields 14
+■ Other widgets 16
+1.4 New Ext JS 3.0 goodies 17 
+■ Ext JS does remoting with Direct 18 
+■ Data class 18
+■ Meet the new layouts 18 
+■ Grid ColumnModel enhancements 19 
+■ ListView, like GridPanel on a diet 20 
+■ Charts come to Ext JS 21
+1.5 Downloading and configuring 21 
+■ Looking at the SDK contents 22 
+■ Setting up Ext JS for the first time 23 
+■ Configuring Ext JS for use with others 23 
+■ Configuring BLANK_IMAGE_URL 25
+1.6 Take it for a test drive 25
+1.7 Summary 28
+
+2 Back to the basics 30
+2.1 Starting off the right way 31 
+■ Fire only when ready! 31 
+■ Let Ext JS pull the trigger 31
+2.2 The Ext.Element class 33 
+■ The heart of the framework 33 
+■ Using Ext.Element for the first time 33 
+■ Creating child nodes 35 
+■ Removing child nodes 37 
+■ Using Ajax with Ext.Element 39
+2.3 Using Templates and XTemplates 40 
+■ Exercising templates 40 
+■ Looping with XTemplates 42 
+■ Advanced XTemplate usage 43
+2.4 Summary 45
+
+3 Events, Components, and Containers 46
+3.1 Managing events with Observable 47 
+■ Taking a step back 47 
+■ DOM-based events 47 
+■ Event flow in the DOM 48 
+■ Burst the bubble 50 
+■ Software-driven events 51 
+■ Registration of events and event listeners 52
+3.2 The Component model 54 
+■ XTypes and Component Manager 54 
+■ Component rendering 57
+3.3 The Component lifecycle 58 
+■ Initialization 58 
+■ Render 60 
+■ Destruction 62
+3.4 Containers 63 
+■ Learning to tame children 64 
+■ Querying the Container hierarchy 66 
+■ The Viewport Container 67
+3.5 Summary 68
+
+PART 2 EXT JS COMPONENTS.........................................69
+
+4 A place for Components 71
+4.1 The Panel 72 
+■ Building a complex Panel 72
+4.2 Popping up Windows 76 
+■ Further Window configuration exploration 78 
+■ Replacing alert and prompt with MessageBox 79 
+■ Advanced MessageBox techniques 81 
+■ Showing an animated wait MessageBox 82
+4.3 Components can live in tab panels too 84 
+■ Remember these two options 84 
+■ Building our first TabPanel 86 
+■ Tab management methods you should know 87 
+■ Caveats and drawbacks 88
+4.4 Summary 91
+
+5 Organizing Components 92
+5.1 The simple ContainerLayout 93
+5.2 The AnchorLayout 95
+5.3 The FormLayout 98
+5.4 The AbsoluteLayout 100
+5.5 Making components fit 101
+5.6 The AccordionLayout 102
+5.7 The CardLayout 104
+5.8 The ColumnLayout 107
+5.9 The HBox and VBox layouts 109
+5.10 The TableLayout 112
+5.11 The BorderLayout 115
+5.12 Summary 120
+
+6 Ext JS takes form 121
+6.1 The TextField 122 
+■ Password and file select fields 125 
+■ Building a TextArea 126 
+■ The convenient NumberField 126
+6.2 TypeAhead with the ComboBox 127 
+■ Building a local ComboBox 128 
+■ Implementing a remote ComboBox 129 
+■ The ComboBox deconstructed 132 
+■ Customizing our ComboBox 132 
+■ Finding the time 134
+6.3 WYSIWhat? 134 
+■ Constructing our first HtmlEditor 134 
+■ Dealing with lack of validation 135
+6.4 Selecting a date 136
+6.5 Checkboxes and Radios 136
+6.6 The FormPanel 138
+6.7 Data submission and loading 145 
+■ Submitting the good old way 145 
+■ Submitting via Ajax 145 
+■ Loading data into our form 146
+6.8 Summary 148
+
+PART 3 DATA-DRIVEN COMPONENTS  . ............................151
+
+7 The venerable GridPanel 153
+7.1 Introducing GridPanel 154 
+■ Looking under the hood 154
+7.2 The data Store at a glance 156 
+■ How data Stores work 156
+7.3 Building a simple GridPanel 159 
+■ Setting up an ArrayStore 159 
+■ Completing our first GridPanel 161
+7.4 Advanced GridPanel construction 163 
+■ What we’re building 163 
+■ Creating the store using shortcuts 163 
+■ Building a ColumnModel with custom renderers 166 
+■ Configuring our advanced GridPanel 168 
+■ Configuring a Container for our GridPanel 169 
+■ Applying event handlers for interaction 171
+7.5 Summary 175
+
+8 The EditorGridPanel 176
+8.1 A close look at the EditorGridPanel 177
+8.2 Building your first EditorGridPanel 178
+8.3 Navigating our EditorGridPanel 182
+8.4 Getting the CRUD in 183 
+■ Adding save and reject logic 184 
+■ Saving or rejecting your changes 187 
+■ Adding create and delete 189 
+■ Using create and delete 192
+8.5 Using Ext.data.DataWriter 196 
+■ Enter Ext.data.DataWriter 196 
+■ Adding DataWriter to our JsonStore 197 
+■ Using DataWriter 200 
+■ An automated writing store 203
+8.6 Summary 203
+
+9 DataView and ListView 204
+9.1 What is the DataView? 205
+9.2 Constructing a DataView 206 
+■ Building the Store and XTemplate 207 
+■ Building the DataView and Viewport 211
+9.3 Enter the ListView 214 
+■ Binding the DataView to the ListView 216
+9.4 Bringing it all together 218 
+■ Configuring the FormPanel 219 
+■ Applying the final bindings 221
+9.5 Summary 224
+
+10 Charts 225
+10.1 Defining the four charts 226
+10.2 Charts deconstructed 227
+10.3 Building a LineChart 230 
+■ Customizing the ToolTip 232 
+■ Adding titles to the x- and y-axes 232 
+■ Styling the Chart body 234
+10.4 Adding multiple Series 235 
+■ Adding legends 238
+10.5 Constructing ColumnCharts 239 
+■ Stacking columns 240 
+■ Mixing a line with columns 241
+10.6 Constructing BarCharts 243 
+■ Configuring a BarChart 245
+10.7 A slice of PieChart 245 
+■ Custom tipRenderer 248
+10.8 Summary 249
+
+11 Taking root with trees 250
+11.1 What is a tree (TreePanel)? 251 
+■ Looking under the roots 251
+11.2 Planting our first TreePanel 252
+11.3 Dynamic TreePanels grow 254 
+■ Fertilizing the TreePanel 255
+11.4 CRUD on a TreePanel 257 
+■ Adding context menus to a TreePanel 257 
+■ Wiring up the Edit logic 261 
+■ Tackling delete 264 
+■ Creating nodes for our TreePanel 266
+11.5 Summary 269
+
+12 Menus, Buttons, and Toolbars 270
+12.1 Menus at a glance 271 
+■ Building a menu 272 
+■ Obtaining and using Icons 273 
+■ Taming the icon madness 274 
+■ Adding a submenu 275 
+■ Adding a Separator and TextItem 276 
+■ Picking a color and choosing a date 278 
+■ Put that menu Item in check 280 
+■ Select only one item at a time 281
+12.2 Users know how to push your Buttons 283 
+■ Building Buttons 284 
+■ Attaching a Menu to a Button 284 
+■ Do a split (SplitButton) 286 
+■ Customizing the layout of your Button 287
+12.3 Grouping your Buttons 287
+12.4 Toolbars 290
+12.5 Read, set, Ext.Action! 293
+12.6 Summary 295
+
+PART 4 ADVANCED EXT . ...............................................297
+
+13 Drag-and-drop basics 299
+13.1 Taking a good look at drag and drop 300 
+■ The drag-and-drop lifecycle 300 
+■ A top-down view of the drag-and-drop classes 301 
+■ It’s all in the overrides! 303 
+■ Drag and drop always work in groups 304
+13.2 Starting out simple 305 
+■ Creating a small workspace 305 
+■ Configuring items to be draggable 306 
+■ Analyzing the Ext.dd.DD DOM changes 307 
+■ Adding the pool and hot tub drop targets 309
+13.3 Finishing our drag-and-drop implementation 310 
+■ Adding the drop invitation 310 
+■ Adding valid drop 313 
+■ Implementing invalid drop 314
+13.4 Using the DDProxy 316 
+■ Implementing DDProxy and drop invitation 316
+13.5 Summary 319
+
+14 Drag and drop with widgets 320
+14.1 A quick review of the drag-and-drop classes 321
+14.2 Drag and drop with DataViews 322 
+■ Constructing the DataViews 322 
+■ Adding drag gestures 326
+■ Applying drop 330
+14.3 Drag and drop with GridPanels 332 
+■ Constructing the GridPanels 333 
+■ Enabling drag 335 
+■ Better drop invitation 337 
+■ Adding drop 337
+14.4 Drag and drop with TreePanels 342 
+■ Constructing the TreePanels 342 
+■ Enabling drag and drop 343 
+■ Employing flexible constraints 345
+14.5 Summary 349
+
+15 Extensions and plug-ins 350
+15.1 Inheritance with Ext JS 351 
+■ Inheritance with JavaScript 352 
+■ Extending with Ext JS 354
+15.2 Extending Ext JS Components 357 
+■ Thinking about what we’re building 358 
+■ Extending GridPanel 359 
+■ Our extension in action 363 
+■ Identifying the limitations of extensions 365
+15.3 Plug-ins to the rescue 366 
+■ A robust plug-in design pattern 367 
+■ Developing a plug-in 368 
+■ Our plug-in in action 370
+15.4 Summary 373
+
+PART 5 BUILDING APPLICATIONS . .................................375
+
+16 Developing for reusability 377
+16.1 Developing for the future 378 
+■ Namespaces 378 
+■ Namespace segmentation 379 
+■ Namespace segmentation for large applications 381
+16.2 Analyzing the application requirements 381 
+■ Abstracting reusability 382 
+■ The Dashboard screen 382 
+■ The Manage Departments screen 384 
+■ The Manage Employees screen 387
+16.3 Constructing the ChartPanel components 389 
+■ The ChartPanelBaseCls 389 
+■ The CompanySnapshot class 392 
+■ The DepartmentBreakdown class 394
+16.4 Constructing the listpanel components 396 
+■ The ListPanelBaseCls 396 
+■ The DepartmentsListView and EmployeeList classes 397
+16.5 Constructing the EmployeeGridPanel class 399
+16.6 The EmployeeAssociationWindow class 402
+16.7 The form namespace 406 
+■ The FormPanelBaseCls class 406 
+■ The DepartmentForm class 407 
+■ The EmployeeForm class 415
+16.8 Summary 424
+
+17 The application stack 426
+17.1 Developing the application namespace 427 
+■ Reviewing the application screens 427 
+■ Designing the application namespace 429
+17.2 Building the Dashboard screen 429
+17.3 The Manage Employees screen 431 
+■ Discussing the workflow 431 
+■ Constructing EmployeeManager 433
+17.4 The Manage Departments screen 443 
+■ The navigation and department CRUD workflows 443
+■ Employee CRUD workflows 446 
+■ Employee association workflow 449
+17.5 Piecing it all together 451 
+■ The workspace workflows 451 
+■ Constructing the workspace singleton 452
+17.6 Summary 459 
+
+index  461
