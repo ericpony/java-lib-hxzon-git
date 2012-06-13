@@ -1,0 +1,11 @@
+<img src="images/icon-free.gif" alt="free to join" />
+<h2>Why join?</h2>
+<p>Creating your FREE account lets you tap into all these great features and benefits:</p>
+<ul>
+	<li>Unlimited storage for your files</li>
+	<li>Share and collaborate with your friends and family</li>
+	<li>Receive real-time alerts with your friends status updates</li>
+	<li>Free toaster and cozy with account signup</li>
+	<li>Plus, get a special gift when you join!</li>
+</ul>
+

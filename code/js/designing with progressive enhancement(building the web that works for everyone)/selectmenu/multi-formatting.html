@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+	<title>Custom select menu</title>
+	<link href="css/basic.css" type="text/css" rel="stylesheet" />
+	<script type="text/javascript" src="../-shared/EnhanceJS/enhance.js"></script>	
+	<script type="text/javascript">
+		// Run capabilities test
+		enhance({
+			loadScripts: [
+				'../-shared/jquery.min.js',
+				'js/jQuery.selectmenu.js',
+				'js/example_multi.js'
+			],
+			loadStyles: ['css/enhanced.css']
+		});   
+    </script>
+</head>
+<body>
+
+
+<form id="custom-input">
+
+	<label for="album">Choose Photo Album:</label>
+	<select name="album" id="album">
+		<option value="albumA">Summer Party -- Fun at the lake house (Created August 12, 2009)</option>
+		<option value="albumB">Kate's Birthday -- Cake and presents (Created May 13, 2009)</option>
+		<option value="albumC">Dance Recital -- First one of the year (Created February 6, 2009)</option>
+	</select>
+
+
+</form>
+
+	
+	
+</body>
+</html>

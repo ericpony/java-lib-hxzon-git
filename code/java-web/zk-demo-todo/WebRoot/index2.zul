@@ -1,0 +1,4 @@
+<window title="My First window" border="normal" width="200px"
+closable="true" sizable="true">
+Hello, World!
+</window>

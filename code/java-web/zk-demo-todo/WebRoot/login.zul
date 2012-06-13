@@ -1,0 +1,27 @@
+<?page title="待办事项系统"?>
+<window title="登录" border="normal" width="220px" mode="modal"
+          xmlns:h="http://www.w3.org/1999/xhtml">
+<h:table>
+<h:tr>
+ <h:td>账号：</h:td><h:td><textbox id="user"/></h:td>
+ </h:tr><h:tr>
+ <h:td>密码：</h:td><h:td><textbox type="password" id="pwd"/></h:td>
+ </h:tr><h:tr>
+ <h:td colspan="2" align="center"><button label="登录" onClick="login()"/></h:td>
+ </h:tr>
+ </h:table>
+ <zscript>
+import org.zkoss.zk.ui.*;
+  
+  void login() { 
+    if(user.value.equals("hxzon") &amp;&amp; pwd.value.equals("hxzon")) {
+      Session s = Sessions.getCurrent();
+      s.setAttribute("user", user.value);
+      s.setAttribute("pwd", pwd.value);
+      Executions.sendRedirect("todo.zul");
+    } else {
+      Executions.sendRedirect("login.zul");
+    }
+  }
+</zscript>
+ </window>

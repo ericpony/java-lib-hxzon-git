@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+	<title>List Builder Widget</title>
+	<link href="css/basic.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="../-shared/EnhanceJS/enhance.js"></script>		
+	<script type="text/javascript">
+		// Run capabilities test
+		enhance({
+			loadScripts: [
+				'../-shared/jquery.min.js',
+				'js/jQuery.listbuilder.js',
+				'js/example.js'
+			],
+			loadStyles: ['css/enhanced.css']	
+		});   
+    </script>
+</head>
+<body>
+
+
+
+<form action="imageTags.php" method="get">
+	<img src="images/yellow_flower.jpg" alt="yellow flower" width="431" height="287"/>
+
+	<h1>yellow_flower<span class="extension">.jpg</span></h1>
+	
+	<fieldset>
+		<label for="names">Photo tags:</label>
+		<textarea id="names" name="tags">yellow, flowers</textarea>
+		<input type="submit" name="save" id="save" value="Save Tags" />
+	</fieldset>
+</form>
+
+</body>
+</html>

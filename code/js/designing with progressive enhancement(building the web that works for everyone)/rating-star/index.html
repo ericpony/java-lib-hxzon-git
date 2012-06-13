@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+	<title>Rating widget</title>
+	<link href="css/basic.css" type="text/css" rel="stylesheet" />
+	<script type="text/javascript" src="../-shared/EnhanceJS/enhance.js"></script>		
+	<script type="text/javascript">
+		// Run capabilities test
+		enhance({
+			loadScripts: [
+				'../-shared/jquery.min.js',
+				'js/jQuery.starRating.js',
+				'js/example.js'
+			],
+			loadStyles: ['css/enhanced.css']	
+		});   
+    </script>
+</head>
+
+<body>
+
+
+<form action="#" method="post">	
+	<fieldset>
+		<legend>Star Wars</legend>
+		<input type="radio" name="star-wars" id="star-wars-Unwatchable" value="Unwatchable" />
+		<label for="star-wars-Unwatchable">Unwatchable</label>
+		
+		<input type="radio" name="star-wars" id="star-wars-Bad" value="Bad" checked="" />
+		<label for="star-wars-Bad">Bad</label>
+		
+		<input type="radio" name="star-wars" id="star-wars-OK" value="OK" />
+		<label for="star-wars-OK">OK</label>
+		
+		<input type="radio" name="star-wars" id="star-wars-Good" value="Good" />
+		<label for="star-wars-Good">Good</label>
+		
+		<input type="radio" name="star-wars" id="star-wars-Oscar-worthy" value="Oscar-worthy" />
+		<label for="star-wars-Oscar-worthy">Oscar-worthy</label>
+		
+		<input type="submit" id="submit-star-wars" value="Rate this" class="rating-submit" />
+	</fieldset>
+	
+	<fieldset>
+		<legend>Princess Bride</legend>
+		<input type="radio" name="princess-bride" id="princess-bride-Unwatchable" value="Unwatchable" />
+		<label for="princess-bride-Unwatchable">Unwatchable</label>
+		
+		<input type="radio" name="princess-bride" id="princess-bride-Bad" value="Bad" checked="" />
+		<label for="princess-bride-Bad">Bad</label>
+		
+		<input type="radio" name="princess-bride" id="princess-bride-OK" value="OK" />
+		<label for="princess-bride-OK">OK</label>
+		
+		<input type="radio" name="princess-bride" id="princess-bride-Good" value="Good" />
+		<label for="princess-bride-Good">Good</label>
+		
+		<input type="radio" name="princess-bride" id="princess-bride-Oscar-worthy" value="Oscar-worthy" />
+		<label for="princess-bride-Oscar-worthy">Oscar-worthy</label>
+		
+		<input type="submit" id="submit-princess-bride" value="Rate this" class="rating-submit" />
+	</fieldset>
+	
+	<fieldset>
+		<legend>Animal House</legend>
+		<input type="radio" name="animal-house" id="animal-house-Unwatchable" value="Unwatchable" />
+		<label for="animal-house-Unwatchable">Unwatchable</label>
+		
+		<input type="radio" name="animal-house" id="animal-house-Bad" value="Bad" checked="" />
+		<label for="animal-house-Bad">Bad</label>
+		
+		<input type="radio" name="animal-house" id="animal-house-OK" value="OK" />
+		<label for="animal-house-OK">OK</label>
+		
+		<input type="radio" name="animal-house" id="animal-house-Good" value="Good" />
+		<label for="animal-house-Good">Good</label>
+		
+		<input type="radio" name="animal-house" id="animal-house-Oscar-worthy" value="Oscar-worthy" />
+		<label for="animal-house-Oscar-worthy">Oscar-worthy</label>
+		
+		<input type="submit" id="submit-animal-house" value="Rate this" class="rating-submit" />
+	</fieldset>
+</form>
+
+
+	
+</body>
+</html>

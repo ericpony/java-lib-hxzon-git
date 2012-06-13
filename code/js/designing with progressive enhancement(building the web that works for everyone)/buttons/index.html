@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+	<title>Custom input button</title>
+	<link href="css/basic.css" type="text/css" rel="stylesheet" />
+	<script type="text/javascript" src="../-shared/EnhanceJS/enhance.js"></script>		
+	<script type="text/javascript">
+		// Run capabilities test
+		enhance({
+			loadStyles: ['css/enhanced.css'],
+			loadScripts: [
+				'../-shared/jquery.min.js',
+				'js/example_hover.js'
+			]	
+		});   
+    </script>
+</head>
+<body>
+
+	<form action="friendForm.php">
+	
+		<fieldset>
+			<legend>Friend request from John Smith</legend>
+					<p>Boston MA - 16 friends in common with you</p>
+					<input type="hidden" name="user" value="johnsmith123" />
+					<input type="submit" name="add" value="Add John as a friend" class="btn-primary" />
+					<input type="submit" name="ignore" value="Ignore" class="btn-secondary" />
+			</fieldset>
+			
+	</form>
+
+</body>
+</html>

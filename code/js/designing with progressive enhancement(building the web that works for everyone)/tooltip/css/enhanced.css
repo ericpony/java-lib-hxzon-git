@@ -1,0 +1,27 @@
+/* page styles */
+body { font-size:62.5%; margin:50px; }
+form { margin:50px 0; padding:2em 25px; border:2px solid #aaa; background:#fafafa url(../images/bg-form.png) top repeat-x; -moz-border-radius:5px; -webkit-border-radius:5px; border-radius:5px; width:300px; overflow:auto; }
+fieldset { margin:0; border:0; padding:0; }
+h1 { font-size:2.5em; font-weight:bold; margin: 0; }
+p.required-msg { font-size:1.6em; font-weight:bold; margin:.5em 0 1.5em; color:#444; }
+p { font-size:1.2em; }
+ul { padding-left: 15px; }
+label { font-size:1.5em; text-align:left; margin-top:.8em; margin-bottom: .3em; border-bottom: 0; display: block; float: left; background: url(../images/icon-info.png) right 3px no-repeat; font-size:1.5em; padding-right:20px; text-align:left; }
+div.question { margin: 0; }
+input.text { -moz-border-radius:5px; -webkit-border-radius:5px; border-radius:5px; font-size:1.5em; border:1px solid #aaa; padding:.2em; width:275px; clear:left;  }
+input#register { background:#ddd url(../images/bg-button.png) 50% repeat-x; color:#555; padding:.6em .8em; border:2px solid #aaa; font-size:1.4em; font-weight:bold; -moz-border-radius:4px; -webkit-border-radius:4px; border-radius:4px; cursor:pointer; margin:2em 0; float:left; width: 120px; }
+input#register:hover { background:#fff; border-color:#999; color: #333; }
+.form-links { margin:2.5em; 20px; float:left; width:100px; padding:0; }
+.form-links li { list-style:none; margin:.5em 0; padding:0; }
+.form-links a { text-decoration:none; margin:5px 0; border-bottom:1px dotted #333; color:#444; }
+.form-links a:hover { color:#000; border-bottom-style:solid; }
+
+/*tooltip styles*/
+.tooltip { position:absolute; background:#252122 url(../images/bg-tooltip.gif) top repeat-x; padding:12px 18px; font-size:1.2em; line-height:1.4; border:2px solid #fff; -moz-border-radius:10px; -webkit-border-radius:10px; border-radius:10px; -o-box-shadow:0 0 8px #aaa; -moz-box-shadow:0 0 8px #aaa; -webkit-box-shadow:0 0 8px #aaa; box-shadow:0 0 8px #aaa; width:250px; color:#fff; opacity:.9; }
+.tooltip-hidden { display: none; }
+.tooltip h2 { font-size:1.3em; margin:0; }
+.tooltip p { font-size:1em; font-weight:bold; margin:.5em 0; }
+.tooltip img { float:right; margin:20px 0 10px 10px; }
+.tooltip a { color: #eee; }
+.tooltip ul { padding: 0;}
+.tooltip li { margin-bottom: .6em; margin-left: 15px;}

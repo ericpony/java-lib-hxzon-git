@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en"> 
+	<head>
+		<title>Image Map</title>
+  		<meta charset="utf-8" />
+  		<link rel="stylesheet" href="site.css"   media="all" />
+  		<link rel="stylesheet" href="page.css"   media="all" />
+  		<link rel="stylesheet" href="print.css"  media="print" />
+
+</head>
+ 
+ <body>
+ 
+ <h1>Image Map</h1>
+ 
+ <h2><a id="home" href="example.html">Northwest USA — Washington</a></h2>
+ 
+ <img src="nw.gif" usemap="#nw-map" alt="Northwest USA" width="290" height="200" />
+
+ <map id="nw-map" name="nw-map">
+  
+  <area href="washington.html" alt="Washington" 
+        shape="poly" coords="176,8, 164,89, 75,89, 40,72, 45,8" />
+  
+  <area href="oregon.html" alt="Oregon"     
+        shape="rect" coords="9,90, 155,180" />
+  
+  <area href="idaho.html" alt="Idaho" 
+        shape="circle" coords="212, 134,55"  />
+ </map>
+ 
+ 
+ </body>
+</html>

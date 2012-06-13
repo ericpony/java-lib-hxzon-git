@@ -1,0 +1,23 @@
+
+- tabindex needs to transfer from select (if set)
+- label click directs focus to button
+- replace button markup
+- replace menu markup
+- menu hidden style needs display none (not block)
+- li.selected and li.hover backgrounds should apply to LI not a
+- li text should go in anchor, not li
+- reappend menu to body
+- button not menubutton
+- we don't style the button icon ever
+- in custom select, we should make the point that we only care about text value of options
+- switch case syntax is wrong (:)
+- bind click to document to hide select
+- button icon has 2 spans (now called button icon)
+- status has icon span too
+- should we set height? overflow auto on menu, set heights
+
+
+- only thing not built-in yet is type-ahead
+
+
+- should we hide with display: none??

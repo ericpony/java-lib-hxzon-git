@@ -1,0 +1,7 @@
+/* Page styles */
+body, input, button { font-family:"Segoe UI", Arial, sans-serif; }
+fieldset { margin-top:1.2em; margin-bottom:1.2em; border:0; }
+legend { color:#339900; font-weight:bold; }
+fieldset p { margin:0 0 1.2em; }
+.btn-primary { font-weight:bold; }
+.btn-secondary { font-weight:normal; }

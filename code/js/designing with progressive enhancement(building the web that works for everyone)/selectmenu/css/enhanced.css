@@ -1,0 +1,66 @@
+/* Page styles */
+body { font-size:62.5%; }
+form { height:200px; margin:50px 0; }
+label { font-size:1.6em; margin:.4em 10px; float:left; }
+
+
+/*select button styles*/
+.custom-select { float:left; text-decoration:none; text-align:left; cursor:pointer; position:relative; background:#fff url(../images/button-silver.gif) left center repeat-x; border:1px solid #b3b3b3; font-size:1.3em; font-weight:bold; overflow:visible; -moz-border-radius:7px; -webkit-border-radius:7px; border-radius:7px; width:180px;  text-shadow:1px 1px 0 #fff; }
+.custom-select:hover,.custom-select:focus,.custom-select-open { background-position:right center; border-color:#999; }
+/*status text*/
+.custom-select-status { float:left; line-height:2; color:#444; padding:.2em 8px;  }
+.custom-select-roletext { position: absolute; left: -99999px; }
+/* button arrow icon*/
+.custom-select-button-icon { float:right; background:#fff url(../images/button-green.gif) left center repeat-x; height:2.5em; width:2em; -moz-border-radius-topright:7px; -webkit-border-top-right-radius:7px; border-top-right-radius:7px; -moz-border-radius-bottomright:7px; -webkit-border-bottom-right-radius:7px; border-bottom-right-radius:7px; }
+.custom-select:hover .custom-select-button-icon,
+.custom-select:focus .custom-select-button-icon,
+.custom-select-open .custom-select-button-icon { background-position: -500px center; }
+
+
+/*menu styles*/
+.custom-select-menu { border:1px solid #b3b3b3; background:#e9e9e9; z-index:999999; position:absolute; margin:0; padding:0; font-size:1.3em; -moz-border-radius:7px; -webkit-border-radius:7px; border-radius:7px; width:180px; cursor: pointer;  text-shadow:1px 1px 0 #fafafa; overflow: auto; overflow-x: hidden; }
+
+/*hidden menu state*/
+.custom-select-menu-hidden { display:none; }
+
+/*li styles*/
+.custom-select-menu li { padding:0; margin:0; list-style:none; clear:both; }
+.custom-select-menu li a { text-decoration:none; color:#555; display:block; cursor: pointer; padding:.5em 5px; text-shadow:1px 1px 0 #f9f9f9; }
+.custom-select-menu li.hover-focus { background:#e6e6e6 url(../images/button-silver.gif) right center repeat-x; color:#444; }
+.custom-select-menu li.selected { background:#66b81e url(../images/menu-green.gif) left center repeat-x; color:#fff; }
+.custom-select-menu li.selected a {color: #fff; text-shadow:1px 1px 0 #2d7406; }
+
+
+/* make sure first and last li's have round corners */
+.custom-select-menu li:first-child {  -moz-border-radius-topright:7px; -webkit-border-top-right-radius:7px; border-top-right-radius:7px; -moz-border-radius-topleft:7px; -webkit-border-top-left-radius:7px; border-top-left-radius:7px; }
+.custom-select-menu li:last-child {  -moz-border-radius-bottomright:7px; -webkit-border-bottom-right-radius:7px; border-bottom-right-radius:7px; -moz-border-radius-bottomleft:7px; -webkit-border-bottom-left-radius:7px; border-bottom-left-radius:7px; }
+
+
+/*hide native select*/
+.select-hidden { display: none; }
+
+/*custom icons for both button and li's in the gift wrap menu */
+#giftwrap-button .custom-select-status,
+#giftwrap-menu li a { background-image:url(../images/select-icons.gif); background-repeat: no-repeat; padding-left: 40px; }
+.purple-bubbles .custom-select-status,
+li.purple-bubbles a { background-position: 5px 3px; }
+.yellow-swirl .custom-select-status,
+.yellow-swirl a { background-position: 5px -47px; }
+.blue-snow .custom-select-status,
+li.blue-snow a { background-position: 5px -97px; }
+.pink-sparks .custom-select-status,
+li.pink-sparks a { background-position: 5px -147px; }
+.green-blobs .custom-select-status,
+li.green-blobs a { background-position: 5px -197px; }
+
+
+
+/*album menu hierarchy*/
+#album-button span.option-description,
+#album-button span.option-date { display: none;}
+#album-menu li a { line-height: 1.2; padding: .4em 8px; }
+#album-menu li a span { display: block; }
+#album-menu li a span.option-title { font-weight: bold; color:#555; }
+#album-menu li.selected a span.option-title { color:#fff; }
+#album-menu li a span.option-description {  text-shadow: none; }
+#album-menu li a span.option-date { font-size: .8em; font-style: italic; text-shadow: none; padding: .2em 0; }

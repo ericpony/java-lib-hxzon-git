@@ -1,0 +1,23 @@
+Notable code updates since the book was printed:
+------------------------------------------------
+
+Buttons:
+- We noticed that in IE when generating buttons, the type attribute must be set upon generating element, can't be changed once set. The button generation code now includes the type attribute from the start.
+
+Charting:
+- in order to use excanvas with enhancejs, we needed to modify excanvas.js to work when lazy loaded. info here: http://pipwerks.com/2009/03/12/lazy-loading-excanvasjs/
+- we changed the CSS filenames for visualize on March 15,09 and updated the vanilla theme to be a light version of the default theme.
+- several changes made since this plugin was open-sourced. 
+
+Tree:
+- the tree widget now has support for spacebar along with enter key for expand/collapse. To do this, we bound a new "toggle" event to the tree to expand or collapse based on state.
+- several changes made since this plugin was open-sourced. 
+
+Collapsible:
+- To improve the presentation in IE6, we added a span to each of the list items wrapping the file name text, and adjusted the list item CSS slightly. Changes are demo-content specific and have no impact on the overall approach in the book.
+
+File Input:
+- JS and CSS are updated to improve IE support
+
+General:
+- most uses of focus now use .eq(0).focus() instead of [0].focus(), which is safer

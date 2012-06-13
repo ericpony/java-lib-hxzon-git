@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+	<title>Buttons with icon elements & text hierarchy</title>
+	<link href="css/basic.css" type="text/css" rel="stylesheet" />
+	<script type="text/javascript" src="../-shared/EnhanceJS/enhance.js"></script>	
+	<script type="text/javascript">
+		// Run capabilities test
+		enhance({
+			loadScripts: [
+				'../-shared/jquery.min.js',
+				'js/jQuery.inputToButton.js',
+				'js/example.js'
+			],
+			loadStyles: ['css/enhanced.css']	
+		});   
+    </script>
+</head>
+<body>
+
+	<form action="friendForm.php">
+	
+		<fieldset>
+			<legend>Friend request from John Smith</legend>
+					<p>Boston MA - 16 friends in common with you</p>
+					<input type="hidden" name="user" value="johnsmith123" />
+					<input type="submit" name="add" value="Add John&nbsp;as a friend" class="btn-primary action-add" />
+					<input type="submit" name="ignore" value="Ignore" class="btn-secondary action-ignore" />
+			</fieldset>
+			
+	</form>
+
+</body>
+</html>

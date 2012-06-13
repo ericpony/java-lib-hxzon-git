@@ -1,0 +1,6 @@
+/* page styles */
+body { font-family: "Segoe UI", Frutiger,Tahoma,Helvetica,"Helvetica Neue", Arial, sans-serif; }
+fieldset { margin:0; border:0; padding:0;  }
+label { border-bottom: 1px dashed #777; cursor: help; }
+input.text { display: block;  margin: .5em 0 0; }
+div.question { margin-bottom: 1em; }

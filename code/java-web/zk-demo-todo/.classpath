@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="melibrary.com.genuitec.eclipse.j2eedt.core.MYECLIPSE_JAVAEE_6_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="lib" path="I:/lib-java/ajax/zk-bin-5.0.6/dist/lib/zweb.jar"/>
+	<classpathentry kind="lib" path="I:/lib-java/ajax/zk-bin-5.0.6/dist/lib/zcommon.jar"/>
+	<classpathentry kind="lib" path="I:/lib-java/ajax/zk-bin-5.0.6/dist/lib/zcommons-el.jar"/>
+	<classpathentry kind="lib" path="I:/lib-java/ajax/zk-bin-5.0.6/dist/lib/zhtml.jar"/>
+	<classpathentry kind="lib" path="I:/lib-java/ajax/zk-bin-5.0.6/dist/lib/zk.jar"/>
+	<classpathentry kind="lib" path="I:/lib-java/ajax/zk-bin-5.0.6/dist/lib/zkplus.jar"/>
+	<classpathentry kind="lib" path="I:/lib-java/ajax/zk-bin-5.0.6/dist/lib/zul.jar" sourcepath="I:/lib-java/ajax/zk-bin-5.0.6/dist/src/zul-sources.jar"/>
+	<classpathentry kind="lib" path="I:/lib-java/ajax/zk-bin-5.0.6/dist/lib/ext/bsh.jar"/>
+	<classpathentry kind="lib" path="I:/lib-java/common/commons-fileupload-1.2.1/lib/commons-fileupload-1.2.1.jar"/>
+	<classpathentry kind="output" path="WebRoot/WEB-INF/classes"/>
+</classpath>

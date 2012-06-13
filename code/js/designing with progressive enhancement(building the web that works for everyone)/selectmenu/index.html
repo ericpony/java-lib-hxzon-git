@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+	<title>Custom select menu</title>
+	<link href="css/basic.css" type="text/css" rel="stylesheet" />
+	<script type="text/javascript" src="../-shared/EnhanceJS/enhance.js"></script>		
+	<script type="text/javascript">
+		// Run capabilities test
+		enhance({
+			loadScripts: [
+				'../-shared/jquery.min.js',
+				'js/jQuery.selectmenu.js',
+				'js/example.js'
+			],
+			loadStyles: ['css/enhanced.css']
+		});   
+    </script>
+</head>
+<body>
+
+
+<form>
+
+	<label for="giftwrap">Gift wrap pattern:</label>
+	<select name="giftwrap" id="giftwrap">
+		<option class="purple-bubbles" value="pattern-bubbles">Purple bubbles</option>
+		<option class="yellow-swirl" value="pattern-swirl">Yellow swirl</option>
+		<option class="blue-snow" value="pattern-snow" selected="selected">Blue snow</option>
+		<option class="pink-sparks" value="pattern-sparks">Pink sparks</option>
+		<option class="green-blobs" value="pattern-blobs">Green blobs</option>
+	</select>
+	<a href="giftwrap-choices.html" class="giftwrap-choices">view samples</a>
+
+</form>
+
+	
+	
+</body>
+</html>

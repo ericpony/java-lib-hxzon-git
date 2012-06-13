@@ -1,0 +1,19 @@
+/* page styles */
+body { font-size:62.5%; }
+fieldset { padding:1em 15px; }
+legend { font-size:1.4em; padding:.1em 5px; }
+
+/* Rating widget */
+
+/* wrapper divs */
+.rating-option { float:left; position:relative; }
+
+/* input, label positioning */
+.rating-option input { position:absolute; left:2px; top:3px; margin:0; z-index:0; }
+.rating-option label { background:url(../images/star.gif) no-repeat -14px -11px; display:block; position:relative; width:25px; height:25px; margin:0; cursor:pointer; text-indent:-9999em; overflow:hidden; z-index:1; }
+
+/* states */
+.rating-option label.checked { background-position:-14px -211px; }
+.rating-option label.hover { background-position:-14px -111px; }
+.rating-option label.focus { outline:1px dotted #ccc; }
+.rating-submit { display:none; }

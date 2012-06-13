@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="zk-demo-todo"
+  id="myeclipse.1302831499468"
+  context-root="/zk-login"
+  j2ee-spec="6.0"
+  archive="zk-demo-todo.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+

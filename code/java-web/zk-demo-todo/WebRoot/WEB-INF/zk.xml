@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- zk.xml
+	Purpose:
+		
+	Description:
+		
+	History:
+		Sun Mar 26 16:29:07     2006, Created by tomyeh
+
+Copyright (C) 2006 Potix Corporation. All Rights Reserved.
+-->
+
+<zk>
+	<!-- Defines the application's name -->
+	<preference>
+		<name>org.zkoss.zk.ui.WebApp.name</name>
+		<value>ZK TodoItem</value>
+	</preference>
+
+	<!-- Turn on if you want to debug JavaScript.
+		Once turned on, the uncompressed JavaScript files will be loaded.
+	<client-config>
+		<debug-js>true</debug-js>
+	</client-config>
+	-->
+	<!-- Uncomment if you turn off the caching of resources loaded from
+		the class path (aka., class Web resources).
+		By default, class Web resources are cached by the browser until
+		you upgraded ZK to a newer version.
+		However, it is better to turn the cache off when you are developing
+		a theme or a component.
+	<library-property>
+		<name>org.zkoss.web.classWebResource.cache</name>
+		<value>false</value>
+	</library-property>
+	-->
+	
+	<!-- Turn on if you want to cache by etag for dynamic resource.
+	<library-property>
+		<name>org.zkoss.web.classWebResource.cache.etag</name>
+		<value>true</value>
+	</library-property>
+	-->
+	
+	<!-- Turn on the following if you want to use the trendy mold as default
+		for all buttons.
+	-->
+	<library-property>
+		<name>org.zkoss.zul.Button.mold</name>
+		<value>trendy</value>
+	</library-property>
+
+
+	<!-- [ZK EE]
+		Turn on if you want to enable the render-on-demand feature for grid.
+		It improves the performance for huge grid.
+		Default: false
+	-->
+	<library-property>
+		<name>org.zkoss.zul.grid.rod</name>
+		<value>true</value>
+	</library-property>
+	<!-- [ZK EE]
+		Turn on if you want to enable the render-on-demand feature for listbox.
+		It improves the performance for huge listbox.
+		Default: false
+	-->
+	<library-property>
+		<name>org.zkoss.zul.listbox.rod</name>
+		<value>true</value>
+	</library-property>
+
+	<!-- Turn on if you want to use IE7 compatible mode. It is useful if
+		some of JavaScript code doesn't work properly in IE8.
+	<library-property>
+		<name>org.zkoss.zk.ui.EmulateIE7</name>
+		<value>true</value>
+	</library-property>
+	-->
+
+	<!-- [ZK EE]
+		Turn on if you want to block the requests sent from inaccessible
+		widgets (such as invisible or disabled).
+		It is used to protect your application from the attack that
+		goes through the invisible widgets.
+		Once turned on, the request from an invisible widget is blocked.
+		See also org.zkoss.zkmax.au.IWBS.events
+	<listener>
+		<listener-class>org.zkoss.zkmax.au.InaccessibleWidgetBlockService$DesktopInit</listener-class>
+	</listener>
+	-->
+	<!-- [ZK EE]
+		Turn on if you use InaccessibleWidgetBlockService (IWBS) and
+		want to block only particular events.
+		Default: all
+	<library-property>
+		<name>org.zkoss.zkmax.au.IWBS.events</name>
+		<value>onClick,onChange,onSelect</value>
+	</library-property>
+	-->
+
+	<!-- [ZK EE]
+		Turn on if you want to recycle the desktop if an user navigates
+		back to the same URL
+	<listener>
+		<listener-class>org.zkoss.zkmax.ui.util.DesktopRecycle</listener-class>
+	</listener>
+	--> 
+
+	<!-- [ZK EE]
+		Turn on if you want to make your Web application crawlable (indexed)
+		by search engines.
+	<system-config>
+		<crawlable>true</crawlable>
+	</system-config>
+	-->
+
+
+	<!-- Configure the error page
+	<error-page>
+		<exception-type>java.lang.Throwable</exception-type>
+		<location>/WEB-INF/sys/error.zul</location>
+	</error-page>
+	-->
+
+	
+	<!-- Configure ZUL not to override the standard HTML tags, such as body's
+		margin and padding
+	<library-property>
+		<name>org.zkoss.zul.theme.browserDefault</name>
+		<value>true</value>
+	</library-property>
+	-->
+
+	<!-- Configure the client where to display the progress box.
+		The progress box is a message box used to indicate the AU requests
+		have being processed by the server.
+		The allowed values: left, center, right, top, bottom and mouse.
+		If you want to specify two values, separate them with comma, such as
+		right,top.
+	<library-property>
+		<name>org.zkoss.zul.progressbox.position</name>
+		<value>mouse</value>
+	</library-property>
+	-->
+	
+
+	<!-- Uncommet to specify a directory, where ZK will load the so-called
+		Class-Web Resources (CWR), including JavaScript files, CSS files,
+		 and other resources (~./xxx), in addition to the class path.
+		Default: null (they are loaded only from the class path)
+	<library-property>
+		<name>org.zkoss.web.util.resource.dir</name>
+		<value>/WEB-INF/cwr</value>
+	</library-property>
+	-->
+
+	<!-- ZK Demo properties loader 
+	<listener>
+		<description>ZK Demo properties loader</description>
+		<listener-class>
+			org.zkoss.zksandbox.DemoWebAppInit
+		</listener-class>
+	</listener>
+-->
+
+</zk>

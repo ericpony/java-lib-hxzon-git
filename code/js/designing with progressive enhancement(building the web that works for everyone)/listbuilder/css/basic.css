@@ -1,0 +1,3 @@
+body, textarea, input, select { font-family: "Segoe UI", Arial, sans-serif; }
+fieldset { padding:0; border:none; }
+label {  display: block; }

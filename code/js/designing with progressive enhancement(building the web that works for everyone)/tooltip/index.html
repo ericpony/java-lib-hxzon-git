@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+	<title>Custom Tooltips</title>
+	<link href="css/basic.css" type="text/css" rel="stylesheet" />
+	<script type="text/javascript" src="../-shared/EnhanceJS/enhance.js"></script>		
+	<script type="text/javascript">
+		// Run capabilities test
+		enhance({
+			loadScripts: [
+				'../-shared/jquery.min.js',
+				'js/jQuery.tooltip.js',
+				'js/example.js'
+			],
+			loadStyles: ['css/enhanced.css']	
+		});   
+    </script>
+</head>
+<body>
+
+
+
+<form action="#">
+	<h1>Register Now</h1>
+		<fieldset>
+			<p class="required-msg">All fields are required</p>
+			
+			<div class="question">
+				<label for="email" title="To keep spammers out, we'll send a confirmation email to make sure this is a valid email address">Email Address</label>
+				<input type="text" name="user" id="email" class="text" />
+			</div>
+			
+			<div class="question">
+				<label for="password" title="For strong security, passwords should be least 6 characters and contain a number or punctuation symbol">Password</label>
+				<input type="password" name="password" id="password" class="text" />
+			</div>
+			
+			<div class="question">
+				<label for="secret" title="We’ll ask this question to confirm your identity if you forget your password.">Secret Question</label>
+				<input type="text" name="secret" id="secret" class="text" />
+			</div>
+			
+			<div class="question">
+				<label for="secret-answer" title="Answers aren't case sensitive, but your answer must exactly match what's entered here to recover your password">Secret Answer</label>
+				<input type="text" name="secret-answer" id="secret-answer" class="text" />
+			</div>
+			
+			<input type="submit" name="register" value="Register now" id="register" />
+			
+			<ul class="form-links">
+				<li><a href="#privacy">Privacy policy</a></li>
+				<li><a href="benefits.html" data-hrefpreview="benefits_preview.txt">Benefits of registering</a></li>
+			</ul>
+			
+		</fieldset>	
+</form>
+	
+	
+
+<div id="privacy">
+	<h2>Our privacy policy</h2>
+	<p>We are committed to protecting your privacy. Here is our commitment to you:</p>
+		<ul>
+			<li>All your personal data is securely transmitted and stored with 128 bit encryption</li>
+			<li>We will never sell any of your personal information to a 3rd party</li>
+			<li>We won't email you marketing messages or other annoying spam, ever</li>
+		</ul>
+	
+</div>
+
+
+</body>
+</html>

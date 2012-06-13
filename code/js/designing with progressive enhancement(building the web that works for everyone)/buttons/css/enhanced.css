@@ -1,0 +1,19 @@
+/* Page styles */
+body, input { font-size:62.5%; }
+legend { font-size:1.5em; padding:0; }
+fieldset p { font-size:1.3em; }
+
+/*	Buttons */
+.btn-primary, .btn-secondary { padding:.4em 1em; border:1px solid #aaa; background-color:#eee; text-align:center; cursor:pointer; font-size:1.2em; width:auto; overflow:visible; -moz-border-radius:7px; -webkit-border-radius:7px; border-radius:7px; }
+.btn-primary { background: #459e00 url(../images/button-green.gif) no-repeat left center; color:#fff; border-color:#2d7406; text-shadow:-1px -1px 0 #37730e; }
+.btn-secondary { background: #e7e8e9 url(../images/button-silver.gif) no-repeat left center; color:#555; border-color:#b3b3b3; text-shadow:1px 1px 0 #fafafa; }
+.btn-primary-hover { background-position:right center; border-color:#205b00; color:#fff; background-color:#57AF00; }
+.btn-secondary-hover { background-position:right center; background-color:#F1F1F2; color:#333; border-color:#777; }
+
+/*buttons with inline icons*/
+button span.icon { display: inline-block; height:12px; margin-right:5px; width:16px; }
+
+/*add buttons*/
+button.action-add { font-weight:normal; }
+button.action-add span.icon { background:url(../images/icon-add.png) 0 0 no-repeat; }
+button.action-ignore span.icon { background:url(../images/icon-ignore.png) 0 0 no-repeat; }

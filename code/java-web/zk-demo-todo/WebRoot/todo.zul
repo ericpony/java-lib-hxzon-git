@@ -1,0 +1,98 @@
+<?page title="待办事项系统"?>
+<window title="待办事项清单" width="640px" border="normal" closable="true"
+        onClose="self.visible=false;logout();" >
+ <zscript>
+import org.zkoss.zk.ui.*;
+  
+  Session s = Sessions.getCurrent();
+  if(s.getAttribute("user") == null){
+    Executions.sendRedirect("login.zul");
+    }
+  
+  void logout() {
+    s.invalidate();
+    Executions.sendRedirect("login.zul");
+  }
+</zscript>
+<zscript>
+  import java.util.*;
+  import org.hxzon.demo.zk.todo.*;
+
+  TodoItemDao itemDao = new TodoItemDao();
+  List allItems = itemDao.findAll();
+</zscript>
+<zscript>
+void add() {
+    TodoItem item = new TodoItem(UUID.randomUUID().toString(),
+                             name.value,date.value);
+    itemDao.insert(item);
+
+    // update list
+    allItems = itemDao.findAll();
+
+    // 將新增資料形成一個 Listitem 物件（或者節點） 
+    Listitem li = new Listitem(); 
+    li.setValue(item);  // 在之後的 update, delete 會用到
+    li.appendChild(new Listcell(item.id)); 
+    li.appendChild(new Listcell(name.value));
+    li.appendChild(new Listcell(date.value)); 
+
+    // 將 Listitem 物件變成 box 的子節點
+    // box 是 listbox 的 id 值
+    box.appendChild(li);
+
+    // 清除輸入欄位
+    name.value = null;
+    date.value = null;
+  }//end add
+  
+  void selectItem(){
+  name.value = ((TodoItem)box.selectedItem.value).getName();
+  date.value = ((TodoItem)box.selectedItem.value).getDate();
+}//end selectItem
+
+  void update(){
+    // 修改待辦事項物件的內容以及資料庫的內容
+    TodoItem item= (TodoItem) box.selectedItem.value;
+    item.setName(name.value);
+    item.setDate(date.value);
+    itemDao.update(item);
+
+    // 修改 listbox 的內容
+    List children = box.selectedItem.children;
+    ((Listcell)children.get(1)).label = name.value;
+    ((Listcell)children.get(2)).label = date.value;
+  }//end update
+  
+  void delete(){
+    itemDao.delete((TodoItem)box.selectedItem.value);
+    box.removeItemAt(box.getSelectedIndex());
+    clearData();
+  }
+
+  void clearData(){
+    name.value = null;
+    date.value = null;
+  }
+</zscript>
+  <listbox id="box" multiple="true" rows="4" onSelect="selectItem()">
+    <listhead>
+      <listheader label="ID" />
+      <listheader label="待办事项" />
+      <listheader label="日期" />
+    </listhead>
+    <listitem forEach="${allItems}" value="${each}">
+      <listcell label="${each.id}"/>
+      <listcell label="${each.name}"/>
+      <listcell label="${each.date}"/>
+    </listitem>
+  </listbox>
+  <groupbox>
+    <caption label="待办事项管理" />
+    待办事项: <textbox id="name" cols="25" />
+    日期: <textbox id="date" cols="25" />
+    <button label="新增" width="46px" height="24px" onClick="add()"/>
+    <button label="修改" width="46px" height="24px" onClick="update()"/>
+    <button label="刪除" width="46px" height="24px" onClick="delete()"/>
+  </groupbox>
+ </window>
