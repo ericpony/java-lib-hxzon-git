@@ -24,7 +24,7 @@ http://product.dangdang.com/product.aspx?product_id=22543344
 59.20，观望
 ----
 15，软件框架设计的艺术
-56.20，观望
+56.20，48.40，观望
 ----
 19，软件随想录：程序员部落酋长Joel谈软件
 36.80(75折)，已读，不错
@@ -45,10 +45,6 @@ http://product.dangdang.com/product.aspx?product_id=20427584
 43，算法导论（原书第2版）
 http://product.dangdang.com/product.aspx?product_id=9211884#catalog
 60.40(71折)
-----
-16，计算机程序的构造和解释：原书第2版
-http://product.dangdang.com/product.aspx?product_id=8793968
-33.80，观望，有电子书
 ----
 10，汇编语言（第2版）
 http://product.dangdang.com/product.aspx?product_id=20196660
@@ -119,10 +115,6 @@ http://www.amazon.cn/TCP-IP%E8%AF%A6%E8%A7%A3%E2%80%A2%E5%8D%B72-%E5%AE%9E%E7%8E
 =======================================================
 工具实践
 ----
-18，实用Common Lisp编程(第16届Jolt生产效率大奖得主)
-http://product.dangdang.com/product.aspx?product_id=22508163
-61.30(69折)，观望
-----
 24，深入理解Java虚拟机:JVM高级特性与最佳实践
 46.20(67折)
 ----
@@ -140,21 +132,19 @@ http://product.dangdang.com/product.aspx?product_id=20192214
 41.20(75折)
 ----
 25，黑客大曝光:Web应用程序安全(原书第3版)(Web安全技术人员必备参考)
-46.20(67折)
+46.20(67折)，想买
 ----
-50，MAVEN实战
-43.90 (68折)，想买
+92，Git权威指南
+53.40(60折)，观望
+----
+94，PostgreSQL 数据库内核分析
+59.20 (75折)，观望
 ===========================================================
 c和linux
 ----
 82，Linux/Unix设计思想
 http://www.ituring.com.cn/book/800
-----
-80，UNIX编程艺术
-http://product.dangdang.com/product.aspx?product_id=21006214
-http://product.dangdang.com/product.aspx?product_id=9149115
-http://www.amazon.cn/UNIX%E7%BC%96%E7%A8%8B%E8%89%BA%E6%9C%AF-%E5%A7%9C%E5%AE%8F/dp/B0050CRP0Q/ref=reg_hu-rd_add_1_dp
-67.20(85折)
+不买，不如《UNIX编程艺术》
 ----
 78，Linux 系统编程（中文版）
 http://product.dangdang.com/product.aspx?product_id=20645962
@@ -166,15 +156,122 @@ http://product.dangdang.com/product.aspx?product_id=20645962
 22，LINUX技术手册（影印版）（第5版）
 72.00(73折)，不买，已出第6版
 ----
+91，国外计算机科学经典教材?Uni?x & Linux大学教程
+78.40
+----
 45，C程序设计语言(第2版新版)
 http://product.dangdang.com/product.aspx?product_id=8766529
-20.70(69折)
+20.70(69折)，(2004.1)，（美）Brian W.Kernighan,Dennis M.Ritchie
 ----
 70，C专家编程
 30.70 (68折)，想买
 ----
 71，C陷阱与缺陷
 25.10 (84折)，想买，只适用老版本c？
+----
+93，C语言程序设计:现代方法(第2版)
+55.30(7折)
+====================================================
+C++
+----
+100，C++ Primer
+http://product.china-pub.com/28767
+C++Primer中文版(第4版)，2008年7月1日
+http://www.amazon.cn/C-Primer%E4%B8%AD%E6%96%87%E7%89%88-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B00114DX08/ref=pd_rhf_se_s_cp_26
+C++ Primer中文版(第4版·特别版)，2010年2月1日，附加了《C++编程规范：101条规则、准则与最佳实践》一书的全部内容
+http://www.amazon.cn/C-Primer%E4%B8%AD%E6%96%87%E7%89%88-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B0036DB1EC/ref=pd_cp_b_0
+--
+C++ Primer (5th Edition),August 16, 2012,Stanley B. Lippman (Author), Josée Lajoie (Author), Barbara E. Moo (Author)
+http://www.amazon.com/Primer-5th-Edition-Stanley-Lippman/dp/0321714113/ref=sr_1_1?ie=UTF8&qid=1347429437&sr=8-1&keywords=C%2B%2B+Primer
+Bestselling Programming Tutorial and Reference Completely Rewritten for the New C++11 Standard
+--
+C++ Primer (4th Edition),February 24, 2005,Stanley B. Lippman (Author), Josée Lajoie (Author), Barbara E. Moo (Author)
+http://www.amazon.com/Primer-4th-Edition-Stanley-Lippman/dp/0201721481/ref=sr_1_3?ie=UTF8&qid=1347429437&sr=8-3&keywords=C%2B%2B+Primer
+----
+101，C++程序设计语言
+http://product.china-pub.com/196448
+《The C++ Programming Language: Special Edition》，（美）Bjarne Stroustrup
+----
+104，Think in C++
+http://product.china-pub.com/4801
+http://www.amazon.cn/C-%E7%BC%96%E7%A8%8B%E6%80%9D%E6%83%B3-%E5%9F%83%E5%85%8B%E5%B0%94/dp/B005CFUQR0/ref=pd_rhf_se_s_cp_9
+中文翻译得不好
+----
+102，Effective C++:改善程序与设计的55个具体做法:第3版
+http://product.china-pub.com/197414
+http://www.amazon.cn/Effective-C-%E6%94%B9%E5%96%84%E7%A8%8B%E5%BA%8F%E4%B8%8E%E8%AE%BE%E8%AE%A1%E7%9A%8455%E4%B8%AA%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95-%E6%A2%85%E8%80%B6/dp/B004G72P24/ref=pd_rhf_se_s_cp_2
+----
+103，More Effective C++:35个改善编程与设计的有效方法
+http://product.china-pub.com/197665
+http://www.amazon.cn/More-Effective-C-35%E4%B8%AA%E6%94%B9%E5%96%84%E7%BC%96%E7%A8%8B%E4%B8%8E%E8%AE%BE%E8%AE%A1%E7%9A%84%E6%9C%89%E6%95%88%E6%96%B9%E6%B3%95-%E6%A2%85%E8%80%B6/dp/B004IP8BD6/ref=pd_rhf_se_s_cp_1
+----
+106，Exceptional C++中文版：47个C++难题、编程问题和解决方案
+http://product.china-pub.com/33333
+http://www.amazon.cn/Exceptional-C-47%E4%B8%AAC-%E5%B7%A5%E7%A8%8B%E9%9A%BE%E9%A2%98-%E7%BC%96%E7%A8%8B%E9%97%AE%E9%A2%98%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E8%90%A8%E7%89%B9/dp/B008CGKUBS/ref=pd_rhf_se_s_cp_18
+----
+107，More Exceptional C++中文版：40个新的工程难题、编程疑问及解决方法
+http://product.china-pub.com/197666
+http://www.amazon.cn/More-Exceptional-C-40%E4%B8%AA%E6%96%B0%E7%9A%84%E5%B7%A5%E7%A8%8B%E9%9A%BE%E9%A2%98-%E7%BC%96%E7%A8%8B%E7%96%91%E9%97%AE%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95-%E8%88%92%E7%89%B9/dp/B004IUISIO/ref=pd_rhf_se_s_cp_3
+----
+108，Advanced C++
+http://product.china-pub.com/16697
+----
+109，Modern C++ Design: Applied Generic and Design Patterns
+《C++设计新思维——泛型编程与设计模式之应用》
+http://product.china-pub.com/9700
+http://www.amazon.cn/Modern-C-Design-Applied-Generic-and-Design-Patterns-Alexandrescu-Andrei/dp/0201704315/ref=sr_1_1?s=books&ie=UTF8&qid=1347035699&sr=1-1
+----
+110，泛型编程与STL
+http://product.china-pub.com/9864
+----
+111，深入探索C++对象模型
+http://product.china-pub.com/3290
+http://www.amazon.cn/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B-%E4%BC%A0%E4%B8%96%E7%BB%8F%E5%85%B8%E4%B9%A6%E4%B8%9B-%E6%96%AF%E5%9D%A6%E5%88%A9%E2%80%A2B-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B006QXQXTM/ref=pd_rhf_se_s_cp_4
+==============================================
+windows
+----
+112，Windows程序设计(第5版.珍藏版)
+http://product.china-pub.com/52880
+http://www.amazon.cn/Windows%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1-%E4%BD%A9%E6%8E%AA%E5%B0%94%E5%BE%B7/dp/B00426BTC6/ref=pd_sim_b_1
+http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=157231995X
+《Programming Windows 5th edition》，1998.11
+96.80(7.5折)，中文版2010.9，原版1998年早已过时？
+----
+113，MFC Windows 程序设计（第2版）
+http://product.china-pub.com/3804
+http://www.amazon.cn/MFC-Windows%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1-%E5%B8%95%E7%BD%97%E8%B5%9B%E6%96%AF/dp/B0011F3VMC/ref=pd_rhf_se_s_cp_49
+《Programming Windows with MFC Second Edition》，2001.9
+96.00(7.5折)，中文版2007.5
+----
+114，深入浅出MFC（第二版）
+http://product.china-pub.com/3565
+http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAMFC-%E4%BE%AF%E4%BF%8A%E6%9D%B0/dp/B001175K4M/ref=pd_cp_b_2
+63.50(7.9折)，侯俊杰(侯捷)，2001.1
+----
+115，Windows核心编程(第5版)
+http://product.china-pub.com/209058
+http://www.amazon.cn/Windows%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B-%E6%9D%B0%E5%A4%AB%E7%91%9E/dp/B001GS7918/ref=pd_rhf_se_s_cp_23
+http://www.amazon.cn/Windows-via-C-C-Jeffrey-M-Richter/dp/0735624240/ref=sr_1_2?s=books&ie=UTF8&qid=1347036696&sr=1-2
+《Windows via C/C++》，2007.12
+《Windows via C/C++,Fifth Edition》，2011.9.22
+http://www.amazon.com/Windows-via-C-softcover/dp/0735663777/ref=sr_1_1?s=books&ie=UTF8&qid=1347515954&sr=1-1&keywords=Windows+via+C%2FC%2B%2B
+74.00(7.5折)，中文版2008.9
+----
+117，深入解析:Windows操作系统(第4版)
+http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90-Windows%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E7%BD%97%E6%96%AF/dp/B0011F3VZY/ref=pd_sim_b_86
+http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E6%8B%89%E8%A5%BF%E8%AF%BA%E7%BB%B4/dp/B002PEX4Y8/ref=pd_cp_b_2
+《Microsoft Windows Internals（Fourth Edition》，覆盖Windows XP和Windows Server 2003中所做的内核变化
+深入解析Windows操作系统(第5版.英文版)，2009.9，针对Windows Vista和Windows Server 2008进行了全面的更新
+74.30(7.5折)，中文版2007.4
+----
+118，Visual C++2010入门经典(第5版)
+http://www.amazon.cn/Visual-C-2010%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8-%E9%9C%8D%E9%A1%BF/dp/B004GHO45A/ref=pd_sim_b_18
+http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=0470500883
+《Ivor Horton's Beginning Visual C++ 2010》，2010.4.12
+http://www.amazon.com/Ivor-Hortons-Beginning-Visual-Programmer/dp/0470500883/ref=sr_1_1?s=books&ie=UTF8&qid=1347515759&sr=1-1&keywords=Visual+C%2B%2B
+《Ivor Horton's Beginning Visual C++ 2012》，2012.10.2
+http://www.amazon.com/Ivor-Hortons-Beginning-Visual-2012/dp/1118368088/ref=sr_1_4?s=books&ie=UTF8&qid=1347515759&sr=1-4&keywords=Visual+C%2B%2B
+89.60(7折)，中文版2010.12，想买
 =============================================================
 NoSql,云计算
 ----
@@ -192,6 +289,15 @@ NoSql,云计算
 ----
 58，Cassandra权威指南
 44.20 (75折)
+----
+125，数据挖掘：概念与技术（原书第3版）
+http://product.dangdang.com/product.aspx?product_id=22846300
+60.40(76折)
+----
+126，社交网站的数据挖掘与分析
+http://product.dangdang.com/product.aspx?product_id=22606834
+2011年Jolt生产效率大奖获奖图书
+44.30(75折)
 ===============================================================
 css,html5
 ----
@@ -223,10 +329,6 @@ javascript
 41，Prototype与script.aculo.us终极揭秘
 48.80(75折)，只是使用，不是源码解析
 ----
-64，《JavaScript权威指南》（第六版）
-http://ued.taobao.com/javascript
-必买？
-----
 74，JavaScript高级程序设计(第3版)
 http://www.ituring.com.cn/book/946
 ----
@@ -235,10 +337,6 @@ Pro CSS and HTML Design Patterns
 http://www.ituring.com.cn/book/436
 http://product.dangdang.com/product.aspx?product_id=20318975
 不买，已出新版《精通HTML5和CSS3设计模式》
-----
-79，HTML5游戏开发
-http://product.dangdang.com/product.aspx?product_id=22508162
-32.90 (67折)
 ----
 83，JavaScript设计模式
 http://www.ituring.com.cn/book/388
@@ -251,4 +349,7 @@ http://product.dangdang.com/product.aspx?product_id=20511558
 AdvancED DOM Scripting: Dynamic Web Design Techniques
 有电子书（，2008）
 ----
-90，
+90，深入浅出CoffeeScript/图灵程序设计丛书
+26.20
+----
+128，

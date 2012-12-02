@@ -1,0 +1,144 @@
+﻿Programming Clojure.Second Edition
+Stuart Halloway
+Aaron Bedra
+The Pragmatic Bookshelf
+Dallas, Texas ?Raleigh, North Carolina
+----------------
+Many of the designations used by manufacturers and sellers to distinguish their products
+are claimed as trademarks. Where those designations appear in this book, and The Pragmatic
+Programmers, LLC was aware of a trademark claim, the designations have been printed in
+initial capital letters or in all capitals. The Pragmatic Starter Kit, The Pragmatic Programmer,
+Pragmatic Programming, Pragmatic Bookshelf, PragProg and the linking gdevice are trade-marks of The Pragmatic Programmers, LLC.
+Every precaution was taken in the preparation of this book. However, the publisher assumes
+no responsibility for errors or omissions, or for damages that may result from the use of
+information (including program listings) contained herein.
+Our Pragmatic courses, workshops, and other products can help you and your team create
+better software and have more fun. For more information, as well as the latest Pragmatic
+titles, please visit us at http://pragprog.com.
+The team that produced this book includes:
+Michael Swaine (editor)
+Potomac Indexing, LLC (indexer)
+Kim Wimpsett (copyeditor)
+David J Kelly (typesetter)
+Janet Furlow (producer)
+Juliet Benda (rights)
+Ellie Callahan (support)
+Copyright ? 2012 The Pragmatic Programmers, LLC.
+All rights reserved.
+No part of this publication may be reproduced, stored in a retrieval system, or
+transmitted, in any form, or by any means, electronic, mechanical, photocopying,
+recording, or otherwise, without the prior consent of the publisher.
+Printed in the United States of America.
+ISBN-13: 978-1-934356-86-9
+Encoded using the finest acid-free high-entropy binary digits.
+Book version: P1.0—April 2012
+======================
+Contents
+Foreword for the Second Edition . . . . . . . . xi
+Foreword for the First Edition . . . . . . . . xiii
+Acknowledgments . . . . . . . . . . . xv
+Preface. . . . . . . . . . . . . . xvii
+1. Getting Started . . . . . . . . . . . . 1
+2. Exploring Clojure . . . . . . . . . . . 21
+3. Unifying Data with Sequences . . . . . . . . 55
+4. Functional Programming . . . . . . . . . 85
+5. State . . . . . . . . . . . . . . 113
+6. Protocols and Datatypes . . . . . . . . . 143
+7. Macros. . . . . . . . . . . . . . 165
+8. Multimethods . . . . . . . . . . . . 187
+9. Java Down and Dirty . . . . . . . . . . 203
+10. Building an Application . . . . . . . . . 227
+
+A1. Editor Support. . . . . . . . . . . . 253
+A2. Bibliography . . . . . . . . . . . . 255
+Index . . . . . . . . . . . . . . 257
+====================
+Contents
+Foreword for the Second Edition . . . . . . . . xi
+Foreword for the First Edition . . . . . . . . xiii
+Acknowledgments . . . . . . . . . . . xv
+Preface. . . . . . . . . . . . . . xvii
+1. Getting Started . . . . . . . . . . . . 1
+1.1 Why Clojure? 2
+1.2 Clojure Coding Quick Start 11
+1.3 Exploring Clojure Libraries 16
+1.4 Wrapping Up 20
+
+2. Exploring Clojure . . . . . . . . . . . 21
+2.1 Forms 21
+2.2 Reader Macros 30
+2.3 Functions 32
+2.4 Vars, Bindings, and Namespaces 36
+2.5 Calling Java 43
+2.6 Flow Control 45
+2.7 Where’s My for Loop? 48
+2.8 Metadata 51
+2.9 Wrapping Up 53
+
+3. Unifying Data with Sequences . . . . . . . . 55
+3.1 Everything Is a Sequence 56
+3.2 Using the Sequence Library 60
+3.3 Lazy and Infinite Sequences 69
+3.4 Clojure Makes Java Seq-able 71
+3.5 Calling Structure-Specific Functions 76
+3.6 Wrapping Up 84
+
+4. Functional Programming . . . . . . . . . 85
+4.1Functional Programming Concepts 85
+4.2 How to Be Lazy 90
+4.3 Lazier Than Lazy 98
+4.4 Recursion Revisited 103
+4.5 Wrapping Up 112
+
+5. State . . . . . . . . . . . . . . 113
+5.1 Concurrency, Parallelism, and Locking 114
+5.2 Refs and Software Transactional Memory 115
+5.3 Use Atoms for Uncoordinated, Synchronous Updates 122
+5.4 Use Agents for Asynchronous Updates 123
+5.5 Managing Per-Thread State with Vars 127
+5.6 A Clojure Snake 132
+5.7 Wrapping Up 141
+
+6. Protocols and Datatypes . . . . . . . . . 143
+6.1 Programming to Abstractions 143
+6.2 Interfaces 146
+6.3 Protocols 147
+6.4 Datatypes 151
+6.5 Records 156
+6.6 reify 162
+6.7 Wrapping Up 163
+
+7. Macros. . . . . . . . . . . . . . 165
+7.1 When to Use Macros 165
+7.2 Writing a Control Flow Macro 166
+7.3 Making Macros Simpler 172
+7.4 Taxonomy of Macros 177
+7.5 Wrapping Up 185
+
+8. Multimethods . . . . . . . . . . . . 187
+8.1 Living Without Multimethods 187
+8.2 Defining Multimethods 189
+8.3 Moving Beyond Simple Dispatch 192
+8.4 Creating Ad Hoc Taxonomies 194
+8.5 When Should I Use Multimethods? 198
+8.6 Wrapping Up 201
+
+9. Java Down and Dirty . . . . . . . . . . 203
+9.1 Exception Handling 204
+9.2 Wrestling with the Integers 207
+9.3 Optimizing for Performance 209
+9.4 Creating Java Classes in Clojure 214
+9.5 A Real-World Example 219
+9.6 Wrapping Up 226
+
+10. Building an Application . . . . . . . . . 227
+10.1 Scoring a Clojurebreaker Game 228
+10.2 Testing the Scorer 231
+10.3 test.generative 235
+10.4 Creating an Interface 243
+10.5 Deploying Your Code 248
+10.6 Farewell 251
+
+A1. Editor Support. . . . . . . . . . . . 253
+A2. Bibliography . . . . . . . . . . . . 255
+Index . . . . . . . . . . . . . . 257

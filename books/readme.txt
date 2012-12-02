@@ -17,3 +17,11 @@ http://informit.com/series/eclipse
 http://platform.netbeans.org/articles/books.html
 7,
 http://code.google.com/p/ie7-js/
+8,
+http://acl-translation.github.com/acl-chinese/
+ANSI Common Lisp 中文翻譯版
+9,
+http://qiujj.com/static/clojure-handbook.html
+Clojure Handbook（Clojure学习笔记，中文）
+http://qiujj.com/static/Scala-Handbook.htm
+Scala 2.8+ Handbook（Scala 2.8+学习笔记，中文）

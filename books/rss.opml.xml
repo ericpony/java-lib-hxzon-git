@@ -1,0 +1,302 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+<head>
+<title>我的订阅列表</title>
+</head>
+<body>
+<outline text="__编程相关（中文）" title="__编程相关（中文）">
+<outline text="InfoQ 个性化 RSS Feed" title="InfoQ 个性化 RSS Feed" type="rss" htmlUrl="http://www.infoq.com/cn/" xmlUrl="http://www.infoq.com/cn/rss/rss.action?token=xxx">
+</outline>
+<outline text="技术改变世界 创新驱动中国 - 《程序员》官网" title="技术改变世界 创新驱动中国 - 《程序员》官网" type="rss" htmlUrl="http://www.programmer.com.cn" xmlUrl="http://www.programmer.com.cn/feed/">
+</outline>
+<outline text="淘宝JAVA中间件团队博客" title="淘宝JAVA中间件团队博客" type="rss" htmlUrl="http://rdc.taobao.com/team/jm" xmlUrl="http://rdc.taobao.com/team/jm/feed">
+</outline>
+<outline text="搜索技术博客－淘宝" title="搜索技术博客－淘宝" type="rss" htmlUrl="http://www.searchtb.com" xmlUrl="http://www.searchtb.com/feed">
+</outline>
+<outline text="外刊IT评论" title="外刊IT评论" type="rss" htmlUrl="http://www.aqee.net" xmlUrl="http://feed.feedsky.com/aqee-net">
+</outline>
+<outline text="酷壳 - CoolShell.cn" title="酷壳 - CoolShell.cn" type="rss" htmlUrl="http://coolshell.cn" xmlUrl="http://coolshell.cn/feed">
+</outline>
+<outline text="老赵点滴 - 追求编程之美" title="老赵点滴 - 追求编程之美" type="rss" htmlUrl="http://blog.zhaojie.me/" xmlUrl="http://blog.zhaojie.me/rss">
+</outline>
+<outline text="阮一峰的网络日志" title="阮一峰的网络日志" type="rss" htmlUrl="http://www.ruanyifeng.com/blog/" xmlUrl="http://www.ruanyifeng.com/blog/atom.xml">
+</outline>
+<outline text="黑客志" title="黑客志" type="rss" htmlUrl="http://heikezhi.com" xmlUrl="http://feed.feedsky.com/heikezhi">
+</outline>
+<outline text="君山的博客|许令波" title="君山的博客|许令波" type="rss" htmlUrl="http://xulingbo.net" xmlUrl="http://xulingbo.net/?feed=rss2">
+</outline>
+<outline text="梦想风暴" title="梦想风暴" type="rss" htmlUrl="http://dreamhead.blogbus.com" xmlUrl="http://dreamhead.blogbus.com/index.rdf">
+</outline>
+<outline text="草色天涯" title="草色天涯" type="rss" htmlUrl="http://dear.blogbus.com" xmlUrl="http://dear.blogbus.com/index.rdf">
+</outline>
+<outline text="wettuy&#39;s blog" title="wettuy&#39;s blog" type="rss" htmlUrl="http://www.lolibeta.com" xmlUrl="http://feed.feedsky.com/wettuy">
+</outline>
+<outline text="TWaver中文社区" title="TWaver中文社区" type="rss" htmlUrl="http://twaver.servasoft.com" xmlUrl="http://twaver.servasoft.com/?feed=rss2">
+</outline>
+<outline text="NetBeans星球" title="NetBeans星球" type="rss" htmlUrl="http://www.planetnetbeans.org/zh_cn/" xmlUrl="http://planetnetbeans.org/zh_cn/rss20.xml">
+</outline>
+<outline text="Koubei UED" title="Koubei UED" type="rss" htmlUrl="http://ued.koubei.com" xmlUrl="http://ued.koubei.com/?feed=rss2">
+</outline>
+<outline text="为之漫笔" title="为之漫笔" type="rss" htmlUrl="http://www.cn-cuckoo.com" xmlUrl="http://www.cn-cuckoo.com/feed">
+</outline>
+<outline text="站在别人脚趾上的侏儒" title="站在别人脚趾上的侏儒" type="rss" htmlUrl="http://www.cheng-fu.com" xmlUrl="http://feed.feedsky.com/alexcheng1982">
+</outline>
+<outline text="蔡學鏞【言程序】部落格" title="蔡學鏞【言程序】部落格" type="rss" htmlUrl="http://www.jerry-tsai.com/" xmlUrl="http://www.jerry-tsai.com/feeds/posts/default">
+</outline>
+</outline>
+<outline text="__编程相关（英文）" title="__编程相关（英文）">
+<outline text="InfoQ Personalized Feed" title="InfoQ Personalized Feed" type="rss" htmlUrl="http://www.infoq.com" xmlUrl="http://www.infoq.com/rss/rss.action?token=xxx">
+</outline>
+<outline text="www.thoughtworks.com aggregator" title="www.thoughtworks.com aggregator" type="rss" htmlUrl="http://www.thoughtworks.com/blogs/current" xmlUrl="http://www.thoughtworks.com/blogs/rss/current">
+</outline>
+<outline text="Paul Graham: Essays" title="Paul Graham: Essays" type="rss" htmlUrl="http://www.paulgraham.com/" xmlUrl="http://www.aaronsw.com/2002/feeds/pgessays.rss">
+</outline>
+<outline text="Martin Fowler" title="Martin Fowler" type="rss" htmlUrl="http://martinfowler.com/feed.atom" xmlUrl="http://martinfowler.com/feed.atom">
+</outline>
+<outline text="DataScientist&#39;s Lab" title="DataScientist&#39;s Lab" type="rss" htmlUrl="http://yanbohappy.sinaapp.com" xmlUrl="http://yanbohappy.sinaapp.com/?feed=rss2">
+</outline>
+<outline text="Articles from Qt Quarterly" title="Articles from Qt Quarterly" type="rss" htmlUrl="http://doc.trolltech.com/qq/" xmlUrl="http://doc.trolltech.com/qq/qtquarterly-articles.rdf">
+</outline>
+<outline text="Latest headlines from JavaWorld" title="Latest headlines from JavaWorld" type="rss" htmlUrl="http://www.javaworld.com/" xmlUrl="http://www.javaworld.com/index.xml">
+</outline>
+</outline>
+<outline text="编程相关二" title="编程相关二">
+<outline text="蓝色理想" title="蓝色理想" type="rss" htmlUrl="http://www.blueidea.com" xmlUrl="http://www.blueidea.com/common/rss.asp">
+</outline>
+<outline text="ITeye论坛Swing相关讨论帖" title="ITeye论坛Swing相关讨论帖" type="rss" htmlUrl="http://www.iteye.com" xmlUrl="http://www.iteye.com/rss/tag/Swing">
+</outline>
+<outline text="Code Monkeyism" title="Code Monkeyism" type="rss" htmlUrl="http://codemonkeyism.com" xmlUrl="http://feeds2.feedburner.com/stephansblog">
+</outline>
+<outline text="Joel on Software" title="Joel on Software" type="rss" htmlUrl="http://www.joelonsoftware.com" xmlUrl="http://www.joelonsoftware.com/rss.xml">
+</outline>
+<outline text="蝶飞鸿云 志化燕雀(http://jxnuprk.cnblogs.com/)" title="蝶飞鸿云 志化燕雀(http://jxnuprk.cnblogs.com/)" type="rss" htmlUrl="http://jljlpch.iteye.com" xmlUrl="http://jljlpch.iteye.com/rss">
+</outline>
+<outline text="yaron&#39;s space" title="yaron&#39;s space" type="rss" htmlUrl="http://yaronspace.cn/blog" xmlUrl="http://www.yaronspace.cn/blog/index.php/feed">
+</outline>
+<outline text="博客园_一个程序员的自省" title="博客园_一个程序员的自省" type="rss" htmlUrl="http://www.cnblogs.com/anderslly/" xmlUrl="http://www.cnblogs.com/anderslly/rss.aspx">
+</outline>
+<outline text="Anne J Simmons" title="Anne J Simmons" type="rss" htmlUrl="http://annejsimmons.com" xmlUrl="http://annejsimmons.com/feed/">
+</outline>
+</outline>
+<outline text="_tapestry" title="_tapestry">
+<outline text="Tapestry 5 Blog" title="Tapestry 5 Blog" type="rss" htmlUrl="http://blog.tapestry5.de" xmlUrl="http://tapestry5.de/index.php/feed/">
+</outline>
+<outline text="spread the source" title="spread the source" type="rss" htmlUrl="http://spreadthesource.com" xmlUrl="http://spreadthesource.com/feed/">
+</outline>
+<outline text="Andy&#39;s Blog" title="Andy&#39;s Blog" type="rss" htmlUrl="http://blog.andyhot.gr" xmlUrl="http://blog.andyhot.gr/feed/">
+</outline>
+<outline text="Tapestry Central" title="Tapestry Central" type="rss" htmlUrl="http://tapestryjava.blogspot.com/" xmlUrl="http://feeds2.feedburner.com/TapestryCentral">
+</outline>
+<outline text="Apache Tapestry News RSS Feed" title="Apache Tapestry News RSS Feed" type="rss" htmlUrl="https://cwiki.apache.org/confluence" xmlUrl="https://cwiki.apache.org/confluence/createrssfeed.action?types=blogpost&amp;spaces=TAPESTRY&amp;title=Apache%20Tapestry%20News%20RSS%20Feed&amp;labelString%3D&amp;sort=created&amp;maxResults=10&amp;timeSpan=12&amp;confirm=Create&amp;showContent=true&amp;showDiff=false">
+</outline>
+</outline>
+<outline text="_java" title="_java">
+<outline text="Code Commit" title="Code Commit" type="rss" htmlUrl="http://www.codecommit.com/blog" xmlUrl="http://feeds.codecommit.com/codecommit">
+</outline>
+<outline text="In Relation To - Site - Tag &#39;Hibernate&#39;" title="In Relation To - Site - Tag &#39;Hibernate&#39;" type="rss" htmlUrl="http://in.relation.to/" xmlUrl="http://in.relation.to/service/Feed/atom/Tag/Hibernate">
+</outline>
+<outline text="In Relation To - Bloggers" title="In Relation To - Bloggers" type="rss" htmlUrl="http://in.relation.to/Bloggers" xmlUrl="http://in.relation.to/service/Feed/atom/Area/Bloggers/Comments/exclude">
+</outline>
+<outline text="SpringSource.org" title="SpringSource.org" type="rss" htmlUrl="http://www.springsource.org" xmlUrl="http://feeds.feedburner.com/springsource/SvVO">
+</outline>
+<outline text="springsource" title="springsource" type="rss" htmlUrl="http://www.springsource.org/newsblog/feed" xmlUrl="http://feeds.feedburner.com/springsource/OEVE">
+</outline>
+<outline text="SpringSource Team Blog" title="SpringSource Team Blog" type="rss" htmlUrl="http://blog.springsource.org" xmlUrl="http://feeds.feedburner.com/SpringSourceTeamBlog">
+</outline>
+<outline text="GroovyQ-Grails每周观察" title="GroovyQ-Grails每周观察" type="rss" htmlUrl="http://www.groovyq.net" xmlUrl="http://feeds2.feedburner.com/groovyq">
+</outline>
+<outline text="groovy-This Week in Gradle" title="groovy-This Week in Gradle" type="rss" htmlUrl="http://forums.gradle.org/gradle/tags/this_week_in_gradle?sort=recently_active" xmlUrl="http://forums.gradle.org/gradle/tags/this-week-in-gradle.rss">
+</outline>
+<outline text="The Java Tutorials&amp;apos; Weblog" title="The Java Tutorials&amp;apos; Weblog" type="rss" htmlUrl="https://blogs.oracle.com/thejavatutorials/" xmlUrl="http://blogs.oracle.com/thejavatutorials/feed/entries/rss">
+</outline>
+<outline text="The Apache Software Foundation Blog" title="The Apache Software Foundation Blog" type="rss" htmlUrl="https://blogs.apache.org/foundation/" xmlUrl="https://blogs.apache.org/foundation/feed/entries/atom">
+</outline>
+<outline text="The ZK Blog" title="The ZK Blog" type="rss" htmlUrl="http://blog.zkoss.org" xmlUrl="http://feeds.feedburner.com/thezkblog">
+</outline>
+<outline text="ZK - Leading Enterprise Java Web Framework" title="ZK - Leading Enterprise Java Web Framework" type="rss" htmlUrl="http://www.www.zkoss.org" xmlUrl="http://feeds.feedburner.com/zkoss">
+</outline>
+<outline text="JBoss Developer Framework" title="JBoss Developer Framework" type="rss" htmlUrl="http://jboss.org/jdf/" xmlUrl="http://www.jboss.org/jdf/news.atom">
+</outline>
+<outline text="JavaBeat" title="JavaBeat" type="rss" htmlUrl="http://www.javabeat.net" xmlUrl="http://feeds.feedburner.com/JavabeatArticles">
+</outline>
+</outline>
+<outline text="_web" title="_web">
+<outline text="雨夜带刀&#39;s Blog 关注前端与用户体验" title="雨夜带刀&#39;s Blog 关注前端与用户体验" type="rss" htmlUrl="http://stylechen.com" xmlUrl="http://stylechen.com/feed">
+</outline>
+<outline text="Web Development Notes" title="Web Development Notes" type="rss" htmlUrl="http://blog.eood.cn" xmlUrl="http://blog.eood.cn/feed">
+</outline>
+<outline text="island205" title="island205" type="rss" htmlUrl="http://island205.com" xmlUrl="http://island205.com/feed/">
+</outline>
+<outline text="AddyOsmani.com | Articles for developers" title="AddyOsmani.com | Articles for developers" type="rss" htmlUrl="http://addyosmani.com/blog" xmlUrl="http://feeds.feedburner.com/addyosmani">
+</outline>
+<outline text="Filament Group, Inc: Lab" title="Filament Group, Inc: Lab" type="rss" htmlUrl="http://filamentgroup.com/lab" xmlUrl="http://filamentgroup.com/lab/atom">
+</outline>
+<outline text="Hacking at 0300" title="Hacking at 0300" type="rss" htmlUrl="http://bililite.com/blog" xmlUrl="http://bililite.nfshost.com/blog/feed/">
+</outline>
+<outline text="Nettuts+" title="Nettuts+" type="rss" htmlUrl="http://net.tutsplus.com" xmlUrl="http://feeds.feedburner.com/nettuts">
+</outline>
+<outline text="Official Selenium Blog" title="Official Selenium Blog" type="rss" htmlUrl="http://seleniumhq.wordpress.com" xmlUrl="http://feeds.feedburner.com/Selenium">
+</outline>
+<outline text="BEKK Open" title="BEKK Open" type="rss" htmlUrl="http://open.bekk.no" xmlUrl="http://feeds.feedburner.com/BekkOpen">
+</outline>
+</outline>
+<outline text="__IBM" title="__IBM">
+<outline text="IBM developerWorks 中国 : Java technology" title="IBM developerWorks 中国 : Java technology" type="rss" htmlUrl="http://www.ibm.com/developerworks/cn/" xmlUrl="http://www.ibm.com/developerworks/cn/views/java/rss/libraryview.jsp?site_id=10&amp;contentarea_by=Java&amp;topic_by=&amp;product_by=&amp;type_by=鎵€鏈夌被鍒?search_by=&amp;industry_by=&amp;sort_by=Date">
+</outline>
+<outline text="IBM developerWorks 中国 : Web development : Articles,Tutorials" title="IBM developerWorks 中国 : Web development : Articles,Tutorials" type="rss" htmlUrl="http://www.ibm.com/developerworks/cn/" xmlUrl="http://www.ibm.com/developerworks/cn/views/rss/customrssatom.jsp?zone_by=Web+architecture&amp;type_by=Articles&amp;type_by=Tutorials&amp;search_by=&amp;max_entries=20&amp;feed_by=rss">
+</outline>
+<outline text="IBM developerWorks 中国 : Open source : Articles,Tutorials" title="IBM developerWorks 中国 : Open source : Articles,Tutorials" type="rss" htmlUrl="http://www.ibm.com/developerworks/cn/" xmlUrl="http://www.ibm.com/developerworks/cn/views/rss/customrssatom.jsp?zone_by=Open+source&amp;type_by=Articles&amp;type_by=Tutorials&amp;search_by=&amp;day=1&amp;month=01&amp;year=2004&amp;max_entries=10&amp;feed_by=rss&amp;encoding=UTF-8&amp;isGUI=true&amp;Submit.x=21&amp;Submit.y=13">
+</outline>
+</outline>
+<outline text="__IBM_e" title="__IBM_e">
+<outline text="IBM developerWorks : Java technology" title="IBM developerWorks : Java technology" type="rss" htmlUrl="http://www.ibm.com/developerworks/" xmlUrl="http://www.ibm.com/developerworks/views/java/rss/libraryview.jsp">
+</outline>
+<outline text="IBM developerWorks : Open source" title="IBM developerWorks : Open source" type="rss" htmlUrl="http://www.ibm.com/developerworks/" xmlUrl="http://www.ibm.com/developerworks/views/opensource/rss/libraryview.jsp">
+</outline>
+<outline text="IBM developerWorks : Web development" title="IBM developerWorks : Web development" type="rss" htmlUrl="http://www.ibm.com/developerworks/" xmlUrl="http://www.ibm.com/developerworks/views/web/rss/libraryview.jsp">
+</outline>
+</outline>
+<outline text="__it信息" title="__it信息">
+<outline text="36氪" title="36氪" type="rss" htmlUrl="http://www.36kr.com" xmlUrl="http://www.36kr.com/feed">
+</outline>
+<outline text="极客公园-极客阅读" title="极客公园-极客阅读" type="rss" htmlUrl="http://www.geekpark.net/" xmlUrl="http://feeds.geekpark.net">
+</outline>
+<outline text="月光博客" title="月光博客" type="rss" htmlUrl="http://www.williamlong.info/" xmlUrl="http://feed.williamlong.info">
+</outline>
+<outline text="XJP的碎碎念" title="XJP的碎碎念" type="rss" htmlUrl="http://www.xjp.cc" xmlUrl="http://feed.xjp.cc">
+</outline>
+<outline text="分享网络2.0" title="分享网络2.0" type="rss" htmlUrl="http://www.showeb20.com" xmlUrl="http://feed.feedsky.com/showeb20">
+</outline>
+<outline text="小众软件" title="小众软件" type="rss" htmlUrl="http://www.appinn.com" xmlUrl="http://feed.appinn.com">
+</outline>
+<outline text="搜索引擎周边" title="搜索引擎周边" type="rss" htmlUrl="http://www.eryi.org/" xmlUrl="http://feed.feedsky.com/eryi">
+</outline>
+<outline text="搜索引擎研究" title="搜索引擎研究" type="rss" htmlUrl="http://www.wespoke.com/" xmlUrl="http://www.wespoke.com/index.rdf">
+</outline>
+<outline text="Google China Blog" title="Google China Blog" type="rss" htmlUrl="http://googlechinablog.blogspot.com/" xmlUrl="http://feeds.feedburner.com/googlechinablog/hESp">
+</outline>
+<outline text="飞扬新锐" title="飞扬新锐" type="rss" htmlUrl="http://www.flyu.com.cn" xmlUrl="http://www.flyu.com.cn/?feed=rss2">
+</outline>
+<outline text="电子商务进行时" title="电子商务进行时" type="rss" htmlUrl="http://www.ecing.org" xmlUrl="http://ecing.org/feed/">
+</outline>
+<outline text="aw&#39;s blog 姿态永恒? 理性" title="aw&#39;s blog 姿态永恒? 理性" type="rss" htmlUrl="http://www.awflasher.com/blog" xmlUrl="http://feed.awflasher.com">
+</outline>
+</outline>
+<outline text="_JVM-lang" title="_JVM-lang">
+<outline text="Clojure" title="Clojure" type="rss" htmlUrl="http://clojure.blogspot.com/" xmlUrl="http://clojure.blogspot.com/feeds/posts/default">
+</outline>
+<outline text="The Scala Programming Language" title="The Scala Programming Language" type="rss" htmlUrl="http://www.scala-lang.org/" xmlUrl="http://www.scala-lang.org/rss.xml">
+</outline>
+<outline text="Scala IDE for Eclipse" title="Scala IDE for Eclipse" type="rss" htmlUrl="http://www.scala-ide.org" xmlUrl="http://www.scala-ide.org/feed/atom/">
+</outline>
+<outline text="typesafe&#39;s blog" title="typesafe&#39;s blog" type="rss" htmlUrl="http://blog.typesafe.com" xmlUrl="http://blog.typesafe.com/rss.xml">
+</outline>
+<outline text="Bruce Eckel&#39;s Weblog" title="Bruce Eckel&#39;s Weblog" type="rss" htmlUrl="http://www.artima.com/weblogs/index.jsp?blogger=beckel" xmlUrl="http://www.artima.com/weblogs/feeds/bloggers/beckel.rss">
+</outline>
+</outline>
+<outline text="设计" title="设计">
+<outline text="Tencent CDC Blog" title="Tencent CDC Blog" type="rss" htmlUrl="http://cdc.tencent.com" xmlUrl="http://cdc.tencent.com/?feed=rss2">
+</outline>
+<outline text="ISD Webteam(Tencent)" title="ISD Webteam(Tencent)" type="rss" htmlUrl="http://isux.tencent.com" xmlUrl="http://isd.tencent.com/?feed=rss2">
+</outline>
+<outline text="用户体验与交互设计（张雅秋）" title="用户体验与交互设计（张雅秋）" type="rss" htmlUrl="http://www.zhangyq.com" xmlUrl="http://feed.feedsky.com/zhangyq">
+</outline>
+<outline text="阿里巴巴（中文站）用户体验设计部博客" title="阿里巴巴（中文站）用户体验设计部博客" type="rss" htmlUrl="http://www.aliued.cn" xmlUrl="http://www.aliued.cn/?feed=rss2">
+</outline>
+<outline text="时光立方" title="时光立方" type="rss" htmlUrl="http://cuikai-wh.com" xmlUrl="http://cuikai-wh.com/feed">
+</outline>
+<outline text="标志电台" title="标志电台" type="rss" htmlUrl="http://www.logoair.com" xmlUrl="http://feed.logoair.com">
+</outline>
+<outline text="老邓态度" title="老邓态度" type="rss" htmlUrl="http://www.raydeng.com" xmlUrl="http://www.raydeng.com/feed">
+</outline>
+<outline text="百度泛用户体验" title="百度泛用户体验" type="rss" htmlUrl="http://www.baiduux.com/blog" xmlUrl="http://www.baiduux.com/blog/feed/">
+</outline>
+<outline text="人人网FED Team" title="人人网FED Team" type="rss" htmlUrl="http://fed.renren.com" xmlUrl="http://fed.renren.com/feed">
+</outline>
+<outline text="Taobao UED Team" title="Taobao UED Team" type="rss" htmlUrl="http://ued.taobao.com/blog" xmlUrl="http://ued.taobao.com/blog/feed">
+</outline>
+<outline text="百度MUX" title="百度MUX" type="rss" htmlUrl="http://mux.baidu.com" xmlUrl="http://mux.baidu.com/feed/">
+</outline>
+<outline text="新浪UED" title="新浪UED" type="rss" htmlUrl="http://ued.sina.com/index.php" xmlUrl="http://ued.sina.com/?feed=rss2">
+</outline>
+</outline>
+<outline text="网络技术二" title="网络技术二">
+<outline text="web思想社区" title="web思想社区" type="rss" htmlUrl="http://www.tech-q.cn/index.php" xmlUrl="http://www.tech-q.cn/rss.php?auth=0">
+</outline>
+</outline>
+<outline text="朋友的博客" title="朋友的博客">
+<outline text="韩寒" title="韩寒" type="rss" htmlUrl="http://blog.sina.com.cn/twocold" xmlUrl="http://blog.sina.com.cn/rss/1191258123.xml">
+</outline>
+<outline text="迷幻汤" title="迷幻汤" type="rss" htmlUrl="http://mihuan.yo2.cn" xmlUrl="http://mihuan.yo2.cn/feed">
+</outline>
+</outline>
+<outline text="--qita" title="--qita">
+<outline text="原版图书免费下载链接收集站 Free Ebooks Download Rapidshare" title="原版图书免费下载链接收集站 Free Ebooks Download Rapidshare" type="rss" htmlUrl="http://www.cnshare.org" xmlUrl="http://www.cnshare.org/?feed=rss2">
+</outline>
+<outline text="麦田的读书生活" title="麦田的读书生活" type="rss" htmlUrl="http://maitian.blog.techweb.com.cn/index.shtml" xmlUrl="http://feed.feedsky.com/maitian99">
+</outline>
+<outline text="小四的游乐场" title="小四的游乐场" type="rss" htmlUrl="http://blog.sina.com.cn/guojingming" xmlUrl="http://blog.sina.com.cn/rss/1188552450.xml">
+</outline>
+<outline text="疯狂的设计" title="疯狂的设计" type="rss" htmlUrl="http://hi.baidu.com/madesign" xmlUrl="http://hi.baidu.com/madesign/rss">
+</outline>
+<outline text="李令彬著《大学不知道》" title="李令彬著《大学不知道》" type="rss" htmlUrl="http://blog.sina.com.cn/robin" xmlUrl="http://blog.sina.com.cn/rss/robin.xml">
+</outline>
+<outline text="中文HowTO" title="中文HowTO" type="rss" htmlUrl="http://www.fadesky.com" xmlUrl="http://feed.fadesky.com">
+</outline>
+<outline text="宋祖德" title="宋祖德" type="rss" htmlUrl="http://user.qzone.qq.com/622009050" xmlUrl="http://feeds.qzone.qq.com/cgi-bin/cgi_rss_out?uin=622009050">
+</outline>
+<outline text="任志强" title="任志强" type="rss" htmlUrl="http://user.qzone.qq.com/622006051" xmlUrl="http://feeds.qzone.qq.com/cgi-bin/cgi_rss_out?uin=622006051">
+</outline>
+<outline text="有意思吧" title="有意思吧" type="rss" htmlUrl="http://www.u148.net" xmlUrl="http://feed.u148.net">
+</outline>
+<outline text="豆瓣最受欢迎的评论" title="豆瓣最受欢迎的评论" type="rss" htmlUrl="http://www.douban.com/review/best/" xmlUrl="http://www.douban.com/feed/review/latest">
+</outline>
+</outline>
+<outline text="设计二" title="设计二">
+<outline text="所有文章 - UCD大社区" title="所有文章 - UCD大社区" type="rss" htmlUrl="http://ucdchina.com/rss/all" xmlUrl="http://ucdchina.com/rss/all">
+</outline>
+</outline>
+<outline text="安全" title="安全">
+<outline text="John Melton&#39;s Weblog" title="John Melton&#39;s Weblog" type="rss" htmlUrl="http://www.jtmelton.com" xmlUrl="http://feeds.feedburner.com/jtmelton">
+</outline>
+<outline text="wooyun.org 最新提交漏洞" title="wooyun.org 最新提交漏洞" type="rss" htmlUrl="http://www.wooyun.org" xmlUrl="http://www.wooyun.org/feeds/submit">
+</outline>
+<outline text="wooyun.org 最新公开漏洞" title="wooyun.org 最新公开漏洞" type="rss" htmlUrl="http://www.wooyun.org" xmlUrl="http://www.wooyun.org/feeds/public">
+</outline>
+<outline text="wooyun.org 最新确认漏洞" title="wooyun.org 最新确认漏洞" type="rss" htmlUrl="http://www.wooyun.org" xmlUrl="http://www.wooyun.org/feeds/confirm">
+</outline>
+<outline text="wooyun.org 等待认领漏洞" title="wooyun.org 等待认领漏洞" type="rss" htmlUrl="http://www.wooyun.org" xmlUrl="http://www.wooyun.org/feeds/unclaim">
+</outline>
+<outline text="80sec" title="80sec" type="rss" htmlUrl="http://www.80sec.com" xmlUrl="http://www.80sec.com/feed">
+</outline>
+</outline>
+<outline text="__停用" title="__停用">
+<outline text="张孝祥专栏" title="张孝祥专栏" type="rss" htmlUrl="http://blog.csdn.net/zhangxiaoxiang" xmlUrl="http://blog.csdn.net/zhangxiaoxiang/rss.aspx">
+</outline>
+<outline text="Java开源大全" title="Java开源大全" type="rss" htmlUrl="http://www.open-open.com/indexrss.xml" xmlUrl="http://www.open-open.com/indexrss.xml">
+</outline>
+<outline text="prefuse-news" title="prefuse-news" type="rss" htmlUrl="http://prefuse.org/" xmlUrl="http://prefuse.org/index.xml">
+</outline>
+<outline text="猫的第三只脚" title="猫的第三只脚" type="rss" htmlUrl="http://hi.baidu.com/xxoo%BB%B3" xmlUrl="http://hi.baidu.com/xxoo%BB%B3/rss">
+</outline>
+<outline text="钢之炼金术师" title="钢之炼金术师" type="rss" htmlUrl="http://hi.baidu.com/uiopsczc" xmlUrl="http://hi.baidu.com/uiopsczc/rss">
+</outline>
+<outline text="hxzon0的博客" title="hxzon0的博客" type="rss" htmlUrl="http://hxzon0.blog.163.com" xmlUrl="http://hxzon0.blog.163.com/rss/">
+</outline>
+<outline text="学Z-one" title="学Z-one" type="rss" htmlUrl="http://hi.baidu.com/hxzon" xmlUrl="http://hi.baidu.com/hxzon/rss">
+</outline>
+<outline text="CSS9.NET" title="CSS9.NET" type="rss" htmlUrl="http://www.tz100.com" xmlUrl="http://feed.css9.net">
+</outline>
+<outline text="UED TEAM" title="UED TEAM" type="rss" htmlUrl="http://www.ued163.com" xmlUrl="http://www.ued163.com/?feed=rss2">
+</outline>
+<outline text="可能吧（被禁）" title="可能吧（被禁）" type="rss" htmlUrl="http://www.kenengba.com" xmlUrl="http://www.kenengba.com/feed">
+</outline>
+</outline>
+<outline text="__手动" title="__手动">
+<outline text="图灵教育" title="图灵教育" type="rss" htmlUrl="http://blog.csdn.net/blogrss.aspx?username=turingbooks" xmlUrl="http://blog.csdn.net/turingbooks/rss.aspx">
+</outline>
+<outline text="Java Magic(Tapestry)" title="Java Magic(Tapestry)" type="rss" htmlUrl="http://tawus.wordpress.com" xmlUrl="http://tawus.wordpress.com/feed/">
+</outline>
+</outline>
+</body>
+</opml>

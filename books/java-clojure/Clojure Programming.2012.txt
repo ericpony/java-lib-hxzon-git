@@ -1,0 +1,386 @@
+﻿Clojure Programming.2012
+by Chas Emerick, Brian Carper, and Christophe Grand
+Copyright 2012 Chas Emerick, Brian Carper, and Christophe Grand. All rights reserved.
+Printed in the United States of America.
+Published by O’Reilly Media, Inc., 1005 Gravenstein Highway North, Sebastopol, CA 95472.
+O’Reilly books may be purchased for educational, business, or sales promotional use. Online editions
+are also available for most titles (http://my.safaribooksonline.com). For more information, contact our
+corporate/institutional sales department: (800) 998-9938 or corporate@oreilly.com.
+Editors: Mike Loukides and Julie Steele
+Production Editor: Teresa Elsey
+Copyeditor: Nancy Reinhardt
+Proofreader: Linley Dolby
+Indexer: Fred Brown
+Cover Designer: Karen Montgomery
+Interior Designer: David Futato
+Illustrator: Robert Romano
+April 2012: First Edition. 
+Revision History for the First Edition:
+2012-03-28 First release
+See http://oreilly.com/catalog/errata.csp?isbn=9781449394707for release details.
+Nutshell Handbook, the Nutshell Handbook logo, and the O’Reilly logo are registered trademarks of
+O’Reilly Media, Inc. Clojure Programming, the image of a painted snipe, and related trade dress are
+trademarks of O’Reilly Media, Inc.
+Many of the designations used by manufacturers and sellers to distinguish their products are claimed as
+trademarks. Where those designations appear in this book, and O’Reilly Media, Inc., was aware of a
+trademark claim, the designations have been printed in caps or initial caps.
+While every precaution has been taken in the preparation of this book, the publisher and authors assume
+no responsibility for errors or omissions, or for damages resulting from the use of the information con-tained herein.
+ISBN: 978-1-449-39470-7
+[LSI]
+1332955528
+====================
+Table of Contents
+
+Preface  . . . . . . . . . . . . . . . xi
+
+1. Down the Rabbit Hole  . . . . . . 1
+
+Part I. Functional Programming and Concurrency 
+2. Functional Programming  . . . . . . . . . . . . 51
+3. Collections and Data Structures  . . . . . . 83
+4. Concurrency and Parallelism  . . . . . . . . 159
+
+Part II. Building Abstractions 
+5. Macros  . . . . . . . . 229
+6. Datatypes and Protocols  . . . . . . . . . . . 263
+7. Multimethods  . . . . . . . . . . . 301
+
+Part III. Tools, Platform, and Projects 
+8. Organizing and Building Clojure Projects  . . . . . . .321
+9. Java and JVM Interoperability  . . . . . . . 355
+10. REPL-Oriented Programming  . . . . . . . 393
+
+Part IV. Practicums 
+11. Numerics and Mathematics  . . . . . . . . . 421
+12. Design Patterns  . . . . . . . . . 457
+13. Testing  . . . . . . . . 471
+14. Using Relational Databases . . . . . . . . . 491
+15. Using Nonrelational Databases . . . . . . 511
+16. Clojure and the Web . . . . . . 527
+17. Deploying Clojure Web Applications . . . . . . . . . . 557
+
+Part V. Miscellanea 
+18. Choosing Clojure Type Definition Forms Wisely  . . . . . . . . . . 573
+19. Introducing Clojure into Your Workplace  . . . . . . . 577
+20. What’s Next?  . . . . . . . . . . . . 583
+
+Index  . . . . . . . . . . . . . . . 589
+
+====================
+Table of Contents
+
+Preface  . . . . . . . . . . . . . . . xi
+
+1. Down the Rabbit Hole  . . . . . . 1
+Why Clojure? 1
+Obtaining Clojure 3
+The Clojure REPL 3
+No, Parentheses Actually Won’t Make You Go Blind 6
+Expressions, Operators, Syntax, and Precedence 7
+Homoiconicity 9
+The Reader 12
+Scalar Literals 13
+Comments 18
+Whitespace and Commas 19
+Collection Literals 19
+Miscellaneous Reader Sugar 20
+Namespaces 20
+Symbol Evaluation 23
+Special Forms 23
+Suppressing Evaluation: quote 24
+Code Blocks: do 25
+Defining Vars: def 26
+Local Bindings: let 27
+Destructuring (let, Part 2) 28
+Creating Functions: fn 36
+Conditionals: if 42
+Looping: loop and recur 43
+Referring to Vars: var 44
+Java Interop: . and new 44
+Exception Handling: try and throw 45
+Specialized Mutation: set! 45
+Primitive Locking: monitor-enter and monitor-exit 45
+Putting It All Together 46
+eval 46
+This Is Just the Beginning 48
+
+Part I. Functional Programming and Concurrency 
+
+2. Functional Programming  . . . . . . . . . . . . 51
+What Does Functional Programming Mean? 52
+On the Importance of Values 52
+About Values 53
+Comparing Values to Mutable Objects 54
+A Critical Choice 58
+First-Class and Higher-Order Functions 59
+Applying Ourselves Partially 65
+Composition of Function(ality) 68
+Writing Higher-Order Functions 71
+Building a Primitive Logging System with Composable Higher-Order
+Functions 72
+Pure Functions 76
+Why Are Pure Functions Interesting? 78
+Functional Programming in the Real World 81
+
+3. Collections and Data Structures  . . . . . . 83
+Abstractions over Implementations 84
+Collection 87
+Sequences 89
+Associative 99
+Indexed 103
+Stack 104
+Set 105
+Sorted 106
+Concise Collection Access 111
+Idiomatic Usage 112
+Collections and Keys and Higher-Order Functions 113
+Data Structure Types 114
+Lists 114
+Vectors 115
+Sets 117
+Maps 117
+Immutability and Persistence 122
+Persistence and Structural Sharing 123
+Transients 130
+Metadata 134
+Putting Clojure’s Collections to Work 136
+Identifiers and Cycles 137
+Thinking Different: From Imperative to Functional 138
+Navigation, Update, and Zippers 151
+In Summary 157
+
+4. Concurrency and Parallelism  . . . . . . . . 159
+Shifting Computation Through Time and Space 160
+Delays 160
+Futures 162
+Promises 163
+Parallelism on the Cheap 166
+State and Identity 168
+Clojure Reference Types 170
+Classifying Concurrent Operations 172
+Atoms 174
+Notifications and Constraints 176
+Watches 176
+Validators 178
+Refs 180
+Software Transactional Memory 180
+The Mechanics of Ref Change 181
+The Sharp Corners of Software Transactional Memory 191
+Vars 198
+Defining Vars 198
+Dynamic Scope 201
+Vars Are Not Variables 206
+Forward Declarations 208
+Agents 209
+Dealing with Errors in Agent Actions 212
+I/O, Transactions, and Nested Sends 214
+Using Java’s Concurrency Primitives 224
+Locking 225
+Final Thoughts 226
+
+Part II. Building Abstractions 
+
+5. Macros  . . . . . . . . 229
+What Is a Macro? 229
+What Macros Are Not 231
+What Can Macros Do that Functions Cannot? 232
+Macros Versus Ruby eval 234
+Writing Your First Macro 235
+Debugging Macros 237
+Macroexpansion 237
+Syntax 239
+quote Versus syntax-quote 240
+unquote and unquote-splicing 241
+When to Use Macros 243
+Hygiene 244
+Gensyms to the Rescue 246
+Letting the User Pick Names 248
+Double Evaluation 249
+Common Macro Idioms and Patterns 250
+The Implicit Arguments: &env and &form 251
+&env 252
+&form 254
+Testing Contextual Macros 258
+In Detail: -> and ->> 259
+Final Thoughts 262
+
+6. Datatypes and Protocols  . . . . . . . . . . . 263
+Protocols 264
+Extending to Existing Types 266
+Defining Your Own Types 270
+Records 272
+Types 277
+Implementing Protocols 280
+Inline Implementation 281
+Reusing Implementations 285
+Protocol Introspection 289
+Protocol Dispatch Edge Cases 290
+Participating in Clojure’s Collection Abstractions 292
+Final Thoughts 299
+
+7. Multimethods  . . . . . . . . . . . 301
+Multimethods Basics 301
+Toward Hierarchies 304
+Hierarchies 306
+Independent Hierarchies 308
+Making It Really Multiple! 311
+A Few More Things 313
+Multiple Inheritance 313
+Introspecting Multimethods 314
+type Versus class; or, the Revenge of the Map 314
+The Range of Dispatch Functions Is Unlimited 316
+Final Thoughts 317
+
+Part III. Tools, Platform, and Projects 
+
+8. Organizing and Building Clojure Projects  . . . . . . .321
+Project Geography 321
+Defining and Using Namespaces 322
+Location, Location, Location 332
+The Functional Organization of Clojure Codebases 334
+Build 336
+Ahead-of-Time Compilation 337
+Dependency Management 339
+The Maven Dependency Management Model 339
+Build Tools and Configuration Patterns 344
+Final Thoughts 353
+
+9. Java and JVM Interoperability  . . . . . . . 355
+The JVM Is Clojure’s Foundation 356
+Using Java Classes, Methods, and Fields 357
+Handy Interop Utilities 360
+Exceptions and Error Handling 362
+Escaping Checked Exceptions 364
+with-open, finally’s Lament 364
+Type Hinting for Performance 366
+Arrays 370
+Defining Classes and Implementing Interfaces 371
+Instances of Anonymous Classes: proxy 372
+Defining Named Classes 374
+Annotations 381
+Using Clojure from Java 385
+Using deftype and defrecord Classes 388
+Implementing Protocol Interfaces 390
+Collaborating Partners 392
+
+10. REPL-Oriented Programming  . . . . . . . 393
+Interactive Development 393
+The Persistent, Evolving Environment 397
+Tooling 398
+The Bare REPL 399
+Eclipse 403
+Emacs 405
+Debugging, Monitoring, and Patching Production in the REPL 411
+Special Considerations for “Deployed” REPLs 414
+Limitations to Redefining Constructs 415
+In Summary 417
+
+Part IV. Practicums 
+
+11. Numerics and Mathematics  . . . . . . . . . 421
+Clojure Numerics 421
+Clojure Prefers 64-bit (or Larger) Representations 422
+Clojure Has a Mixed Numerics Model 422
+Rationals 424
+The Rules of Numeric Contagion 425
+Clojure Mathematics 427
+Bounded Versus Arbitrary Precision 428
+Unchecked Ops 430
+Scale and Rounding Modes for Arbitrary-Precision Decimals Ops 432
+Equality and Equivalence 433
+Object Identity (identical?) 433
+Reference Equality (=) 434
+Numeric Equivalence (==) 435
+Optimizing Numeric Performance 436
+Declare Functions to Take and Return Primitives 438
+Use Primitive Arrays Judiciously 442
+Visualizing the Mandelbrot Set in Clojure 449
+
+12. Design Patterns  . . . . . . . . . 457
+Dependency Injection 459
+Strategy Pattern 462
+Chain of Responsibility 463
+Aspect-Oriented Programming 466
+Final Thoughts 470
+
+13. Testing  . . . . . . . . 471
+Immutable Values and Pure Functions 471
+Mocking 472
+clojure.test 473
+Defining Tests 474
+Test “Suites” 477
+Fixtures 479
+Growing an HTML DSL 481
+Relying upon Assertions 486
+Preconditions and Postconditions 487
+
+14. Using Relational Databases . . . . . . . . . 491
+clojure.java.jdbc 491
+with-query-results Explained 494
+Transactions 496
+Connection Pooling 496
+Korma 498
+Prelude 498
+Queries 499
+Why Bother with a DSL? 500
+Hibernate 503
+Setup 503
+Persisting Data 506
+Running Queries 506
+Removing Boilerplate 507
+Final Thoughts 509
+
+15. Using Nonrelational Databases . . . . . . 511
+Getting Set Up with CouchDB and Clutch 512
+Basic CRUD Operations 512
+Views 514
+A Simple (JavaScript) View 514
+Views in Clojure 516
+_changes: Abusing CouchDB as a Message Queue 520
+à la Carte Message Queues 522
+Final Thoughts 525
+
+16. Clojure and the Web . . . . . . 527
+The “Clojure Stack” 527
+The Foundation: Ring 529
+Requests and Responses 529
+Adapters 531
+Handlers 532
+Middleware 534
+Routing Requests with Compojure 535
+Templating 545
+Enlive: Selector-Based HTML Transformation 546
+Final Thoughts 554
+
+17. Deploying Clojure Web Applications . . . . . . . . . . 557
+Java and Clojure Web Architecture 557
+Web Application Packaging 560
+Running Web Apps Locally 565
+Web Application Deployment 566
+Deploying Clojure Apps to Amazon’s Elastic Beanstalk 567
+Going Beyond Simple Web Application Deployment 570
+
+Part V. Miscellanea 
+
+18. Choosing Clojure Type Definition Forms Wisely  . . . . . . . . . . 573
+
+19. Introducing Clojure into Your Workplace  . . . . . . . 577
+Just the Facts… 577
+Emphasize Productivity 579
+Emphasize Community 580
+Be Prudent 582
+
+20. What’s Next?  . . . . . . . . . . . . 583
+(dissoc Clojure 'JVM) 583
+ClojureCLR 583
+ClojureScript 584
+4Clojure 584
+Overtone 585
+core.logic 585
+Pallet 586
+Avout 587
+Clojure on Heroku 587
+
+Index  . . . . . . . . . . . . . . . 589
+

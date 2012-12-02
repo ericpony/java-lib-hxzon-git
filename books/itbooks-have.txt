@@ -1,42 +1,5 @@
 ﻿itbooks-have.txt
 ======================================
-算法和原理
-----
-4，编程珠玑（英文版·第2版）
-http://product.dangdang.com/product.aspx?product_id=20895273
-29.20(75折)，已购
-----
-5，编程之美——微软技术面试心得
-http://product.dangdang.com/product.aspx?product_id=20170952
-30.00(75折)，已购，不错
-----
-6，MySQL技术内幕InnoDB存储引擎
-51.80(75折)，已购，不错
-----
-38，多处理器编程的艺术
-39.20(75折)，已购，教材，基础原理和实践
-=======================================
-工具实践
-----
-48，Programming Concurrency on the JVM
-英文打印版
-----
-57，Java并发编程实战
-http://product.dangdang.com/product.aspx?product_id=22606835
-51.80 (75折)，48.4，已购，收益匪浅
-----
-53，Hadoop权威指南（第2版）修订升级版
-62.20 (70折)，已购
-----
-62，Lucene实战(第2版)
-51.80(75折)，已购
-----
-17，Windows7脚本编程和命令行工具指南(详尽讲解微软最新命令行自动化工具Windows PowerShell)
-59.20，已购
-----
-7，Scala程序设计：Java虚拟机多核编程实战
-29.20(75折)，已购，入门，过时
-======================================
 交互设计，软件工程，it视野
 ----
 9，About Face 3交互设计精髓
@@ -48,6 +11,96 @@ http://product.dangdang.com/product.aspx?product_id=22606835
 12，重构：改善既有代码的设计
 http://www.amazon.cn/gp/product/B003BY6PLK/ref=ox_ya_os_product
 48.40，39.5，已购，有电子书2010.4月版
+----
+80，UNIX编程艺术
+http://product.dangdang.com/product.aspx?product_id=21006214
+http://product.dangdang.com/product.aspx?product_id=9149115
+http://www.amazon.cn/UNIX%E7%BC%96%E7%A8%8B%E8%89%BA%E6%9C%AF-%E5%A7%9C%E5%AE%8F/dp/B0050CRP0Q/ref=reg_hu-rd_add_1_dp
+67.20(85折)-20，已购
+----
+120，企业应用架构模式
+http://product.dangdang.com/product.aspx?product_id=20833536
+39.50(67折)-20=19.50，已购
+----
+121，设计模式沉思录
+http://product.dangdang.com/product.aspx?product_id=20836579
+28.60(82折)，27.60(79折)，已购
+----
+122，黑客与画家：硅谷创业之父Paul Graham文集
+http://product.dangdang.com/product.aspx?product_id=21049598
+33.80(69折)，电子版，已读，受益匪浅
+======================================
+算法和原理
+----
+4，编程珠玑（英文版·第2版）
+http://product.dangdang.com/product.aspx?product_id=20895273
+29.20(75折)，已购
+----
+5，编程之美——微软技术面试心得
+http://product.dangdang.com/product.aspx?product_id=20170952
+30.00(75折)，已购，不错
+----
+38，多处理器编程的艺术
+39.20(75折)，已购，教材，基础原理和实践
+----
+97，编程语言实现模式
+51.30-20，已购
+----
+16，计算机程序的构造和解释：原书第2版
+http://product.dangdang.com/product.aspx?product_id=8793968
+33.80，有电子书，思维锻炼，36.80-20=16.80，已购
+----
+18，实用Common Lisp编程(第16届Jolt生产效率大奖得主)
+http://product.dangdang.com/product.aspx?product_id=22508163
+61.30(69折)，48.00(43折)，思维锻炼，66.80-20=46.80，已购
+======================================
+数据库
+----
+6，MySQL技术内幕InnoDB存储引擎
+51.80(75折)，已购，不错
+----
+98，Oracle Database 9i/10g/11g编程艺术:深入数据库体系结构(第2版)
+81.80-20，已购
+----
+99，Oracle SQL高级编程
+61.30-20，已购
+----
+96，Oracle Database 11g数据库管理艺术
+104.30(75折)-12，已购
+----
+123，SQL反模式
+http://product.dangdang.com/product.aspx?product_id=22506160
+46.50(79折)-20=26.50，已购，常见问题的思考与总结
+=======================================
+工具实践
+----
+48，Programming Concurrency on the JVM
+英文打印版
+----
+127，Seven Languages in Seven Weeks
+《七周七语言》，不买，只是入门简介
+英文打印版（Clojure，Haskell）
+Clojure:简单介绍，day1基本数据类型，绑定，day2集合，延迟计算，类和接口，day3并发（引用，原子，代理）
+Haskell:
+----
+57，Java并发编程实战
+http://product.dangdang.com/product.aspx?product_id=22606835
+51.80 (75折)，48.4，已购，收益匪浅
+----
+53，Hadoop权威指南（第2版）修订升级版
+62.20 (70折)，已购
+----
+62，Lucene实战(第2版)
+51.80(75折)，已购
+----
+50，Maven实战
+43.90 (68折)，41.90(64折)-20，已购
+----
+17，Windows7脚本编程和命令行工具指南(详尽讲解微软最新命令行自动化工具Windows PowerShell)
+59.20，已购
+----
+7，Scala程序设计：Java虚拟机多核编程实战
+29.20(75折)，已购，入门，过时
 =======================================
 c和linux
 ----
@@ -68,30 +121,65 @@ http://product.dangdang.com/product.aspx?product_id=20856718
 http://product.dangdang.com/product.aspx?product_id=20046247
 76.40(78折)，已购
 =======================================
+----
+95，C++演化和设计
+http://product.china-pub.com/5217
+http://www.amazon.cn/C-%E8%AF%AD%E8%A8%80%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%BC%94%E5%8C%96-%E6%96%AF%E7%89%B9%E5%8A%B3%E6%96%AF%E7%89%B9%E9%B2%81%E6%99%AE/dp/B007JFSCPY/ref=sr_1_1?ie=UTF8&qid=1347034593&sr=8-1
+《The Design and Evolution of C++》，（美）Bjarne Stroustrup，(2002.1)
+54.90，59.90(7折)中文版2012.3
+----
+105，C++沉思录
+http://product.china-pub.com/38130
+http://www.amazon.cn/C%E5%92%8CC-%E7%BB%8F%E5%85%B8%E8%91%97%E4%BD%9C%E2%80%A2C-%E6%B2%89%E6%80%9D%E5%BD%95-Ruminations-on-C-Andrew-Koenig/dp/B0012NMEXU/ref=sr_1_1?ie=UTF8&qid=1347034796&sr=8-1
+《Ruminations on C++》，1997
+36.30，41.30(7.5折)，中文版2008.2
+=======================================
+windows
+----
+116，VC++深入详解
+http://www.amazon.cn/VC-%E6%B7%B1%E5%85%A5%E8%AF%A6%E8%A7%A3-%E5%AD%99%E9%91%AB/dp/B00114KKB8/ref=pd_sim_b_6
+http://www.amazon.cn/VC-%E6%B7%B1%E5%85%A5%E8%AF%A6%E8%A7%A3-%E5%AD%99%E9%91%AB/dp/B00114KKB8/ref=pd_rhf_se_p_t_2
+=======================================
 javascript
+----
+79，
+《HTML5游戏开发》
+http://product.dangdang.com/product.aspx?product_id=22508162
+英文打印版，32.90 (67折)，不买
+----
+64，《JavaScript权威指南》（第六版）
+http://ued.taobao.com/javascript
+81.70，97.30(70折)-17，已买
 ----
 29，JavaScript高级程序设计(第2版)
 61.40(69折)，已购，有中文版电子书（2009，2010），已推出第3版
 ----
-63，JavaScript Web 富应用开发
+63，O'Reilly, 2011:JavaScript Web Applications
 http://jayli.github.com/jswebapps/
-《O'Reilly, 2011:JavaScript Web Applications》
+《JavaScript Web 富应用开发》
 英文打印版，如何开发javascript框架，3个javascript mvc框架的使用
 ----
-84，构建多平台可用的网站——渐进增强设计实践
-http://www.ituring.com.cn/book/922
-designing with progressive enhancement(building the web that works for everyone)
+84，designing with progressive enhancement(building the web that works for everyone)
 http://filamentgroup.com/dwpe/#aboutthisbook
+《构建多平台可用的网站——渐进增强设计实践》
+http://www.ituring.com.cn/book/922
 英文打印版，html，css，浏览器检测和自定义控件
+----
+119，JavaScript Patterns
+by Stoyan Stefanov，2010
+英文打印版
 =======================================
 css和html
 ----
-75，精通HTML5和CSS3设计模式
-Pro HTML5 and CSS3 Design Patterns
+75，Pro HTML5 and CSS3 Design Patterns
+《精通HTML5和CSS3设计模式》
 http://www.ituring.com.cn/book/903
 英文打印版，css多态性
 ----
 87，Smashing CSS: Professional Techniques for Modern Layout
-精彩绝伦的CSS
+《精彩绝伦的CSS》
 http://www.ituring.com.cn/book/924
 英文打印版
+----
+124，CSS权威指南(第3版)
+42.70(74折)-20=22.70，已购

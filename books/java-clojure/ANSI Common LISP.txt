@@ -1,0 +1,251 @@
+﻿ANSI Common LISP
+PaulGraham
+LibraryofCongressCataloging-in-PublicationData 
+Graham,Paul. 
+ANSIcommonlisp./PaulGraham. 
+p.cm. 
+"AnAlanR.Aptbook." 
+Includesbibliographicalreferencesandindex. 
+ISBN0-13-370875-6 
+1.COMMONLISP(Computerprogramlanguage)I.Tide. 
+QA76.73.C28G691996 
+005.13'3-dc2095-45017 
+CIP 
+Publisher:AlanApt 
+ProductionEditor:MonaPompili 
+CoverDesigner:GinoLee 
+CopyEditor:ShirleyMichaels 
+ProductionCoordinator:DonnaSullivan 
+EditorialAssistant:ShirleyMcGuire 
+CoverPhoto:EdLynch 
+?1996byPrenticeHall,Inc. 
+UpperSaddleRiver,NJ07458 
+Theauthorandpublisherofthisbookhaveusedtheirbesteffortsinpreparingthisbook. 
+Theseeffortsincludethedevelopment,research,andtestingofthetheoriesandprograms 
+todeterminetheireffectiveness.Theauthorandpublishershallnotbeliableinanyevent 
+forincidentalorconsequentialdamagesinconnectionwith,orarisingoutof,thefurnishing, 
+performance,oruseoftheseprograms. 
+Allrightsreserved.Nopartofthisbookmaybereproduced,inanyformorbyanymeans, 
+withoutpermissioninwritingfromthepublisher. 
+Alltrademarksarethepropertyoftheirrespectiveowners. 
+PrintedintheUnitedStatesofAmerica 
+20 
+ISBN0-13-370875-6 
+Prentice-HallInternational(UK)Limited,London 
+Prentice-HallofAustraliaPty.Limited,Sydney 
+Prentice-HallofCanada,Inc.,Toronto 
+Prentice-HallHispanoamericana,S.A.,Mexico 
+Prentice-HallofIndiaPrivateLimited,NewDelhi 
+Prentice-HallofJapan,Inc.,Tokyo 
+Prentice-HallAsiaPte.Ltd.,Singapore 
+EditoraPrentice-HalldoBrasil,Ltda.,RiodeJaneiro
+=================
+Contents 
+
+1.Introduction 1 
+2.WelcometoLisp 7 
+3.Lists 31 
+4.SpecializedData Structures 58 
+5.Control 81 
+6.Functions 99 
+7.InputandOutput 119 
+8.Symbols 133 
+9.Numbers 143 
+10.Macros 160 
+11.CLOS 176 
+12.Structure 195 
+13.Speed 213 
+14.AdvancedTopics 232 
+15.Example:Inference 247 
+16.Example:Generating HTML 257 
+17.Example:Objects 269 
+
+A.Debugging 287 
+B.LispinLisp 295 
+C.ChangestoCommon Lisp 304 
+D.LanguageReference 310 
+Notes 401 
+Index 415 
+=================
+Contents 
+
+1.Introduction 1 
+1.1.NewTools 1 
+1.2.NewTechniques 3 
+1.3.ANewApproach 4 
+
+2.WelcometoLisp 7 
+2.1.Form 7 
+2.2.Evaluation 9 
+2.3.Data 10 
+2.4.ListOperations 12 
+2.5.Truth 13 
+2.6.Functions 14 
+2.7.Recursion 16 
+2.8.ReadingLisp 17 
+2.9.InputandOutput 18 
+2.10.Variables 19 
+2.11.Assignment 21 
+2.12.FunctionalProgramming 22 
+2.13.Iteration 23 
+2.14.FunctionsasObjects 25 
+2.15.Types 27 
+2.16.LookingForward 27 
+
+3.Lists 31 
+3.1.Conses 31 
+3.2.Equality 34 
+3.3.WhyLispHasNoPointers 34 
+3.4.BuildingLists 36 
+3.5.Example:Compression 36 
+3.6.Access 39 
+3.7.MappingFunctions 40 
+3.8.Trees 40 
+3.9.UnderstandingRecursion 42 
+3.10.Sets 43 
+3.11.Sequences 45 
+3.12.Stacks 47 
+3.13.DottedLists 49 
+3.14.Assoc-lists 51 
+3.15.Example:ShortestPath 51 
+3.16.Garbage 54 
+
+4.SpecializedData Structures 58 
+4.1. Arrays 58 
+4.2. Example:BinarySearch 60 
+4.3. StringsandCharacters 61 
+4.4. Sequences 63 
+4.5. Example:ParsingDates 66 
+4.6. Structures 69 
+4.7. Example:BinarySearch Trees 71 
+4.8. HashTables 76 
+
+5.Control 81 
+5.1.Blocks 81 
+5.2.Context 83 
+5.3.Conditionals 85 
+5.4.Iteration 87 
+5.5.MultipleValues 89 
+5.6.Aborts 91
+5.7.Example:DateArithmetic 92 
+
+6.Functions 99 
+6.1.GlobalFunctions 99 
+6.2.LocalFunctions 101 
+6.3.ParameterLists 102 
+6.4.Example:Utilities 104 
+6.5.Closures 107 
+6.6.Example:Function Builders 109 
+6.7.DynamicScope 112 
+6.8.Compilation 113 
+6.9.UsingRecursion 114 
+
+7.InputandOutput 119 
+7.1.Streams 119 
+7.2.Input 121 
+7.3.Output 123 
+7.4.Example:String Substitution 125 
+7.5.MacroCharacters 130 
+
+8.Symbols 133 
+8.1.SymbolNames 133 
+8.2.PropertyLists 134 
+8.3.SymbolsAreBig 135 
+8.4.CreatingSymbols 136 
+8.5.MultiplePackages 136 
+8.6.Keywords 137 
+8.7.SymbolsandVariables 138 
+8.8.Example:RandomText 138 
+
+9.Numbers 143 
+9.1.Types 143 
+9.2.Conversionand Extraction 144 
+9.3.Comparison 146 
+9.4.Arithmetic 147 
+9.5.Exponentiation 148 
+9.6.TrigonometricFunctions 149 
+9.7.Representation 150 
+9.8.Example:Ray-Tracing 151 
+
+10.Macros 160 
+10.1.Eval 160 
+10.2.Macros 162 
+10.3.Backquote 163 
+10.4.Example:Quicksort 164 
+10.5.MacroDesign 165 
+10.6.GeneralizedReference 168 
+10.7.Example:Macro Utilities 169 
+10.8.OnLisp 173 
+
+11.CLOS 176 
+11.1.Object-Oriented Programming 176 
+11.2.ClassesandInstances 179 
+11.3.SlotProperties 179 
+11.4.Superclasses 181 
+11.5.Precedence 182 
+11.6.GenericFunctions 184 
+11.7.AuxiliaryMethods 187 
+11.8.MethodCombination 189 
+11.9.Encapsulation 190 
+11.10.TwoModels 192 
+
+12.Structure 195 
+12.1.SharedStructure 195 
+12.2.Modification 198 
+12.3.Example:Queues 200 
+12.4.DestructiveFunctions 201 
+12.5.Example:BinarySearch Trees203 
+12.6.Example:Doubly-Linked Lists 204 
+12.7.CircularStructure 208 
+12.8.ConstantStructure 210 
+
+13.Speed 213 
+13.1.TheBottleneckRule 213 
+13.2.Compilation 214 
+13.3.TypeDeclarations 217 
+13.4.GarbageAvoidance 222 
+13.5.Example:Pools 226 
+13.6.FastOperators 228 
+13.7.Two-PhaseDevelopment 229 
+
+14.AdvancedTopics 232 
+14.1.TypeSpecifiers 232 
+14.2.BinaryStreams 234 
+14.3.Read-Macros 235 
+14.4.Packages 236 
+14.5.TheLoopFacility 239 
+14.6.Conditions 244 
+
+15.Example:Inference 247 
+15.1.TheAim 247 
+15.2.Matching 248 
+15.3.AnsweringQueries 251 
+15.4.Analysis 255 
+
+16.Example:Generating HTML 257 
+16.1.HTML 257 
+16.2.HTMLUtilities 259 
+16.3.AnIterationUtility 262 
+16.4.GeneratingPages 264 
+
+17.Example:Objects 269 
+17.1.Inheritance 269 
+17.2.MultipleInheritance 271 
+17.3.DefiningObjects 273 
+17.4.FunctionalSyntax 274 
+17.5.DefiningMethods 275 
+17.6.Instances 277 
+17.7.NewImplementation 277 
+17.8.Analysis 284 
+
+A.Debugging 287 
+
+B.LispinLisp 295 
+
+C.ChangestoCommon Lisp 304 
+
+D.LanguageReference 310 
+
+Notes 401 
+
+Index 415 

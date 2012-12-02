@@ -1,0 +1,134 @@
+Deploying with JRuby:Deliver Scalable Web Apps Using the JVM
+Joe Kutner
+The Pragmatic Bookshelf
+Dallas, Texas ?Raleigh, North Carolina
+====================
+Many of the designations used by manufacturers and sellers to distinguish their products
+are claimed as trademarks. Where those designations appear in this book, and The Pragmatic
+Programmers, LLC was aware of a trademark claim, the designations have been printed in
+initial capital letters or in all capitals. The Pragmatic Starter Kit, The Pragmatic Programmer,
+Pragmatic Programming, Pragmatic Bookshelf, PragProg and the linking gdevice are trade-marks of The Pragmatic Programmers, LLC.
+Every precaution was taken in the preparation of this book. However, the publisher assumes
+no responsibility for errors or omissions, or for damages that may result from the use of
+information (including program listings) contained herein.
+Our Pragmatic courses, workshops, and other products can help you and your team create
+better software and have more fun. For more information, as well as the latest Pragmatic
+titles, please visit us at http://pragprog.com.
+The team that produced this book includes:
+Brian P. Hogan (editor)
+Potomac Indexing, LLC (indexer)
+Kim Wimpsett (copyeditor)
+David J Kelly (typesetter)
+Janet Furlow (producer)
+Juliet Benda (rights)
+Ellie Callahan (support)
+Copyright ? 2012 The Pragmatic Programmers, LLC.
+All rights reserved.
+No part of this publication may be reproduced, stored in a retrieval system, or
+transmitted, in any form, or by any means, electronic, mechanical, photocopying,
+recording, or otherwise, without the prior consent of the publisher.
+Printed in the United States of America.
+ISBN-13: 978-1-934356-97-5
+Encoded using the finest acid-free high-entropy binary digits.
+Book version: P1.0¡ªJuly 2012
+==========================
+Contents
+Acknowledgments . . . . . . . . . . . ix
+Preface . . . . . . . . . . . . . . xi
+1. Getting Started with JRuby . . . . . . . . . 1
+2. Creating a Deployment Environment. . . . . . . 19
+3. Deploying an Archive File . . . . . . . . . 37
+4. Creating a Trinidad Application . . . . . . . . 57
+5. Deploying a Trinidad Application . . . . . . . 75
+6. Creating a TorqueBox Application . . . . . . . 103
+7. Deploying a TorqueBox Application. . . . . . . 133
+8. Clustering a TorqueBox Application . . . . . . 149
+9. Managing a JRuby Deployment. . . . . . . . 163
+10. Using a Continuous Integration Server . . . . . . 181
+Index . . . . . . . . . . . . . . 191
+===================
+Contents
+Acknowledgments . . . . . . . . . . . ix
+Preface . . . . . . . . . . . . . . xi
+
+1. Getting Started with JRuby . . . . . . . . . 1
+What Makes JRuby So Great? 2 1.1
+1.2 Introducing Warbler 4
+1.3 Preparing Twitalytics for JRuby 7
+1.4 Configuring Warbler for Twitalytics 13
+1.5 Wrapping Up 18
+
+2. Creating a Deployment Environment. . . . . . . 19
+Creating a Virtual Server 19 2.1
+2.2 Provisioning with Puppet 22
+2.3 Packaging the Deployment Environment 33
+2.4 Using Alternative Platforms 33
+2.5 Wrapping Up 35
+
+3. Deploying an Archive File . . . . . . . . . 37
+Provisioning a Server 38 3.1
+3.2 Installing Apache Tomcat 39
+3.3 Creating the Deployment Script 43
+3.4 Using Precompiled Assets with Warbler 48
+3.5 Deploying to the Cloud 50
+3.6 Wrapping Up 54
+
+4. Creating a Trinidad Application . . . . . . . . 57
+What Is Traditional Deployment? 58 4.1
+4.2 Getting Started with Trinidad 58
+4.3 Adding Trinidad Extensions 60
+4.4 Choosing Alternatives to Trinidad 73
+4.5 Wrapping Up 74
+
+5. Deploying a Trinidad Application . . . . . . . 75
+Provisioning a Server 75 5.1
+5.2 Installing Trinidad as a Service 78
+5.3 Hot-Deploying with Capistrano 82
+5.4 Configuring Apache 90
+5.5 Choosing Alternative Deployment Strategies 94
+5.6 Wrapping Up 100
+
+6. Creating a TorqueBox Application . . . . . . . 103
+What Is an Application Server? 104 6.1
+6.2 Getting Started with TorqueBox 106
+6.3 Creating a Deployment Descriptor 109
+6.4 Using the Management Console 111
+6.5 Scheduling a Recurring Job 111
+6.6 Creating a Long-Running Daemon 115
+6.7 Running Background Jobs 118
+6.8 Pushing to the Browser with Stomplets 125
+6.9 Testing a TorqueBox Application 131
+6.10 Wrapping Up 132
+
+7. Deploying a TorqueBox Application. . . . . . . 133
+Choosing a Deployment Strategy 134 7.1
+7.2 Creating a Deployment Environment 135
+7.3 Installing TorqueBox 138
+7.4 Deploying an Archive File 142
+7.5 Wrapping Up 147
+
+8. Clustering a TorqueBox Application . . . . . . 149
+Creating the Cluster 151 8.1
+8.2 Installing the Apache Cluster Module 153
+8.3 Deploying to the Cluster 155
+8.4 Using High-Availability Jobs and Services 155
+8.5 Using Session Replication 158
+8.6 Running in Domain Mode 160
+8.7 Wrapping Up 161
+
+9. Managing a JRuby Deployment. . . . . . . . 163
+Configuring the Runtime 163 9.1
+9.2 Inspecting the Runtime with JMX 167
+9.3 Managing the Runtime with JMX 170
+9.4 Creating a Management Bean 173
+9.5 Profiling an Application 175
+9.6 Wrapping Up 179
+
+10. Using a Continuous Integration Server . . . . . . 181
+Installing Jenkins 182 10.1
+10.2 Creating a Git Depot 182
+10.3 Creating a Jenkins Job 184
+10.4 Archiving Artifacts with Jenkins 187
+10.5 Wrapping Up 188
+
+Index . . . . . . . . . . . . . . 191
