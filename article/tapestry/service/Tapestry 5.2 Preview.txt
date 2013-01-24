@@ -1,0 +1,95 @@
+﻿Tapestry 5.2 Preview
+http://blog.tapestry5.de/index.php/2010/08/11/tapestry-5-2-preview/
+
+
+Posted on Mittwoch, 11th August, 2010
+
+Tapestry team is pleased to announce Tapestry 5.2.0 Alpha release. Read the news in Howard’s announcement and on Tapestry’s site. We have fixed a lot of bugs and added some cool new stuff. Release notes can be found here. In this post I’ll give you a preview of some new features.
+--
+Improvements to Live Class Reloading
+
+With Tapestry you can see the changes to your pages and components immediately. You just change you class, reload the page and see the result. No redeploy, no restart required! In Tapestry 5.2 the Live Class Reloading feature has been enhanced to reload your service implementation classes. That means Tapestry will boost the developer’s productivity to a higher level than before. Read here for more details.
+--
+New Components
+
+Two components have been added:
+
+Error: Same as Errors but presents validation errors of a single field
+
+Trigger: Triggers an arbitrary event during rendering. This is often useful to add JavaScript to a page or a component (via calls to the RenderSupport environmental).
+--
+New Mixins
+
+Two mixins have been added:
+
+RenderClientId: Forces a client element to render its client id by ensuring thatClientElement.getClientId() is called.
+
+RenderNotification: This mixin triggers event notifications to identify when it enters the BeginRender and AfterRender render phases. The MarkupWriter is passed as the event context. The most common use of this is to handle the afterRender event to generate client-side JavaScript for content just rendered via a Block (this is a common Ajax use case related to partial page rendering).
+--
+JSR-303 Bean Validation Integration
+
+An integration library for JSR-303 Bean Validation API has been added. Now you can annotate your pages, component and entities with JSR-303 annotations. Tapestry will perform the validation according to the specified validation constraints. Read here andhere.
+--
+New Annotation for Contribute Methods
+
+The @Contribute annotation has been introduced as an alternative to the naming convention for contribute methods. The annotation allows your contribute methods to be arbitrary named. You don’t have to follow the naming convention for contribute methods anymore. Just name your contribute method as you like and annotate it with @Contribute (plus some marker annotations).
+--
+New Annotations to Access Request Parameters
+
+New annotations have been added to make the access of request parameters easier:
+
+@RequestParameter: may be placed on parameters of event handler methods. Before invoking the handler method Tapestry will extract the parameter values from the request, transform the string values to the type of the method parameter automatically and pass the transformed value to the method.
+
+@ActivationRequestParameter: may be used to map a field of a page (not a component) to a request parameter. When Tapestry generate component event or page render links for the page, it will identify all fields annotated with @ActivationRequestParameter and add their values as request parameters to the link. When a page is activated, the mapped fields will receive their values from request parameters before onActivate event handler method is invoked.
+--
+New Page Lifecycle Event
+
+The pageReset event has been added to the page lifecycle. A page is reset when the page is accessed from another page; component event links and page render links that target the same page do not cause a reset, but linking from one page to another will cause a reset on the destination page when it is rendered. The reset lifecycle event occurs after page activation, allowing the page to reset its internal state to the match its activation context. Note that on pages that have such reset logic will have an additional query parameter added to the page render URL in some cases.
+--
+New Events for Link Decoration
+
+During generation of component event or page render links Tapestry will fire two events to involve you as page/component author into the link generation process. The new events are:
+
+decoratePageRenderLink: triggered during page render link generation. The first context parameter is the Link object, the second is thePageRenderRequestParameters from which the Link was created. The event is triggered on the actively rendering page. You can provide an event handler method for that event if you want to modify the link targeting the page.
+
+decoreateComponentEventLink: triggered during component event link generation. The first context parameter is the Link object, the second is theComponentEventRequestParameters from which the Link was created. The event is triggered on the actively rendering page, not necessarily the page containing the component. You can provide an event handler method for that event if you want to modify the link triggering a component event.
+--
+URL Rewriting API Deprecated
+
+The URL Rewriting API has been deprecated in favour of LinkTransformer service. That service is a facade around ComponentEventLinkTransformer andPageRenderLinkTransformer services. You can contribute implementations of these services to transform component event and page render requests.
+--
+Template Parser Changed
+
+In the past Tapestry used StAX XML parser for parsing templates. This caused some incompatibilities with Google App Engine and in OSGi environments. Now Tapestry uses a standard SAX parser.
+--
+Page Pool Deprecated
+
+The page pool has been deprecated. Now Tapestry maintains for every page only one instance which is shared between threads. The values of the mutable fields are stored in a per-thread Map of keys and values so that a single page instance can be used across multiple threads without any synchronization issues. As of 5.2 the page pool is switched off but you can configure Tapestry to use it. Read here for more details.
+--
+JMX Support and Remote Management of the Pool Settings
+
+If you configure Tapestry to use the page pool, you can change the settings of the pool remotely. Tapestry provides now a JMX support library which can be used to expose objects as MBeans. This library is used to register an MBean for managing pool settings. Read here for more details.
+--
+Upgrade to Spring 3
+
+Tapestry’s Spring integration library depends now on Spring 3.
+--
+Upgrade to Hibernate 3.5.4
+
+Tapestry’s Hibernate integration library depends now on Hibernate 3.5.4.
+
+===========
+http://blog.tapestry5.de/index.php/2009/12/03/hivemind-still-alive/
+http://blog.tapestry5.de/index.php/2009/12/29/mapped-diagnostic-context-with-tapestry-filters/ 
+http://blog.tapestry5.de/index.php/2010/01/19/tapestry-ioc-modularization-of-web-applications-without-osgi/ 
+http://blog.tapestry5.de/index.php/2010/02/26/tapestry-and-jsr-303-bean-validation-api-now-with-client-side-validation/ 
+http://blog.tapestry5.de/index.php/2010/03/05/contribution-methods-naming-conventions-vs-annotations/ 
+http://blog.tapestry5.de/index.php/2010/03/30/jazoon-2010-talk-javaserver-faces-2-0-vs-tapestry-5/ 
+http://blog.tapestry5.de/index.php/2010/05/20/advanced-service-builders-in-tapestry-ioc-strategy-pattern/ 
+http://blog.tapestry5.de/index.php/2010/06/16/registry-startup/ 
+http://blog.tapestry5.de/index.php/2010/07/20/advanced-service-builders-in-tapestry-ioc-chain-of-responsibility-pattern/ 
+http://blog.tapestry5.de/index.php/2010/07/28/reading-annotations-of-service-implementation-classes/
+http://blog.tapestry5.de/index.php/2010/08/06/extending-template-lookup-mechanism/
+http://blog.tapestry5.de/index.php/2010/08/11/tapestry-5-2-preview/
+http://blog.tapestry5.de/index.php/2010/08/23/context-values-vs-request-parameters/
+http://blog.tapestry5.de/index.php/2010/09/06/new-url-rewriting-api/
