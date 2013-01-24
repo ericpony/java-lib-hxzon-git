@@ -1,0 +1,201 @@
+﻿Scrolling pages : tapestry5 & onScrollBeyond
+
+http://tawus.wordpress.com/2012/11/25/scrolling-pages-tapestry5-onscrollbeyond/
+
+This blog is about adding pagination in Tapestry 5 using jQuery based onScrollBeyond(). It might sound difficult but as always tapestry makes it so easy that you wonder whether it is worth blogging about  .
+
+The script expects you to implement onScrollBeyond which is called each time a user scrolls beyond the element or end of the page. We need to update the page with new set of elements.
+
+Here is the template.
+
+<t:container xmlns:t='http://tapestry.apache.org/schema/tapestry_5_3.xsd'>
+
+    <t:delegate to='block:nextPageBlock'/>
+
+    <t:block t:id='nextPageBlock'>
+        <t:loop t:id='loop' t:source='nextPage' value='row'>
+            <t:body/>
+        </t:loop>
+    </t:block>
+
+</t:container>
+There is just a loop in a block which we will call for displaying records for each page. Here is the related java class.
+
+@Import(library = {"jquery.scrollExtend.min.js", "PageScroll.js"}, stylesheet = "PageScroll.css")
+public class PageScroll implements ClientElement {
+
+    @Component(publishParameters = "encoder, formState, element, index, empty")
+    private Loop loop;
+
+    @Parameter
+    @Property
+    private Object row;
+
+    @Parameter(value = "prop:componentResources.id", defaultPrefix = BindingConstants.LITERAL)
+    private String clientId;
+
+    private String assignedClientId;
+
+    @Inject
+    private JavaScriptSupport javaScriptSupport;
+
+    @Inject
+    private ComponentResources resources;
+
+    @Inject
+    private Block nextPageBlock;
+
+    private int index;
+
+    @Parameter(required = true, allowNull = false, defaultPrefix = BindingConstants.LITERAL)
+    private String zone;
+
+    @Parameter(required = true, allowNull = false, defaultPrefix = BindingConstants.LITERAL)
+    private String scroller;
+
+    @Parameter
+    private JSONObject params;
+
+    @Inject
+    private Request request;
+
+    @BeginRender
+    void assignClientId() {
+        assignedClientId = javaScriptSupport.allocateClientId(clientId);
+    }
+
+    @AfterRender
+    void addJavaScript() {
+        JSONObject specs = new JSONObject()
+            .put("scroller", scroller)
+            .put("scrollURI", getScrollURI())
+            .put("zoneId", zone)
+            .put("params", params);
+
+        javaScriptSupport.addInitializerCall("PageScroll", specs);
+    }
+
+    @OnEvent("scroll")
+    Object scroll(int index) {
+        this.index = index;
+        return nextPageBlock;
+    }
+
+    public List<?> getNextPage() {
+        CaptureResultCallback<List<Object>> resultCallback =
+           new CaptureResultCallback<List<Object>>();
+        resources.triggerEvent("nextPage", new Object[]{index}, resultCallback);
+
+        List<?> result = resultCallback.getResult();
+        result = (result == null ? new ArrayList<Object>() : result);
+
+        return result;
+    }
+
+    @Override
+    public String getClientId() {
+        return assignedClientId;
+    }
+
+    public String getScrollURI() {
+        return resources.createEventLink("scroll", "pageScrollIndex").toAbsoluteURI();
+    }
+
+}
+We publish most of the parameters of Loop as this component is close to a Loop and can take advantage of the form handling that Loop is soo good at. The rest is just creating a callback which we are going to call from the onScrollBeyond and then delegating the work of getting the next page records to the nextPage event.
+
+The javascript code which takes care of the updating the zone is below :-
+
+(function ($) {
+
+    $.extend(Tapestry.Initializer, {
+        PageScroll:function (specs) {
+
+            var scroller = jQuery("#" + specs.scroller);
+            scroller.onScrollBeyond(
+                function () {
+
+                    if (typeof(this.pageIndex) == "undefined") {
+                        this.pageIndex = 0;
+                    }
+
+                    if(typeof(this.disable) == "undefined"){
+                        this.disable = false;
+                    }
+
+                    if (this.pageIndex == -1 || this.disable) {
+                        return;
+                    }
+
+                    var activeZone = $("#" + specs.zoneId);
+
+                    var self = this;
+                    this.disable = true;
+                    scroller.addClass("scrollExtend-loading");
+                    if (activeZone.length != 0) {
+                        this.disable = true;
+                        activeZone.tapestryZone('update', {
+                            url:specs.scrollURI.replace("pageScrollIndex", this.pageIndex + 1),
+                            callback:function () {
+                                if (activeZone.is(":empty")) {
+                                    self.pageIndex = -1;
+                                }
+
+                                var html = activeZone.html();
+                                activeZone.empty();
+                                activeZone.before(html);
+                                self.disable = false;
+                                scroller.removeClass("scrollExtend-loading");
+                            }
+                        });
+
+                        this.pageIndex++;
+                    }
+
+                },
+                specs.params
+            )
+        }
+    });
+
+})(jQuery);
+
+There are a couple of things we are keeping track of a couple of things. One is the pageIndex which keeps track of the current page and other is the disable flag which is used to ensure the call to scroll is sequential.
+
+Usage
+
+A simple usage will be
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_3.xsd'>
+   <body>
+    <ul>
+        <li t:type='flirtbox/PageScroll' row='value' scroller='scroller' zone='zone'>
+
+            <li>${value}</li>
+        </li>
+        <li class='zone' t:type='zone' t:id='zone'/>
+    </ul>
+    <div id='scroller'></div>
+   </body>
+</html>
+
+public class PageScrollDemo {
+
+    private static final int PageSize = 10;
+
+    @Property
+    private int value;
+
+    @OnEvent("nextPage")
+    List<Integer> moreValues(int pageNumber) throws InterruptedException {
+        List<Integer> values = new ArrayList<Integer>();
+        int first = pageNumber * PageSize;
+        for(int i = 0; i < PageSize; ++i){
+            values.add(first + i);
+        }
+
+        Thread.sleep(2000);
+        return values;
+    }
+
+}

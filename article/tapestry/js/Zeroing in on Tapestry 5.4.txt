@@ -1,0 +1,105 @@
+﻿Zeroing in on Tapestry 5.4
+作者：Howard Lewis Ship | 来自：Tapestry Central
+http://feedproxy.google.com/~r/TapestryCentral/~3/YuAUEE_o2xk/zeroing-in-on-tapestry-54.html
+
+
+I've had just a bit of time this week to devote to furthering the work on Tapestry 5.4, and it feels like I'm near the turning point. You can follow the progress in the 5.4-js-rewrite branch
+
+I've discussed my plans before; this is a bit of a progress update.
+
+Basically, this release will be all about JavaScript:
+
+Removing the hard-dependence on Prototype
+Creating an abstraction layer, allowing jQuery to be used instead
+Introducing AMD (asynchronous module definition) modules (using RequireJS)
+Switching to a more declarative style of JavaScript; leveraging HTML5 data- attributes
+Prototype vs. jQuery
+Tapestry has historically used Prototype as what I call its foundation framework. The foundation is responsible for element selection and creation, attaching event handlers, triggering events, and encapsulating Ajax requests.
+
+It is already possible to have both Prototype and jQuery on the same page; I do it regularly. There's a project for this as well,tapestry-jquery. That being said, there's some costs in having multiple foundation frameworks in place:
+
+First of all is size; there's a lot of code in each framework (160Kb for Prototype, 260Kb for jQuery -- much less after minification and compression), and tremendous overlap. This includes the fact that both frameworks have a version of the Sizzle CSS selector engine.
+
+There's also some occasional clashes; I had a nasty problem where some Bootstrap JavaScript was firing a "hide" event when a modal dialog was dismissed. After much tracing and hair pulling, I discovered that jQuery will treat a function attached to an element as an event handler for the event with the matching name. The "hide" event triggered by jQuery found the hide()method added by Prototype, and my modal dialog just winked out of existence, rather than animation the way I wanted.
+
+Finally, its not just an either-or world; there's also YUI, ExtJS, MooTools ... over the last few years, every single time I mentioned my desire to introduce an abstraction layer, I've received the question "will it support X?" and "X" was some new framework, that person's favorite, that I had not previously heard of.
+
+So the abstraction layer will be important for helping ensure a fast download of JavaScript, and to minimize the amount of network and JavaScript execution overhead.
+
+If you are an application developer, there will be nothing to prevent you from using the native framework of your choice, directly. In many cases, this will be the best approach, and it will enable greater efficiency, access to a more complete API, and access (in jQuery's case) to a huge community of plugins.
+
+If you are creating reusable components, it is best to try to use the SPI (the service provider interface; the abstraction layer). This allows your library to be widely used without locking your users into any particular foundation framework.
+
+Modules vs. Libraries
+Tapestry 5.3 and earlier have provided some great support for JavaScript in library form. The concept of a JavaScriptStackmakes it possible to bundle any number of individual JavaScript libraries together, along with supporting CSS style sheet files. Even better, Tapestry can create a single virtual JavaScript library by concatenating all the stack libraries together. Tapestry does this at runtime, and conditionally ... so during development, you can work with many small JavaScript files and in production, they become one combined, minimized JavaScript file.
+
+However, this JavaScript approach has its own problems. Page initialization logic is very dependent on the stacks (including the foundation frameworks) being present and loaded in a specific order. No page initialization logic can execute until all libraries have been loaded. If you have multiple stacks in production, then all the stacks must load before any logic executes.
+
+All of this affects page load time, especially the time perceived by the end user. Too much is happening sequentially, and too much is happening over-all.
+
+In Tapestry 5.4, the focus is shifting from libraries to modules. Under AMD, a module is a JavaScript function that expresses a dependency on any number of other modules, and exports a value to other modules. The exported value may be a single function, or an object containing multiple functions (or other values).
+
+Here's a snapshot of one of modules, which provides support for the Zone component:
+
+The define() function is used to define a module; the first parameter is an array of module names. The second parameter is a function invoked once all the dependencies have themselves been loaded; the parameters to that function are the exports of the named modules.
+
+This function performs some initialization, attaching event handlers to the document object; it also defines and exports a single named function ("deferredZoneUpdate") that may be used by other modules.
+
+Yes, I have a module named "_" which is Underscore.js. I'll probably add "$" for jQuery. Why not have short names?
+The RequireJS library knows how to load individual modules and handle dependencies of those modules on others. Better yet, it knows how to do this in parallel. In fact, in 5.4, the only JavaScript loaded using a traditional <script> tag is RequireJS; all other libraries and modules are loaded through it.
+
+At the end of the day, there will be less JavaScript loaded, and the JavaScript that is loaded will be loaded in parallel. I'm still working on some of the details about how module libraries may be aggregated into stacks.
+
+Declarative JavaScript
+Even in earlier forms of Tapestry, JavaScript support has been powerful ... but clumsy. To do anything custom and significant on the client-side you had to:
+
+Write a JavaScript library for your functionality
+Monkey-patch a function onto the T5.initializers namespace
+Package up your initialization data as a JSONObject ... typically, client element ids, URLs, etc.
+Have you Java component code invoke JavaScriptSupport.addInitializerCall(String, JSONObject) to link it all together.
+Tapestry packages up all those addInitializerCall() initializations into one big block that executes at the bottom of the page (and does something similar for Ajax-oriented partial page updates).
+
+Whew! To make this works requires that elements have unique ids (which can be a challenge when there are Ajax updates to the page). On top of that, the typical behavior is to create controller objects and attach event handlers directly to the elements; that works fine for small pages, but if there are hundreds (or thousands) of elements on the page, it turns into quite a burden on the JavaScript environment: lots of objects.
+
+There isn't a specific name for this approach, beyond perhaps "crufty". Let's call it active initialization.
+
+A more modern approach is more passive. In this style, the extra behavior is defined primarily in terms of events an element may trigger, and a top-level handler for that event. The events may be DOM related such as "click", "change", or "focus", or application-specific one triggered on the element directly. The top-level handler, often attached to the document, handles the event when it bubbles up from the element to the top level; it often distinguishes which elements it is interested using a CSS selector that includes references to a data- attribute.
+
+For example, in the core/forms module, we need to track clicks on submit and image buttons as part of the form (this is related to supporting Ajax form submissions).
+
+That little bit of code attaches a "click" event handler to the document, for any submit or image element anywhere on the page ... or ever added to the page later via Ajax. Older versions of Tapestry might have put an individual event handler on each such element, but in 5.4, the single event handler is sufficient.
+
+Inside the event handler, we have access to the element itself, including data- attributes. That means that what may have been done using page initialization in Tapestry 5.3 may, in Tapestry 5.4, be a document-level event handler and data- attributes on the specific element; no JSONObject, no addInitializerCall(). Less page initialization work, smaller pages, fewer objects at runtime.
+
+The flip side, however, is that the cost of triggering the extra events, and the cost of all the extra event bubbling, is hard to quantity. Still, the 5.3 approach introduces a lot of memory overhead at all times, whereas the 5.4 approach should at worst, introduce some marginal overhead when the user is actively interacting.
+There's another advantage; by attaching your own event handlers to specific elements, you have a way to augment or replace behavior for specific cases. It's kind of a topsy-turvy version of inheritance, where the behavior of an element is, effectively, partially determined by the elements it is contained within. Kind of crazy ... and kind of just like CSS.
+
+Compatibility
+So you've written a fancy application in Tapestry 5.3 and you are thinking about upgrading to 5.4 when it is ready ... what should you be ready for?
+
+On the server side, Tapestry 5.4 introduces a number of new services and APIs, but does not change very much that was already present.
+
+A number of interfaces and services that were deprecated in the past have been removed entirely; even some dependencies, such as Javassist.
+All built-in Tapestry components will operate through the SPI; they will work essentially the same regardless of whether you choose to operate using Prototype or jQuery or both.
+
+The look-and-feel is changing from Tapestry's built-in CSS to Twitter Bootstrap. All of the old "t-" prefixed CSS classes are now meaningless.
+
+On the other hand, what if you've built some complex client-side code? Well, if it is based on Prototype directly, that will be fine as well; just keep Prototype in the mix and start migrating your components to use the SPI.
+
+The devil in the details is all about the Tapestry and T5 namespaces. The Tapestry object is the very oldest code; the T5 namespace was introduced in 5.2 in an attempt to organize things on the client-side a bit better.
+
+It is not clear, at this time, just how much of those libraries will be left. Ideally, they will not be present at all unless an explicit compatibility mode is enabled (possibly, enabled by default). That being said, the conflict between the old active/crufty approach, and the new modular and passive/declarative approach is a difficult one to bridge.
+
+In fact, the point of this post is partly to spur a discussion on what level of compatibility is required and realistic.
+
+Conclusion
+I've completely pumped about where Tapestry 5.4 already is, and where it is headed. Although the future of web applications is on the client, there is still significant play for hybrid applications: partly page oriented, partly Ajax oriented – and it's nice to have a single tool that integrates both approaches.
+
+Beyond that, even for a Tapestry application that is a single "page", what Tapestry brings to the table is still very useful:
+
+live class reloading
+JavaScript stacks (with minification, Gzip compression, and client-side caching)
+the coming runtime CoffeeScript-to-JavaScript support
+best-of-breed exception reporting
+staggeringly high performance
+These benefits are all as compelling in a single page application as they are in a traditional application, if not more so. I'm looking forward to building even more impressive apps in 5.4 than I could accomplish in 5.3, and I hope a lot of you will join me.

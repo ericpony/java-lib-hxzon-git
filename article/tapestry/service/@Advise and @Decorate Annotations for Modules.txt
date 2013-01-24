@@ -1,0 +1,148 @@
+﻿@Advise and @Decorate Annotations for Modules
+学中注释。
+
+
+作者：Igor Drobiazko | 来自：Tapestry 5 Blog
+2010/10/25 02:50
+http://blog.tapestry5.de/index.php/2010/10/24/advise-and-decorate-annotations-for-modules/
+
+If you are reading this blog frequently, you might know that starting from Tapestry 5.2.0 the @Contribute annotation can be used as an alternative for naming convention for contribution methods. The annotation may be placed on an arbitrary named method of a module to identify this method as a contribution method. The value of the annotation is the type of the service to contribute into. Additionally, marker annotations may be used to disambiguate several implementation of a service interface. Here is an example:
+
+使用@Contribute和@ApplicationDefaults注解。
+
+public class AppModule {
+
+   @Contribute(SymbolProvider.class)
+   @ApplicationDefaults
+ public static void provideSymbols(
+         MappedConfiguration<String, String> config) {
+
+      config.add(SymbolConstants.PRODUCTION_MODE, "false");
+   }
+}
+
+I prefer this new approach over naming conventions as this is less error-prone: no more errors caused by a typo inside the service id. I love this new feature that much that I started to hate the naming conventions for decorator and advisor methods. So, last week I checked in new feature allowing you to identify these methods by annotations. Let’s see some examples.
+
+Currently an advice will match against a service with the id which is encoded into the advisor method name. This is quite error-prone as you can misspell the service id and wonder why your advice is not executed.
+
+public class AppModule {
+
+   public static void adviseMyService(
+               MethodAdviceReceiver receiver) {
+
+      receiver.adviseAllMethods(new MethodAdvice() {
+         public void advise(Invocation invocation) {
+            //advise here
+            invocation.proceed();
+         }
+      });
+   }
+}
+
+In Tapestry 5.2.2 it will be possible to match the service to advise by its interface, as shown in the following example. With this approach you don’t have to know the id of the service.
+
+使用@Advise注解。
+
+public class AppModule {
+
+   @Advise(MyService.class)
+   public static void foo(
+               MethodAdviceReceiver receiver) {
+
+      receiver.adviseAllMethods(new MethodAdvice() {
+         public void advise(Invocation invocation) {
+            //advise here
+            invocation.proceed();
+         }
+      });
+   }
+}
+
+If there are multiple implementations of a service interface inside the Registry, you need to disambiguate the implementation which you want to advise. For this purpose you need to place the marker annotation on your advisor method which is used to mark the service implementation.
+
+public class AppModule {
+
+   @Advise(MyService.class)
+   @GreenMarker
+   public static void foo(
+               MethodAdviceReceiver receiver) {
+
+      receiver.adviseAllMethods(new MethodAdvice() {
+         public void advise(Invocation invocation) {
+            //advise here
+            invocation.proceed();
+         }
+      });
+   }
+}
+
+When providing multiple advisor methods, the order might be very important. The @Order annotation allows you to explicitly set the order in which any single advice is executed. For this purpose you need to provide an advice id, which must be unique across all modules. The id attribute of the @Advise annotation is used to provide such an id. Note, that this attribute defaults to the simple name of the service interface.
+
+当有多个“劝告”时，顺序很重要。这时可以使用@Order注解。
+
+public class AppModule {
+
+   @Advise(serviceInterface=MyService.class, id="foo")
+   public static void foo(
+               MethodAdviceReceiver receiver) {
+
+      receiver.adviseAllMethods(new MethodAdvice() {
+         public void advise(Invocation invocation) {
+            //advise here
+            invocation.proceed();
+         }
+      });
+   }
+
+   @Advise(MyService.class)
+   @Order("before:foo")
+   public static void bar(
+               MethodAdviceReceiver receiver) {
+
+      receiver.adviseAllMethods(new MethodAdvice() {
+         public void advise(Invocation invocation) {
+            //advise here
+            invocation.proceed();
+         }
+      });
+   }
+}
+
+Now let’s have a look at decorator methods. The following example demonstrates how a service can be decorated in prior Tapestry versions. The service to decorate is matched by the id encoded into the decorator method name.
+
+public class AppModule {
+
+   public static MyService decorateMyService(
+            MyService delegate,
+            ServiceResources resources,
+            Logger logger,
+            LoggingDecorator decorator) {
+
+      return decorator.build(MyService.class,
+                             delegate,
+                             resources.getServiceId(),
+                             logger);
+   }
+}
+
+As of version 5.2.2 a decorator method can be arbitrary named, if the @Decorate annotation is placed on it. As with @Advise annotation, marker annotations may be used to disambiguate the service implementation.
+
+使用@Decorate注解。
+
+public class AppModule {
+
+   @Decorate(MyService.class)
+   public static MyService foo(
+            MyService delegate,
+            ServiceResources resources,
+            Logger logger,
+            LoggingDecorator decorator) {
+
+      return decorator.build(MyService.class,
+                             delegate,
+                             resources.getServiceId(),
+                             logger);
+   }
+}
+
+Have fun with Tapestry and stay tuned.

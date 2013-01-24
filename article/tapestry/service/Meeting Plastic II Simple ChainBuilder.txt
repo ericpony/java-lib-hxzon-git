@@ -1,0 +1,147 @@
+﻿Meeting Plastic II: Simple ChainBuilder
+
+http://tawus.wordpress.com/2011/04/19/plastic-chains-simple-chainbuilder/
+
+This is a simple implementation of a Chain Of Responsibility or Chain Of Command design pattern. We already have such a service in TapestryIOC and I thought of implementing the same in Plastic.
+
+In Chain of Command design pattern, we create a single service from a set of commands which implement a common interface. This pattern can be provided out of the box by using Class transformations. The assembled service will run all the commands in the given sequence unless any of the commands throw an exception. I am keeping the example simple by forcing the methods in the command interface to return only void.
+
+
+We start with the ChainBuilder interface.
+
+/**
+ * A "Chain Of Responsibility" or "Chain Of Commands" pattern 
+ */
+public interface ChainBuilder {
+   /**
+    * Builds a chain instance from a given chain of commands implementing a particular
+    * interface
+    * @param <T>
+    * @param comamndInterface interface type of the command
+    * @param commands list of commands
+    * @return chain instance
+    */
+   <T> T build(Class<T> commandInterface, List<T> commands);
+}
+and now its implementation
+
+/**
+ * Implementation of a ChainBuilder interface using Plastic
+ */
+public class ChainBuilderImpl implements ChainBuilder {
+   private PlasticManager pm;
+
+   /**
+    * Constructor
+    * @param pm plastic manager
+    */
+   public ChainBuilderImpl(PlasticManager pm) {
+      this.pm = pm;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @SuppressWarnings("unchecked")
+   public <T> T build(Class<T> commandInterface, List<T> commands) {
+      // Create a new class implementing this interface
+      return (T) pm.createClass(Object.class,
+               new ChainBuilderTransformer<T>(commandInterface, commands)).newInstance();
+   }
+
+   static public class ChainBuilderTransformer<T> implements PlasticClassTransformer {
+      private final Class<T> commandInterface;
+      private final List<T> commands;
+
+      public ChainBuilderTransformer(Class<T> commandInterface, List<T> commands) {
+         this.commandInterface = commandInterface;
+         this.commands = commands;
+      }
+
+      public void transform(PlasticClass pc) {
+         // Implement the interface
+         pc.introduceInterface(commandInterface);
+
+         // Add a field which will be an array containing the commands
+         final Object[] arrayOfCommands = commands.toArray();
+         final PlasticField arrayOfCommandsField = pc.introduceField(
+                   Object[].class, "_commands$"
+                  + commandInterface.getSimpleName());
+         arrayOfCommandsField.inject(arrayOfCommands);
+
+         // For each method create chain
+         for (Method method : commandInterface.getMethods()) {
+            createChain(pc, arrayOfCommandsField, method);
+         }
+
+      }
+
+      private void createChain(final PlasticClass pc, 
+               final PlasticField arrayOfCommandsField,
+               final Method method) {
+         pc.introduceMethod(method).changeImplementation(
+            new InstructionBuilderCallback() {
+               public void doBuild(InstructionBuilder builder) {
+                  builder.loadThis().getField(arrayOfCommandsField)
+                        .iterateArray(new InstructionBuilderCallback() {
+                           public void doBuild(InstructionBuilder builder) {
+                              builder.loadArguments().invoke(method);
+                              return;
+                           }
+                        });
+               builder.returnDefaultValue();
+            }
+         });
+      }
+   }
+}
+The service creates a class by using PlasticManager.createClass usingObject.class as the base class and providing it a ChainBuilderTransformerwhich is an implementation of PlasticClassTransformer.
+
+ChainBuilderTransformer implements the only method transform present inPlasticClassTransformer. It follows the following steps
+
+The command interface is introduced to (implemented by) the newly created class.
+A field is created to hold the array of commands and introducted to (inserted into) the newly created class
+The array of commands is injected into the field
+We loop over the methods in the interface and for each method we create a chain
+In createChain we replace the code of this method by callingchangeImplementation which takes InstructionBuidlerCallback as argument that has a single method doBuild having InstructionBuilder as argument.
+
+Now comes the tricky part(remember the stack machines and assembly language, that did not go waste!!). What we need to do here is
+
+void myAssembledCommand(arguments){
+   for(T command: commands){
+      command(arguments);
+   }
+}
+For the loop to execute, it needs the array of commands to be on the top of the stack. In order to get an instance field on top the stack, you have to push the instance on to the stack, then call getField(). We do it by usingbuilder.loadThis().getField(). Once we get the array of commands on the top of stack, we use iterateArray to iterate over the array. iterateArray takes an InstructionBuilderCallback as argument which allows you to generate code for the inside of the loop. In this doBuild() method all we do is invoke tell the builder to load the arguments of the main method from the stack and call the command with those arguments. That is it!! we are done.
+
+Usage
+
+A spock test for using the above ChainBuilder is as under
+
+/**
+ * Tests {@link plasticdemo.transforms.ChainBuilderImpl}
+ */
+class ChainBuilderTest extends Specification {
+   def pm
+
+   def setup(){
+      pm = PlasticManager.withContextClassLoader().delegate(new StandardDelegate(new RunTransformer())).
+         packages(["plasticdemo.controlled"]).create();
+   }
+
+   def "test if foo is runnable"(){
+      setup:
+      def chainBuilder = new ChainBuilderImpl(pm)
+      MyService service1 = Mock(MyService)
+      MyService service2 = Mock(MyService)
+      def chain = chainBuilder.build(MyService, [service1, service2])
+      when:
+      chain.process()
+      then:
+      1 * service1.process()
+      1 * service2.process()
+   }
+}
+The full source code along with examples from other posts can be foundhere.
+
+While I was implementing the service I came across the plastic implementation ofChainBuilder which is already implemented in Tapestry Trunk. It takes care of the return value which is very easy. You can follow all the plastic changes in Tapestry5 core here.

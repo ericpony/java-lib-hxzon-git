@@ -1,0 +1,74 @@
+﻿Meeting Plastic IV: Replacing interfaces
+
+http://tawus.wordpress.com/2011/05/22/meeting-plastic-iv-replacing-interfaces/
+
+One of the most common use of class transformation is replacing interfaces by annotations. Earlier j2ee frameworks used to put restrictions on your classes by forcing you to implement a particular interface. Nowadays, modern frameworks just ask you to put an annotation here and there and the rest is handled by the framework. This gives you the freedom of working with pojos.
+
+In this post, we can use plastic to do something similar. Suppose we want to allow a class to be used as a Runnable without implementing the Runnable interface. The class just has to annotate a method with @Run and we will run that method as a thread.
+
+We will start with an annotation
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
+public @interface Run {
+}
+We then create a PlasticClassTransformer
+
+public class RunTransformer implements PlasticClassTransformer {
+   private static final MethodDescription RUN_METHOD = new MethodDescription("void", "run");
+
+   /**
+    * Transform method
+    */
+   public void transform(PlasticClass plasticClass) {
+      final List<PlasticMethod> methods = plasticClass.getMethodsWithAnnotation(Run.class);
+
+      if (methods.size() == 0) {
+         return;
+      }
+
+      if (methods.size() > 1) {
+         throw new RuntimeException("@Run can be only placed on a single method in a class");
+      }
+
+      final MethodHandle methodHandle = methods.get(0).getHandle();
+      plasticClass.introduceInterface(Runnable.class);
+      PlasticMethod runMethod = plasticClass.introduceMethod(RUN_METHOD);
+      runMethod.addAdvice(new MethodAdvice(){
+
+         public void advise(MethodInvocation invocation) {
+            methodHandle.invoke(invocation.getInstance());            
+         }
+         
+      });
+   }
+}
+
+We look for a method annotated with @Run. We introduce Runnable interface. We, then, add an advice which delegates the Runnable.run() call to the method annotated with @Run
+
+Usage
+
+The usage is depicted by this spock test
+
+class RunTransformerTest extends Specification {
+   def pm
+   
+   def setup(){
+      pm = PlasticManager.withContextClassLoader().delegate(new StandardDelegate(
+            new RunTransformer())).packages(["plasticdemo.controlled"]).create();
+   }
+   
+   def "test if foo is runnable"(){
+      setup:
+      def foo = pm.getClassInstantiator("plasticdemo.controlled.Foo").newInstance();
+      def thread = new Thread((Runnable)foo)
+      expect: foo.didRun == false
+      when:
+      thread.run()
+      then:
+      foo.didRun == true
+   }
+}
+The source code of all the posts is here
+
+https://github.com/tawus/javamagic/

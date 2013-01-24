@@ -1,0 +1,167 @@
+﻿Tapestry Magic #3: Plugin Blocks
+学中注释。
+插件式block。
+
+http://tawus.wordpress.com/2011/04/20/tapestry-magic-3-plugin-blocks/
+
+Blocks in Tapestry are tools which can be used to overcome the limitations of a static structure. One of the best usage of Blocks is the BeanBlockSource. I have used it in a similar way to create plug-n-play plug-in. I will try to demonstrate it with an example.
+
+We recently did that in a case where in we had a department with a web-application that was based on the concept of an Instruction. Other departments login to the application and create instructions(with maker-checker concept). This department has to process the instructions. The problem is that the department itself consists of sub-departments and each instruction had to be delegated to them. So, the department is responsible for the authorization, authentication, logging, instruction creation(maker-checker concept). etc and the sub-department have to just get their additional details related to the instruction and process them and the return the control back to the application.
+
+To solve this problem we have to do two things.
+
+Allow each sub-department to add their input components/sub-form to the instruction form.
+
+允许每个子部门添加自己的组件到任务表单中。
+
+Allow each department to contribute a service to process the instruction.
+
+允许每个部门贡献服务来处理任务（指令）。
+
+Contributing a service is something we can easily do. Just add it to your Module. Changing an instruction form based on sub-department could be done by
+
+使用delegate组件。
+
+...
+<form t:type='form'>
+   <t:commonFormContent/>
+   <t:delegate to='departmentBlock'/>
+</form>
+
+<t:block t:id='debit_card_department'>
+   <t:debitCardDepartmentFormDetails/>
+</t:block>
+
+<t:block t:id='credit_card_department'>
+   <t:creditCardDepartmentFormDetails/>
+</t:block>
+
+....
+and then in the class file
+
+public class CommonForm {
+   public Block getDepartmentBlock(){
+      return resources.getComponentResources().getBlock(department_name);
+   }
+}
+
+
+But this has a limitation, I have to change the template of the main web-application each time I add a new sub-department or if a sub-department adds an new instruction type. In order to make each sub-department jar as a plug-in-play plugin we came up with the following solution.
+
+这种方式有一个缺点，每当增加一个子部门或子部门添加了一个任务类型，我必须修改模板文件。
+
+Create an InstructionSource service to which each sub-department can contribute a block and a processing service.
+
+The processing service is simple
+
+public interface InstructionProcessor {
+   String process(Instruction instruction);
+}
+
+The InstructionSource service is the one to which contributions have to be made
+
+public interface InstructionSource {
+   public Block getBlock(String instructionType);
+   public InstructionProcessor getProcessor(String instructionType);
+}
+
+The contribution will be
+
+public class InstructionContribution {
+   
+   private String pageName;
+   private String blockName;
+   private String serviceId;
+
+   public InstructionContribution(String pageName, String blockName, String serviceId){
+      this.pageName = pageName;
+      this.blockName = blockName;
+      this.serviceId = serviceId;
+   }
+   
+   public String getPageName(){
+      return pageName;
+   }
+   
+   public String getBlockName(){
+      return blockName;
+   }
+   
+   public String getServiceId(){
+      return serviceId;
+   }
+   
+}
+
+The contribution has to be the serviceId, as each service will be implementing the common interface InstructionProcessor, the page containing the instruction block and the block’s id. Now finally the InstructionSource service is implemented.
+
+import org.apache.tapestry5.Block;
+import org.apache.tapestry5.services.ComponentSource
+import org.apache.tapestry5.ioc.ObjectLocator;
+
+public class InstructionSourceImpl implements InstructionSource {
+   private Map<String, InstructionContribution> contributions;
+   private ComponentSource componentSource;
+   private ObjectLocator locator;
+
+   public InstructionSourceImpl(final ObjectLocator locator,
+         final ComponentSource componentSource,
+         Map<String, InstructionContribution> contribution) {
+      this.locator = locator;
+      this.contributions = contribution;
+      this.componentSource = componentSource;
+   }
+
+   public Block getBlock(String instructionType) {
+      final InstructionContribution contribution = contributions
+            .get(instructionType);
+      if (contribution == null) {
+         throw new RuntimeException(
+               "Instruction Contribution Not Found for instruction type: "
+                     + instructionType);
+      }
+
+      return componentSource.getPage(contribution.getPageName())
+            .getBlock(contribution.getBlockName());
+   }
+
+   public InstructionProcessor getProcessor(String instructionType) {
+      final InstructionContribution contribution = contributions
+            .get(instructionType);
+      if (contribution == null) {
+         throw new RuntimeException(
+               "Instruction Contribution Not Found for instruction type: "
+                     + instructionType);
+      }
+
+      return locator.getService(contribution.getServiceId(),
+            InstructionProcessor.class);
+   }
+
+}
+
+The getBlock method gets the contributed block from the page and getProcessor gets the contributed processor.
+
+So all the sub-departments have to do is create a page containing their contributed blocks
+这样每个子部门创建只含有自己block的页面。
+
+<t:container xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+   <t:block t:id='myFirstBlock'></t:block>
+   ...
+</t:container>
+
+with a page
+
+public class MyContributedPage {
+}
+
+and then make contributions to the InstructionSource service.
+
+public class DebitCardModule {
+   @Contribute(InstructionSource.class)
+   public void contributeInstructionSource(
+         MappedConfiguration<String, InstructionContribution> contribution) {
+      contribution.add("myFirstBlock", new InstructionContribution(
+            "debitCardModule/instructionblocks", "myFirstBlock", null));
+   }
+}

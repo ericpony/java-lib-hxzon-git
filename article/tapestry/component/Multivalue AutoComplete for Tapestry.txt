@@ -1,0 +1,227 @@
+﻿Multivalue AutoComplete for Tapestry
+
+http://tawus.wordpress.com/2011/12/28/multivalue-autocomplete-for-tapestry/
+
+I have been very experimenting with tapestry-jquery plugin and it is great to finally go back to jquery. Not only using jquery is very easy but it also comes with a lot of plugins.
+
+There are some improvements that I think can be added to the tapestry-jquery integration but don’t get time to discuss them in the mailing list.
+
+Recently I wanted to use a multivalue autocomplete something on the lines of https://github.com/argoyle/tapestry-tagselect and found a wonderful plugin http://loopj.com/jquery-tokeninput/
+
+So here is a multi-value auto-complete plugin. Is there anything easier than Tapestry ?
+
+@SupportsInformalParameters
+@Import(
+        library = "jquery.tokeninput.js",
+        stylesheet = "token-input.css"
+)
+public class AutoComplete extends AbstractField {
+
+    @Parameter(autoconnect = true, required = true)
+    private List<Object> values;
+
+    @Parameter(required = true)
+    private ValueEncoder encoder;
+
+    @Inject
+    private ComponentResources resources;
+
+    @Inject
+    private JavaScriptSupport javaScriptSupport;
+
+    @Parameter
+    private LabelProvider labelProvider;
+
+    @Inject
+    private FieldValidationSupport fieldValidationSupport;
+
+    @Parameter(defaultPrefix = BindingConstants.VALIDATE)
+    private FieldValidator<Object> validator;
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    LabelProvider defaultLabelProvider() {
+        return new LabelProvider() {
+
+            public String getLabel(Object value) {
+                return value.toString();
+            }
+        };
+    }
+
+    @Inject
+    private Request request;
+
+    @Environmental
+    private ValidationTracker tracker;
+
+    @SuppressWarnings({"unchecked"})
+    @Override
+    protected void processSubmission(String controlName) {
+        String parameterValue = request.getParameter(controlName);
+
+        this.tracker.recordInput(this, parameterValue);
+
+        if (values == null) {
+            values = new ArrayList<Object>();
+        } else {
+            values.clear();
+        }
+
+        for (String value : TapestryInternalUtils.splitAtCommas(parameterValue)) {
+            values.add(encoder.toValue(value));
+        }
+
+        putPropertyNameIntoBeanValidationContext("values");
+
+        if (validator != null) {
+            try {
+                fieldValidationSupport.validate(values, resources, validator);
+            } catch (final ValidationException e) {
+                this.tracker.recordError(this, e.getMessage());
+            }
+        }
+
+        removePropertyNameFromBeanValidationContext();
+    }
+
+    @BeginRender
+    void writeFieldTag(MarkupWriter writer) {
+        writer.element("input",
+                "type", "text",
+                "name", getControlName(),
+                "id", getClientId());
+    }
+
+    @AfterRender
+    void afterRender(MarkupWriter writer) {
+        writer.end();
+
+        JSONObject parameters = getInformalParametersAsJSON();
+
+        loadCurrentValues(parameters);
+
+        javaScriptSupport.addScript("$('#%s').tokenInput('%s', %s);",
+                getClientId(), getCallbackURL(), parameters
+        );
+    }
+
+    private JSONObject getInformalParametersAsJSON() {
+        JSONObject json = new JSONObject();
+
+        for (String param : resources.getInformalParameterNames()) {
+            json.put(param, resources.getInformalParameter(param,
+                    String.class));
+        }
+
+        return json;
+    }
+
+    private void loadCurrentValues(JSONObject parameters) {
+        if (values != null) {
+            parameters.put("prePopulate", toJSON(values));
+        }
+    }
+
+    private String getCallbackURL() {
+        return resources.createEventLink("provideList").toAbsoluteURI();
+    }
+
+    @OnEvent("provideList")
+    JSONArray provideCompletion(@RequestParameter("q") String queryParams) {
+        CaptureResultCallback<List<?>> callback = new CaptureResultCallback<List<?>>();
+
+        boolean wasTriggered = resources.triggerEvent(
+                ExtensionEvents.PROVIDE_COMPLETION,
+                new Object[]{queryParams},
+                callback);
+
+        if (!wasTriggered) {
+            throw new RuntimeException("Event '" + 
+                    ExtensionEvents.PROVIDE_COMPLETION "' must be handled"));
+        }
+
+        return toJSON(callback.getResult());
+    }
+
+    @SuppressWarnings({"unchecked"})
+    private JSONArray toJSON(List<?> list) {
+        JSONArray array = new JSONArray();
+        for (Object value : list) {
+            JSONObject params = new JSONObject();
+            params.put("id", encoder.toClient(value));
+            params.put("name", labelProvider.getLabel(value));
+            array.put(params);
+        }
+
+        return array;
+    }
+
+}
+
+public interface LabelProvider<T> {
+    String getLabel(T value);
+}
+
+public class ExtensionEvents {
+    public static final String PROVIDE_COMPLETION = "provideCompletions";
+}
+
+Usage
+
+<html
+        xmlns:p='tapestry:parameter'
+        xmlns:t='http://tapestry.apache.org/schema/tapestry_5_3.xsd'>
+
+    <t:if test='fruits'>
+        ${fruits}
+    </t:if>
+
+    <form t:type='Form' t:id='Form' action=''>
+        <label t:for='fruit' t:type='Label'/>
+        <input type='text' t:encoder='encoder' t:type='xeric/AutoComplete' t:id='fruit'
+               t:values='fruits'/>
+
+        <br/>
+        <input type='submit' value='submit'/>
+    </form>
+</html>
+
+public class AutoCompleteDemo {
+
+    @Property
+    @Persist
+    private List<Fruit> fruits;
+
+    @Inject
+    private TypeCoercer typeCoercer;
+
+    @OnEvent(EventConstants.ACTIVATE)
+    void activate() {
+        if (fruits == null) {
+            fruits = new ArrayList<Fruit>();
+            fruits.add(Fruit.ORANGE);
+            fruits.add(Fruit.APRICOT);
+        }
+    }
+
+    public ValueEncoder<?> getEncoder() {
+        return new EnumValueEncoder<Fruit>(typeCoercer, Fruit.class);
+    }
+
+    @OnEvent(ExtensionEvents.PROVIDE_COMPLETION)
+    List<Fruit> provideCompletion(String query) {
+        List<Fruit> fruits = new ArrayList<Fruit>();
+
+        for (Fruit fruit : Fruit.values()) {
+            if (fruit.name().toLowerCase().contains(query)) {
+                fruits.add(fruit);
+            }
+        }
+
+        return fruits;
+    }
+}
+
+public enum Fruit {
+    ORANGE, APPLE, BANANA, MANGO, GRAPES, APRICOT
+}

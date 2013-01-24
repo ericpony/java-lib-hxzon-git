@@ -1,0 +1,243 @@
+﻿Tapestry Magic #14: Easy Selection
+学中注释。
+使用注解，属性读取器，ComponentClassTransformWorker来实现一个更方便的select组件。
+
+http://tawus.wordpress.com/2011/06/04/tapestry-magic-14-easy-selection/
+
+Tapestry’s select component is very flexible and this flexibility comes at a small cost. One has to pass a SelectModel and a ValueEncoder as parameters to the Select component. This seems too much work for simple use cases. With the help of class transformations, we can always find shortcuts. In this post, I will mix some of the useful techniques mentioned in the Wiki to make using Select component easier.
+
+Usage
+
+Let us see how Select component will work using this new technique. We annotate the list of items/options with @InjectSelectSupport
+
+public class MyPage {
+
+   //Items for Select
+   @InjectSelectSupport(type=User.class, label="${user} (${address})", index="id")
+   private List<User> users;
+
+   //Value for Select
+   @Property
+   private User user;
+
+   void onActivate(){
+      users = load_values_from_database();
+   }
+}
+
+and in the template, we set model and encoder parameters to the name of the options field with “Support” appended to it.
+在候选列表变量的末尾添加Support后缀。
+
+<form t:type='form'>
+   ...
+
+   <select t:type='select' t:value='user' t:model='usersSupport' t:encoder='usersSupport'>
+   </select>
+
+   ...
+</form>
+
+That is it.
+
+How it works
+
+We first create a generic SelectModel and ValueEncoder.
+
+使用了PropertyAccess属性访问器。
+
+public class SelectSupport<T> extends AbstractSelectModel implements ValueEncoder<T> {
+   private final List<T> items;
+   private Map<String, PropertyAdapter> adapterMap = new HashMap<String, PropertyAdapter>();
+   private String label;
+   private PropertyAdapter indexPropertyAdapter;
+   private TypeCoercer typeCoercer;
+   private final static Pattern PROPERTY_PATTERN = Pattern.compile("\$\{([\w.$]+)\}");
+
+   public SelectSupport(final List<T> items, final String label, 
+         String indexProperty,
+         final Class<?> valueType,
+         final PropertyAccess access, TypeCoercer typeCoercer) {
+      this.items = items;
+      this.label = label;
+      indexPropertyAdapter = access.getAdapter(valueType).getPropertyAdapter(indexProperty);
+      Matcher matcher = PROPERTY_PATTERN.matcher(label);
+      this.typeCoercer = typeCoercer;
+      while (matcher.find()) {
+         adapterMap.put(matcher.group(0),
+               access.getAdapter(valueType).getPropertyAdapter(matcher.group(1)));
+      }
+   }
+
+   public List<OptionGroupModel> getOptionGroups() {
+      return null;
+   }
+
+   public List<OptionModel> getOptions() {
+      final List<OptionModel> options = new ArrayList<OptionModel>();
+
+      if (items != null) {
+         for(T item: items){
+            options.add(new OptionModelImpl(toLabel(item), item));
+         }
+      }
+
+      return options;
+   }
+
+   private String toLabel(Object object) {
+      String label = this.label;
+      for (String key : adapterMap.keySet()) {
+         label = label.replace(key, 
+               adapterMap.get(key).get(object).toString());
+      }
+      return label;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String toClient(T value) {
+      return typeCoercer.coerce(getIndex(value), String.class);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @SuppressWarnings("unchecked")
+   public T toValue(String clientValue) {
+      for(T value: items){
+         if(getIndex(value).equals(typeCoercer.coerce(clientValue, indexPropertyAdapter.getType()))){
+            return value;
+         }
+      }
+      
+      return null;
+   }
+   
+   /**
+    * Gets the index value for a particular item
+    * 
+    * @param value
+    */
+   private Object getIndex(Object value){
+      Object fieldValue = indexPropertyAdapter.get(value);
+      if(fieldValue == null){
+         throw new RuntimeException("Index property cannot be null");
+      }
+      return fieldValue;
+   }
+}
+
+It takes a list of items, a label expression, and an index property name as parameters and implements a SelectModel and ValueEncoder interface. The label expression can contain any combination of text and property names with property names enclosed in ${}. It uses PropertyAccess service to get PropertyAdapter for each property used in label expression and then uses the PropertyAdapter to read values of these properties. TypeCoercer service is used for conversion between the unique index value of an item and String value passed as value attribute to <option> tag.
+
+
+We can now use SelectSupport in our component/page as
+
+   @Inject
+   private PropertyAccess propertyAccess;
+
+   @Inject
+   private TypeCoercer typeCoercer;
+
+   private SelectSupport _selectSupport;
+
+   public SelectSupport getUsersSupport(){
+      if(_selectSupport == null){
+         _selectSupport = new SelectSupport(users,
+                              annotation.label(), annotation.index(), annotation.type(),
+                              propertyAccess, typeCoercer);
+      }
+      return _selectSupport;
+   }
+
+or we can create a class transformation. For that we will require an annotation
+
+使用注解的方式。
+
+public @interface InjectSelectSupport {
+   /**
+    * Expression to be used as label for select model. This takes an
+    * expression as a parameter. The expression can be any property 
+    * value with <code>${}</code>. 
+    */
+   String label();
+   
+   /**
+    * Property to be used as index. It's value must be unique for each
+    * item 
+    */
+   String index();
+   
+   /**
+    * This suffix is appended to the generated method name.
+    * Default is <code>Support</code>
+    */
+   String methodSuffix() default "Support";
+
+   /**
+    * Item type.
+    */
+   Class<?> type();
+   
+}
+
+The class transformation searches for any field marked with @InjectSelectSupport and generates/introduces a getter method for SelectSupport in the component/page which can then used to set the model and encoder parameters of a Select component.
+
+public class InjectSelectSupportWorker implements ComponentClassTransformWorker {
+
+   private PropertyAccess propertyAccess;
+   private TypeCoercer typeCoercer;
+
+   public InjectSelectSupportWorker(PropertyAccess propertyAccess, TypeCoercer typeCoercer) {
+      this.propertyAccess = propertyAccess;
+      this.typeCoercer = typeCoercer;
+   }
+
+   public void transform(ClassTransformation transform, MutableComponentModel model) {
+      //获得含有特定注解的字段。
+      for (final TransformField field : transform.matchFieldsWithAnnotation(InjectSelectSupport.class)) {
+         //获得该字段上的注解。
+         final InjectSelectSupport annotation = field.getAnnotation(InjectSelectSupport.class);
+
+         String selectSupportPropertyName = field.getName() + annotation.methodSuffix();
+         String methodName = "get" + InternalUtils.capitalize(selectSupportPropertyName);
+
+         TransformMethodSignature sig = new TransformMethodSignature(Modifier.PUBLIC,
+               SelectSupport.class.getName(), methodName, null, null);
+
+         final TransformMethod method = transform.getOrCreateMethod(sig);
+
+         // Add a field to cache the result
+         final TransformField selectSupportField = transform.createField(Modifier.PRIVATE,
+               SelectSupport.class.getName(), "_$" + selectSupportPropertyName);
+         final FieldAccess selectSupportFieldAccess = selectSupportField.getAccess();
+
+         final FieldAccess access = field.getAccess();
+         //添加组件方法“劝告”
+         method.addAdvice(new ComponentMethodAdvice() {
+
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            public void advise(ComponentMethodInvocation invocation) {
+               Object instance = invocation.getInstance();
+               if (selectSupportFieldAccess.read(instance) == null) {
+                  selectSupportFieldAccess.write(
+                        instance,
+                        new SelectSupport((List) access.read(invocation.getInstance()),
+                              annotation.label(), annotation.index(), annotation.type(),
+                              propertyAccess, typeCoercer));
+               }
+               invocation.overrideResult(selectSupportFieldAccess.read(instance));
+            }
+
+         });
+      }
+   }
+
+Finally, the class transformation is contributed to theComponentClassTransformWorker chain
+
+注册注解处理器。
+
+   @Contribute(ComponentClassTransformWorker.class)
+   public static void provideWorkers(OrderedConfiguration<ComponentClassTransformWorker> workers) {
+      workers.addInstance("InjectSelectSupport", InjectSelectSupportWorker.class);
+   }

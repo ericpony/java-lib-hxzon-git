@@ -1,0 +1,159 @@
+﻿Integrating Bootstrap JS with Tapestry5
+
+http://tawus.wordpress.com/2011/10/28/integrating-bootstrap-js-with-tapestry5/
+
+
+Adding Bootstrap JS Twispy to your template is very easy
+
+<a href='#' class='twipsy' data-title='My Twipsy'>Hover over me</a>
+<script type='text/javascript'>
+   $('.twipsy').twipsy();
+</a>
+
+and you can always use property-expressions to display some dynamic data. But what if you want to have block rendered as title. This was exactly what I was trying to accomplish in one of my recent projects. (We are using tapestry-jquery for jquery support in that project.)
+
+This involves a javascript trick and ofcourse a tapestry mixin. Bootstrap allows you to change the title dynamically by setting title property to a function. So if we are able to render the block in a hidden element, we can always use this function to display it
+
+   $('#myTwipsy').twipsy({title:function(){
+     return $('myhiddenblock').html();
+   });
+
+Before we render the block we need to hide it by wrapping it in a hidden div. The key is what Thiago always says
+
+Tapestry only renders RenderCommands
+
+We add three RenderCommands to the RenderQueue. The first one and last one to wrap the block in a hidden div and the middle one to render the title block. The problem with RenderQueue is that it is a Stack(not a Queue). To “negate this stack effect”, we create a wrapper around it.
+
+public class CompositeRenderCommand implements RenderCommand {
+    private Stack commands = CollectionFactory.newStack();
+
+    public void add(RenderCommand command){
+        commands.push(command);
+    }
+
+    public void render(MarkupWriter writer, RenderQueue queue) {
+        while(!commands.isEmpty()){
+            queue.push(commands.pop());
+        }
+    }
+}
+It adds the commands to a stack and the pushes it on the queue(which is a stack ). Sometimes two wrongs do make a right 
+
+As this functionality will be better served with a mixin so here it is
+
+@Import(library = {"bootstrap-twipsy.js", "twipsy.js"})
+public class Twipsy {
+
+    @Parameter(required = true, allowNull = false, defaultPrefix = BindingConstants.BLOCK)
+    private Block title;
+
+    @Inject
+    private JavaScriptSupport javaScriptSupport;
+
+    @Inject
+    private ComponentResources resources;
+
+    @Symbol(BootstrapSymbolConstants.BOOTSTRAP_PREFIX)
+    @Inject
+    private String bootstrapPrefix;
+
+    @InjectContainer
+    private ClientElement container;
+
+    public String getTitleId() {
+        return container.getClientId() + "-title";
+    }
+
+    @AfterRender
+    RenderCommand render() {
+        addJavaScript();
+
+        CompositeRenderCommand commands = new CompositeRenderCommand();
+
+        commands.add(new RenderCommand() {
+            public void render(MarkupWriter writer, RenderQueue queue) {
+                writeTitleBeginTag(writer);
+            }
+        });
+
+        commands.add((RenderCommand) title);
+
+        commands.add(new RenderCommand() {
+            public void render(MarkupWriter writer, RenderQueue queue) {
+                writeTitleEndTag(writer);
+            }
+        });
+
+        return commands;
+    }
+
+    private void writeTitleBeginTag(MarkupWriter writer) {
+        writer.element("div",
+            "style", "display:none",
+            "id", getTitleId());
+    }
+
+    private void writeTitleEndTag(MarkupWriter writer) {
+        writer.end();
+    }
+
+    private void addJavaScript() {
+        JSONObject arguments = BootstrapUtils.convertInformalParametersToJSON(resources,
+            bootstrapPrefix);
+
+        JSONObject mainParams = new JSONObject();
+        mainParams.put("arguments", arguments);
+        mainParams.put("id", container.getClientId());
+        mainParams.put("title", getTitleId());
+        javaScriptSupport.addInitializerCall("bootstrapTwipsy", mainParams);
+    }
+
+}
+
+public class BootstrapUtils {
+
+    public static JSONObject convertInformalParametersToJSON(ComponentResources resources,
+        String prefix) {
+        JSONObject json = new JSONObject();
+
+        for(String parameter : resources.getInformalParameterNames()) {
+            if(parameter.startsWith(prefix)) {
+                json.put(parameter.substring(prefix.length()),
+                    resources.getInformalParameter
+                        (parameter,
+                            String.class));
+            }
+        }
+
+        return json;
+    }
+
+}
+Note we use the informal parameters prefixed with bootstrapPrefix(‘bp-’) as arguments to the twipsy function call.
+
+We add a simple javascript to accomplish our javascript part of the trick
+
+(function($){
+  $.extend(Tapestry.Initializer, {
+    bootstrapTwipsy: function(specs){
+      var element = $("#" + specs.id);
+      var title = $("#" + specs.title);
+
+      $.extend(specs.arguments, {
+        title: function(){
+          return title.html();
+        },
+        html:true
+      });
+
+      element.twipsy(specs.arguments);
+    }
+  });
+})(jQuery);
+That’s it. A simple usage will be
+
+        This is some content which contains twipsy
+            <a>Content</a>
+
+
+        Some Tooltip <strong>Demo</strong> with a lot of <em>HTML Formatting!!</em>

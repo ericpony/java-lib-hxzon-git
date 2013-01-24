@@ -1,0 +1,294 @@
+﻿Tapestry5 事件分派机制
+学中修订部分字眼。
+
+http://blog.csdn.net/mindhawk/article/details/4990990
+
+tapestry源码品读
+
+
+Tapestry 5 （本文针对5.1这个版本）改变了事件处理机制，不再需要将事件绑定到某个组件，而是在事件监听函数处定义需要监听什么样的事件。比如说产生事件的组件或者什么样类型的组件。
+
+ 
+
+网上对于Tapestry 5事件的命名，传递等的文章有很多，Tapestry的官方网站上也很详细，我就不再鳌述这些内容了。本文讲一点深入的处理机制，也就是Tapestry 5 如何实际的将一个事件传递到某个方法。下面我们从事件处理机制，流程分析，动态参数解决方法几个方面进行讨论。
+
+ 
+
+1. 事件处理机制
+
+ 
+
+Tapestry采用了一种自底向上的事件搜索机制，即从发出事件的组件开始，逐层往上搜索事件处理函数，直到某个函数宣布事件失效为止。对于Tapestry这种利用模板构建的静态组件树而言，自底向上的搜索并不是一件复杂的事情，所以本文并不详细讨论这个问题。而将注意力集中在单个组件是如何处理事件的机制上。
+
+ 
+
+为了能让组件能接收到事件，Tapestry框架首先会为每个组件生成一个子类，这个子类是实现了org.apache.tapestry5.runtime.Component接口的。在这个接口里定义了一个方法 “boolean dispatchComponentEvent(ComponentEvent event)“。也就是说实际上当有事件发生时，Tapestry框架就会调用组件的这一个接口来响应事件。（有关http请求是如何最终转变化成组件事件请求的流程可以参见我另一篇博文《解读Tapestry5.1——请求调用链》）。
+
+ 
+
+我们先看一下“ComponentEvent ”的结构
+
+
+package org.apache.tapestry5.runtime;  
+import org.apache.tapestry5.ComponentResourcesCommon;  
+import org.apache.tapestry5.EventContext;  
+/** 
+ * 事件类，可能产生于程序逻辑，也可能由于客户端交互请求产生(比如客户端产生的一个GET或者POST请求)。 
+ * 
+ * @see ComponentResourcesCommon#triggerEvent(String, Object[], org.apache.tapestry5.ComponentEventCallback) 
+ * @see org.apache.tapestry5.ComponentEventCallback 
+ */  
+public interface ComponentEvent extends Event  
+{  
+    /** 
+     * 如果该事件与提供的信息匹配则返回 true 
+     * 
+     * @param eventType      事件类型(大小写不敏感) 
+     * @param componentId    待匹配的组件（大小写敏感），可为空 
+     * @param parameterCount context中数据的最小个数 
+     * @return 如果匹配返回true 
+     */  
+    boolean matches(String eventType, String componentId, int parameterCount);  
+    /** 
+     * 将一个特定Context值转换为另一个指定类型的值。Context是一个对象数组，一般来说是一个字符串数字，被作为路径之外的信息编码进URL中。 
+     * 
+     * @param index           context值的位置 
+     * @param desiredTypeName 期望的数据类型 
+     * @return 转换后的值（如果期望的数据类型是基本数据类型，则为其包装类） 
+     */  
+    Object coerceContext(int index, String desiredTypeName);  
+    /** 
+     * 以数组的形式返回其持有的{@link org.apache.tapestry5.EventContext} (可能为空) . 
+     */  
+    Object[] getContext();  
+    /** 
+     * 返回其持有的event context. 
+     */  
+    EventContext getEventContext();  
+}  
+
+ 
+
+ 
+
+这个接口继承了Event接口
+
+
+package org.apache.tapestry5.runtime;  
+/** 
+ * 与事件处理相关的核心方法。事件通过调用用户代码并截获其返回数据去获取用户代码的数据。返回数据如果非空，将会传递给{@link 
+ * org.apache.tapestry5.ComponentEventCallback}。子接口 {@link ComponentEvent} 继承了这个接口，并提供了访问context,  
+ * 或者其它一些与事件相关的数据, 而且能和其它一些运行时的数据匹配，找到事件处理函数。 
+ */  
+public interface Event  
+{  
+    /** 
+     * 如果事件已经失效( 表示某个事件处理函数返回的值已经被框架接受，该事件不应再度传播). 
+     * 
+     * @return 如果不应再度传播这个事件，则返回true 
+     */  
+    boolean isAborted();  
+    /** 
+     * 用于定位什么样的事件，被什么样的组件的方法接受了(用于产生异常发生时的报告). 
+     * 
+     * @param methodDescription 描述一个函数的位置信息(如：文件名, 方法名 和行号) 
+     */  
+    void setMethodDescription(String methodDescription);  
+    /** 
+     * 保存某个事件的结果。保存一个非空的数据可能会使事件失效 (决定权在 
+     * {@link org.apache.tapestry5.ComponentEventCallback}). 
+     * 
+     * @param result 某个方法被调用后返回的结果 
+     * @return 如果结果使事件失效返回true 
+     */  
+    boolean storeResult(Object result);  
+}  
+
+ 
+
+上述代码，我已将注释全部翻译为中文，看过相信会对事件处理的大体架构有所了解，下面我给出一个简单的页面Java类，以及框架为其生成的事件分派函数。
+
+@SuppressWarnings("unused")  
+public class TUpdater {  
+    @InjectComponent  
+    private Zone zone;  
+    @InjectComponent  
+    private Zone zone2;  
+    @OnEvent(component = "tzoneupdater")  
+    Object onActionFromZone(String context, JSONObject json) {  
+        return zone.getBody();  
+    }  
+    @OnEvent(component = "tzoneupdater")  
+    Object onActionFromZone(String context) {  
+        return zone.getBody();  
+    }  
+    @OnEvent(component = "tactionupdater")  
+    Object onActionFromActionlink(String context, String msg1, String msg2) {  
+        return true;  
+    }  
+    @OnEvent(component = "tactionupdater")  
+    Object onActionFromActionlink(String context, JSONArray array) {  
+        return true;  
+    }  
+    @OnEvent(component = "form", value = "submit")  
+    Object onActionFromSubmit(Object... objects) {  
+        return zone2.getBody();  
+    }  
+    @OnEvent(component = "tjsonrequester", value = TDojoEventConstants.JSONRequest)  
+    public Object onJSONRequest(JSONObject param) {  
+        return new JSONArray(param.get("name"), param.get("age"));  
+    }  
+}  
+
+ 
+
+为了突出事件处理，所有与实践无关的代码均被我删除，只保留了事件处理函数。OnEvent注解信息有一个默认的value值，为action。另外，代码中用到了一些JSONObject的数据，这些是我在应用中扩展Tapestry后支持的，不会影响到阅读，但不能直接模仿着写。有关这方面的支持，后续我会放到我的一个dojo与tapestry集成的开源项目中去http://tdojo.sourceforge.net/ ，但是目前还处于试验阶段。敬请关注！
+
+ 
+
+生成的事件分派函数如下：
+
+public boolean dispatchComponentEvent(ComponentEvent $1)  
+{  
+  //变量$_  用于记录该组件是否处理了这个事件  
+  if ($1.isAborted()) return $_;  
+  try  
+  {  
+    if ($1.matches("action", "tactionupdater", 3))  
+    {  
+      $_ = true;  
+      $1.setMethodDescription("/*包名被省略*/.TUpdater.onActionFromActionlink(java.lang.String, java.lang.String, java.lang.String) (at TUpdater.java:55)");  
+      onActionFromActionlink((java.lang.String)$1.coerceContext(0, "java.lang.String"), (java.lang.String)$1.coerceContext(1, "java.lang.String"), (java.lang.String)$1.coerceContext(2, "java.lang.String"));  
+    }  
+    if ($1.matches("action", "tactionupdater", 2))  
+    {  
+      $_ = true;  
+      $1.setMethodDescription("/*包名被省略*/.TUpdater.onActionFromActionlink(java.lang.String, org.apache.tapestry5.json.JSONArray) (at TUpdater.java:60)");  
+      onActionFromActionlink((java.lang.String)$1.coerceContext(0, "java.lang.String"), (org.apache.tapestry5.json.JSONArray)$1.coerceContext(1, "org.apache.tapestry5.json.JSONArray"));  
+    }  
+    if ($1.matches("submit", "form", -1))  
+    {  
+      $_ = true;  
+      $1.setMethodDescription("/*包名被省略*/.TUpdater.onActionFromSubmit(java.lang.Object[]) (at TUpdater.java:65)");  
+      //($w) 表示如果需要则将原始类型进行包装  
+      if ($1.storeResult(($w)onActionFromSubmit($1.getContext()))) return true;  
+    }  
+    if ($1.matches("action", "tzoneupdater", 2))  
+    {  
+      $_ = true;  
+      $1.setMethodDescription("/*包名被省略*/.TUpdater.onActionFromZone(java.lang.String, org.apache.tapestry5.json.JSONObject) (at TUpdater.java:43)");  
+      if ($1.storeResult(($w)onActionFromZone((java.lang.String)$1.coerceContext(0, "java.lang.String"), (org.apache.tapestry5.json.JSONObject)$1.coerceContext(1, "org.apache.tapestry5.json.JSONObject")))) return true;  
+    }  
+    if ($1.matches("action", "tzoneupdater", 1))  
+    {  
+      $_ = true;  
+      $1.setMethodDescription("/*包名被省略*/.TUpdater.onActionFromZone(java.lang.String) (at TUpdater.java:49)");  
+      if ($1.storeResult(($w)onActionFromZone((java.lang.String)$1.coerceContext(0, "java.lang.String")))) return true;  
+    }  
+    if ($1.matches("JSONRequest", "tjsonrequester", 1))  
+    {  
+      $_ = true;  
+      $1.setMethodDescription("/*包名被省略*/.TUpdater.onJSONRequest(org.apache.tapestry5.json.JSONObject) (at TUpdater.java:84)");  
+      if ($1.storeResult(($w) onJSONRequest((org.apache.tapestry5.json.JSONObject)$1.coerceContext(0, "org.apache.tapestry5.json.JSONObject")))) return true;  
+    }  
+  }  
+  catch (RuntimeException ex) { throw ex; }  
+  catch (Exception ex) { throw new RuntimeException(ex); }   
+}  
+
+ 
+
+2. 流程分析
+
+ 
+
+从生成的代码可以清晰的看出，组件会逐个与事件处理函数进行匹配。如果某个函数与当前事件匹配，则将数据转换为其期望的类型，作为参数传递给事件响应函数。如果事件处理函数有返回值，框架则会保存下来做处理，一旦事件失效，则不会继续往下查找是否有还存在匹配的处理函数。对于没有返回值的处理函数，则可能有多个函数会被调用到。
+
+ 
+
+Tapestry默认的会按照context中的参数个数搜索响应的事件处理函数（并不是严格的个数匹配）。有一点是你必须注意的，对于那些没有返回值的响应函数，或者是返回值为空时，如果你（这里去掉了个“不”字，原文有误？）希望这个函数执行完后不会再有其它响应函数被调用的话，那么你最好是返回一个true来显示的告诉框架，事件该失效了。否则，在存在多个同一事件的响应函数时，可能会产生让你不知所谓的异常。
+
+ 
+
+比如在我给出的例子中，如果响应组件tactionupdater的带有3个参数的事件响应函数不返回true，那么带有两个参数的事件响应函数也会被调用到，但是由于它们之间参数类型区别明显，所以会报出一个类型不能转换的异常（除了符合JSON格式的String，其它的都不能转换为JSON数据，而带两个参数的处理函数第二个参数是JSONArray类型的数据）。
+
+ 
+
+这是因为Tapestry在匹配响应函数，采用了一种模糊的事件匹配算法。只要context中的参数个数大于事件处理函数的个数，同时产生事件的组件id与事件监听的组件id匹配或者监听id为空，那么Tapestry就会认为该处理函数监听了这个事件。
+
+具体匹配策略如下代码所示：
+
+public boolean matches(String eventType, String componentId, int parameterCount)  
+    {  
+        return this.eventType.equalsIgnoreCase(  
+                eventType) && context.getCount() >= parameterCount && (originatingComponentId.equalsIgnoreCase(  
+                componentId) || componentId.equals(""));  
+    }  
+
+ 
+
+3. 动态参数解决方法
+
+ 
+
+从上述流程分析可以看出，静态指定参数会受到搜索策略的一些影响，当一个事件参数变化频繁时，事件处理机制并不一定能找到你所期望的处理函数。这种情况下，你很可能希望能在一个函数里面接受这些事件怎么处理。
+
+一个办法是将事件处理函数写成动态参数的形式：
+
+@OnEvent  
+Object onAction(Object... context){  
+}  
+
+这是一个比较简单，也比较容易理解的形式，但是这种方法有一个弊端，传入的参数很可能是未经转型的。也就意味值你需要自己转换所有的数据类型。
+
+ 
+
+另一种更好的方式是使用一个特殊的参数类型org.apache.tapestry5.EventContext，使用方式如下：
+
+@OnEvent  
+Object onAction(EventContext context) {  
+}  
+
+这是一个Tapstry支持的参数机制，通过EventContext可以自动的完成类型转换，其接口如下：
+
+package org.apache.tapestry5;  
+/** 
+ * 一组将传递给事件处理函数的参数，如果需要可以支持参数类型的转换。 
+ * 
+ * @see org.apache.tapestry5.ioc.services.TypeCoercer 
+ * @see org.apache.tapestry5.ValueEncoder 
+ */  
+public interface EventContext  
+{  
+    /** 
+     * 返回可以提取出的参数个数. 
+     */  
+    int getCount();  
+    /** 
+     *使用特定的参数类型获取指定位置上的参数. 
+     * 
+     * @param desiredType 期望的类型 
+     * @param index       指定待提取的参数位置 
+     * @return 转换后的数据 
+     * @throws 如果数组越界，或者不能找到相应的数据转换器，则会抛出RuntimeException 
+     */  
+    <T> T get(Class<T> desiredType, int index);  
+}  
+
+但是这一方法也有一定的局限，因为它也仅能解决你知道参数类型时的转型问题，而不能自动的做到像函数重载一样的参数类型匹配。原则上还是以参数个数为主要参考值。（当然也不是所有类型都可以互换的，要Tapestry的转型机制支持才行，必要的情况下你可以扩展这个机制）
+
+ 
+
+所以说，Tapestry事件处理机制，尚且只能支持到参数个数变化的程度，并不能根据事件处理函数的重载性质搜索到严格匹配的事件处理函数。这一点是你在使用Tapestry5时必须注意的。如果说你必须使用context参数传递变化的个数和类型的参数，最好传递一些额外的信息来辅助自己做数据类型的转换。不过要注意的是，虽然参数化设计在对象设计里面是很优美的一种方法，但在Web开发里面，却有很多你不得不妥协的地方，比如url长度对于传递参数大小的限制，比如无状态的交互特性等，都使得你无法传递复杂的参数。
+
+ 
+
+一个总的原则，使用context传递都最好是少量简单类型的数据。如果有复杂的数据参数传递，最好使用Tapestry的其它机制，比如form的提交，或者直接调用目标页面的某个方法传递参数等。
+
+ 
+
+ 
+
+以上是Tapestry事件处理机制的一个大体概述，有事件处理相关的另一个机制就是事件处理函数返回结果的处理机制。
+
+这部分内容请见我的另一篇博文《Tapestry5 事件处理函数返回结果处理策略 》。

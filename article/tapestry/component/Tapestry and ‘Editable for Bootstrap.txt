@@ -1,0 +1,211 @@
+﻿Tapestry and ‘Editable for Bootstrap
+
+http://tawus.wordpress.com/2012/11/25/tapestry-and-editable-for-bootstrap/
+
+Twitter Bootstrap is a relief to programmers like me who were never good at web-designing. It has a nice javascript library and there are already modules to integrate twitter-bootstrap with tapestry. There are a lot of good add ons coming up for bootstrap and one of my favourites is the Editable for Bootstrap. Every time I see such a library I wait for a oppurtunity to integrate it with Tapestry.
+
+To use this library you don’t have to do much. Even the ajax part is handled for you. So you just have to handle the server-side stuff and return success status or a failure message. As there are a few of these components, we can start with a base component and then extend it for each component.
+
+@SupportsInformalParameters
+@Import(
+    library = {
+        "classpath:bootstrap-editable/js/bootstrap-editable.js",
+        "classpath:pines/jquery.pnotify.js"
+    },
+    stylesheet = {
+        "classpath:bootstrap-editable/css/bootstrap-editable.css",
+        "classpath:pines/jquery.pnotify.default.css"
+    }
+)
+public abstract class AbstractBootstrapEditable implements ClientElement {
+
+    @Parameter(value = "prop:componentResources.id", defaultPrefix = BindingConstants.LITERAL, allowNull = false)
+    private String client;
+
+    @Parameter(autoconnect = true, required = true)
+    private Object value;
+
+    @Parameter
+    private Object[] context;
+
+    @Parameter
+    private boolean disabled;
+
+    private String assignedClientId;
+
+    @Inject
+    private JavaScriptSupport javaScriptSupport;
+
+    @Inject
+    private ComponentResources resources;
+
+    @Inject
+    private Request request;
+
+    @Inject
+    private TypeCoercer typeCoercer;
+
+    @BeginRender
+    void begin(MarkupWriter writer) {
+        assignedClientId = javaScriptSupport.allocateClientId(resources);
+
+        if (disabled) {
+            writer.element("span");
+        } else {
+            Element element = writer.element("span",
+                "id", getClientId(),
+                "data-name", getClientId(),
+                "data-url", getPostbackLink());
+
+            contributeDataParams(element);
+        }
+
+        resources.renderInformalParameters(writer);
+    }
+
+    protected void contributeDataParams(Element element) {
+
+    }
+
+    @AfterRender
+    void after(MarkupWriter writer) {
+        writer.end();
+
+        if (!disabled) {
+            javaScriptSupport.addScript(
+                "jQuery('#%s').editable({" +
+                    "success:function(data){ " +
+                    "if(!data.success){return data.msg; }else return null;}" +
+                    "});",
+                getClientId());
+        }
+    }
+
+    private String getPostbackLink() {
+        return resources.createEventLink("postback", context).toAbsoluteURI();
+    }
+
+    @SuppressWarnings("unchecked")
+    @OnEvent("postback")
+    Object submit(@RequestParameter("value") String value, EventContext context) {
+        this.value = toValue(value);
+        CaptureResultCallback<String> callback = new CaptureResultCallback<String>();
+        boolean handled = resources.triggerContextEvent(EventConstants.SUBMIT, context, callback);
+
+        JSONObject result = new JSONObject();
+
+        if (handled) {
+            String response = callback.getResult();
+            if (response != null) {
+                result.put("success", false);
+                result.put("msg", response);
+                return result;
+            }
+        }
+
+        return result.put("success", true);
+    }
+
+    protected abstract Object toValue(String value);
+
+    @Override
+    public String getClientId() {
+        return assignedClientId;
+    }
+}
+
+
+The data-url is set to the server-side callback and will be called for updation. The callback delegates the updation to the SUBMIT event along with the context. The value is passed to the parameter of the same name.
+
+A text field will be as simple as
+
+public class Text extends AbstractBootstrapEditable {
+
+    @Override
+    protected void contributeDataParams(Element element){
+        element.attribute("data-type", "text");
+    }
+
+    @Override
+    protected Object toValue(String value) {
+        return value;
+    }
+
+}
+and a textarea field will be
+
+public class TextArea extends AbstractBootstrapEditable {
+
+    @Override
+    protected void contributeDataParams(Element element) {
+        element.attribute("data-type", "textarea");
+    }
+
+    @Override
+    protected Object toValue(String value) {
+        return value;
+    }
+
+}
+
+Select will be a bit more code as you will need a SelectModel and a ValueEncoder
+
+public class Select extends AbstractBootstrapEditable {
+
+    @Parameter(required = true, allowNull = false)
+    private SelectModel model;
+
+    @Parameter(required = true, allowNull = false)
+    private ValueEncoder encoder;
+
+    @Inject
+    private ComponentResources resources;
+
+    @Inject
+    private ComponentDefaultProvider defaultProvider;
+
+    @SuppressWarnings("unchecked")
+    ValueEncoder defaultEncoder() {
+        return defaultProvider.defaultValueEncoder("value", resources);
+    }
+
+    @SuppressWarnings("unchecked")
+    SelectModel defaultModel() {
+        Class valueType = resources.getBoundType("value");
+
+        if (valueType == null)
+            return null;
+
+        if (Enum.class.isAssignableFrom(valueType))
+            return new EnumSelectModel(valueType, resources.getContainerMessages());
+
+        return null;
+    }
+
+    @Override
+    protected void contributeDataParams(Element element) {
+        element.attribute("data-type", "select");
+        element.attribute("data-source", getSource());
+    }
+
+    @SuppressWarnings("unchecked")
+    public String getSource() {
+        JSONObject source = new JSONObject();
+
+        for (OptionModel option : model.getOptions()) {
+            source.put(encoder.toClient(option.getValue()), option.getLabel());
+        }
+
+        return source.toCompactString();
+    }
+
+    @Override
+    protected Object toValue(String value) {
+        return encoder.toValue(value);
+    }
+
+}
+
+Usage
+
+Just implement the onSubmit() event and return null for success and a failure message in case of a failure.. That is all!

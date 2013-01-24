@@ -1,0 +1,219 @@
+﻿Tapestry Magic #5: Advising Services
+学中注释。
+使用注解和MethodAdvice完成事务管理。
+
+http://tawus.wordpress.com/2011/04/23/tapestry-magic-5-advising-services/
+
+
+Tapestry-ioc gives you the power to advise services and in this post I will try to show how it can be done using an example of transaction advice. In tapestry-hibernate module we have a @CommitAfter annotation for transaction management. What if we could have something like a spring @Transactional which could be used to annotate service methods ? This example is about a simple support for that annotation.
+
+We start with the annotation itself.
+
+事务管理注解定义：
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
+public @interface Transactional {
+   Propagation propagation() default Propagation.REQUIRED;
+}
+
+The transaction propagation type is defined as an annotation
+
+public enum Propagation {
+   REQUIRED, SUPPORTS, NEVER, NESTED, MANDATORY
+}
+
+We need a transaction service to do the real stuff. This service will have different implementations for jdbc, hibernate, jpa etc. We define the interface
+
+public interface TransactionService {
+   boolean beginIfNotPresent();
+   void begin();
+   void commit();
+   void rollback();
+   boolean isWithinTransaction();
+}
+beginIfNotPresent() method begins a transaction only if there is no current transaction and returns true if it creates a new transaction. begin() creates a new transaction. commit() commits the last transaction. rollback() rollbacks last transaction and isWithinTransaction() returns true if there is a current transaction.
+
+We create an advisor service which will be used for advising.
+
+public interface TransactionAdvisor {
+   void addTransactionAdvice(MethodAdviceReceiver methodAdviceReceiver);
+}
+and its implementation
+事务注解处理器：
+public class TransactionAdvisorImpl implements TransactionAdvisor {
+   private TransactionService service;
+
+   public TransactionAdvisorImpl(TransactionService service){
+      this.service = service;
+   }
+
+   public void addTransactionAdvice(final MethodAdviceReceiver receiver) {
+      for (Method method : receiver.getInterface().getMethods()) {
+         Transactional transactional = method
+               .getAnnotation(Transactional.class);
+
+         if (transactional != null) {
+            adviceMethod(transactional.propagation(), method, receiver);
+         }
+      }
+   }
+   
+   private void adviceMethod(final Propagation propagation, Method method,
+         MethodAdviceReceiver receiver) {
+
+      switch (propagation) {
+      case REQUIRED:
+         receiver.adviseMethod(method, new RequiredTransactionAdvice(service));
+         break;
+
+      case MANDATORY:
+         receiver.adviseMethod(method, new MandatoryTransactionAdvice(service));
+         break;
+
+      case NESTED:
+         receiver.adviseMethod(method, new NestedTransactionAdvice(service));
+         break;
+
+      case NEVER:
+         receiver.adviseMethod(method, new NeverTransactionAdvice(service));
+         break;
+
+      case SUPPORTS:
+         break;
+      }
+
+   }
+}
+
+We loop over all the public methods, check for the @Transactional annotation and based on the propagation type add proper advice.
+
+The RequiredTransactionAdvice is for the case when new transaction has to be started only if there is no current transaction.
+
+public class RequiredTransactionAdvice implements
+  MethodAdvice {
+   private TransactionService service;
+
+   public RequiredTransactionAdvice(TransactionService service) {
+      this.service = service;
+   }
+
+   public void advise(Invocation invocation) {
+      boolean isNew = service.beginIfNotPresent();
+      if(!isNew){
+         invocation.proceed();
+         return;
+      }
+
+      try{
+         invocation.proceed();
+         service.commit();
+      }catch(Exception ex){
+         service.rollback();
+         throw new RuntimeException(ex);
+      }
+   }
+}
+beginIfNotPresent begins a transaction only if there is no current transaction and returns true if it creates a new transaction. If there is already a transaction we allow the method to proceed otherwise we surround the invocation in a try-catch block. If the invocation does not throw any exception we commit the transaction otherwise we rollback.
+
+The NestedTransactionAdvice is for the case when new transaction has to be started within the existing transaction. Database has to support nested transactions for this to work.
+
+public class NestedTransactionAdvice implements MethodAdvice {
+
+   private TransactionService service;
+
+   public NestedTransactionAdvice(TransactionService service) {
+      this.service = service;
+   }
+
+   public void advise(Invocation invocation) {
+      try{
+         service.begin();
+         invocation.proceed();
+         service.commit();
+      }catch(Exception ex){
+         service.rollback();
+         throw new RuntimeException(ex);
+      }
+   }
+}
+
+The MandatoryTransactionAdvice is for the case when there must be a transaction already present for the method to proceed.
+
+public class MandatoryTransactionAdvice implements
+   MethodAdvice {
+   private TransactionService service;
+
+   public MandatoryTransactionAdvice(TransactionService service) {
+      this.service = service;
+   }
+
+   public void advise(Invocation invocation) {
+      if(!service.isWithinTransaction()){
+         throw new RuntimeException("Must be within a transaction");
+      }
+      invocation.proceed();
+   }
+}
+NeverTransactionAdvice is for the case when there should be no current transaction for the method to proceed
+
+public class NeverTransactionAdvice implements MethodAdvice {
+
+   private TransactionService service;
+
+   public NeverTransactionAdvice(TransactionService service) {
+      this.service = service;
+   }
+
+   public void advise(Invocation invocation) {
+      if(service.isWithinTransaction(factoryID)){
+         throw new RuntimeException("Cannot proceed within a transaction");
+      }
+      invocation.proceed();
+   }
+}
+Finally, we apply these advices to the services by using the @Match annotation in the Module class.
+
+   @Match( { "DatabaseService" })
+   public static void adviseTransaction(TransactionAdvisor transactionAdvisor,
+         MethodAdviceReceiver receiver) {
+      transactionAdvisor.addTransactionAdvice(receiver);
+   }
+Finally what remains is the TransactionService implementation itself. For hibernate it will be
+
+使用hibernate实现事务管理：
+public class HibernateTransactionServiceImpl implements TransactionService {
+   private Stack<Transaction> transactionStack = new Stack<Transaction>();
+
+   public HibernateTransactionServiceImpl(Session session){
+      this.session = session;
+   }
+
+   public void begin(){
+      Transaction transaction = session.begin():
+      transactionStack.push(transaction);
+   }
+
+   public void commit(){
+      if(isWithinTransaction()){
+         transactionStack.pop().commit();
+      }
+   }
+
+   public void rollback(){
+      if(isWithinTransaction()){
+         transactionStack.pop().rollback();
+      }
+   }
+
+   public boolean isWithinTransaction(){
+      return transactionStack.size() != 0;
+   }
+
+   public boolean beginIfNotPresent(){
+      if(isWithinTransaction()){
+         return false;
+      }
+      begin();
+      return true;
+   }
+}

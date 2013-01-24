@@ -1,0 +1,235 @@
+﻿Tapestry - JavaScript Rewrite
+
+http://tapestry.apache.org/javascript-rewrite.html
+
+Tapestry and JavaScript
+Tapestry JavaScript Limitations (through 5.3)
+Dependence on Prototype/Scriptaculous
+Lack of Documentation
+Lack of Module Structure
+Complex Initialization
+JavaScript Improvements for 5.4
+RequireJS
+Slow Page Load and Initialization
+Mapping Modules to Assets
+Extensions to JavaScriptSupport
+@Require annotation
+Increased Use Of Publish/Subscribe
+Avoiding JavaScript Classes
+Expose Global Message Catalog to Client
+Partial Page Update Response
+Maintaining Backwards Compatibility
+Twitter Bootstrap
+Content Delivery Network Integration
+ExtJS Compatibility
+More Thoughts
+
+Tapestry and JavaScript
+Tapestry 5 has had a interesting mix of characteristics.
+
+On the one hand, it has had a large number of features that work, and work well, right out of the box, with no special configuration or setup. This includes client-side validation, dynamic content updates, simple animations, progressive enhancement, and other standard Ajax and DHTML use cases.
+
+In addition, Tapestry has evolved, from Tapestry 5.0 through 5.3, into a quite capable provisioning framework:
+
+JavaScript libraries may be combined into stacks that are combined (in production) into a single virtual file
+JavaScript libraries and CSS files may be minified
+Libraries, stacks, and other resources are exposed to the browser with a versioned URL and far-future expires header, to support aggressive client-caching
+Resources, including JavaScript and CSS, can be distributed inside JARs (as part of reusable component libraries)
+Compressible resources will be automatically GZip compressed if the client supports it
+However, JavaScript support in Tapestry is still unsatisfactory. Too often, Tapestry falls into an uncanny valley where the framework (server-side and client-side) does so much automatically that it becomes accepted that it does everything ... developers later discover, to their dismay, that the last 10% of custom behavior they desire is very hard to implement, because of all the common problems that plague any complex system: insufficient APIs, unexpected leaky abstractions, or just plain bugs.
+
+Common examples of the challenges imposed by Tapestry include implementing a Confirm mixin, customizing behavior when a Zone component is dynamically updated, or any number of issues related to Forms, form elements, and Ajax updates.
+
+This document is a roadmap for how Tapestry 5.4 will revisit the relationship between server-side Java and client-side JavaScript. Ultimately, we hope to convert this relationship from an obstacle to using Tapestry into an essential reason to select Tapestry in the first place.
+
+Tapestry JavaScript Limitations (through 5.3)
+Dependence on Prototype/Scriptaculous
+Tapestry made an early choice to embrace Prototype and Scriptaculous at a time when this made sense, circa 2006-2007.
+
+The goal was to have Tapestry provide a client-side API, the Tapestry namespace, that in turn would delegate complex behaviors (including DOM element selection, event management, and XmlHttpRequest processing) to a foundational framework. The goal was to isolate all the direct dependencies on Prototype in such a way that it would be possible, in the future, to swap out for a different foundational framework, such as jQuery or ExtJS. Unfortunately, expediency has proven to make this goal even less reachable!
+
+Lack of Documentation
+There has not, to date, been an adequate documentation of the T5 and Tapestry namespaces, beyond the code itself.
+
+Lack of Module Structure
+Beyond the basic use of namespaces, Tapestry has not embraced modern JavaScript usage; specifically, it makes limited use of hygenic functions to form modules. Hygenic functions are JavaScript functions that exist as a way to encapsulate private properties and functions. Tapestry 5.3 makes more use of this pattern than previous releases.
+
+What modularity is present in the JavaScript is organized around the T5.initializers (Tapestry.Initializers) namespace, and the mechanics of full-page and partial-page renders (described more fully below).
+
+Complex Initialization
+Many users are perplexed by how Tapestry performs initialization: in a typical bespoke 1 application, the developer will create a <script>block at the bottom of the page, and do initializations there. In Tapestry, it can be much more complex:
+
+A JavaScript library, containing one or more initialization functions, is created
+The initialization functions must be monkey patched into the T5.initializers namespace 2
+The JavaScriptSupport environmental must be used to invoke the function, by name, passing it a JSONObject to configure itself (the "specification")
+The affected element must have a unique id attribute, used to coordinate the initialization in the client web browser 3
+This often feels like overkill, but it is necessary for a number of desirable characteristics:
+
+Initialization code occurs in a single Tapestry-generated <script> block at the end of the page (just before the </body> tag)
+There is limited support for structuring the order of initialization
+The mechanism works transparently in both full-page render requests (traditional) and partial-page render requests (Ajax)
+Despite this, the Tapestry approach can feel very "heavy". In a bespoke page, initialization that may affect many elements of the page often takes the form of a single event handler, attached to the <body> element, that catches events that bubble up from much lower in the DOM. The single handler function identifies the applicable elements using CSS selectors, including those that are based on HTML5 data- attributes. Additional data- attributes will define additional behavior ... for example, a URL for a triggered request. This is "light" because:
+
+There's a single event handler function (rather than a unique handler function instance per element)
+The event handler may be anonymous (there's no name, or possibility of collision)
+Elements are identified by DOM structure and CSS rather than their unique id (the element will often not have an id attribute)
+Additional necessary configuration is directly attached to the element, rather than split
+As the page is dynamically updated, there is no extra "bookkeeping" for added or removed elements; new elements inserted into the DOM dynamically are recognized as easily as those that were present on the initial render
+By contrast, Tapestry is "heavy":
+
+The initialization function must have a unique name
+The element must have a unique id, to it can be located by the initialization function
+The event handlers are attached directly to the element
+Duplicated elements will have duplicated event handlers
+Additional behavior is specified as a JSON object passed to the initialization function
+Injecting new elements into the DOM requires invoking initialization functions to wire up the necessary event handlers
+In (older versions of) Internet Explorer, removing elements may leave memory leaks as JavaScript objects retain references to DOM objects and vice-versa
+JavaScript Improvements for 5.4
+The goals for Tapestry 5.4 are:
+
+Break the dependency on Prototype and allow Tapestry to be used with any client-side "foundation" framework, seamlessly: minimally, this should include jQuery
+Bring Tapestry's JavaScript approach more inline with modern practices (the "light" approach described above)
+Let the JavaScript be modular, and loaded dynamically and asynchonously, only as needed
+Optimize for fast page loads
+Backwards compatibility to the Tapestry 5.3 approach until at least 5.5 or 5.6
+Simplify Tapestry's client-side behavior, but make it easier to hook into, extend, and override
+RequireJS
+Rather than reinvent the wheel, Tapestry should incorporate a proper JavaScript module loader; RequireJS is an excellent candidate, especially considering the new features provided in its 2.0.1 release.
+
+RequireJS supports the AMD (Asynchronous Module Format), with some additional support for the CommonJS module format (the format used by Node.js). The latter is simpler, but is designed for a server-side environment; AMD is specifically designed to handle asynchronous loading of JavaScript into a web browser.
+
+RequireJS is geared towards bespoke applications; for Tapestry it is expected that some of the pathing and other configuration normally done in the client using the RequireJS API will instead by handled more dynamically on the server, using typically Tapestry configuration and extension mechanisms. For example, RequireJS allows mappings of module names to URLs, which is useful when working with multiple third-party JavaScript libraries that may be organized differently form each other. Tapestry can incorporate such logic on the server side instead, making the interface from the browser to the server uniform, even when the details of where each module is stored is quite variable.
+
+Slow Page Load and Initialization
+Tapestry 5.1 and up has support for dealing with slow page loads (especially, slow loads of extenal JavaScript). This is necessary, because in slow page load situations, the user may submit a form or click a link before page initialization has added an event handler for that submit or click; it was common in those cases for the a traditional request to be sent to the server for a link or form that was expected by the developer to only be accessed via an Ajax request. Without a server-side check (via the Request.isXHR() method), the server-side event handler would return a response that can not be handled in a traditional request, and the user would see the Tapestry exception report page.
+
+Tapestry 5.3 and earlier would wait for the page loaded event (by observing Prototype's "dom:loaded" event) before executing any JavaScript initialization functions. Likewise, in a partial page render (Ajax) update, it would ensure that all JavaScript libraries had been loaded before executing any initialization functions.
+
+It is not clear how this same functionality will be supported in Tapestry 5.4 as the asynchronous module loading makes it difficult to know when all modules have been loaded and all initialization functions have been invoked.
+
+Mapping Modules to Assets
+Under RequireJS, modules are identified by string that represents a kind of virtual path on the server. The path does not start with a scheme, or a slash, or end with a ".js" suffix: in all those cases, RequireJS will load a JavaScript file but not treat it as a dependency.
+
+On the server side, Tapestry will map the path to a classpath asset.
+
+There must be provisions for the following options:
+
+A module may be overriden (for instance, to work around a bug), in which case a specific asset may be used for the module, rather than the default
+A module may need to be converted from one language to another: specifically, a module may be written in CoffeeScript, and need to be compiled down to JavaScript
+A module's content may be aggregated with other related modules (much like a Tapestry 5.3 stack), especially in production 4
+Module content (aggregated or not) should be minimized
+In addition, it may be reasonable to have Tapestry automatically (or via some configuration) wrap CommonJS modules as AMD modules 5
+
+Modules will be stored on the classpath, in a modulejs package below each library's root package. Modules within that package are referenced by their name relative to the package 6 .
+
+Under this system, module core/pubsub would be the file pubsub.js in the package org.apache.tapestry5.corelib.modulejs, since Tapestry's component library 'core' is mapped to package org.apache.tapestry5.corelib.
+
+Certain key modules, such as Underscore may be mapped at the root level, as they are used so often.
+
+Extensions to JavaScriptSupport
+A number of new methods will be added to JavaScriptSupport, to support the following behaviors:
+
+require one or more modules
+require a module (that exports a single function) and invoke the function, passing zero or more values 7
+require a module and a function name and invoke named function exported by the module, passing zero or more values
+The intent here is to support shifting of client-side behavior from the 5.3 style, an approach that involved monkey-patching functions ontoT5.initializers, and move the same logic into modules, preferably with simpler parameters. It is also expected that there will be greater use of data- prefixed HTML5 attributes in place of separate configuration, as outlined above.
+
+@Require annotation
+In the (hopefully) common case that a module can operate without additional configuration, the @Require annotation will be analagous to the Tapestry 5.2 @Import annotation. It will allow one or more modules to be required. This is only useful when the modules are stand-alone (not needing any explicit configuration).
+
+Increased Use Of Publish/Subscribe
+An inherent limitation of Tapestry 5.3 and earlier is the too-direct connection between DOM events and client behaviors. Coding in terms of "the user clicks and the event handler submits a request" makes it very hard to fine tune behavior. For example, much work and experimentation was needed in order to introduce a Confirm mixin that could be used to introduce a confirmation dialog before allowing an event (clicking a link or submitting a form) to continue.
+
+A better pattern is to convert DOM events into messages in a Publish/Subscribe (PubSub) system. Tapestry 5.3 introduced an initial pass at a PubSub library for this purpose, but more work is needed in this area, especially in terms of preventing unwanted references to DOM elements from impacting garbage collection under Internet Explorer.
+
+Regardless of the exact details, in Tapestry all handling of user input should occur in two stages: a very simple event handler whose job is simply to send a PubSub message, and handlers for those PubSub message.
+
+Avoiding JavaScript Classes
+Much of the logic for important operations, such as client-side validation (and input field decoration), are based on the use of client-sideJavaScript classes. This has been somewhat valuable in terms of making the behavior controllable via monkey patching. On the other hand, it cam be clumsy to accomplish in practice, as the desired behavior is only described in terms of the implementation.
+
+In addition, these JavaScript class instances are yet more memory for the browser to manage.
+
+By using a fine-grained set of PubSub messages, the logic usually bundled into a single JavaScript class can be assembled (and, in theory, replaced) more easily. In addition, Tapestry can do less. For instance, rather than monkey-patching the Tapestry.ZoneManager class to enable new behavior when a Zone element is updated, relying on a PubSub message to learn when the Zone was updated, and perform the desired updates or animations there.
+
+Expose Global Message Catalog to Client
+Tapestry currently maintains two global message catalogs; a global server-side catalog (usually named WEB-INF/app.properties 8 ) and a client-side catalog. The client-side catalog is smaller, more limited, and less extensible.
+
+Allowing the client application to have full access to the entire message catalog would make maintaining the catalog simpler, and make it easier to keep client-side and server-side messages consistent.
+
+For security purposes, it should be possible to exclude some keys from the message catalog exposed to the client. In addition, keys whose values include String.format() productions (for example, %s) should be excluded, as those productions are meaningless in the client.
+
+Partial Page Update Response
+A key part of Tapestry's dynamic behavior has been the partial page update; a specific JSON reply to Ajax requests (usually initiated via a Zone component).
+
+The format and behavior of the response has evolved from release to release.
+
+When an Ajax request is processed by the server, the response should handle any of a number of outcomes:
+
+Redirect the entire page to a new URL (on the server, or elsewhere)
+A server-side error to be presented to the user 9
+Update the content of an implicit (originating) element; typically the element for the Zone that triggered the request
+Update the content of any number of other elements (identified by their client-side id)
+Inject new JavaScript libraries into the page
+Inject new CSS links into the page
+Peform initializations (using T5.initializers) ... but only after all content updates have occurred
+The injected JavaScript libraries and CSS links will often duplicate libraries and CSS links already present on the page; when the page is partially rendered, the server has no way to know what full or partial page renders have already occured 10 .
+
+Tapestry 5.3 first loads any additional JavaScript (usually by adding new <script> tags to the page). Once JavaScript libraries and CSS links have been added, and JavaScript libraries have been loaded, the DOM is updated with the new content. Lastly, any initializations are processed.
+
+For Tapestry 5.4, a number of changes are planned:
+
+Tapestry 5.3 style initializations will be a specific application of 5.4 style module requirement and invocation
+IMMEDIATE may occur before DOM changes
+Module requirement/invocation will occur in initialization priority order; for any single priority, initialization will occur in render order 11.
+The response will be embeddable inside other JSONObject responses.
+To expand on the last note first; the keys that define imported JavaScript and CSS, module requirement and invocation, and content update will not be top-level keys of the JSONObject response: they will be buried inside a tapestry top-level key. An available function will be provided that takes an arbitrary JSONObject, extracts the _tapestry key and handles it, then invokes a provided callback before the module requirement and invocation step. The intent is for requests that perform purely data oriented operations, the server-side can not only provide a response, but can _piggy back client-side updates in the response.
+
+Maintaining Backwards Compatibility
+Backwards compatibility is the greatest challenge here; ideally, applications (and third party libraries) that were written for Tapestry 5.3 will continue to operate unchanged in Tapestry 5.4.
+
+At the same time, much of what Tapestry 5.3 does on the client and server should be deprecated (and hopefully, simplified).
+
+Compatibility mode will be initially enabled, via a symbol value.
+
+In compatibility mode, additional client-side JavaScript will be loaded to provide the same T5 and Tapestry namespaces available in Tapestry 5.3.
+
+The implementations of these namespaces will be reconstructed in terms of the new module system. The loading of the compatibility layer will occur during full page render.
+
+Twitter Bootstrap
+In Tapestry 5.3 and earlier, Tapestry automatically includes a default CSS link on all pages. This CSS file acts as a partial CSS reset (normalizing the look of the application across common browsers), and provides a large number of CSS rules that many Tapestry components expect to be present. The CSS rules are all given a "t-" (for Tapestry) prefix.
+
+For Tapestry 5.4, this default CSS link will be changed to be the default Twitter Bootstrap. This will not only refresh the Tapestry look and feel, but will provide a better structure for customizing the application's look and feel.
+
+As with today, it will be possible to override the location of this CSS file (for example, to use a newer version of Bootstrap than is packaged in the application, or an application-specific customized version).
+
+This will entail some changes to some components, to make use of reasonable or equivalent Bootstrap CSS classes, rather than the Tapestry 5.3 classes.
+
+Twitter Bootstrap also includes a number of jQuery-based plugins; these will be exposed in the module system.
+
+Content Delivery Network Integration
+Tapestry 5.3 has limited ability to integrate into a content delivery network; it can dynamically rewrite URLs for assets (including JavaScript libraries, CSS files, image files, etc.). However, it assumes that the CDN can "pull" the content, as needed, from the live site.
+
+A desirable feature would be request URL that would produce a JSON-formatted report of all assets that should be mirrored by the CDN: this would include all files that might be exposed to the browser, including virtual assets (such as JavaScript stacks, aggregated modules, and so forth). This could be leveraged by a tool that would use this information to extract the assets from the live application and exported to the CDN.
+
+Determining what assets are available is somewhat problematic as Tapestry mixes server-side only resources (.class files, .tml files, etc.) freely with assets that might be exposed to the browser 12 . Some of those server-side resource may expose details, such as other server hosts and potentially user names and passwords, that should never be exposed to the client.
+
+In addition, a "walk" of the classpath to locate potential exportable assets can be quite expensive (though not considerably more so than what Tapestry already does at startup to identify page and component classes).
+
+ExtJS Compatibility
+To be determined. ExtJS inlcudes it own system for dynamically loading ExtJS modules, as well as expressing dependencies between them. Its capabilities overlap what RequireJS offers. It would be nice if, in an ExtJS application, the ExtJS loader could be used instead of RequireJS, or at least, ensure that they do not interfere with each other.
+
+More Thoughts
+This is a big undertaking; this document is not a contract, and is certainly not complete, but is only starting point for discussions about what will be forthcoming in Tapestry 5.4.
+
+1	By "bespoke", we mean a non-component-based, manually created page; a standalone static HTML page.
+2	Prior to 5.3, it was the Tapestry.Initializers namespace; both names reference the same object, for backwards compatibility.
+3	Tapestry assists with unique id allocation, but it would be much better if unique ids were not necessary.
+4	A request for any module should provide the aggregated set of modules; RequireJS will not need to send additional requests for the other modules
+5	Traditionally, Tapestry has configured this kind of behavior via service contributions, but there is ample evidence that this could be done using external configuration, perhaps using a JSON file in the module package, to control aggregation, wrapping, and other aspects the process. This would be more agile, as it would not require restarts when the configuration changes.
+6	A rarely used feature of Tapestry is that a component library name may be mapped to multiple packages; resolving a module name may require a search among the packages. There is the expectation that the developer will ensure that there are no duplications that would lead to ambiguities.
+7	Values passed to module functions may be limited to String and JSONObject.
+8	app.properties provides application-specific messages, and overrides of other messages provided by Tapestry and other third-party libraries. The global message catalog is actually a composite of all of these sources.
+9	This was greatly enhanced in 5.3 to present the full exception report in a pop-up iframe.
+10	It might be possible for the request to include a list of what's already loaded in the browser, so that the server can filter what it sends back; however, given factors such as content compression and typical upload vs. download bandwidth, it is almost certainly more effective for the browser to send too much, and let the client filter out duplicates.
+11	Technically, in the order of invocations on JavaScriptSupport.
+12	This should never have been the case, but that's hindsight.

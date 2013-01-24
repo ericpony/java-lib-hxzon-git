@@ -1,0 +1,116 @@
+﻿Tapestry Grid & Hibernate Criteria
+
+http://tawus.wordpress.com/2012/05/22/tapestry-grid-hibernate-criteria/
+
+Tapestry Grid is a very powerful tool for displaying a list of entities. It expects aGridDataSource as source parameter. A useful tool can be a TypeCoercer which converts a Criteria to GridDataSource.
+
+Here is a simple implementation
+
+public class Criteria2GridDataSourceCoercion implements Coercion<Criteria, GridDataSource> {
+
+    @Override
+    public GridDataSource coerce(final Criteria criteria) {
+        return new GridDataSource() {
+            private List<?> cache;
+
+            private int startIndex;
+
+            @Override
+            public int getAvailableRows() {
+                setupCriteria(Projections.rowCount(), 0, 1);
+                long count = ((Long) criteria.uniqueResult());
+                return (int) count;
+            }
+
+            @Override
+            public void prepare(int startIndex, int endIndex, List<SortConstraint> sortConstraints) {
+                setupCriteria(null, startIndex, endIndex - startIndex + 1);
+                criteria.setResultTransformer(Criteria.ROOT_ENTITY);
+
+                if (sortConstraints.size() != 0) {
+                    for (SortConstraint sortConstraint : sortConstraints) {
+                        String propertyName = sortConstraint.getPropertyModel().getPropertyName();
+                        criteria.addOrder(
+                                sortConstraint.getColumnSort() == ColumnSort.ASCENDING ?
+                                        Order.asc(propertyName) : Order.desc(propertyName));
+                    }
+                }
+
+                cache = criteria.list();
+                this.startIndex = startIndex;
+            }
+
+            @Override
+            public Object getRowValue (int index) {
+                return cache.get(index - startIndex);
+            }
+
+            @Override
+            public Class getRowType() {
+                if (cache == null) {
+                    setupCriteria(null, 0, 1);
+                    criteria.setResultTransformer(Criteria.ROOT_ENTITY);
+                    cache = criteria.list();
+                }
+
+                if (cache.size() != 0) {
+                    return cache.get(0).getClass();
+                }
+
+                return null;
+            }
+
+            private void setupCriteria(Projection projection, int firstResult, int maxResults) {
+                criteria.setProjection(projection).setFirstResult(firstResult).setMaxResults
+                        (maxResults);
+            }
+        };
+    }
+}
+
+and in you Module class
+
+   @Contribute(TypeCoercer.class)
+    public static void addCoercion(Configuration<CoercionTuple> types) {
+        types.add(new CoercionTuple(Criteria.class, GridDataSource.class,
+                new Criteria2GridDataSourceCoercion()));
+    }
+Usage
+
+public class SamplePage {
+
+    @Inject
+    private Session session;
+
+    public Criteria getCriteria() {
+        Criteria criteria = session.createCriteria(MyEntity.class);
+        return criteria;
+    }
+}
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_3.xsd'>
+   <div t:type='Grid' t:source='criteria'>
+   </div>
+</html>
+
+Dragan came up with another useful Coercer to convert Criteria to Long
+
+    public static void contributeTypeCoercer(Configuration configuration) {
+        configuration.add(CoercionTuple.create(Criteria.class, Long.class,
+                new Coercion() {
+                    @Override
+                    public Long coerce(Criteria input) {
+                        input = input.setProjection(Projections.rowCount());
+                        input = input.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                        return (Long) input.uniqueResult();
+                    }
+                }));
+
+        configuration.add(CoercionTuple.create(Criteria.class, List.class,
+                new Coercion() {
+                    @Override
+                    public List coerce(Criteria input) {
+                        return input.list();
+                    }
+                }));
+    }

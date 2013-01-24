@@ -1,0 +1,228 @@
+﻿Tapestry Magic #6: Environment
+学中注释。
+创建“环境”服务来显示通知。参见《Tapestry Magic #8: ApplicationStateManager》
+
+http://tawus.wordpress.com/2011/04/25/tapestry-magic-6-environment/
+
+Environment is yest another Tapestry’s Magic Trick which changes the way you approach a problem once you get to know it. Environment service keeps a stack for each interface on which you can push an implementation. This service is available per-thread, so a new instance is available for each request cycle. 
+
+During the request cycle you can change the implementation at any point by pushing your own implementation over the one available and later when you are done using it, popping out yours and restoring the previous one from the stack. There are two main uses of Environment service, passing information to nested components and providing a per-thread service which can be overridden at any point in the request cycle. You can read more about it 《here》.
+“环境”服务维护了一个栈，每个接口对应一个实现。这个服务是per-thread的。
+在请求期间，你能够压入自己的实现，使用它，使用完后弹出。
+
+In this post, I will implement Notifications. The idea is this. I can add notifications while processing a request and these notifications will be shown to the user using Prototype based Growl.
+我想在处理请求时添加一些通知。
+
+First we need a service which can be used to add and retrieve notifications
+
+public interface Notifications {
+   void inform(String message);
+   void warn(String message);
+   void error(String error);
+   boolean getHasMessages();
+   List<String> getInformations();
+   List<String> getWarnings();
+   List<String> getErrors();
+   void clear();
+}
+
+Its implementation is very simple.
+
+public class NotificationsImpl implements Notifications {
+   private List<String> informations = new ArrayList<String>();
+   private List<String> warnings = new ArrayList<String>();
+   private List<String> errors =new ArrayList<String>();
+
+   public void inform(String message) {
+      informations.add(message);      
+   }
+
+   public void warn(String message) {
+      warnings.add(message);      
+   }
+   
+   public void error(String message) {
+      errors.add(message);      
+   }
+   
+   public boolean getHasMessages(){
+      return informations.size() != 0 || warnings.size() != 0 ||
+         errors.size() != 0;
+   }
+   
+   public List<String> getInformations(){
+      return informations;
+   }
+   
+   public List<String> getWarnings(){
+      return warnings;
+   }
+   
+   public List<String> getErrors(){
+      return errors;
+   }
+   
+   public void clear(){
+      informations.clear();
+      warnings.clear();
+      errors.clear();
+   }
+
+}
+
+
+Now we need to put this service into the Environment that can later be accessed using @Environmental annotation. Now the question is where to put the service into the Environment. If we want the environment to be available only during rendering of a page, we can implement PageRenderRequestFilter and put it in thePageRenderRequest pipeline by contributing to PageRenderRequestHandler. If we want the environment to be available only during component events, we can implement ComponentEventRequestFilter and put it in the ComponentEventRequest pipeline by contributing to ComponentEventRequestHandler. But in our case we want it for both Page rendering and during Component Event handling, so we implement ComponentRequestFilter and then put it in the ComponentRequest pipeline by adding it to ComponentRequestHandler.
+
+接下来思考“环境”服务在哪可用。如果我们想在页面渲染期间可用，我们可以实现一个页面渲染请求过滤器，将它加入页面渲染请求处理器的管道中。我们想在组件事件处理期间可用，同理。
+
+public class NotificationEnvironmentSetupHandler implements
+      ComponentRequestFilter {
+
+   private Environment environment;
+
+   public NotificationEnvironmentSetupHandler(Environment environment) {
+      this.environment = environment;
+   }
+
+   public void handleComponentEvent(ComponentEventRequestParameters params,
+         ComponentRequestHandler handler) throws IOException {
+      environment.push(Notifications.class, new NotificationsImpl());
+      handler.handleComponentEvent(params);
+   }
+
+   public void handlePageRender(PageRenderRequestParameters params,
+         ComponentRequestHandler handler) throws IOException {
+      environment.push(Notifications.class, new NotificationsImpl());
+      handler.handlePageRender(params);
+   }
+
+}
+
+ComponentRequestFilter has two methods for handling Page Render requests and Component Event requests. We put our service implementation on the Environment stack in both the methods and allow the pipeline to proceed. Next we put our filter in the pipeline
+
+   public void contributeComponentRequestHandler(Environment environment,
+         OrderedConfiguration<ComponentRequestFilter> contributions) {
+      contributions.add("notifications",
+            new NotificationEnvironmentSetupHandler(environment));
+   }
+
+Once the environment is setup, we can add notifications as
+
+public class TestPage {
+   @Environmental
+   private Notifications notifications;
+
+   public void onActivate(){
+      notifications.inform("You are now logged in");
+   }
+}
+
+We need to show these messages using Growl. As we want it across all pages, we use another pipeline MarkupRenderer. We implement MarkupRendererFilter and contribute to the MarkupRendererHandler.
+我们使用Growl来显示通知。因为我们想跨所有的页面，所以我们在MarkupRenderer管道添加我们的过滤器。
+
+public class NotificationsMarkupRendererFilter implements MarkupRendererFilter {
+   private Environment environment;
+   private Asset notificationsScript;
+
+   public NotificationsMarkupRendererFilter(Asset notificationsScript,
+         Environment environment) {
+      this.environment = environment;
+      this.notificationsScript = notificationsScript;
+   }
+
+   public void renderMarkup(MarkupWriter writer, MarkupRenderer renderer) {
+      if (environment.peek(Notifications.class) != null
+            && environment.peek(JavaScriptSupport.class) != null) {
+         Notifications notifications = environment.pop(Notifications.class);
+         JavaScriptSupport javaScriptSupport = environment
+               .peek(JavaScriptSupport.class);
+         if (notifications.getHasMessages()) {
+            JSONObject spec = new JSONObject();
+            spec.put("informations", new JSONArray(notifications
+                  .getInformations().toArray()));
+            spec.put("warnings", new JSONArray(notifications.getWarnings()
+                  .toArray()));
+            spec.put("errors", new JSONArray(notifications.getErrors()
+                  .toArray()));
+            String url = notificationsScript.toClientURL();
+            if(!url.endsWith("/")){
+               url = url.substring(0, url.lastIndexOf("/")+1);
+            }
+            spec.put("url", url);
+            javaScriptSupport.importJavaScriptLibrary(notificationsScript);
+            javaScriptSupport.addScript(InitializationPriority.LATE,
+                  "Notifications.display(%s);", spec);
+            notifications.clear();
+         }
+      }
+      renderer.renderMarkup(writer);
+   }
+}
+
+What we are doing here is using JavaScriptSupport to import our script and passing it the messages. Finally we make the contribution
+
+   public void contributeMarkupRenderer(
+         @Inject @Path("assets/notifications.js") Asset notificationsScript,
+         Environment environment,
+         OrderedConfiguration<MarkupRendererFilter> contributions) {
+      contributions.add("notifications", new NotificationsMarkupRendererFilter(
+            notificationsScript, 
+            environment), "after:JavascriptSupport");
+   }
+
+      public static void contributeClasspathAssetAliasManager(
+         MappedConfiguration<String, String> configuration) {
+      configuration.add("tawusassets", "assets");
+   }
+
+That is it!!
+
+You can make your notification service directly accessible through @Inject by using EnvironmentalShadowBuilder as shown below
+
+利用EnvironmentalShadowBuilder将“环境”服务变为可注入。
+
+   public Notifications buildNotifications(EnvironmentalShadownBuilder shadowBuilder){
+      return shodowBuilder.build(Notifications.class);
+   }
+
+
+A note on the Growl script. I had to make some small changes to the script. The images in the script are hard-coded, in order to make them relative to the javascript, I prepend the url part of the asset location to each image location.
+
+var Growl =  {
+    initialize: function(prefix){
+        this.oBezel = new Gr0wl.Bezel(prefix + "bezel.png");
+        this.Bezel =  this.oBezel.show.bind(this.oBezel);
+        this.oSmoke = new Gr0wl.Smoke(prefix + "smoke.png");
+        this.Smoke = this.oSmoke.show.bind(this.oSmoke);
+    }
+};
+
+Notifications = {
+   display:function(spec){  
+      Growl.initialize(spec.url);
+      for(var i = 0; i < spec.errors.length; ++i){
+         Growl.Smoke({
+            title: "Error",
+            text: spec.errors[i],
+            image: spec.url + "error.png",
+            duration: 10.0
+        });
+      }
+      for(var i = 0; i < spec.warnings.length; ++i){
+         Growl.Smoke({
+            title: "Warning",
+            text: spec.warnings[i],
+            image: spec.url + "warn.png",
+            duration: 2.0
+        });
+      }
+         for(var i = 0; i < spec.informations.length; ++i){
+            Growl.Smoke({
+               title: "Information",
+               text: spec.informations[i],
+               image: spec.url + "inform.png",
+               duration: 5.0
+           });
+         }
+      }
+};

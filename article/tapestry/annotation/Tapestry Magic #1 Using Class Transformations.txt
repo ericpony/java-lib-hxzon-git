@@ -1,0 +1,89 @@
+﻿Tapestry Magic #1: Using Class Transformations
+
+http://tawus.wordpress.com/2011/04/16/tapestry-magic-1-using-componentclasstransformworker/
+
+One of the most power tools in Tapestry5 is the Class transformation of Components and Pages. In plain language it means you can add or modify methods in components and pages at runtime. The magic is done by implementingComponentClassTransformWorker which has just one method
+
+
+public interface ComponentClassTransformWorker {
+   public void transform(ClassTransformation transform, MutableComponentModel model);
+}
+
+To demonstrate what can be done using this magic, I will present it with the following example.
+
+@DiscardOnPageReset
+
+Whenever you use @Persist(PersistenceConstants.SESSION) which is the default configuration for @Persist, the values are stored in session and stay there till you call ComponentResources.discardPersistentFieldChanges() or till the Session expires. One of the way to get rid of these variables is to callComponentResources.discardPersistentFieldChanges() in pageReset()method in a page. This will discard the values and on the next visit to the page(remember only after the next visit). So, the code will be something like
+
+public class MyPage {
+   @Inject
+   private ComponentResources resources;
+
+   void pageReset(){
+      resources.discardPersistentFieldChanges();
+   }
+}
+Repeating this in a number of pages can be avoided by using the power ofComponentClassTransformWorker. For that we have to create an annotation
+
+package com.googlecode.tawus.annotations;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface DiscardOnPageReset {
+
+}
+
+This annotation has to be placed on any page on which you want the persistent fields to be discarded on a fresh visit. Now we have to create aComponentClassTransformWorker.
+
+package com.googlecode.tawus.internal;
+
+import java.lang.reflect.Modifier;
+
+public class DiscardOnPageResetWorker implements ComponentClassTransformWorker {
+
+   private final TransformMethodSignature PAGE_RESET_SIGNATURE = new TransformMethodSignature(
+         Modifier.PUBLIC, "void", "pageReset", null, null);
+
+   public void transform(ClassTransformation transformation,
+         MutableComponentModel model) {
+      DiscardOnPageReset annotation = transformation
+            .getAnnotation(DiscardOnPageReset.class);
+      if (annotation == null) {
+         return;
+      }
+
+      transformation.getOrCreateMethod(PAGE_RESET_SIGNATURE).addAdvice(
+            new ComponentMethodAdvice() {
+               public void advise(ComponentMethodInvocation invocation) {
+                  invocation.getComponentResources()
+                        .discardPersistentFieldChanges();
+                  invocation.proceed();
+               }
+
+            });
+
+   }
+
+}
+
+We first check if the class is annotated with @DicardOnPageReset. If it is annotated, then get the method pageChanged(in case it is not present, create one and hence the name ‘getOrCreate’). Now we add advice to the method which is nothing more than a call to ComponentResources.discardPersistentFieldChanges(). Note we have first asked the method to do whatever it has to do on pageReset by callinginvocation.proceed().
+
+Once the worker is ready, we contribute it as
+
+   @Contribute(ComponentClassTransformWorker.class)
+   public static void contributeWorkers(OrderedConfiguration<ComponentClassTransformWorker> workers) {
+      workers.addInstance("DiscardOnPageReset", DiscardOnPageResetWorker.class, "before:PageReset");
+   }
+To use it in a page
+
+@DiscardOnPageReset
+public class MyPage {
+
+}

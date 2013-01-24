@@ -1,0 +1,156 @@
+﻿Spock @RunJetty
+
+http://tawus.wordpress.com/2012/08/03/spock-runjetty/
+
+
+Working with Geb is fun especially when integrated with Spock. In order to write tests for a tapestry app, I wanted to have something on the lines of SeleniumTestCasewhich will automatically start and stop a jetty server. So I ended up writing a spock plugin for running jetty.
+
+We start with the annotation(why do I always start with an annotation ?  )
+
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.TYPE})
+@ExtensionAnnotation(JettyExtension.class)
+public @interface RunJetty {
+
+    String context() default "";
+
+    int port() default 9090;
+
+    String webappDirectory() default "src/main/webapp";
+
+    String host() default "localhost";
+
+}
+
+Note the annotation @ExtensionAnnotation(JettyExtension.class). It tells Spock what extension to use for this annotation.
+
+public class JettyExtension extends AbstractAnnotationDrivenExtension<RunJetty> {
+
+    private boolean isSpecAnnotated;
+
+    @Override
+    public void visitSpecAnnotation(final RunJetty runJetty, SpecInfo specInfo) {
+        isSpecAnnotated = true;
+        specInfo.addListener(new AbstractRunListener() {
+
+            private Server server;
+
+            @Override
+            public void beforeSpec(SpecInfo specInfo) {
+                server = JettyUtils.run(runJetty.context(), 
+                  runJetty.webappDirectory(), runJetty.port());
+            }
+
+            @Override
+            public void afterSpec(SpecInfo specInfo) {
+                JettyUtils.stop(server);
+            }
+
+        });
+
+    }
+
+    @Override
+    public void visitFeatureAnnotation(final RunJetty runJetty, FeatureInfo featureInfo) {
+        if(isSpecAnnotated){
+            throw new RuntimeException(String.format(
+                    "A single specification cannot have both Specification and Feature annotated " +
+                    "by %s", RunJetty.class.getSimpleName()));
+        }
+
+        featureInfo.getParent().addListener(new AbstractRunListener() {
+
+            private Server server;
+
+            @Override
+            public void beforeFeature(FeatureInfo featureInfo) {
+                server = JettyUtils.run(runJetty.context(), 
+                   runJetty.webappDirectory(), runJetty.port());
+            }
+
+            @Override
+            public void afterFeature(FeatureInfo featureInfo){
+                JettyUtils.stop(server);
+            }
+        });
+    }
+}
+
+public class JettyUtils {
+
+    public static Server run(String contextPath, String webappDirectory, int port) {
+        Server server = new Server(port);
+
+        SocketConnector connector = createConnector(port);
+        server.setConnectors(new Connector[]{connector});
+
+        WebAppContext context = createWebAppContext(webappDirectory, contextPath);
+        server.setHandler(context);
+        try {
+            server.start();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not start a jetty instance: " + e.getMessage(), e);
+        }
+
+        return server;
+    }
+
+    public static void stop(Server server){
+        try {
+            server.stop();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not stop a jetty instance : " + e.getMessage(), e);
+        }
+    }
+
+    private static WebAppContext createWebAppContext(String webappDirectory, String contextPath) {
+        WebAppContext context = new WebAppContext();
+
+        context.setWar(webappDirectory);
+        context.setContextPath(contextPath);
+
+        return context;
+    }
+
+    private static SocketConnector createConnector(int port) {
+        SocketConnector connector = new SocketConnector();
+        connector.setPort(port);
+        return connector;
+    }
+
+}
+
+If the annotation is placed on a spec, this extension starts the server before a Spec and stops it after all the features in the Spec are run. If the annotation is placed on a feature, the server is started before the feature and stopped after the feature.
+
+Now to make the extension work with GebSpec we have to make a few changes which we do by extending GebSpec.
+
+@RunJetty
+class JettyGebSpec extends GebSpec {
+
+    def setup() {
+        RunJetty runJetty = getRunJettyAnnotation()
+        browser.baseUrl = "http://${runJetty.host()}:${runJetty.port()}/${runJetty.context()}"
+    }
+
+    protected RunJetty getRunJettyAnnotation() {
+        RunJetty runJetty = this.class.getAnnotation(RunJetty);
+
+        if (runJetty == null) {
+            runJetty = JettyGebSpec.getAnnotation(RunJetty.class);
+        }
+
+        return runJetty;
+    }
+
+}
+
+This base class sets the baseUrl for Geb and also sets the defaults for @RunJetty. So now you can write a Geb Spock test like this.
+
+public class MyTest extends JettyGebSpec {
+
+   def "test my page"(){
+      given:
+      to IndexPage
+   }
+}

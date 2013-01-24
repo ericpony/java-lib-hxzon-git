@@ -1,0 +1,29 @@
+﻿Tapestry 5.4: jQuery Support now in place
+作者：Howard Lewis Ship | 来自：Tapestry Central
+http://feedproxy.google.com/~r/TapestryCentral/~3/OSGidNn15vc/tapestry-54-jquery-support-now-in-place.html
+
+I've spent the last several months significantly reworking Tapestry 5's client-side JavaScript support, in an effort to move away form the tight binding to Prototype. After all of that refactoring, recoding, repositioning, and just-plain-hacking, I was able to do most of the job of introducing jQuery support in just a few hours, yesterday and today.
+
+I'll be producing another preview release pretty soon, or you can get the lastest from Tapestry's master branch.
+
+Currently, the code to switch over from using Prototype to jQuery looks like this (it will get simpler soon):
+
+The first part overrides the provider to be "jquery" (the default provider is "prototype"). In Tapestry terms, the "infastructure framework" provides the APIs for DOM queries, DOM manipulation, and Ajax request handling. If you don't like jQuery, you can easily create your own provider for your favorite framework.
+
+Part of 5.4 is trying to manage all these different compatibility issues at a slightly higher level than configuration symbols; that's the Compatibility service with its Traits. Those two traits disable Scriptaculous support (which isn't needed by jQuery, and won't work without Prototype), and disables support for Tapestry 5.3-style initializers.
+
+Underneath the covers, the way the switch between Prototype and jQuery works is quite simple:
+
+The ModuleManager service is the code that handles requests for modules from the client. It has a configuration that is used to handle edge cases, such as treating traditional JavaScript libraries as if they were AMD modules. The code above sets up a server-side override for the module t5/core/dom. All the Tapestry client-side modules use dom; none of them uses Prototype or jQuery directly (except for a couple that access Twitter Bootstrap functionality).
+
+These contributions ensure that when the client-side requests the t5/core/dom module, what will be sent back will be either the Prototype-specific implementation, or the jQuery-specific implementation. Without this contribution, we'd see a 404 error when the dom module was requested. Instead, the client-side doesn't have any idea that dom is special.
+
+The primary job of the dom module is to wrap DOM elements inside a new object, thereby providing a new API that allows various kinds of manipulation, as well as listening to events, or triggering them. The API is a bit of a mashup between Prototype and jQuery, but leans pretty heavily towards jQuery-style operations and naming. dom's secondary job is to support Ajax requests, plus adding event handlers to the document object.
+
+In practice, this can be very concise and readable (partially, thanks to CoffeeScript):
+
+In this listing (which supports some of the behavior of the Tapestry Zone component), dom holds the export from modulet5/core/dom; it waits for the events.zone.update event to be triggered; the callback is invoked with this set to the wrapper around the element where the event was triggered.
+
+The event here is also a wrapper; its a minimal mix of Prototype and jQuery: I like the memo property from Prototype, so that's present. The event handler triggers a pair of before and after events, and updates the content of the zone. Why the before and after events? By default they do nothing, but it would be simple to add handlers to perform some kind of animation when content is added.
+
+In any case, because all Tapestry client-side modules code against this API, they don't know or care whether the page has loaded Prototype, jQuery, or something else. If you are writing Tapestry components for reuse, coding against the dom API will help ensure that your component will work correctly in all kinds of Tapestry applications. However, when coding an application,. you reserve the right to choose what the infrastructure framework should be: you should feel free to use the infrastructure framework directly ... unless you find the dom API to be easier. 

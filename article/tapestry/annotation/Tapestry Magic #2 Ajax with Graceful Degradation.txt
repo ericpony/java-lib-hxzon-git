@@ -1,0 +1,141 @@
+﻿Tapestry Magic #2: Ajax with Graceful Degradation
+学中注释。
+使用ComponentClassTransformWorker和注解让一个方法同时处理ajax和普通请求。
+
+http://tawus.wordpress.com/2011/04/16/tapestry-magic-2-ajax-with-graceful-degradation/
+
+
+@XHR
+
+In Tapestry5, both Ajax & non-ajax event handlers are simple methods and a single method can be used to handle both requests. This is particularly useful in case a browser does not support javascript or javascript is disabled. On the client side, Tapestry5 gracefully degrades to a non-ajax call. If we make a small adjustment to our event handler method, we can handle both ajax and non-ajax calls on the server side and make a graceful degradation on server side too.
+
+
+A typical ajax event handler method is
+一个典型的ajax事件处理方法：
+Zone onEvent(){
+   processLogic();
+   return Zone;
+}
+
+To make this event-handler handle non-ajax calls and thus provide a graceful degradation, we have to modify the handler as
+
+@Inject
+private Request request;
+同时处理ajax和普通请求：
+Zone onEvent(){
+   processLogic();
+   if(request.isXHR()){
+      return Zone;
+   }
+   return null;
+}
+
+This all can be magically done in Tapestry5 by using ComponentClassTransformWorker. Let us see how
+
+First we create an annotation which has to be placed on an the event-handler for marking it transformation ready.
+定义注解：
+package com.googlecode.tawus.annotations;
+
+import java.lang.annotation.Documented;
+
+@Documented
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface XHR {
+
+}
+Now the magic with the ComponentClassTransformWorker
+
+package com.googlecode.tawus.internal;
+
+import org.apache.tapestry5.model.MutableComponentModel;
+import org.apache.tapestry5.services.ClassTransformation;
+import org.apache.tapestry5.services.ComponentClassTransformWorker;
+import org.apache.tapestry5.services.ComponentMethodAdvice;
+import org.apache.tapestry5.services.ComponentMethodInvocation;
+import org.apache.tapestry5.services.Request;
+import org.apache.tapestry5.services.TransformMethod;
+import org.apache.tapestry5.services.TransformMethodSignature;
+
+import com.googlecode.tawus.annotations.XHR;
+
+public class XHRWorker implements ComponentClassTransformWorker {
+
+   private Request request;
+
+   public XHRWorker(Request request) {
+      this.request = request;
+   }
+
+   public void transform(ClassTransformation transformation,
+         MutableComponentModel model) {
+         //获取含有特定注解的方法：
+      for(final TransformMethod method:
+         transformation.matchMethodsWithAnnotation(XHR.class)){
+         TransformMethodSignature signature = method.getSignature();
+
+         if(!"void".equals(signature.getReturnType())){
+         //给方法添加“劝告”
+            method.addAdvice(new ComponentMethodAdvice(){
+
+               public void advise(ComponentMethodInvocation invocation) {
+                  invocation.proceed();
+                  Object result = invocation.getResult();
+                  if(!request.isXHR()){
+                     if(result != null){
+                        result = defaultForReturnType(result.getClass());
+                     }
+                  }
+                  invocation.overrideResult(result);
+               }
+
+            });
+         }else {
+            throw new RuntimeException("XHR can be applied to non-void event handlers only");
+         }
+      }
+   }
+
+   private Object defaultForReturnType(Class returnType) {
+      if (!returnType.isPrimitive())
+         return null;
+      if (returnType.equals(boolean.class))
+         return false;
+      return 0;
+   }
+}
+We loop over all the methods having annotation @XHR and then if the return value is void, we throw exception as the return value cannot be null in case of a ajax call. For all other cases, we add an advice to check if the call is ajax using Request.isXHR(). In case it is an ajax call, we return the actual return value. In case it is not an ajax-call we return the default value for that class type.
+
+Finally we contribute this worker to as
+注册注解处理器：
+@Contribute(ComponentClassTransformWorker.class)
+   public static void contributeWorkers(
+         OrderedConfiguration<ComponentClassTransformWorker> workers) {
+      workers.addInstance("XHRWorker", XHRWorker.class);
+}
+
+Example
+
+public class MyPage {
+   @InjectComponent
+   private Zone myZone;
+
+   @Property
+   private String message;
+
+   @XHR
+   public Zone onEvent(){
+      message = "Hello World"
+      return myZone;
+   }
+}
+
+and the template
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'> 
+   <body> 
+      <t:zone t:id='myZone'> ${message} </t:zone>
+      <br/>
+      <t:eventLink zone='myZone' event='event'>Click to see a message</t:eventLink>
+   </body>
+</html> 

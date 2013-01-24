@@ -1,0 +1,314 @@
+﻿ASM : Creating a ChainBuilder
+
+http://tawus.wordpress.com/2011/05/07/asm-creating-a-chainbuilder/
+
+ASM is to Plastic what javascript is to JQuery
+
+Just curious about how ASM library works, I tried to create a simple Chain of Responsibility Pattern that I had already done in this post. It is a simple implementation where in the methods return void. Learning ASM is a good thing if you ever want to generate/transform bytecode. It will also help you understand the inner workings of Plastic.
+
+Here comes the monster
+
+//Interface
+public interface ChainBuilder {
+    <T> T build(Class<T> type, List<T> instances);
+}
+
+//Implementation
+public class ASMChainBuilder implements ChainBuilder {
+   private AtomicLong UNIQUE_ID_GENERATOR = new AtomicLong(System.nanoTime());
+
+   @SuppressWarnings("unchecked")
+   public <T> T build(Class<T> type, List<T> instances) {
+      ClassNode classNode = createClass(makeUnique(type.getSimpleName()));
+
+      implementInterface(classNode, type);
+      createInstancesField(classNode);
+      createConstructor(classNode);
+
+      for (Method method : type.getMethods()) {
+         addMethod(classNode, method);
+      }
+
+      classNode.visitEnd();
+
+      ClassWriter cw = new ClassWriter(0);
+      TraceClassVisitor checkAdapter = new TraceClassVisitor(cw,
+            new PrintWriter(System.out));
+      classNode.accept(checkAdapter);
+      SimpleClassLoader loader = new SimpleClassLoader();
+      Object[] objects = new Object[instances.size()];
+      for (int i = 0; i < objects.length; ++i) {
+         objects[i] = instances.get(i);
+      }
+
+      try {
+         return (T) loader.defineClass(classNode.name.replace('/', '.'),
+               cw.toByteArray()).getConstructor(Object[].class).newInstance(
+               new Object[] { objects });
+      } catch (Exception ex) {
+         throw new RuntimeException(ex);
+      }
+   }
+
+   @SuppressWarnings("unchecked")
+   private void implementInterface(ClassNode classNode, Class<?> type) {
+      classNode.interfaces.add(Type.getInternalName(type));
+   }
+
+   @SuppressWarnings("unchecked")
+   private void addMethod(ClassNode classNode, Method method) {
+      MethodNode node = new MethodNode(Opcodes.ACC_PUBLIC, method.getName(),
+            Type.getMethodDescriptor(method), null, null);
+
+      int iteratorIndex = Type.getMethodDescriptor(method).length();
+      int lengthIndex = iteratorIndex + 1;
+
+      Label methodStart = new Label();
+      Label methodEnd = new Label();
+      node.visitLabel(methodStart);
+
+      // Declare iterator and initialize to zero
+      node.visitLocalVariable("i", "I", null, methodStart, methodEnd,
+            iteratorIndex);
+      node.visitLdcInsn(0);
+      node.visitVarInsn(Opcodes.ISTORE, iteratorIndex);
+
+      // Declare length and initialize to the length of the _instances array
+      node.visitLocalVariable("length", "I", null, methodStart, methodEnd,
+            lengthIndex);
+      node.visitVarInsn(Opcodes.ALOAD, 0);
+
+      node.visitFieldInsn(Opcodes.GETFIELD, classNode.name, "_instances", Type
+            .getInternalName(Object[].class));
+      node.visitInsn(Opcodes.ARRAYLENGTH);
+      node.visitVarInsn(Opcodes.ISTORE, lengthIndex);
+
+      // Compare i with length
+      Label beginLabel = new Label();
+      Label endLabel = new Label();
+      node.visitLabel(beginLabel);
+      node.visitVarInsn(Opcodes.ILOAD, iteratorIndex);
+      node.visitVarInsn(Opcodes.ILOAD, lengthIndex);
+      node.visitJumpInsn(Opcodes.IF_ICMPGE, endLabel);
+
+      node.visitVarInsn(Opcodes.ALOAD, 0);
+      node.visitFieldInsn(Opcodes.GETFIELD, classNode.name, "_instances", Type
+            .getInternalName(Object[].class));
+      node.visitVarInsn(Opcodes.ILOAD, iteratorIndex);
+      node.visitInsn(Opcodes.AALOAD);
+      loadArguments(node);
+      node.visitMethodInsn(Opcodes.INVOKEINTERFACE, Type.getInternalName(method
+            .getDeclaringClass()), method.getName(), Type
+            .getMethodDescriptor(method));
+      node.visitIincInsn(iteratorIndex, 1);
+      node.visitJumpInsn(Opcodes.GOTO, beginLabel);
+
+      node.visitLabel(endLabel);
+      
+      returnFromMethod(node);
+      node.visitLabel(methodEnd);
+      node.visitMaxs(6, lengthIndex + 1);
+      node.visitEnd();
+      classNode.methods.add(node);
+   }
+
+   @SuppressWarnings("unchecked")
+   private void createInstancesField(ClassNode classNode) {
+      classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "_instances",
+            Type.getDescriptor(Object[].class), null, null));
+   }
+
+   @SuppressWarnings("unchecked")
+   private void createConstructor(ClassNode classNode) {
+      MethodNode constructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>",
+            "([Ljava/lang/Object;)V", null, null);
+      constructor.visitVarInsn(Opcodes.ALOAD, 0);
+      constructor.visitMethodInsn(Opcodes.INVOKESPECIAL, classNode.superName,
+            "<init>", "()V");
+
+      constructor.visitVarInsn(Opcodes.ALOAD, 0);
+      constructor.visitVarInsn(Opcodes.ALOAD, 1);
+      constructor.visitFieldInsn(Opcodes.PUTFIELD, classNode.name,
+            "_instances", Type.getInternalName(Object[].class));
+
+      constructor.visitInsn(Opcodes.RETURN);
+      constructor.visitMaxs(2, 2);
+      constructor.visitEnd();
+      classNode.methods.add(constructor);
+   }
+
+   private ClassNode createClass(String newClassName) {
+      ClassNode cn = new ClassNode();
+      cn.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC, newClassName, null, Type
+            .getInternalName(Object.class), null);
+      return cn;
+   }
+
+   private String makeUnique(String id) {
+      return id + "_" + Long.toHexString(UNIQUE_ID_GENERATOR.getAndIncrement());
+   }
+   
+   public void returnFromMethod(MethodNode node){
+      String type = Type.getReturnType(node.desc).getDescriptor();
+      if(type.equals("V")){
+         node.visitInsn(Opcodes.RETURN);
+      }else if(type.equals("J")){      
+         node.visitInsn(Opcodes.LRETURN);
+      }else if(type.equals("D")){
+         node.visitInsn(Opcodes.DRETURN);
+      }else if(type.equals("F")){
+         node.visitInsn(Opcodes.FRETURN);
+      }else if (type.equals("I") || type.equals("Z") || type.equals("B")
+            || type.equals("C") || type.equals("S")) {
+         node.visitInsn(Opcodes.IRETURN);
+      } else {
+         node.visitInsn(Opcodes.ARETURN);
+      }
+   }
+   
+   private void loadArgument(MethodNode node, int index) {
+      String type = Type.getArgumentTypes(node.desc)[index]
+            .getDescriptor();
+      int argumentIndex = index + 1;
+      if (type.equals("J")) {
+         node.visitVarInsn(Opcodes.LLOAD, argumentIndex);
+      } else if (type.equals("D")) {
+         node.visitVarInsn(Opcodes.DLOAD, argumentIndex);
+      } else if (type.equals("F")) {
+         node.visitVarInsn(Opcodes.FLOAD, argumentIndex);
+      } else if (type.equals("I") || type.equals("Z") || type.equals("B")
+            || type.equals("C") || type.equals("S")) {
+         node.visitVarInsn(Opcodes.ILOAD, argumentIndex);
+      } else {
+         node.visitVarInsn(Opcodes.ALOAD, argumentIndex);
+      }
+   }
+
+   private void loadArguments(MethodNode node) {
+      for (int i = 0; i < Type.getArgumentTypes(node.desc).length; ++i) {
+         loadArgument(node, i);
+      }
+   }
+}
+
+There are five things that we have to do to create a chain builder service.
+
+Create a new class with Object.classas its superclass
+
+This is done in createClass() method by using method visit() and passing it class- version, access type, new classname and superclass name. The classnames have to be internal names. Internal name of a class is its fully qualified name (as returned by Class.getName(), where ‘.’ are replaced by ‘/’).
+
+Implement the service interface
+
+In implementInterface(), we add an interface by adding its internal name to the list of interfaces of classNode.
+
+Create an instance field to hold instances of each command
+
+In createInstancesField() method, we create a field _instances of type Object[] to hold the commands by creating an instance ofFieldNode and adding it to the list of fields.
+
+Create a constructor
+
+The constructor has to be of the form
+
+         public className(Object [] instances){
+            super();
+            this._instances = instances;
+         }
+      
+
+This is done in createConstructor() method by creating a method of type "()V"(takes no-argument and returns void). The code inside the method is added using visit*() methods. We first load the instance and call constructor (i.e ()V) of the super-class. We, then, load the instance and the first argument(_instances) on the stack and finally callputfield to put the value into the _instances field.
+Add each method in the interface to the new class
+
+As there are different load instructions for double, float, long, object and integers(chars, boolean, byte included), we have to use a an if-else if-else ladder statement for returning from methods and loading arguments.
+
+Finally we loop over all the methods of this interface and calladdMethod() on each method. In addMethod(), we create a method to do the following
+
+         public void methodName(parameters){
+            int i = 0;
+            int length = 0;
+            for(i = 0; i < length; ++i){
+               _instances[i].methodName(parameters);
+            }
+         }
+      
+
+So, we start by creating two variables of type int(I) usingvisitLocalVariable(). visitLocalVariable() requires two labels between which the variable will be scoped. So we create methodStartand methodEnd and place then at the beginning and end of the method. We then initialize i with constant 0 using visitLdcInsn() and lengthwith _instances.length using arraylength instruction which requires an array on top of the stack.The next step is to iterate using if-condition and jump. We create a loop by first creating a label. We, then, put the variables, i and length on the stack and check if i >= length. If so, we jump to the end of the loop, otherwise we call the method of same name in the current command (_instances[i]). After the method call we jump back to the start of the loop.
+It uses a simple class loader to load the class
+
+public class SimpleClassLoader extends ClassLoader {
+
+    public Class<?> defineClass(String className, byte [] classBytes){
+        return super.defineClass(className, classBytes, 0, classBytes.length);
+    }
+}
+In order to use it, let us define a service
+
+public interface MyService {
+   void process();
+   void processWithDoubleArgument(double num);
+   void processWithLongArgument(long num);
+   void processWithMultipleArguments(char c, boolean z, int i, short s, byte b);
+   void processWithObject(Object object);
+}
+We, then, create a ChainBuilder as
+
+public class Demo {
+   public static void main(String [] args){
+       ChainBuilder builder = new ASMChainBuilder();
+       List<MyService> services = new ArrayList<MyService>();
+       services.add(new MyService(){
+
+         public void process(){
+            System.out.println("processing 1");
+         }
+
+         public void processWithDoubleArgument(double num) {
+            System.out.println("processing 1");
+            
+         }
+
+         public void processWithLongArgument(long num) {
+            System.out.println("processing 1");
+            
+         }
+
+         public void processWithMultipleArguments(char c, boolean z, int i,
+               short s, byte b) {
+            System.out.println("processing 1");
+            
+         }
+         public void processWithObject(Object object){
+            System.out.println("processing 1");
+         } 
+       });
+       
+       services.add(new MyService(){
+
+          public void process(){
+             System.out.println("processing 2");
+          }
+
+         public void processWithDoubleArgument(double num) {
+            System.out.println("processing 2");
+         }
+
+         public void processWithLongArgument(long num) {
+            System.out.println("processing 2");
+         }
+
+         public void processWithMultipleArguments(char c, boolean z, int i,
+               short s, byte b) {
+            System.out.println("processing 2");
+         }           
+         
+         public void processWithObject(Object object){
+            System.out.println("processing 2");
+         }
+        });
+       MyService service = builder.build(MyService.class, services);
+       service.process();
+       service.processWithDoubleArgument(10.0);
+       service.processWithLongArgument(50L);
+       service.processWithMultipleArguments('C', true, 125, (short)123, (byte)10);
+    }
+  }
+}

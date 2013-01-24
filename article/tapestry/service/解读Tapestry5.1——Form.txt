@@ -1,0 +1,105 @@
+﻿解读Tapestry5.1——Form
+
+学中修订部分字眼。
+http://blog.csdn.net/mindhawk/archive/2009/12/21/5045815.aspx
+
+tapestry源码品读
+
+之前，我已经介绍过了Tapestry的请求调用链（《解读Tapestry5.1——请求调用链》），页面渲染（《解读Tapestry5.1——页面渲染》），和事件分派（《Tapestry5 事件分派机制》）这几个方面的内容。本文将进一步讲述有关Form及其相关组件的内容，构成一个完整的页面渲染和交互的体系，阐述清楚Tapestry的基本工作原理。
+
+1.介绍
+
+Form提交数据，是Web应用里面非常重要的一个环节，不论哪一个Web框架都会或多或少的提供对 Form提交数据的支持。目的是为了减少处理提交过程的复杂性，使后台的数据处理可以更平滑的实现。
+
+那么，Tapestry又是使用了一种什么样的思想来处理Form提交的事件呢？又是如何将用户输入的数据可以自动的回填到数据对象上呢？
+
+Tapestry处理Form提交的原理是维护渲染时产生的与用户输入相关的状态，比如说Form里面有几个输入框，有几个多选框之类的状态。这样，一旦用户触发了Form的提交事件，Form组件就可以根据这部分维护住的数据重新调度相关的组件，给它们一个执行的机会，将数据重新填回绑定的数据对象中去。
+
+不难看出，这就需要Form组件和与Form相关组件（如TextField）协同工作，在页面渲染阶段生产需要保存的状态，然后再在提交阶段依据这些信息回填用户输入的数据。为了方便讲述，后文将与Form相关的组件称为“交互组件”，将Form组件与交互组件统称为“交互型组件”。
+
+下文，我将分渲染和提交两个阶段说明Form的工作原理，每个阶段又会分作Form组件和交互组件说明它们各自的职责。
+
+2.渲染阶段
+
+《解读Tapestry5.1——页面渲染》一文详细讲述了页面渲染的过程，里面谈到了一个叫做“渲染环境”的概念。这一环境是为组件的渲染提供了基本的支持。对于交互型组件，同样有相关的环境支持。Form组件负责完成这一环境的构造，而其它交互组件则直接从环境中获取这些环境 。下面，将分开讨论Form组件和交互组件在渲染阶段需要做的工作。
+
+2.1 Form组件
+
+From组件在BeginRender阶段会向环境中加入org.apache.tapestry5.services.FormSupport和org.apache.tapestry5.ValidationTracker这两个环境服务。
+
+其中，FormSupport是最重要的一个环境服务，它负责给Form组件分配name和id，负责保存需要维护的状态，并为组件提供了一个了解当前Form工作状态的接口。后续交互组件如果需要通过它来获得id和name，通过它来保存事件提交阶段需要使用和执行的操作。Formupport使用了一个非常重要服务，叫做org.apache.tapestry5.corelib.internal.ComponentActionSink。在最终将需要维护的数据输出到页面之前，所有的数据都是保存在它里面的。至于保存的数据是什么，接下来说明。
+
+虽然保存的状态是最重要的，但最吸引我的是ComponentActionSink这个服务的名字，译成中文大概是“组件行为槽”的意思，也就是说是一个用来放具有一定行为的东西的槽。
+
+槽里面存放的东西是组件期望在事件提交阶段被调用的行为，落到实处就是一个实现了 org.apache.tapestry5.ComponentAction接口的对象。ComponentAction接口继承了 java.io.Serializable接口，所以它的实现类是可序列化的，可以用于持久数据的对象，而同时它只有一个方法“void execute(T component)”，会在Form的提交阶段被调用，所以又给了这个实现类一个被激发的机会。换句话说，ComponentActionSink保存的是一组可序列化的，实现了ComponentAction接口的，执行特定动作的对象。ComponentAction的用途会在2.2交互组件一节说明。
+
+那么这个“槽”又是如何存放数据的呢？弄清这一点就更能形象的理解为什么称它是一个槽了。“槽”会将数据交由 org.apache.tapestry5.internal.services.ClientDataSink处理，它维护了一个采用base64 编码，GZip压缩的对象输出流（java.io.ObjectOutputStream），也就是说它是一条数据流动的“槽”，通过这个“槽”数据最终会有序的流向Form里面的一个名为“t:formdata”的隐藏字段。现在应该就能理解《解读Tapestry5.1——页面渲染》中的示例里面为什么有一段不可读的串了。
+
+接下来，我们谈谈ValidationTracker这个环境服务。这个服务的作用相对简单一些，主要是保存Form在提交阶段验证时出现的异常，以便后续显示时可以输出给用户。默认的它会采用一种称之为Flash的持久化策略进行保存。这种策略的特点是在第二次访问时，数据就会被清除掉。这样，当一个页面提交并显示之后，保存在session中数据就被清空了。不过这种策略有一个小问题，如果页面只是显示，并不提交，那么ValidationTracker就会随着不断的刷新，一下保存在session中，一下又从 session清除，但这不会影响到提交阶段，因为Form组件采用了脏数据的机制保证提交阶段的数据一定会保存到下一次渲染，而此次渲染结束后就一定会被清空。这一点确实不是很优雅，期望Tapestry继续改进，不过好在单纯的一次渲染不会实际的在ValidationTracker保存数据，所以不会浪费太多的内存。
+
+最后，Form组件在AfterRender阶段，会将这两个环境服务清除，其它的组件就不会误使用到这个Form内部的环境服务。
+
+2.2 交互组件
+
+讲完Form在渲染阶段需要做的工作后，我们再来看看交互组件是如何工作的。其实，它们工作的原理在前面就已经提到过。这里再系统的说明一次。一般来说，组件会在Setup，BeginRender或者AfterRender阶段向FormSupport中保存数据，而在提交阶段由Form组件激发这些保存的ComponentAction执行操作。这个时候，就可以完成诸如数据回填和事件再转发等动作。
+
+下面以TextField这个组件为例，说明它会保存什么样的ComponentAction。
+
+TextField比较简单，它会在Setup阶段向FormSupport中保存两个ComponentAction，下面我贴出这两个ComponentAction的代码。
+
+static class Setup implements ComponentAction<AbstractField>, Serializable
+      {
+          private static final long serialVersionUID = 2690270808212097020L;
+          private final String controlName;
+          public Setup(String controlName)
+          {
+              this.controlName = controlName;
+          }
+          public void execute(AbstractField component)
+          {
+              component.setupControlName(controlName);
+          }
+          @Override
+          public String toString()
+          {
+              return String.format("AbstractField.Setup[%s]", controlName);
+          }
+      }
+      static class ProcessSubmission implements ComponentAction<AbstractField>, Serializable
+      {
+          private static final long serialVersionUID = -4346426414137434418L;
+          public void execute(AbstractField component)
+          {
+              component.processSubmission();
+          }
+          @Override
+          public String toString()
+          {
+              return "AbstractField.ProcessSubmission";
+          }
+      }
+它们是两个内部类，一个用于保存组件当前的name，一个用于激发组件的processSubmission方法。这个方法将会调用验证器验证输入的数据是否满足需求，如果是则会回填到绑定的数据中，如果不是就会在ValidationTracker中记录一个错误。
+
+3.提交阶段
+
+提交阶段和Tapestry的事件处理机制密切相关，相关的说明可以参见《解读Tapestry5.1——请求调用链》和《Tapestry5 事件分派机制》这两篇博文。本文主要讲述事件到达后，Form组件是如何调度执行的，本节同样分为Form组件和交互组件两个部分说明。
+
+3.1 Form组件
+
+Form组件在渲染过程中，会将Form标签里的action属性里面记录下一个action事件，并且它自己会监听这个事件。因此，当一个Form提交时，Form组件的onAction方法就会被调用。交互型组件的提交过程就会从这个方法开始。
+
+与渲染阶段类似，Form组件也会添加FormSupport和ValidationTracker这两个环境服务，并产生一系列的事件，比如 prepare，submit，success和failure等等。Form的容器组件（一般来说是页面）就可以通过监听这些事件来响应用户的输入了。
+
+Form组件最重要的一项工作是在prepare之后，success或failure之前，将渲染时保存在“t:formdata”这个隐藏字段中的数据通过"组件行为槽"再提取出来，解编码，解压缩，反序列化为ComponentAction，并依照保存的顺序，逐个调用它们执行。
+
+接到调用的通知后，各个组件就要开始实际的处理提交事件了，即下一节将讲述的交互组件的任务。
+
+3.2 交互组件
+
+不同的交互组件会向FormSupport中保存不同的ComponentAction，本节还是以TextField为例说明它要做的工作。
+
+TextField组件向FormSupport保存了Setup和ProcessSubmission 两个ComponentAction。提交阶段Setup首先会被激发执行，这时，保存在Setup中的组件controlName将会回填到组件中，让组件知道自己渲染时所对应的name。注意，这个name可能是会变化的，比如在一个Loop循环中，同一个组件就会被多次执行，每一次都会有唯一的一个 name。其后ProcessSubmission也将会被激发。在这两个函数里面，TextField组件会使用组件回填回来的name从 Request中提取参数，并调用验证器验证这个输入的数据，如果正确则回填到绑定的数据中，如果不正确则向ValidationTracker记录一个异常。
+
+这样，数据就可以正常的回到绑定的数据当中去。
+
+Form就介绍到这里，希望给出了一个大致的执行流程。

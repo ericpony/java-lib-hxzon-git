@@ -1,0 +1,104 @@
+﻿Adding "Ajax Throbbers" to Zone updates
+学中注释。
+为zone添加一个更新指示器。
+
+作者：Howard Lewis Ship
+来自：Tapestry Central
+
+http://tapestryjava.blogspot.com/2011/12/adding-ajax-throbbers-to-zone-updates.html
+http://feedproxy.google.com/~r/TapestryCentral/~3/cYkGpxaTh0g/adding-ajax-throbbers-to-zone-updates.html
+
+A common desire in Tapestry is for Zone updates to automatically include a throbber (or "spinner") displayed while the Ajax update is in process. This is, unfortunately, a space where the built-in Tapestry 5.3 Zone functionality is a bit lacking. Fortunately, it's not too hard to hard it in after the fact.
+
+一个常见的需求是在zone更新时添加一个指示器，只是正在进行ajax处理。
+
+This solution involves a JavaScript library, two CSS stylesheet files (one is IE specific), plus the "throbber" image. Typically, you'll bind all of these things together in your application's Layout component.
+
+
+First, the JavaScript. We need to intercept links and forms that update a Zone. When such a request starts, we add a <div> to the top of the Zone's client-side element. When the update from the server arrives, the entire content of the Zone's element will be replaced (so we don't have to worry about clearing the <div> explicitly).
+
+Tapestry.onDOMLoaded(function () {
+    function addAjaxOverlay(event, element) {
+ 
+        var mgr = Tapestry.findZoneManager(element);
+        var zone = mgr && mgr.element;
+        if (!zone) {
+            return;
+        }
+ 
+        zone.insert({top:"<div class='zone-ajax-overlay'/>"});
+        var zoneDims = zone.getDimensions()
+        var overlay = zone.down("div");
+ 
+        overlay.setStyle({
+            width:zoneDims.width + "px",
+            height:zoneDims.height + "px" });
+    }
+ 
+    $(document.body).on(Tapestry.FORM_PROCESS_SUBMIT_EVENT, addAjaxOverlay);
+    $(document.body).on(Tapestry.TRIGGER_ZONE_UPDATE_EVENT, addAjaxOverlay);
+});
+
+
+When a form is submitted with Ajax, to update a Zone, Tapestry fires a client-side event on the Form; the Tapestry.FORM_PROCESS_SUBMIT_EVENT constant provides the event name. The primary handler for this event is the code that actually performs the XmlHTTPRequest and sets up a handlers for the response; the above code adds a second handler that adds the Ajax overlay.
+
+上述代码添加了一个事件处理方法来添加一个ajax覆盖层。
+
+Likewise, when a link is used to update a Zone, there's a second client-side event; again, the primary handler for the event does the actual Ajax work, but the same logic allows the Zone to be decorated with the overlay.
+
+
+The overlay consists of a <div> that will visually mark the entire zone's content and consume any mouse clicks during the Ajax update. The CSS associated with the zone-ajax-overlay CSS class sets up a translucent background color and the spinning Ajax throbber.
+
+
+Next up is the CSS:
+
+
+
+
+This little bit of CSS is doing quite a bit. Firstly, if the Ajax request is very quick, then there will be an annoying flicker; to combat this, we've set up a 《simple CSS animation》 to delay the animation momentarily, long enough that fast requests will just see the new content pop into place. There's probably a bit of room here to tweak the exact timing. 
+
+
+Alas, in the current world, we need to do a bit of work to support both Firefox (the -moz prefix) and WebKit (Safari, Chrome, the -webkit prefix). This is really calling out for a SASSy solution.
+
+
+You'll also see an animated image for the throbber. I used ajaxload.info to create one.
+
+
+But what about Internet Explorer? It doesn't understand the animation logic, and it does CSS opacity differently from the others. Fortunately, we can segregate those differences in a separate CSS file.
+
+
+
+
+Lastly, we put all this together inside the application's Layout component:
+
+@Import(library="context:js/zone-overlay.js", stylesheet="context:css/zone-overlay.css")
+public class Layout {
+  @Inject @Path("context:css/zone-overlay-ie.css")
+  private Asset ieCSS;
+ 
+  @Environmental
+  private JavaScriptSupport javaScriptSupport;
+ 
+  void afterRender() {
+    javaScriptSupport.importStylesheet(new StylesheetLink(ieCSS,
+                                       new StylesheetOptions().withCondition("IE")));
+    }
+  }
+}
+
+
+The @Import annotation does the easy imports of the main CSS and JavaScript.
+
+Tapestry 5.3 supports IE conditional stylesheets ... but this requires just a bit of code as the @Import annotation doesn't support adding a condition, as this is a fairly rare requirement.
+
+
+Instead, the IE-specific CSS is injected into the page as an Asset object; this can be combined with StylesheetOptions to form a StylesheetLink, which can be imported into the page.
+
+
+With this in place, every page will include both CSS stylesheets (one as an IE-only conditional comment) and the necessary client-side logic ... and every Zone update will get this uniform treatment.
+
+
+There's some limitations here; in Tapestry it's possible for the server-side to push updates into multiple Zones. The client-side doesn't even know that's happening until it gets the reply, so there's no universal way to add overlays to multiple zones when the request is initiated.
+
+
+Secondly, in rare cases, a Zone update may only update other Zones, and leave the initiating Zone's content unchanged. In that case, you may find that the Zone's throbber is still in place after the response is handled! I'll leave it as an exercise to the reader on how to deal with that.

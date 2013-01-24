@@ -1,0 +1,151 @@
+﻿Meeting Plastic III: @Property
+学中注释。
+使用Plastic实现@Property注解。
+
+http://tawus.wordpress.com/2011/04/21/plastic-property/
+
+Remember the @Property annotation in Tapestry, let us try its implementation in Plastic. In order to transform an existing class in Tapestry, it has to be placed in a controlled package. This package has to be passed to the PlasticManager along with the PlasticClassTransformer for the magic to take place.
+
+We start with the annotation
+
+/**
+ * This annotation is used as a marker for {@link plasticdemo.transforms.PropertyTransformer}
+ */
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Property {
+   /**
+    * whether setter method has to be created
+    */
+   boolean write() default true;
+}
+It is similar to the one we have in Tapestry with write() deciding whether setter method has to be created or not. Now the real magic
+
+/**
+ * A class transformer that checks for {@link plasticdemo.annotations.Property}
+ * annotation on fields and generates getter and setter methods for that field
+ */
+public class PropertyTransformer implements PlasticClassTransformer {
+   /**
+    * Transform class
+    */
+   public void transform(PlasticClass plasticClass) {
+   //获取含有特定注解的字段
+      for (PlasticField field : plasticClass.getFieldsWithAnnotation(Property.class)) {
+         introduceGetter(plasticClass, field);
+
+         Property annotation = field.getAnnotation(Property.class);
+         if (annotation.write()) {
+            introduceSetter(plasticClass, field);
+         }
+      }
+   }
+
+   /**
+    * Introduce a getter method
+    * 
+    * @param plasticClass plastic class
+    * @param field field for which getter is to be generated
+    */
+   private void introduceGetter(PlasticClass plasticClass, final PlasticField field) {
+      String methodName = toMethodName("get", field.getName());
+      MethodDescription getterDescription = new MethodDescription(field.getTypeName(), methodName);
+      PlasticMethod method = plasticClass.introduceMethod(getterDescription);
+      final FieldHandle fieldHandle = field.getHandle();
+      //给方法添加“劝告”
+      method.addAdvice(new MethodAdvice() {
+         public void advise(MethodInvocation invocation) {
+            invocation.setReturnValue(fieldHandle.get(invocation.getInstance()));
+         }
+
+      });
+
+   }
+
+   /**
+    * Introduce a setter method
+    * 
+    * @param plasticClass plastic class
+    * @param field field for which setter is to be generated
+    */
+   private void introduceSetter(PlasticClass plasticClass, final PlasticField field) {
+      String methodName = toMethodName("set", field.getName());
+      MethodDescription setterDescription = new MethodDescription("void", methodName,
+               field.getTypeName());
+      PlasticMethod method = plasticClass.introduceMethod(setterDescription);
+      final FieldHandle fieldHandle = field.getHandle();
+      method.addAdvice(new MethodAdvice(){
+
+         public void advise(MethodInvocation invocation) {
+            fieldHandle.set(invocation.getInstance(), invocation.getParameter(0));            
+         }
+         
+      });
+   }
+
+   /**
+    * Creates a method name
+    * 
+    * @param prefix prefix to append to the method name
+    * @param name field name
+    * @return method name
+    */
+   private String toMethodName(String prefix, String name) {
+      String methodName = name.replaceAll("^_*", "");
+      return prefix + Character.toUpperCase(methodName.charAt(0)) + methodName.substring(1);
+   }
+}
+Let us go step by step. We implement PlasticClassTransformer which has a single method transform. In this method we usePlasticClass.getFieldsWithAnnotation() method to get the list of all fields having @Property annotation. We then add get method and if write() is true then set method to the class.
+
+In order to add a get method we use the introduceMethod and pass it a MethodDescription. This MethodDescription constructor takes return type, method name and method parameters as arguments. In this case the return type is field’s own type and the method takes no parameters. It adds PUBLIC access to the method which is what we require here. After the method is created we add an advice. The advice returns the value of the field.
+
+For creating the setter method, we use a different MethodDescription. In this case the return type is void and it takes a parameter of the same type as that of the field. After the method is created we add an advice. The advice sets the field to the passed argument.
+
+Below is a spock test specification to show the usage
+
+public class Foo {
+
+   @SuppressWarnings("unused")
+   @Property
+   private String name;
+
+   @SuppressWarnings("unused")
+   @Property
+   private int _num;
+}
+
+/**
+ * Tests {@link plasticdemo.transforms.PropertyTransformer}
+ */
+class PropertyTransformerTest extends Specification {
+   def pm
+   
+   def setup(){
+      pm = PlasticManager.withContextClassLoader().delegate(
+         new StandardDelegate(new PropertyTransformer())).
+         packages(["plasticdemo.controlled"]).create();
+   }
+   
+   def "test if setter/getters have been introduced into foo"(){
+      when:
+      def foo = pm.getClassInstantiator("plasticdemo.controlled.Foo").newInstance()
+      
+      def setName = foo.class.getDeclaredMethod("setName", String.class)
+      def setNum = foo.class.getDeclaredMethod("setNum", int.class)
+      then:
+      setName != null
+      when:
+      def getName = foo.class.getDeclaredMethod("getName")
+      def getNum = foo.class.getDeclaredMethod("getNum")
+      then:
+      getName != null
+      getNum != null
+      when:
+      setName.invoke(foo, "bar")
+      setNum.invoke(foo, 55)
+      then:
+      getName.invoke(foo).equals("bar")
+      getNum.invoke(foo).equals(55)
+   }
+}
+The source code of this example and others can be found 《here》

@@ -1,0 +1,178 @@
+﻿tapestry template-skinning
+学中注释。
+自定义模板查找路径。
+
+In this article I want to share with you a new awesome Tapestry feature introduced in 5.3. This feature allows you to provide different skins for a single page by creating several templates. These different templates are used by Tapestry to render the same page in a special way for different clients. For example, when developing a web application for both standard and mobile clients you might need to render the same page different depending on the current client. So, you need to create two different templates for each page and choose one of them depending on the user agent sent by the client.
+面对不同的客户端，例如传统客户端和移动客户端，对于同一个页面需要选择不同的模板来渲染。
+
+In the Extending Template Lookup Mechanism article I described how to accomplish that in Tapestry 5.2. The described approach was not ideal because of the issue with Tapestry’s template cache. Anyway, the new API in Tapestry 5.3 is cool. Let’s see it in action. First, let me show you how the template cache works.
+
+Template cache
+模板缓存
+
+As you probably know the structure of Tapestry’s pages is static. I don’t want to cover the reasons for the static structure in this article; please read Tapestry’s documentation for more details. Because of the static structure the instances of Tapestry pages can be cached. You can imagine the page cache as a multidimensional coordinate system. By default the cache is two-dimensional; one of the axes is for page classes, the other for locales. If you have n pages in your application and you configured Tapestry to support m locales, then there might be maximal n * m page instances in the cache, as illustrated in the following figure.
+缓存在两个维度，一个是页面，一个是国际化。
+
+http://blog.tapestry5.de/wp-content/uploads/2011/06/page_cache.png
+
+The new API in Tapestry 5.3 allows you to add additional dimensions to the cache matrix. For example, a new dimension might be the client. Let’s say we have two different clients: standard and mobile. In this case the maximal number of page instances is n * m * 2, as shown in the following example.
+一个新的维度是客户端类型。
+
+http://blog.tapestry5.de/wp-content/uploads/2011/06/page_cache_3d.png
+
+Now let’s explore how to provide client-specific templates for pages and how to add additional dimensions to the page cache.
+
+Locating component resources
+定位组件资源
+
+The ComponentResourceLocator interface is the central service for locating resources for components. The interface defines two methods:
+
+locateTemplate: Locates the template for a component (including pages and base classes).
+locateMessageCatalog: Locates the message catalog for a component.
+
+Both methods take a ComponentResourceSelector parameter. Briefly speaking, ComponentResourceSelector defines the axes to be used by the page cache.
+
+The default implementation of the ComponentResourceLocator interface reads only the Locale from the passed ComponentResourceSelector instance, so that the cache is 2-dimensional. Let’s create our own implementation of ComponentResourceSelector interface which will make use of a third dimension. The following example demonstrates how to accomplish that.
+
+默认的组件资源定位器只有两个维度。自定义一个组件资源定位器，它使用三个维度。
+
+public class CustomComponentResourceLocator
+              implements ComponentResourceLocator {
+
+    private final ComponentResourceLocator delegate;
+
+    private final Resource contextRoot;
+
+    private final ComponentClassResolver resolver;
+
+    public CustomComponentResourceLocator(
+          ComponentResourceLocator delegate,
+          Resource contextRoot,
+          ComponentClassResolver resolver) {
+
+        this.delegate = delegate;
+        this.contextRoot = contextRoot;
+        this.resolver = resolver;
+    }
+
+    @Override
+    public Resource locateTemplate(
+              ComponentModel model,
+              ComponentResourceSelector selector) {
+
+        if(!model.isPage()) {
+            return null;
+        }
+
+        String className = model.getComponentClassName();
+
+        String logicalName =
+              resolver.resolvePageClassNameToPageName(className);
+
+        Client client = selector.getAxis(Client.class);
+
+        if (client == Client.MOBILE) {
+            //如果请求来自移动客户端，则改为在mobile目录下查找模板文件。
+            String path = String.format("mobile/%s.%s",
+                     logicalName,
+                     TapestryConstants.TEMPLATE_EXTENSION);
+
+            Resource resource = contextRoot.forFile(path);
+
+            if (resource.exists()) {
+                return resource.forLocale(selector.locale);
+            }
+        }
+
+        return delegate.locateTemplate(model, selector);
+    }
+
+    @Override
+    public List<Resource> locateMessageCatalog(
+              Resource baseResource,
+              ComponentResourceSelector selector) {
+
+        return delegate.locateMessageCatalog(
+                               baseResource, selector);
+    }
+}
+
+As you can see, our implementation is a decorator for the original ComponentResourceLocator implementation. Inside the locateTemplate() method the passed ComponentResourceSelector instance is used to retrieve the third axis which is of type Client. If the current client is Client.MOBILE, we try to locate a special template from the mobile sub-folder. If a page template exists in this sub-folder, it is returned. Otherwise we delegate to the original ComponentResourceLocator implementation in order to return the default template.
+
+Next, we need to decorate the built-in ComponentResourceLocator by providing a decorate method in the AppModule class.
+
+public class AppModule {
+
+   @Decorate(serviceInterface = ComponentResourceLocator.class)
+   public static Object customComponentResourceLocator(
+           ComponentResourceLocator delegate,
+           @ContextProvider AssetFactory assetFactory,
+           ComponentClassResolver componentClassResolver) {
+
+        return new CustomComponentResourceLocator(
+                      delegate,
+                      contextAssetFactory.getRootResource(),
+                      componentClassResolver);
+    }
+}
+
+Where does the Client axes come from? This is where the ComponentRequestSelectorAnalyzer service comes into play. This service has been introduced in Tapestry 5.3 and is responsible for determining the ComponentResourceSelector for the current request. The default implementation of the interface creates a 2-dimensionalComponentResourceSelector instance; the axes are page class and Locale for the current request. Let’s implement our own ComponentRequestSelectorAnalyzer implementation which will return a 3-dimensional ComponentResourceSelector. The following example demonstrates how to accomplish that.
+
+
+自定义组件请求选择分析器，由它生成客户端类型信息。
+
+public class CustomComponentRequestSelectorAnalyzer
+                implements ComponentRequestSelectorAnalyzer {
+
+    private final ThreadLocale threadLocale;
+
+    private ClientService clientService;
+
+    public CustomComponentRequestSelectorAnalyzer(
+          ThreadLocale threadLocale,
+          ClientService clientService) {
+
+        this.threadLocale = threadLocale;
+        this.clientService = clientService;
+    }
+
+    @Override
+    public ComponentResourceSelector buildSelectorForRequest() {
+
+       Locale locale = threadLocale.getLocale();
+       Client client = clientService.getCurrentClient();
+
+        return new ComponentResourceSelector(locale)
+                      .withAxis(Client.class, client);
+    }
+}
+
+As you can see, we create a ComponentResourceSelector by passing the current Locale to the constructor. Then we add an additional axis of type Client. The current Client is retrieved from ClientService which is your custom service. Probably you would implement such a service by examining the User-Agent HTTP header. Anyway, the implementation details of ClientService are not interesting for this article.
+
+Finally, we need to override the original implementation of ComponentRequestSelectorAnalyzer service by contributing to the ServiceOverride service’s configuration, as shown in the following example.
+
+public class AppModule {
+
+    public static void bind(ServiceBinder binder) {
+        binder.bind(ClientService.class,
+                    ClientServiceImpl.class);
+
+        binder.bind(ComponentRequestSelectorAnalyzer.class,
+                    CustomComponentRequestSelectorAnalyzer.class)
+             .withId("CustomComponentRequestSelectorAnalyzer");
+    }
+
+     @Contribute(ServiceOverride.class)
+    public static void overrideSelectorAnalyzer(
+           MappedConfiguration<Class, Object> cfg,
+
+          @InjectService("CustomComponentRequestSelectorAnalyzer")
+          ComponentRequestSelectorAnalyzer analyzer){
+
+           cfg.add(ComponentRequestSelectorAnalyzer.class, analyzer);
+    }
+}
+
+That’s all. Whenever you ClientService determines that the current client is a mobile devices and returns Client.MOBILE, Tapestry will look for a template in the mobile sub-folder in the context root. If found it is used to render the response for the mobile device. If not found, the default template is used.
+
+Have fun with Tapestry and stay tuned.

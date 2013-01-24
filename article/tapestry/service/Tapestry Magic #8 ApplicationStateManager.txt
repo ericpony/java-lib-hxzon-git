@@ -1,0 +1,164 @@
+﻿Tapestry Magic #8: ApplicationStateManager
+学中注释。
+使用应用状态管理器，渲染过滤器，PropertyShadowBuilder通知用户。参见《Tapestry Magic #6: Environment》
+
+http://tawus.wordpress.com/2011/04/28/tapestry-magic-8-applicationstatemanager/
+
+The Notifications we had in 《this post》 are fine when we are dealing with requests which are not redirect-after-post. But in case we want to notify users after a post request like onSubmit from a form, we cannot use Environment as after the post request is complete a redirect is done and so no Environment is available to the MarkupRendererFilter.
+但是，当我们想在一个请求（如onSubmit）后通知用户，此时我们无法使用“环境”，因为跳转已经完成。
+
+This kind of information which is spread across requests can be stored in ApplicationStateManager. This information gets stored in the session.
+使用应用状态管理器。将信息保存到会话中。
+The Notifications interface and its implementation will remain the same
+
+public interface Notifications {
+   void inform(String message);
+   void warn(String message);
+   void error(String error);
+   boolean getHasMessages();
+   List<String> getInformations();
+   List<String> getWarnings();
+   List<String> getErrors();
+   void clear();
+}
+
+public class NotificationsImpl implements Notifications {
+   private List<String> informations = new ArrayList<String>();
+   private List<String> warnings = new ArrayList<String>();
+   private List<String> errors =new ArrayList<String>();
+
+   public void inform(String message) {
+      informations.add(message);      
+   }
+
+   public void warn(String message) {
+      warnings.add(message);      
+   }
+   
+   public void error(String message) {
+      errors.add(message);      
+   }
+   
+   public boolean getHasMessages(){
+      return informations.size() != 0 || warnings.size() != 0 ||
+         errors.size() != 0;
+   }
+   
+   public List<String> getInformations(){
+      return informations;
+   }
+   
+   public List<String> getWarnings(){
+      return warnings;
+   }
+   
+   public List<String> getErrors(){
+      return errors;
+   }
+   
+   public void clear(){
+      informations.clear();
+      warnings.clear();
+      errors.clear();
+   }
+
+}
+
+The notifications will be managed by a NotificationsManager service
+信息管理器：
+public interface NotificationsManager {
+   
+   public Notifications getNotifications();
+
+}
+This service is implemented using ApplicationStateManager
+
+public class NotificationsManagerImpl implements NotificationsManager {
+   
+   private ApplicationStateManager stateManager;
+
+   public NotificationsManagerImpl(ApplicationStateManager stateManager){
+      this.stateManager = stateManager;
+   }
+
+   public Notifications getNotifications() {
+      if(!stateManager.exists(Notifications.class)){
+         stateManager.set(Notifications.class, new NotificationsImpl());
+      }
+      return stateManager.get(Notifications.class);
+   }
+
+}
+This service creates an instance of Notifications and keeps it in the session using ApplicationStateManager.
+
+Now the rendering part. We again use a MarkupRenderer but this time instead of getting notifications from the Environment, we get it from NotificationsManagerservice. The rest of the code remains the same.
+渲染过滤器定义如下：
+public class NotificationsMarkupRendererFilter implements MarkupRendererFilter {
+   private Environment environment;
+   private Asset notificationsScript;
+   private NotificationsManager notificationsManager;
+
+   public NotificationsMarkupRendererFilter(Asset notificationsScript,
+         Environment environment, NotificationsManager notificationsManager) {
+      this.environment = environment;
+      this.notificationsManager = notificationsManager;
+      this.notificationsScript = notificationsScript;
+   }
+
+   public void renderMarkup(MarkupWriter writer, MarkupRenderer renderer) {
+      if (environment.peek(JavaScriptSupport.class) != null) {
+         Notifications notifications = notificationsManager.getNotifications();
+         JavaScriptSupport javaScriptSupport = environment
+               .peek(JavaScriptSupport.class);
+         if (notifications.getHasMessages()) {
+            JSONObject spec = new JSONObject();
+            spec.put("informations", new JSONArray(notifications
+                  .getInformations().toArray()));
+            spec.put("warnings", new JSONArray(notifications.getWarnings()
+                  .toArray()));
+            spec.put("errors", new JSONArray(notifications.getErrors()
+                  .toArray()));
+            String url = notificationsScript.toClientURL();
+            if (!url.endsWith("/")) {
+               url = url.substring(0, url.lastIndexOf("/") + 1);
+            }
+            spec.put("url", url);
+            javaScriptSupport.importJavaScriptLibrary(notificationsScript);
+            //
+            javaScriptSupport.addScript(InitializationPriority.LATE,
+                  "Notifications.display(%s);", spec);
+            notifications.clear();
+         }
+      }
+      renderer.renderMarkup(writer);
+   }
+}
+Finally we contribute it to the MarkupRendererHandler
+注册渲染过滤器：
+   public void contributeMarkupRenderer(
+         NotificationsManager notificationsManager,
+         @Inject @Path("assets/notifications.js") Asset notificationsScript,
+         Environment environment,
+         OrderedConfiguration<MarkupRendererFilter> contributions) {
+      contributions.add("notifications", new NotificationsMarkupRendererFilter(
+            notificationsScript, 
+            environment, notificationsManager), "after:JavascriptSupport");
+   }
+To use Notifications interface as a service, we use PropertyShadowBuilder.
+使用PropertyShadowBuilder。
+   
+   public Notifications build(NotificationsManager notificationsManager,PropertyShadowBuilder builder){
+      return builder.build(notificationsManager, "notifications", Notifications.class);
+   }
+
+Now, it can be used in a page as
+通知用户请求完成。
+public class TestPage {
+   @Inject
+   private Notifications notifications;
+
+   void onSubmit(){
+      //do whatever has to be done
+      notifications.inform("Done");
+   }
+}

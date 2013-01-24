@@ -1,0 +1,115 @@
+﻿Tapestry 5.4: Focus on JavaScript
+
+http://feedproxy.google.com/~r/TapestryCentral/~3/mlpJ4i8ShSA/tapestry-54-focus-on-javascript.html
+
+作者：Howard Lewis Ship
+
+Tapestry 5.3.1 is out in the wild ... and if Tapestry is to stay relevant, Tapestry 5.4 is going to need to be something quite (r)evolutionary.
+
+There was some confusion on the Tapestry developer mailing list in advance of this blog post; I'd alluded that it was coming, and some objected to such pronouncements coming out fully formed, without discussion. In reality, this is just a distillation of ideas, a starting point, and not a complete, finalized solution. If it's more detailed than some discussions of Tapestry's evolution in the past, that just means that the mailing list discussion and eventual implementation will be that much better informed.
+In posts and other conversations, I've alluded to my vision for Tapestry 5.4. As always, the point of Tapestry is to allow developers to code less, deliver more, and that has been the focus of Tapestry on the server side: everything drives that point: terseness of code and templates, live class reloading, and excellent feedback are critical factors there. Much of what went into Tapestry 5.3 strengthened those points ... enhancements to Tapestry's meta-programming capabilities, improvements to the IoC container, and reducing Tapestry's memory footprint in a number of ways. I have one client reporting a 30% reduction in memory utilization, and another reporting a 30 - 40% improvement in execution speed.
+
+Interestingly, I think that for Tapestry to truly stay relevant, it needs to shift much, much, more of the emphasis to the client side. For some time, Tapestry has been walking a fine line with regards to the critical question of where does the application execute? Pre-Ajax, that was an easy question: the application runs on the server, with at most minor JavaScript tricks and validations on the client. As the use of Ajax has matured, and customer expectations for application behavior in the browser have expanded, it is no longer acceptable to say that Tapestry is page based, with limited Ajax enhancements. Increasingly, application flow and business logic need to execute in the browser, and the server-side's role is to orchestrate and facilitate the client-side application, as well as to act as a source and sink of data ultimately stored in a database.
+
+As Tapestry's server-side has matured, the client side has not kept sufficient pace. Tapestry does include some excellent features, such as how it allows the server-side to drive client-side JavaScript in a modular and efficient way. However, that is increasingly insufficient ... and the tension caused by give-and-take between client-side and server-side logic has grown with each release.
+
+Nowhere is this more evident than in how Tapestry addresses HTML forms. This has always been a tricky issue in Tapestry, because the dynamic rendering that can occur needs to be matched by dynamic form submission processing. In Tapestry, the approach is to serialize into the form instructions that will be used when the form is submitted (see the store() method of theFormSupport API). These instructions are used during the processing of the form submission request to re-configure the necessary components, and direct them to read their query parameters, perform validations, and push updated values back into server-side objects properties. If you've ever wondered what the t:formdata hidden input field inside every Tapestry forms is about ... well, now you know: it's a serialized stream of Java objects, GZipped and MIME encoded.
+
+However, relative to many other things in Tapestry, this is a bit clumsy and limited. You start to notice this when you see the tepid response to questions on the mailing list such as "how to do cross-field validation?" Doing more complicated things, such as highly dynamic form layouts, or forms with even marginal relationships between fields, can be problematic (though still generally possible) ... but it requires a bit too much internal knowledge of Tapestry, and the in-browser results feel a bit kludgy, a bit clumsy. Tapestry starts to feel like it is getting in the way, and that's never acceptible.
+
+Simply put, Tapestry's abstractions on forms and fields is both leaky and insufficient. Tapestry is trying to do too much, and simply can't keep up with modern, reasonable demands in terms of responsiveness and useability inside the client. We've become used to pages rebuilding and reformatting themselves even while we're typing. For Tapestry to understand how to process the form submission, it needs a model of what the form looks like on the client-side, and it simply doesn't have it. There isn't an effective way to do so without significantly restricting what is possible on the client side, or requiring much more data to be passed in requests, or stored server-side in the session.
+
+The primary issue here is that overall form submission cycle, especially combined with Tapestry's need to serialize commands into the form (as the hidden t:formdata field). Once you add Ajax to this mix, where new fields and rules are created dynamically (on the server side) and installed into the client-side DOM ... well, it gets harder and harder to manage. Add in a few more complications (such as a mix of transient and persistent Hibernate entities, or dynamic creation of sub-entities and relationships) into a form, it can be a brain burner getting Tapestry to do the right thing when the form is submitted: you need to understand exactly how Tapestry processes that t:formdata information, and how to add your own callbacks into the callback stream to accomplish just exactly the right thing at just exactly the right time. Again, this is not the Tapestry way, where things are expected to just work.
+
+Further, there is some doubt about even the desirability of the overall model. In many cases, it makes sense to batch together a series of changes to individual properties ... but in many more, it is just as desirable for individual changes to filter back to the server (and the database) as the user navigates. Form-submit-and-re-render is a green screen style of user interaction. Direct interaction is the expectation now, and that's something Tapestry should embrace.
+
+What's the solution, then? Well, it's still very much a moving target. The goal is to make creating client-side JavaScript libraries easier, to make it easier to integrate with libraries such as jQuery (and its vast library of extensions), make things simpler and more efficient on the client side, and not sacrifice the features that make Tapestry fun and productive in the first place.
+
+Overall Vision
+
+The overall vision breaks down into a number of steps:
+
+Reduce or remove outside dependencies
+Modularize JavaScript
+Change page initializations to use modules
+Embrace client-side controller logic
+Of course, all of these steps depend on the others, so there isn't a good order to discuss them.
+
+Reducing and removing outside dependencies
+
+Tapestry's client-side strength has always been lots of "out of the box" functionality: client-side validation, Zones and other Ajax-oriented behaviors, and a well-integrated system for performing page-level initializations.
+
+However, this strength is also a weakness, since that out of the box behavior is too tightly tied to the Prototype and Scriptaculouslibraries ... reasonable choices in 2006, but out-of-step with the industry today. Not just in terms of the momentum behind jQuery, but also in terms of very different approaches, such as Sencha/ExtJS and others.
+
+It was a conscious decision in 2006 to not attempt to create an abstraction layer before I understood all the abstractions. I've had the intermediate time to embrace those abstractions. Now the big problem is momentum and backwards compatibility.
+
+Be removing unnecessary behaviors, such as animations, we can reduce Tapestry's client-side needs. Tapestry needs to be able to attach event handlers to elements. It needs to be able to easily locate elements via unique ids, or via CSS selectors. It needs to be able to run Ajax requests and handle the responses, including dynamic updates to elements.
+
+All of these things are reasonable to abstract, and by making it even easier to execute JavaScript as part of a page render or page update (something already present in Tapestry 5.3), currently built-in features (such as animations) can be delegated to the application, which is likely a better choice in any case.
+
+Modularizing JavaScript
+
+Tapestry has always been careful about avoiding client-side namespace polution. Through release 5.2, most of Tapestry's JavaScript was encapulated in the Tapestry object. In Tapestry 5.3, a second object, T5 was introduced with the intention that it gradually replace the original Tapestry object (but this post represents a change in direction).
+
+However, that's not enough. Too often, users have created in-line JavaScript, or JavaScript libraries that defined "bare" variables and functions (that are ultimately added to the browser's window object). This causes problems, including collisions between components (that provide competing definitions of objects and functions), or behavior that varies depending on whether the JavaScript was added to the page as part of a full-page render, or via an Ajax partial page render.
+
+The right approach is to encourage and embrace some form of JavaScript module architecture, where there are no explicit global variables or functions, and that all JavaScript is evaluated inside a function, allowing for private variables and functions.
+
+Currently, I'm thinking in terms of RequireJS as the way to organize the JavaScript. Tapestry would faciliate organizing its own code into modules, as well as application-specific (or even page-specific) JavaScript modules. This would mean that de-referencing the T5 object would no longer occur (outside of some kind of temporary compatibility mode).
+
+For example, clicking a button inside some container element might, under 5.3, publish an event using Tapestry's client-side publish/subscribe system. In the following example, the click events bubble up from the buttons (with the button CSS class name) to a container element, and are then published under the topic name button-clicked.
+
+Consider this an abbreviated example, as it doesn't explain where the element variable is defined or initialized; the important part is the interaction with Tapestry's client-side library: the reference to the T5.pubsub.publish function.
+
+Under 5.4, using the RequireJS require function, this might be coded instead as:
+
+Here, the t5/pubsub module will be loaded by RequireJS and passed as a parameter into the function, which is automatically executed. So, this supports JavaScript modularization, and leverages RequireJS's ability to load modules on-the-fly, as needed.
+
+Notice the difference between the two examples; in the first example, coding as a module was optional (but recommended), since the necessary publish() function was accessible either way. In the 5.4 example, coding using JavaScript modules is virtuallyrequired: the anonymous function passed to require() is effectively a module, but its only through the use of require() (or RequireJS's define()) that the publish() function can be accessed.
+
+This is both the carrot and the stick; the carrot is how easy it is to declare dependencies and have them passed in to your function-as-a-module. The stick is that (eventually) the only way to access those dependencies is by providing a module and declaring dependencies.
+
+Change page initializations to use modules
+
+Tapestry has a reasonably sophisticated system for allowing components to describe their JavaScript requirements as they render, in the form of the JavaScriptSupport environmental (an environmental is a kind of per-thread/per-request service object). Methods on JavaScriptSupport allow a component to request that a JavaScript library be imported in the page (though this is most commonly accomplished using the Import annotation), and to request the initialization functions get executed.
+
+Part of Tapestry's Ajax support is that in an Ajax request, the JavaScriptSupport methods can still be invoked, but a completely different implementation is responsible for integrating those requests into the overall reply (which in an Ajax request is a JSON object, rather than a simple stream of HTML).
+
+Here's an example component from the TapX library:
+
+The @Import annotation directs that a stack (a set of related JavaScript libraries, defined elsewhere) be imported into the page; alternately, the component could import any number of specific JavaScript files, located either in the web application context folder, or on the classpath.
+
+Inside the afterRender() method, the code constructs a JSONObject of data needed on the client side to perform the operation. The call to addInitializerCall references a function by name: this function must be added to the T5.Initializers namespace object. Notice the naming: tapxExpando: a prefix to identify the library, and to prevent collisions with any other application or library that also added its own functions to the T5.initializers object.
+
+The JavaScript library includes the function that will be invoked:
+
+Under 5.4, this would largely be the same except:
+
+There will be a specific Java package for each library (or the application) to store library modules.
+The JavaScriptSupport environmental will have new methods to reference a function, inside a module, to invoke.
+Stacks will consist not just of individual libraries, but also modules, following the naming and packaging convention.
+Embrace client-side controller logic
+
+The changes discussed so far only smooth out a few rough edges; they still position Tapestry code, running on the server, as driving the entire show.
+
+As alluded to earlier; for any sophisticated user interface, the challenge is to coordinate the client-side user interface (in terms of form fields, DOM elements, and query parameters) with the server-side components; this is encoded into the hidden t:formdatafield. However, it is my opinion that for any dynamic form, Tapestry is or near the end of the road for this approach.
+
+Instead, it's time to embrace client-logic, written in JavaScript, in the browser. Specifically, break away from HTML forms, and embrace a more dynamic structure, one where "submitting" a form always works through an Ajax update ... and what is sent is not a simple set of query parameters and values, but a JSON representation of what was updated, changed, or created.
+
+My specific vision is to integrate Backbone.js (or something quite similar), to move this logic solidly to the client side. This is a fundamental change: one where the client-side is free to change and reconfigure the UI in any way it likes, and is ultimately responsible for packaging up the completed data and sending it to the server.
+
+When you are used to the BeanEditForm component, this might feel like a step backwards, as you end up responsible for writing a bit more code (in JavaScript) to implement the user interface, input validations, and relationships between fields. However, as fun as BeanEditForm is, the declarative approach to validation on the client and the server has proven to be limited and limiting, especially in the face of cross-field relationships. We could attempt to extend the declarative nature, introducing rules or even scripting languages to establish the relationships ... or we could move in a situation that puts the developer back in the driver's seat.
+
+Further, there are some that will be concerned that this is a violation of the DRY pricipal; however I subscribe to different philosophy that client-side and server-side validation are fundamentally different in any case; this is discussed in an excellentblog post by Ian Bickling.
+
+Certainly there will be components and services to assist with this process, in term of extracting data into JSON format, and converting JSON data into a set of updates to the server-side objects. There's also a number of security concerns that necessitate careful validation of what comes up from the client in the Ajax request. Further, there will be new bundled libraries to make it easier to build these dynamic user interfaces.
+
+Conclusion
+
+In this vision of Tapestry's future, the server-side framework starts to shift from the focus of all behavior to the facilitator: it paints the broad stokes on the server, but the key interactions end up working exclusively on the client.
+
+I'm sure this view will be controversial: after all, on the surface, what the community really wants is just "jQuery instead of Prototype". However, all of the factors described in the above sections are, I feel, critical to keeping Tapestry relevant by embracing the client-side in the way that the client-side demands.
+
+I think this change in focus is a big deal; I think it is also necessary for Tapestry to stay relevant in the medium to long term. I've heard from many individual developers (not necessarily Tapestry users) that what they really want is "just jQuery and a restful API"; I think Tapestry can be that restful API, but by leveraging many of Tapestry's other strengths, it can be a lot more. Building something right on the metal feels empowering ... until you hit all the infrastructure that Tapestry provides, including best-of-class exception reporting, on-the-fly JavaScript aggregation and minimization, and (of course) live class reloading during development. java
+
+I'm eager to bring Tapestry to the forfront of web application development ... and to deliver it fast! Monitor the Tapestry developer mailing list to see how this all plays out.

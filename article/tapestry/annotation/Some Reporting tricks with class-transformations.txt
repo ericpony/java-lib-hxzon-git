@@ -1,0 +1,172 @@
+﻿Some Reporting tricks with class-transformations
+学中注释。
+使用注解和ComponentClassTransformWorker2向客服端报告异常。
+
+http://tawus.wordpress.com/2012/02/03/some-reporting-tricks-with-class-transformations/
+
+Every time I used to see some duplication of code, I used to move that code to a new method. With Tapestry, you begin to think differently. Now every time I see duplication, my first thought is “Can I create a worker for it”.
+
+In my current project, I am using a few new ones. So I thought why not share them with you.
+
+@ReportException
+
+My onSuccess methods usually are of the form
+
+@InjectComponent
+private Form form
+
+@OnEvent(EventConstants.SUCCESS)
+void success()
+{
+   try
+   {
+      do_my_stuff();
+   }catch(MyException ex)
+   {
+      form.recordError(ex.getMessage());
+   }
+}
+
+Here is how I wanted my code to look.
+
+@ReportException
+@OnEvent(EventConstants.SUCCESS)
+void success()
+{
+   do_my_stuff();
+}
+
+So for implementation, we first need an annotation
+
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface ReportException
+{
+}
+
+and then a worker
+
+public class ReportExceptionWorker implements ComponentClassTransformWorker2
+{
+    private Environment environment;
+
+    public ReportExceptionWorker(Environment environment)
+    {
+        this.environment = environment;
+    }
+
+    @Override
+    public void transform(PlasticClass plasticClass, TransformationSupport support,
+        MutableComponentModel model)
+    {
+        for(PlasticMethod method : plasticClass.getMethodsWithAnnotation(ReportException.class))
+        {
+            method.addAdvice(new ReportExceptionAdvice());
+        }
+    }
+
+    private class ReportExceptionAdvice implements MethodAdvice
+    {
+        @Override
+        public void advise(MethodInvocation invocation)
+        {
+            ValidationTracker tracker = environment.peek(ValidationTracker.class);
+
+            if(tracker != null)
+            {
+                try
+                {
+                    invocation.proceed();
+                } catch(MyException ex)
+                {
+                    tracker.recordError(ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+}
+
+Here the advice gets the ValidationTracker from the Environment service and does the exception handling and reporting for us.
+
+Finally the contribution in Module.
+
+public static void contributeComponentClassTransformWorker(
+        OrderedConfiguration<ComponentClassTransformWorker2> configuration)
+    {
+        configuration.addInstance("ReportExceptionWorker",
+            ReportExceptionWorker.class);
+    }
+
+@ReportExceptionAsAlert
+
+Another close use case is when you have an ajax call which may result in an exception but you just want to show the user a simple alert with the message.
+
+The annotation
+
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface ReportExceptionAsAlert
+{
+}
+
+
+The Worker
+
+public class ReportExceptionAsAlertWorker implements ComponentClassTransformWorker2
+{
+
+    private final AjaxResponseRenderer ajaxResponseRenderer;
+
+    private final Request request;
+
+    public ReportExceptionAsAlertWorker(
+        AjaxResponseRenderer ajaxResponseRenderer,
+        Request request)
+    {
+        this.ajaxResponseRenderer = ajaxResponseRenderer;
+        this.request = request;
+    }
+
+    @Override
+    public void transform(PlasticClass plasticClass, TransformationSupport support,
+        MutableComponentModel model)
+    {
+        for(PlasticMethod method : plasticClass.getMethodsWithAnnotation(
+            ReportExceptionAsAlert.class))
+        {
+            method.addAdvice(new ReportExceptionAsAlertAdvice());
+        }
+    }
+
+    private class ReportExceptionAsAlertAdvice implements MethodAdvice
+    {
+        @Override
+        public void advise(MethodInvocation invocation)
+        {
+
+            if(request.isXHR())
+            {
+                try
+                {
+                    invocation.proceed();
+                } catch(final MyException ex)
+                {
+                    ajaxResponseRenderer.addCallback(new JavaScriptCallback()
+                    {
+
+                        @Override
+                        public void run(JavaScriptSupport javascriptSupport)
+                        {
+                            javascriptSupport.addScript("alert('%s');", ex.getMessage());
+                        }
+
+                    });
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+}

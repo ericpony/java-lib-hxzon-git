@@ -1,0 +1,121 @@
+﻿Tapestry working with ZK component(t5与zk框架的组合使用)
+
+最近在做T5的ajax，发现用zk可以解决很多问题，在nabble发现个不错的文章，特收藏
+
+Hi, 
+
+I played a little bit with ZK and Tapestry this morning and I achieved 
+something quite nice : I succeeded in inserting a ZK component in 
+Tapestry page, and this component can call Tapestry actions. 
+
+Here is how to do it : 
+1) Install ZK : 
+2) The Tapestry Component that allows including any ZK component : 
+public class ZkComponent { 
+        
+    @Parameter(required = true, defaultPrefix = BindingConstants.LITERAL) 
+    private String name; 
+
+    @Inject 
+    private RequestGlobals requestGlobals; 
+    
+    @Inject 
+    private ComponentResources resources; 
+    
+    boolean setupRender(MarkupWriter writer) throws ServletException, IOException { 
+    HttpServletRequest request = requestGlobals.getHTTPServletRequest(); 
+    HttpServletResponse response = requestGlobals.getHTTPServletResponse(); 
+    
+    request.setAttribute("resources", resources); 
+    request.setAttribute("id", resources.getId()); 
+    
+    CharResponseWrapper body = new CharResponseWrapper(response); 
+    request.getRequestDispatcher(name + ".zul").include(request, body); 
+    
+    writer.writeRaw(body.toString()); 
+    return true; 
+    } 
+
+    public class CharResponseWrapper extends HttpServletResponseWrapper { 
+        private CharArrayWriter output; 
+
+        public String toString() { 
+            return output.toString(); 
+        } 
+          
+        public CharResponseWrapper(HttpServletResponse response) { 
+            super(response); 
+            output = new CharArrayWriter(); 
+        } 
+
+        public PrintWriter getWriter() { 
+            return new PrintWriter(output); 
+        } 
+    } 
+} 
+
+3) Use in Tapestry page : 
+
+<t:ZkComponent t:id="testId" name="test"/> 
+
+This will insert the test.zul component 
+
+4) ZK component with the Tapestry call : 
+This component is a button. When you click on it, it fires an event to call the Tapestry action displaying a JSONArray("This is a test : ", param); param beeing the button name. 
+
+<zk> 
+    <button id="${id}" label="Try" onClick="sendEventOnAction()"/> 
+    <zscript> 
+        import org.apache.tapestry5.ComponentEventCallback; 
+        import org.apache.tapestry5.ComponentResources; 
+        import org.apache.tapestry5.internal.util.Holder; 
+
+        ComponentResources resources = execution.getAttribute("resources"); 
+        
+        // Get button with id 
+        String id = execution.getAttribute("id"); 
+        Button btm = spaceOwner.getFellow(id); 
+        
+        void sendEventOnAction(){ 
+            Object result = onAction(); 
+            alert("result = " + result); 
+            btm.label="ok"; 
+        } 
+        
+        Object onAction() { 
+            // Manage trigger result 
+            final Holder holder = Holder.create(); 
+            ComponentEventCallback callback = 
+                new ComponentEventCallback() { 
+                    public boolean handleResult(Object result) { 
+                        holder.put(result); 
+                        return true; 
+                    } 
+            }; 
+            
+            // Run event 
+            resources.triggerEvent("action", new Object[] {btm.label}, callback); 
+            return holder.get(); 
+        } 
+    </zscript> 
+    
+</zk> 
+
+5) Tapestry action 
+
+Object onAction(String param) { 
+    return new JSONArray("This is a test : ", param); 
+} 
+
+I also tried with different ZK components, it seems to work pretty fine.
+
+ 
+
+后来有人建议直接用httpRequest，值得尝试
+
+One suggestion: instead of injecting RequestGlobals, you can inject 
+HttpServletRequest directly. ;) 
+
+-- 
+Thiago 
+原地址http://www.nabble.com/Tapestry-working-with-ZK-component-td23998072.html

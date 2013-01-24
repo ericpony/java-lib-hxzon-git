@@ -1,0 +1,154 @@
+﻿Tapestry Mixins & ClassTransformations
+学中注释。
+用ComponentClassTransformWorker2给所有的label加上某个“混入”。
+
+http://tawus.wordpress.com/2011/08/01/tapestry-mixins-classtransformations/
+
+POSTED BY TAWUS ? AUGUST 1, 2011
+
+
+Tapestry's Class Transformation can save you a lot of time and can show you clearly why it is better than inheritance most of the time. This blog has many examples of it. I just finished a new one. Here is the scenario. I want a label to have a title attribute(simple tooltip) which is to be fetched from the message catalog of the corresponding component/page. This is not that difficult, just create a mixin. But what if you want all labels to have this feature, even the ones you have no control over like the labels in BeanEditors.
+我希望一个label拥有一个属性，例如悬浮提示，它的信息来自组件或页面。实现这种功能并不困难，只需要创建一个“混入”。但如果你想要所有的label都拥有这个特性，即使是那些不受你控制的label，例如存在于BeanEditors中的。
+
+Lets go step by step. First the mixin
+
+public class HelpText {
+
+    @Inject
+    private Environment environment;
+
+    @SetupRender
+    void setupEnvironment(MarkupWriter writer) {
+        final ValidationDecorator delegate = environment.peek(ValidationDecorator.class);
+        
+        environment.push(ValidationDecorator.class, 
+                new HelpTextValidationDecorator(delegate,  environment));
+
+    }
+
+}
+
+This mixin just pushes our own ValidationDecorator implementation onto the Environment.
+
+public class HelpTextValidationDecorator extends ValidationDecoratorWrapper {
+    private static final Logger logger = 
+            LoggerFactory.getLogger(HelpTextValidationDecorator.class);
+    
+    private ValidationDecorator delegate;
+
+    private Environment environment;
+
+    private PropertyEditContext propertyContext;
+
+    public HelpTextValidationDecorator(ValidationDecorator delegate, Environment environment) {
+        super(delegate);
+
+        this.delegate = delegate;
+        this.environment = environment;
+    }
+    
+    @Override
+    public void insideField(Field field){
+        delegate.insideField(field);
+        propertyContext = environment.peek(PropertyEditContext.class);
+    }
+
+    @Override
+    public void insideLabel(Field field, Element labelElement) {
+        delegate.insideLabel(field, labelElement);
+
+        ComponentResources resources = ((Component)field).getComponentResources(); 
+        String helpText = null;
+
+        if(propertyContext != null){
+            helpText = getHelpTextForBeanEditForm(resources);
+        }else {
+            helpText = getHelpText(resources);
+        }
+        
+        if(helpText != null){
+            labelElement.attribute("title", helpText);
+        }
+        
+        ValidationDecorator currentDecorator = environment.peek(ValidationDecorator.class);
+        if (currentDecorator == this) {
+            environment.pop(ValidationDecorator.class);
+        }
+
+    }
+    
+    private String getHelpText(ComponentResources resources){
+        String propertyName = ((InternalComponentResources)
+                   resources).getPropertyName("value");
+        //获取容器的信息
+        Messages messages = resources.getContainerMessages();
+        
+        return getMessage(messages, propertyName, resources);
+    }
+    
+    private String getHelpTextForBeanEditForm(ComponentResources resources){
+        Messages messages = propertyContext.getContainerMessages();
+        String propertyName = propertyContext.getPropertyId();
+        
+        return getMessage(messages, propertyName, resources);        
+    }
+
+    private String getMessage(Messages messages, String propertyName, 
+            ComponentResources resources) {
+        String key = propertyName + "-help";
+        String helpText = null;
+        
+        if (messages.contains(key)) {
+            helpText = messages.get(key);
+         }else {
+             logger.warn(String.format("key %s in properties file of page %s", key, 
+              resources.getPageName()));
+         }
+        
+        return helpText;
+    }
+    
+    
+}
+
+
+This decorator delegates most method calls to the original decorator. Method insideField() stores the PropertyEditContext into an instance variable which is later used by insideLabel(). insideLabel() method is called just after creating the opening tag of label. We add an attribute named title to the label tag. The content of the title are obtained from the message catalog. The key and message catalog are obtained from PropertyEditContext in case the label is within a beaneditor, otherwise these details are obtained from the container’s ComponentResources. Note we are using value parameter for obtaining the property name, so it will only work for form fields which have a value property for input. Finally we remove the decorator from the Environment.
+
+Now that the mixin is in place, we need a way to add this mixin to every label. Here comes the magic, Class transformation. We implement ComponentClassTransformWorker.
+现在我们需要让所有的label都自动加上这个“混入”。
+
+public class HelpTextMixinWorker implements ComponentClassTransformWorker {
+
+    @Override
+    public void transform(ClassTransformation transformation, MutableComponentModel model) {
+        
+        if (Label.class.getName().equals(transformation.getClassName())) {
+            //加入“混入”
+            model.addMixinClassName(HelpText.class.getName());
+        
+        }
+
+    }
+
+}
+
+For Tapestry 5.3+, the code is a bit different
+
+public class HelpTextMixinWorker implements ComponentClassTransformWorker2 {
+   public void transform(final PlasticClass plasticClass, 
+        TransformationSupport support, MutableComponentModel model) {
+
+        if (Label.class.getName().equals(plasticClass.getClassName())) {
+            model.addMixinClassName(HelpText.class.getName());
+        }
+   }
+
+}
+
+Finally, remember to contribute this to the ComponentClassTransformWorker(ComponentClassTransformWorker2 in case of 5.3+) service.
+
+    @Contribute(ComponentClassTransformWorker.class)
+    public static void
+            provideWorkers(OrderedConfiguration<ComponentClassTransformWorker> workers) {
+        workers.addInstance("HelpTextMixinWorker", HelpTextMixinWorker.class);
+    }

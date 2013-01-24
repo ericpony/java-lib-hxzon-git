@@ -1,0 +1,129 @@
+﻿A Tooltip component for Tapestry
+学中注释。
+悬浮提示组件。
+
+http://tawus.wordpress.com/2011/07/12/a-tooltip-component-for-tapestry/
+
+I was thinking of adding tooltips using 《prototip》 but found a very good free solution in 《Opentip》. This is a very nice library and very easy to integrate. I was able to integrate it with only a single modification to the script and that was to replace the default ajax support with the Tapestry’s own ajax support.
+
+The component takes three arguments
+
+tip: The tool tip to display.
+tipTitle: The title of the tool tip
+tipEvent: In case you want the tool tip to be retrieved using ajax then you can specify the event to respond to on a onmouseover event
+
+The component is very simple as all the hard work has already been done by the authors of the script.
+
+@SupportsInformalParameters
+@Import(library = {"opentip/opentip.js", "opentip/opentip_init.js"}, stylesheet = "opentip/opentip.css")
+public class ToolTip
+{
+   @Parameter(defaultPrefix = BindingConstants.LITERAL)
+   private String tip;
+   
+   @Parameter(defaultPrefix = BindingConstants.LITERAL)
+   private String tipTitle;
+   
+   @Parameter(defaultPrefix = BindingConstants.LITERAL)
+   private String tipEvent;
+   
+   @InjectContainer
+   private ClientElement element;
+   
+   @Inject
+   private JavaScriptSupport javaScriptSupport;
+   
+   @Inject
+   private ComponentResources resources;
+   
+   @AfterRender
+   void addJavascript()
+   {
+      JSONObject params = new JSONObject();
+      
+      params.put("elementId", element.getClientId());
+      params.put("tipTitle", tipTitle);
+      params.put("tip", tip);
+      
+      if(tipEvent != null)
+      {
+         params.put("url", createAjaxTipEvent());
+      }
+      
+      params.put("options", createOptionsFromInformalParameters());
+      
+      javaScriptSupport.addInitializerCall("setupOpentip", params);      
+   }
+
+   private String createAjaxTipEvent()
+   {
+      return resources.createEventLink(tipEvent).toURI();
+   }
+
+   private JSONObject createOptionsFromInformalParameters()
+   {
+      JSONObject options = new JSONObject();
+
+      for(String parameterName: resources.getInformalParameterNames())
+      {
+         options.put(parameterName, 
+            resources.getInformalParameter(parameterName, String.class));
+      }
+      
+      return options;
+   }
+
+}
+
+The initialization script is
+
+Tapestry.Initializer.setupOpentip = function(params)
+{
+   if(params.url)
+   {
+      params.options.ajax = {};
+      params.options.ajax.url = params.url;  
+   }
+   
+   $(params.elementId).addTip(params.tip, params.tipTitle, params.options);
+};
+
+
+A typical usage for an inline tooltip will be
+
+
+<div t:mixins='tawus/tooltip' t:type='any' t:tip='My Tip' 
+     t:tipTitle='My Ajax Tooltip'>
+</div>
+
+
+A ajax usage will be
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd' xmlns:p='tapestry:parameter'>
+
+   <body>
+      <div t:mixins='tawus/tooltip' t:type='any' 
+           t:tipEvent='toolTip' t:tipTitle='My Ajax Tooltip'>
+      This is text, hover over it to see the tooltip
+      </div>
+      
+      <t:block t:id='toolTip'>
+         This content is extracted using Ajax
+      </t:block>
+   </body>
+</html>
+
+
+public class ToolTipDemo
+{
+   @Inject
+   private Block toolTip;
+   
+   Object onToolTip()
+   {
+      return toolTip;
+   }
+}
+
+Note if both tip and tipEvent are specified, the tipEvent takes precedence and ajax content is only shown
+

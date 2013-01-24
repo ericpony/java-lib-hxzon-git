@@ -1,0 +1,141 @@
+﻿Tapestry-Using ComponentRequestFilter
+学中注释。
+使用组件请求过滤器和注解检查会话属性值来跳转页面。
+
+http://tawus.wordpress.com/2012/07/03/tapestry-using-componentrequestfilter/
+
+
+This example is similar to 《Securing Tapestry pages with Annotations, Part 1》. My use case is to redirect a user to the starting page of a multiple step wizard in case a request is directly made to an intermediate step and the session has not been properly setup. One way to solve this problem (the ugly way) is to add a condition to every entry point in the page
+当会话属性没设置时，跳转到向导的起始页面。一种方法是，在每个页面里检查该会话属性。
+
+
+public class MyPage
+{
+    @SessionState(create = false)
+    private ShoppingCart shoppingCart;
+
+    @OnEvent(EventConstants.ACTIVATE)
+    Object activate()
+    {
+        if(shoppingCart == null)
+        {
+           return Index.class;
+        }
+        return null;
+    }
+
+    @OnEvent(EventConstants.SUCCESS)
+    Object doSomething()
+    {
+        if(shoppingCart == null
+        {
+           return Index.class;
+        }
+
+        .....
+    }
+The problem with this code is that you have to check this condition for all event-handlers(Form, EventLink etc). A more elegant solution would be to use annotation secured by a ComponentRequestFilter.
+另一种方法是使用注解和 ComponentRequestFilter组件请求过滤器。
+注解的使用方式如下：
+@RequireSession(value = ShoppingCart.class, redirectPage = "Index")
+public class MyPage {
+}
+
+So let us start with the annotation
+注解定义如下：
+@Documented
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@interface RequireSession {
+
+    Class<?> value()
+
+    String redirectPage()
+
+}
+
+
+The RequireSession#value() should be set to the class which should be available(as instance) in the session when the page is requested. If the class is not available, the user should be redirected to the RequireSession#redirectPage()page.
+
+The ComponentRequestFilter to do the magic is :-
+组件请求过滤器定义如下：
+class RequireSessionFilter implements ComponentRequestFilter
+{
+
+    private ComponentSource componentSource
+
+    private ApplicationStateManager applicationStateManager
+
+    private Response response
+
+    private PageRenderLinkSource pageRenderLinkSource
+
+    RequireSessionFilter(ComponentSource componentSource,
+            Response response,
+            ApplicationStateManager applicationStateManager,
+            PageRenderLinkSource pageRenderLinkSource)
+    {
+        this.componentSource = componentSource
+        this.response = response
+        this.applicationStateManager = applicationStateManager
+        this.pageRenderLinkSource = pageRenderLinkSource
+    }
+
+    @Override
+    void handleComponentEvent(ComponentEventRequestParameters parameters,
+            ComponentRequestHandler handler)
+    {
+        if(redirectIfObjectNotInSession(parameters.activePageName))
+        {
+            return
+        }
+
+        handler.handleComponentEvent(parameters);
+    }
+
+    @Override
+    void handlePageRender(PageRenderRequestParameters parameters, ComponentRequestHandler handler)
+    {
+        if(redirectIfObjectNotInSession(parameters.logicalPageName))
+        {
+            return
+        }
+
+        handler.handlePageRender(parameters)
+    }
+
+    private boolean redirectIfObjectNotInSession(String pageName)
+    {
+        Component component = componentSource.getPage(pageName)
+        if(component.class.isAnnotationPresent(RequireSession))
+        {
+            RequireSession annotation = component.class.getAnnotation(RequireSession)
+//检查是否存在会话属性：
+            if(!applicationStateManager.exists(annotation.value()))
+            {
+                redirect(annotation.redirectPage())
+                return true
+            }
+        }
+
+        return false
+    }
+//跳转到指定页面：
+    private void redirect(String pageName)
+    {
+        response.sendRedirect(pageRenderLinkSource.createPageRenderLink(pageName))
+    }
+
+
+}
+It filters both the page render requests and the component event requests. In case there is a @RequiresSession annotation, the session is checked for the given class and if it is not present, the user is redirected to theRequireSession#redirectPage() page.
+
+Finally the ComponentRequestFilter contribution in AppModule
+注册组件请求过滤器：
+    @Contribute(ComponentRequestHandler.class)
+    public static void contributeRequestFilters(
+            final OrderedConfiguration<ComponentRequestFilter> filters) {
+
+        filters.addInstance("RequiresSessionFilter",
+                RequiresSessionFilter.class, "after:ErrorFilter");
+    }

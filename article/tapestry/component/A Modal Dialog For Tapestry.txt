@@ -1,0 +1,223 @@
+﻿A Modal Dialog For Tapestry
+学中注释。
+模态对话框。
+
+http://tawus.wordpress.com/2011/07/02/a-modal-dialog-for-tapestry/
+
+As Tapestry does not provide a Dialog Box, let us see how difficult(or easy) it is to create one on our own. We will use 《ModalBox》 as it has an MIT license and it is written in prototype (Soon this won’t be a criteria for choosing a script as Tapestry is going to be prototype independent). The ModalBox script is very easy to use. There is a ModalBox.show() method which displays a dialog box. It takes a dom element and configuration options as parameters. If you want to create a wizard just keep on using the same method inside the dialog box. There is also a ModalBox.hide() method to hide the dialog.
+
+如果你想创建一个向导对话框，只需在对话框中继续调用相同的方法。
+
+Our script is more than just a call to ModalBox.show(). It needs to call the event handler using a event URL and use the response to create an element which it will display in the dialog box. It also provides an option to update a zone after closure of the dialog box.
+
+Tapestry.Initializer.setupModalDialog = function(params)
+{
+   // Setup zone
+   var element = $(params.id);
+   $T(element).zoneId = params.zone;
+   
+   var showModalbox = function()
+   {
+         var loadContentWithScripts = function(transport) 
+         {
+            var node = new Element('div').update(transport.responseJSON.content);
+            params.options.onContentLoaded = function()
+            {
+               Tapestry.loadScriptsInReply(transport.responseJSON, function() {});
+            };
+            
+            params.options.afterHide = function()
+            {
+               if(params.zone)
+               {
+                  var zoneManager = Tapestry.findZoneManager(element);
+                  zoneManager.updateFromURL(params.closeLink);    
+               }
+            };
+            
+            Modalbox.show(node, params.options);
+         };
+
+         Tapestry.ajaxRequest(params.openLink, {
+            method : 'get',
+            onSuccess : loadContentWithScripts
+         });
+   };
+   
+   Event.observe($(params.id), params.event, showModalbox);
+
+};
+
+The script function takes the following parameters
+
+id : id of the element
+
+event: client event on the element which will trigger the event
+
+openLink: link to be called to create the dialog
+
+closeLink: link called after the dialog is closed
+
+zone: zone to be updated after dialog is closed
+
+options: other options to be passed to ModalBox.show() e.g. width, height, title
+
+
+
+The script links client event of the element to a method which makes an ajax based request to get the dialog box contents from the server and then calls the Tapestry.loadScriptsInReply() function to load any inline scripts.
+
+The parameters are passed to the script by our ModalDialog component class.
+
+
+
+@SupportsInformalParameters
+@Import(library = {
+      "modalbox/builder.js", 
+      "modalbox/effects.js", 
+      "modalbox/modalbox.js", 
+      "modalbox/modalboxinit.js"
+      } , 
+      
+      stylesheet = "modalbox/modalbox.css"
+)
+@Events({TawusAddonsEventConstants.SHOW_DIALOG})
+public class ModalDialog implements ClientElement
+{
+   /**
+    * Javascript id, if not supplied is auto-generated
+    */
+   @Parameter(value = "prop:componentResources.id", defaultPrefix = BindingConstants.LITERAL, allowNull = false)
+   private String clientId;
+  
+   /**
+    * Client event that will trigger the modal dialog
+    */
+   @Parameter(value = "click", defaultPrefix = BindingConstants.LITERAL, allowNull = false)
+   private String clientEvent;
+   
+   /**
+    * Zone to update when dialog is closed
+    */
+   @Parameter(defaultPrefix = BindingConstants.LITERAL)
+   private String zone;
+
+   /**
+    * Context to be passed to the page
+    */
+   @Parameter
+   private Object[] context;
+
+   @Environmental
+   private JavaScriptSupport javaScriptSupport;
+
+   @Inject
+   private ComponentResources resources;
+
+   private String assignedClientId;
+
+   public ModalDialog()
+   {
+
+   }
+
+   ModalDialog(JavaScriptSupport javaScriptSupport,
+         ComponentResources resources)
+   {
+      this.javaScriptSupport = javaScriptSupport;
+      this.resources = resources;
+   }
+
+   void setupRender()
+   {
+      assignedClientId = javaScriptSupport.allocateClientId(clientId);
+   }
+
+   void beginRender(MarkupWriter writer)
+   {
+      writer.element("a", "href", "#", "id", getClientId());
+   }
+
+   void afterRender(MarkupWriter writer)
+   {
+      writer.end();
+   }
+
+   @AfterRender
+   void addJavaScript()
+   {
+      JSONObject params = new JSONObject();
+
+      params.put("id", getClientId());
+      params.put("event", clientEvent);
+      params.put("openLink", getPageLink());
+      params.put("closeLink", getCloseLink());
+      params.put("zone", zone);
+      params.put("options", getInformalParametersAsJSON());
+
+      javaScriptSupport.addInitializerCall("setupModalDialog", params);
+   }
+
+   private JSONObject getInformalParametersAsJSON()
+   {
+      JSONObject modalboxOptions = new JSONObject();
+      for(String parameter : resources.getInformalParameterNames())
+      {
+         modalboxOptions.put(parameter, 
+           resources.getInformalParameter(parameter, String.class));
+      }
+      return modalboxOptions;
+   }
+
+   private Object getPageLink()
+   {
+      Link link = resources.createEventLink(TawusAddonsEventConstants.SHOW_DIALOG, context);
+      return link.toAbsoluteURI();
+   }
+
+   private String getCloseLink()
+   {
+      return resources.createEventLink(
+         TawusAddonsEventConstants.CLOSE_DIALOG).toAbsoluteURI();
+   }
+
+   public String getClientId()
+   {
+      return assignedClientId;
+   }
+}
+
+public class TawusAddonsEventConstants
+{
+   public static final String SHOW_DIALOG = "showDialog";
+
+   public static final String CLOSE_DIALOG = "closeDialog";
+}
+
+
+The component creates an anchor tag and calls the javascript function with proper parameters. The informal parameters are used to supply ModalBox with other configuration options.
+
+Usage
+
+<a t:type='tawus/modaldialog' t:zone='closeZone'>Open Dialog</a>
+<div t:type='zone' t:id='closeZone'>Call this zone on closure</div>
+
+<t:block t:id='modaldialogContents'>
+Some content
+</t:block>
+
+
+@Inject
+private Block modalDialogContents;
+
+public Block onShowDialog()
+{
+   return modalDialogContents;
+}
+
+public Zone onCloseDialog()
+{
+   return closeZone;
+}
+
+
+The example is chrome :

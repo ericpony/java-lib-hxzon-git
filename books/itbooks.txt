@@ -26,9 +26,6 @@ http://product.dangdang.com/product.aspx?product_id=22543344
 15，软件框架设计的艺术
 56.20，48.40，观望
 ----
-19，软件随想录：程序员部落酋长Joel谈软件
-36.80(75折)，已读，不错
-----
 20，Joel谈优秀软件开发方法
 http://product.dangdang.com/product.aspx?product_id=20001190
 ----
@@ -75,13 +72,6 @@ http://product.dangdang.com/product.aspx?product_id=9272815
 http://product.dangdang.com/product.aspx?product_id=20029732
 466.10
 ----
-39，JAVA并发编程实践
-http://product.dangdang.com/product.aspx?product_id=9340420
-43.50(75折)，翻译很差，不买，已有新版
-----
-37，多处理器编程的艺术（英文版）
-51.80(75折)，不买，买了中文版
-----
 40，Java 实时编程
 36.80(75折)
 ----
@@ -91,27 +81,6 @@ http://product.dangdang.com/product.aspx?product_id=20518616
 ----
 51，数据库系统实现
 44.20 (75折)
-----
-31，TCP/IP 详解(卷1:协议)
-30.20(67折)，电子书，过时
-----
-59，TCP/IP 详解 卷2：实现（英文版）
-http://product.dangdang.com/product.aspx
-126.70
-出版时间：2010-4-1
-页　　数：1174
-----
-60，TCP/IP Illustrated, Volume 2: The Implementation
-http://www.amazon.cn/TCP-IP-Illustrated-Volume-2-The-Implementation-Stevens-W-Richard/dp/020163354X/ref=sr_1_1?ie=UTF8&qid=1328083860&sr=8-1
-800.60
-出版社: Addison-Wesley Professional
-丛书名: TCP/IP Illustrated
-精装: 1200页
-----
-61，TCP/IP详解（卷2）：实现——计算机科学丛书
-http://product.dangdang.com/product.aspx
-http://www.amazon.cn/TCP-IP%E8%AF%A6%E8%A7%A3%E2%80%A2%E5%8D%B72-%E5%AE%9E%E7%8E%B0-%E8%B5%96%E7%89%B9/dp/B002FB7KG4/ref=sr_1_1?ie=UTF8&qid=1328082444&sr=8-1
-58.50 (75折)，有电子书，观望
 =======================================================
 工具实践
 ----
@@ -139,12 +108,27 @@ http://product.dangdang.com/product.aspx?product_id=20192214
 ----
 94，PostgreSQL 数据库内核分析
 59.20 (75折)，观望
+----
+129，Oracle性能优化求生指南
+http://www.ituring.com.cn/book/772?q=Oracle
+----
+130，Oracle PL/SQL实战
+http://www.ituring.com.cn/book/850?q=Oracle
+http://www.amazon.cn/Oracle-PL-SQL%E5%AE%9E%E6%88%98-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E5%88%97-%E5%9B%BE%E7%81%B5%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E4%B8%9B%E4%B9%A6-John-Beresniewicz/dp/B00A0GVS4G/
+66.20(7.4折)，想买
+----
+131，Oracle索引技术
+http://www.ituring.com.cn/book/951?q=Oracle
+----
+132，DBA的思想天空：感悟Oracle数据库本质
+http://www.ituring.com.cn/book/972?q=Oracle
+http://www.amazon.cn/DBA的思想天空-感悟Oracle数据库本质-白鳝/dp/B009PIQ99E
+44.50(5折)
+----
+133，深入NoSQL
+http://www.ituring.com.cn/book/845?q=%E6%B7%B1%E5%85%A5NoSQL
 ===========================================================
 c和linux
-----
-82，Linux/Unix设计思想
-http://www.ituring.com.cn/book/800
-不买，不如《UNIX编程艺术》
 ----
 78，Linux 系统编程（中文版）
 http://product.dangdang.com/product.aspx?product_id=20645962
@@ -156,7 +140,7 @@ http://product.dangdang.com/product.aspx?product_id=20645962
 22，LINUX技术手册（影印版）（第5版）
 72.00(73折)，不买，已出第6版
 ----
-91，国外计算机科学经典教材?Uni?x & Linux大学教程
+91，国外计算机科学经典教材?Unix & Linux大学教程
 78.40
 ----
 45，C程序设计语言(第2版新版)
@@ -223,6 +207,7 @@ http://www.amazon.cn/Modern-C-Design-Applied-Generic-and-Design-Patterns-Alexand
 ----
 110，泛型编程与STL
 http://product.china-pub.com/9864
+已缺货，观望
 ----
 111，深入探索C++对象模型
 http://product.china-pub.com/3290
@@ -297,7 +282,7 @@ http://product.dangdang.com/product.aspx?product_id=22846300
 126，社交网站的数据挖掘与分析
 http://product.dangdang.com/product.aspx?product_id=22606834
 2011年Jolt生产效率大奖获奖图书
-44.30(75折)
+44.30(75折)，想买
 ===============================================================
 css,html5
 ----
@@ -353,3 +338,5 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 26.20
 ----
 128，
+----
+134，

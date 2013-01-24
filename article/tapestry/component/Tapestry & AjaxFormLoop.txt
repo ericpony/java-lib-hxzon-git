@@ -1,0 +1,212 @@
+﻿Tapestry & AjaxFormLoop
+学中注释。
+演示如何使用AjaxFormLoop组件。未达到我想要的效果。
+
+http://tawus.wordpress.com/2011/07/26/tapestry-ajaxformloop/
+
+Tapestry mailing list has a constant flow of newbie questions related to AjaxFormLoop component. This is a very powerful component but with some limitations that must be understood before using it.
+
+AjaxFormLoop allows, in a limited way, dynamic addition of components to a form. These components are laid out inside the AjaxFormLoop. Each time the ‘Add New’ link is clicked, addRow event is triggered. This event requires the event handler to return a new ‘value’ bean. A new row is added to the loop with the given set of components and these components if form fields are bound to the newly instantiated bean.
+
+AjaxFormLoop组件能动态的添加一些组件到一个表单中。当点击“新增行”链接，addRow事件触发，事件处理方法返回一个新对象，新增加的组件将绑定到这个新对象。
+
+
+During rendering, a hidden field is inserted into each row and its value is set to the string coercion of loop value parameter. On submit this value is coerced back to the value. The whole coercion part is handled by the ValueEncoder parameter (“encoder”)
+
+在渲染期间，一个隐藏域插入到新增的行，它用来标记新增对象。
+
+A simple example is show below
+
+public class SimpleLoop
+{
+   @Property
+   @Persist
+   private List<Foo> foos;
+
+   @SuppressWarnings("unused")
+   @Property
+   private Foo foo;
+
+   void onActivate()
+   {
+      if(foos == null)
+      {
+         foos = new ArrayList<Foo>();   
+      }
+      
+   }
+   
+   void setupRender(){
+      foos.removeAll(Collections.singleton(null));
+   }
+
+   public ValueEncoder<Foo> getEncoder(){
+      return new ValueEncoder<Foo>()
+      {
+
+         public String toClient(Foo foo)
+         {
+            return String.valueOf(foos.indexOf(foo));
+         }
+
+         public Foo toValue(String clientValue)
+         {
+            return foos.get(Integer.parseInt(clientValue));
+         }
+         
+      };
+   }
+
+   Object onAddRow()
+   {
+      Foo newFoo = new Foo();
+      foos.add(newFoo);
+      return newFoo;
+   }
+   
+   void onRemoveRow(Foo newFoo)
+   {
+      foos.set(foos.indexOf(newFoo), null);
+   }
+   
+   void onSuccess()
+   {
+      foos.removeAll(Collections.singleton(null));
+   }
+
+}
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+
+   <body>
+
+      <t:if test='foos'>${foos}</t:if>
+      
+      <form t:type='form'>
+         <div t:type='ajaxformloop' t:source='foos' value='foo' encoder='encoder'>
+            <label t:type='label' t:for='bar'></label>: 
+            <input t:type='textfield' t:id='bar' t:value='foo.bar'/> 
+            <t:removerowlink>remove</t:removerowlink>
+            <br />
+
+         </div>
+         <input type='submit' t:type='submit' value='Submit' />
+      </form>
+   
+   </body>
+   
+</html>
+
+The value encoder here uses the index as key. Usually a ValueEncoder is based on an entity’s primary key.
+这里值解码器使用index作为键。
+
+Now the real confusion about AjaxFormLoop. What if there is an ajax component within a row. If an ajax component makes an ajax request, that request is going to find the ‘value’ bean to be null as it is not persisted. What if we persist it ? If we persist, that will result in another problem. During an ajax request, the loop is not iterated again and so the persisted value is the last value that was read during rendering. All the components are temporarily bound to this last value. Therefore, persisting is a bad idea. The only way you can get around this problem is to not trust the ‘value’ field and instead use context in the ajax call. The context can then be used to get the actual value (e.g. fetching it from the database, in which case the context will be the primary key).
+
+AjaxFormLoop组件有一个问题。当一个行含有一个ajax组件，该组件发出一个ajax请求，该请求将发现值为null，因为该值没有persist。如果我们将该值persist，它会引发另一个问题。在ajax请求时，loop并没有再次迭代，所以值是迭代中的最后一个值。所有组件都绑定到这最后一个值。因此不能使用persist。解决方法是，使用ajax上下文。
+
+Here is an example where each row contains an eventlink with context set to a unique key. This key is then used for uniquely identify foo.
+
+/**
+ * AjaxFormLoop with ajax updates.
+ */
+public class LoopWithAjaxUpdates
+{
+   @Persist
+   @Property
+   private List<Foo> foos;
+
+   @Property
+   private Foo foo;
+
+   @InjectComponent
+   private Zone zone;
+   
+   void onActivate()
+   {
+      if(foos == null)
+      {
+         foos = new ArrayList<Foo>();
+      }
+
+   }
+   
+   public String getUniqueZoneId()
+   {
+      return "zone_" + foos.indexOf(foo);
+   }
+   
+   public int getId()
+   {
+      return foos.indexOf(foo);
+   }
+
+   public ValueEncoder<Foo> getEncoder()
+   {
+      return new ValueEncoder<Foo>()
+      {
+
+         public String toClient(Foo foo)
+         {
+            return String.valueOf(foos.indexOf(foo));
+         }
+
+         public Foo toValue(String clientValue)
+         {
+            return foos.get(Integer.parseInt(clientValue));
+         }
+
+      };
+   }
+
+   Object onAddRow()
+   {
+      Foo newFoo = new Foo();
+      foos.add(newFoo);
+      return newFoo;
+   }
+
+   void onRemoveRow(Foo newFoo)
+   {
+      foos.set(foos.indexOf(newFoo), null);
+   }
+
+   void onSuccess()
+   {
+      foos.removeAll(Collections.singleton(null));
+   }
+
+   Object onZoneUpdate(int index)
+   {
+      foo = foos.get(index);
+      return zone.getBody();
+   }
+}
+
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+
+   <body>
+
+      <t:if test='foos'>${foos}</t:if>
+
+      <form t:type='form'>
+      
+         <div t:type='ajaxformloop' t:source='foos' value='foo' encoder='encoder'>
+
+            <label t:type='label' t:for='bar'></label> :
+            <input t:type='textfield' t:id='bar' t:value='foo.bar' />
+            <a href='#' t:type='eventlink' t:event='zoneupdate' 
+                t:context='id' t:zone='${uniqueZoneId}' >update</a> | 
+            <t:removerowlink>remove</t:removerowlink> <
+            <span t:type='zone' t:id='zone' id='${uniqueZoneId}'>
+                 ${foo.bar}</span> > 
+            <br />
+
+         </div>
+         
+         <input type='submit' t:type='submit' value='Submit' />
+      </form>
+
+   </body>
+
+</html>

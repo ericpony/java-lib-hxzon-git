@@ -1,0 +1,450 @@
+﻿Tapestry 5.3+ : New Features
+学中注释。
+演示定时任务，checklist组件和树组件。本文较简单。
+
+http://tawus.wordpress.com/2011/08/24/tapestry53/
+
+Tapestry 5.3 is ready for a beta release and there are many exciting features. You can read about them here. The intention of this post and the one following it is to provide some running examples to get you started
+
+Periodic Executor
+定时任务
+
+Tapestry now has a PeriodicExecutor. A simple implementation of a scheduler but of course not a replacement for Quartz (At least not for now). Being a simple implementation, it is very easy to use.
+
+Lets create a simple job which increments a counter. For this, we first create a simple Counter service.
+
+//Interface
+public interface CounterService
+{
+
+   void reset();
+
+   int getValue();
+
+   void increment();
+
+}
+
+//Implementation
+public class CounterServiceImpl implements CounterService
+{
+
+   private AtomicInteger counter = new AtomicInteger();
+
+   public void reset()
+   {
+      counter.set(0);
+   }
+
+   public int getValue()
+   {
+      return counter.get();
+   }
+
+   public void increment()
+   {
+      counter.addAndGet(1);
+   }
+
+}
+The job has to be any Runnable implementation
+
+public class SimpleJob implements Runnable
+{
+   
+    private CounterService counterService;
+
+    public SimpleJob(CounterService counterService)
+   {
+      this.counterService = counterService;
+   }
+
+   public void run()
+    {
+        counterService.increment();
+    }
+}
+
+Now let us create a simple page to monitor this job
+
+public class SimpleJobDemo
+{
+   @Inject
+   private PeriodicExecutor executor;
+
+   @Persist
+   @Property
+   private PeriodicJob periodicJob;
+
+   @Inject
+   @Property
+   private CounterService counterService;
+
+   @InjectComponent
+   private Zone zone;
+
+   void onActivate()
+   {
+      if(periodicJob == null)
+      {
+         start();
+      }
+   }
+
+   Object onZoneRefresh()
+   {
+      return periodicJob.isCanceled() ? null : zone.getBody();
+   }
+
+   void onCancel()
+   {
+      periodicJob.cancel();
+   }
+
+   void onRestart()
+   {
+      start();
+   }
+
+   private void start()
+   {
+      counterService.reset();
+      SimpleJob job = new SimpleJob(counterService);
+      periodicJob = executor.addJob(ScheduleUtils.secondlySchedule(1), 
+        "My Counter Job", job);
+   }
+
+}
+
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd' xmlns:p='tapestry:parameter'>
+
+   <head>
+      <title>Simple Job Demo</title>
+   </head>
+
+   <body>
+      <h1>Simple Job Demo</h1>
+
+      <div t:type='zone' t:id='zone' t:mixins='zoneRefresh' t:period='5'>
+         <strong>Counter : </strong>
+         ${counterService.value}
+         <br />
+
+         <strong>Is Executing ? </strong>
+         ${periodicJob.executing}
+         <br />
+
+         <strong>Is Cancelled ? </strong>
+         ${periodicJob.canceled}
+         <br />
+
+         <t:if test='periodicJob.canceled'>
+            <a href='#' t:type='eventlink' t:event='restart'>Start Job</a>
+            <p:else>
+               <a href='#' t:type='eventlink' t:event='cancel'>Cancel Job</a>
+            </p:else>
+         </t:if>
+         <t:unless test='periodicJob.canceled'>
+            
+         </t:unless>
+      </div>
+
+   </body>
+</html>
+
+
+I have created a helper class for creating schedules
+
+public class ScheduleUtils
+{
+    public static Schedule hourlySchedule(int hours)
+    {
+        return new IntervalSchedule(hours * 60 * 60 * 1000L);
+    }
+
+    public static Schedule minutelySchedule(int minutes)
+    {
+        return new IntervalSchedule(minutes * 60 * 1000L);
+    }
+
+    public static Schedule secondlySchedule(int seconds)
+    {
+        return new IntervalSchedule(seconds * 1000L);
+    }
+}
+
+So all you have to do is get hold of the PeriodicExecutor service and register your job(which has to be Runnable). It returns you an instance of PeriodicJob which use can use to monitor or cancel the job.
+
+
+Checklist Component
+选择列表组件
+
+Checklist is similar to the Checkbox-group component found in many libraries/frameworks. It displays multiple values as checkboxes and allows you to select multiple values by checking the corresponding checkboxes.
+
+
+
+To use it you need a SelectModel and a ValueEncoder. I will start with a domain object
+
+public class Fruit
+{
+   private String name;
+
+   public Fruit(String name)
+   {
+      this.setName(name);
+   }
+
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+
+   public String getName()
+   {
+      return name;
+   }
+   
+   @Override
+   public int hashCode(){
+      return name.hashCode();
+   }
+   
+   @Override
+   public boolean equals(Object value){
+      if(value == this){
+         return true;
+      }
+      
+      if(value == null || !(value instanceof Fruit))
+      {
+         return false;
+      }
+      
+      Fruit other = (Fruit)value;
+      
+      return getName().equals(other.getName());
+   }
+   
+   @Override
+   public String toString(){
+      return name;
+   }
+
+}
+
+(Have been fasting for the whole month, so can’t think of any other domain object.!!). The SelectModel is
+
+public class FruitSelectModel extends AbstractSelectModel
+{
+
+   private Iterable<Fruit> fruits;
+
+   public FruitSelectModel(Iterable<Fruit> fruits)
+   {
+      this.fruits = fruits;
+   }
+   
+   public List<OptionGroupModel> getOptionGroups()
+   {
+      return null;
+   }
+
+   public List<OptionModel> getOptions()
+   {
+      List<OptionModel> optionModels = new ArrayList<OptionModel>();
+      
+      for(Fruit fruit: fruits){
+         optionModels.add(new OptionModelImpl(fruit.getName(), fruit));
+      }
+      
+      return optionModels;
+   }
+
+}
+
+and the ValueEncoder
+
+public class FruitValueEncoder implements ValueEncoder<Fruit>
+{
+   private Iterable<Fruit> fruits;
+
+   public FruitValueEncoder(Iterable<Fruit> fruits)
+   {
+      this.fruits = fruits;
+   }
+
+   public String toClient(Fruit fruit)
+   {
+      return fruit.getName();
+   }
+
+   public Fruit toValue(String fruitName)
+   {
+      for(Fruit fruit: fruits)
+      {
+         if(fruit.getName().equals(fruitName))
+         {
+            return fruit;
+         }
+      }
+      
+      throw new RuntimeException("Invalid fruit name returned from client: " + fruitName);
+   }
+
+}
+
+Now we are ready to use the checklist in a page.
+
+public class ChecklistDemo
+{
+   @SuppressWarnings("unused")
+   @Property
+   @Persist(PersistenceConstants.FLASH)
+   private List<Fruit> selectedFruits;
+   
+   private List<Fruit> fruits;
+
+   @SuppressWarnings("unused")
+   @Property(write = false)
+   private SelectModel fruitModel;
+
+   @SuppressWarnings("unused")
+   @Property(write = false)
+   private FruitValueEncoder fruitEncoder;
+
+   void onActivate()
+   {
+      addFruits();
+      fruitModel = new FruitSelectModel(fruits);
+      fruitEncoder = new FruitValueEncoder(fruits);
+   }
+
+   private void addFruits()
+   {
+      fruits = new ArrayList<Fruit>();
+      
+      for(String fruitName : new String[] { "Apple", "Banana", "Mango", "Melon" })
+      {
+         fruits.add(new Fruit(fruitName));
+      }
+   }
+   
+}
+
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+   <head>
+      <title>Checklist Demo</title>
+   </head>
+   
+   <body>
+      <h3>Check List Demo</h3>
+      
+      <t:if test='selectedFruits'>
+         <strong>You have selected ${selectedFruits}</strong>
+      </t:if>      
+      
+      <form t:type='form'>
+         <label t:type='label' t:for='checklist'/><br/>
+         
+         <div t:type='checklist' t:id='checklist' 
+              t:selected='selectedFruits' t:encoder='fruitEncoder' 
+              t:model='fruitModel'></div>
+         
+         <input type='submit' name='submit' value='Submit'/>
+         
+      </form>
+   
+   </body>
+   
+</html>
+
+
+Tree
+树组件
+
+This is one of the most exciting features in Tapestry 5.3+. The best part is how easy it is to use. Usually the Tree component is the one discussed at the end of a GUI book under the topic “Advanced Components” but this one you can just put in the “Getting Started” section.
+
+So, let us create a file browser. We need to provide an TreeModelAdapter to tell the tree what to expect from a particular node.
+
+public class FileAdapter implements TreeModelAdapter<File>
+{
+
+   public boolean isLeaf(File file)
+   {
+      return !file.isDirectory();
+   }
+
+   public boolean hasChildren(File file)
+   {
+      return file.isDirectory();
+   }
+
+   public List<File> getChildren(File file)
+   {
+      return Arrays.asList(file.listFiles());
+   }
+
+   public String getLabel(File file)
+   {
+      return file.getName();
+   }
+
+}
+
+You also need to provide a ValueEncoder which will be add inline. So here is own File Browser
+
+public class FileBrowser
+{
+   private File directory;
+   
+   void onActivate()
+   {
+      directory = new File(".");
+   }
+
+   public TreeModel<File> getFileModel()
+   {
+      ValueEncoder<File> encoder = new ValueEncoder<File>()
+      {
+
+         public String toClient(File file)
+         {
+            return file.getAbsolutePath();
+         }
+
+         public File toValue(String name)
+         {
+            return new File(name);
+         }
+      };
+
+      return new DefaultTreeModel<File>(encoder, new FileAdapter(), 
+             Arrays.asList(getRootDirectory().listFiles()));
+
+   }
+
+   public File getRootDirectory()
+   {
+      return directory;
+   }
+
+}
+
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+
+   <head>
+      <title>File Browser</title>
+   </head>
+   
+   <body>
+      <t:tree model='fileModel'/>'
+   </body>
+   
+</html>
+
+We are passing the TreeModel to the tree component. We use the DefaultTreeModel which requires the TreeModelAdapter and ValueEncoder along with the root elements.
+
+Yes, that is it!! Will come up with another post to show more features.

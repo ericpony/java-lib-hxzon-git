@@ -1,0 +1,21 @@
+﻿Rethinking JavaScript in Tapestry 5.3
+作者：Howard | 来自：Tapestry Central
+http://feedproxy.google.com/~r/TapestryCentral/~3/JzJKV63SpH4/rethinking-javascript-in-tapestry-53.html
+
+I've always had a love/hate relationship with JavaScript; some of the earliest motivations for Tapestry was to "encapsulate that ugly JavaScript stuff so I don't have to worry about it again." However, as I've come to appreciate JavaScript, over time, as a powerful functional language, and not as an incompletely implemented object oriented language, my revulsion for the language has disappeared ... even reversed.
+
+Back around 2006, I started adding the client-side JavaScript features to Tapestry 5; this started with client-side form field validation, and grew to include a number of more sophisticated components. The good news is these features and components are fully encapsulated: they can be used freely throughout at Tapestry application without even knowing JavaScript. Tapestry includes the libraries (and related CSS documents) as needed, and encapsulates the necessary initialization JavaScript. The APIs for this were revamped a bit in Tapestry 5.2, but the core concept is unchanged.
+
+The bad news is that the client-side is directly linked to Prototype and Scriptaculous (which are bundled right inside the Tapestry JAR file). These were great choices back in 2006, when jQuery was new and undocumented (or so my quite fallible memory serves). It seemed safe to follow Rails. Now, of course, jQuery rules the world. I've been talking for a couple of years about introducing an abstraction layer to break down the Prototype/Scriptaculous dependency; meanwhile I've recently seen that Rails and Grails are themselves moving to jQuery.
+
+However, that abstraction layer is still important; I have clients that like MooTools; I have clients that are using YUI and ExtJS.
+
+Certainly, it would have been too ambitious to try to start with such an abstraction layer from day 1. At the time, I had no real idea what the relationship between JavaScript on the client, and the application running on the server, would look like. Also, my JavaScript skills in 2006 are a fraction of what they are now. With several years of coding complex JavaScript and Ajax components for Tapestry, for TapX, and for clients, I think I have a much better understanding of what the APIs and abstraction layers should look like.
+
+So suddenly, I have a number of goals:
+
+Allow Tapestry to work on top any JavaScript framework
+Support Prototype/Scriptaculous and jQuery as substrate frameworks "out of the box"
+Make the built-in Tapestry library first class: documented and release-on-release compatible
+Keep backwards compatibility to Tapestry 5.2
+What I'm proposing is a gradual transition, over Tapestry 5.3 and 5.4, where new, documented, stable JavaScript APIs are introduced. and Tapestry and 3rd party libraries can code to the new APIs rather than to Prototype/Scriptaculous. The goal is that, eventually, it will be possible to switch the default substrate from Prototype/Scriptaculous over to jQuery.

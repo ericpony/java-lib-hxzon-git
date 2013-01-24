@@ -1,0 +1,303 @@
+﻿A Tab-panel for Tapestry
+学中注释。
+标签页组件。
+
+http://tawus.wordpress.com/2011/07/09/a-tab-panel-for-tapestry/
+
+Tab panels are used so often in component based web design that many frameworks provide an out-of-box implementation. ChenilleKit has one for Tapestry. Let us try another one.
+
+The tab panel will require two components.
+
+A TabPanel component to manage the tabs and tab links.
+A Tab component representing a tab
+
+Creating this component is more fun as it needs a two-way communication between parent and child component. TabPanel(parent component) has to get title and disable status from the Tab component(child) while the Tab component has to check when to render itself depending on the selected tab in the TabPanel. For parent to child communication we will use the Environment service and for child to parent communication we will have use ComponentResources.
+父组件与子组件的通信我们使用环境服务，子组件与父组件的通信我们使用组件资源。
+
+The Environment service is a stack based service where in we can push an object onto the stack at any component rendering phase and later pop out the object when not required. The object is available to all the phases between push and pop calls. This stack based design is apt for communication because of the way the component rendering works. For two components A and B where A contains B, rendering occurs in this fashion
+环境服务是一个栈，我们可以在任何渲染阶段压入一个对象，随后弹出。对于两个组件，例如A包含B，它的渲染过程如下：
+   
+   A.setupRender() -> A.beginRender() -> A.beforeRenderTemplate()->A.beforeRenderBody()->
+
+      B.setupRender() -> B.beginRender() -> B.beforeRenderTemplate()->B.beforeRenderBody()->
+      B.afterRenderBody()->B.afterRenderTemplate()->B.afterRender()->B.cleanupRender()
+
+   A.afterRenderBody()->A.afterRenderTemplate()->A.afterRender()->A.cleanupRender()
+
+
+All the phases of child component occur within the phases of parent component. So, we can easily push an object in a phase before the child component is rendered and pop it out in a later phase. For a full description and understanding read this
+
+To get the child components, we need their component ids. The information is passed in the tabs’ parameter of the TabPanel. The component id can be used to get the actual component by using ComponentResources.getContainerResources().getEmbeddedComponent().
+
+The source code for TabPanel shows the implementation of these concepts
+
+标签页容器组件：
+
+
+@Import(stylesheet = "tab-panel.css")
+public class TabPanel implements ClientElement
+{
+   @Parameter(value = "prop:componentResources.id", 
+     defaultPrefix = BindingConstants.LITERAL, allowNull = false)
+   private String clientId;
+
+   @Parameter(defaultPrefix = BindingConstants.LITERAL)
+   private String active;
+
+   @SuppressWarnings("unused")
+   @Parameter(defaultPrefix = BindingConstants.LITERAL)
+   private String zone;
+
+   @Parameter(defaultPrefix = BindingConstants.LITERAL)
+   private String tabs;
+
+   private String assignedClientId;
+
+   @Property
+   private String currentTabId;
+   
+   @SuppressWarnings("unused")
+   @Property
+   private int index;
+
+   @Inject
+   private JavaScriptSupport javaScriptSupport;
+
+   @Inject
+   private ComponentResources resources;
+
+   @Inject
+   private Environment environment;
+   
+   @Inject
+   private Request request;
+
+   private String [] tabsCache;
+
+   public TabPanel()
+   {
+
+   }
+
+   //Testing purpose
+   TabPanel(String tabs,
+         String active,
+         String currentTabId,
+         JavaScriptSupport javaScriptSupport,
+         ComponentResources resources,
+         Environment environment)
+   {
+      this.tabs = tabs;
+      this.active = active;
+      this.currentTabId = currentTabId;
+      this.javaScriptSupport = javaScriptSupport;
+      this.resources = resources;
+      this.environment = environment;
+   }
+
+   void setupRender()
+   {
+      if(tabs == null || getTabs().length == 0)
+      {
+         throw new IllegalArgumentException("You must specify atleast one tab");
+      }
+      
+      if(active == null)
+      {
+         active = getTabs()[0];
+      }
+
+      assignedClientId = javaScriptSupport.allocateClientId(clientId);
+   }
+
+   void beginRender()
+   {
+      environment.push(TabContext.class, new TabContext()
+      {
+
+         public boolean isActiveTab(String tabId)
+         {
+            return active != null && active.equals(tabId);
+         }
+
+      });
+   }
+
+   void afterRender()
+   {
+      environment.pop(TabContext.class);
+   }
+
+   public String getClientId()
+   {
+      return assignedClientId;
+   }
+
+   Object onSelectTab(String selected)
+   {
+      active = selected;
+      
+      CaptureResultCallback<Object> callback = new CaptureResultCallback<Object>();
+      
+      boolean handled = resources.triggerEvent(EventConstants.SELECTED, 
+           new Object[]{selected}, callback);
+      if(request.isXHR() & !handled)
+      {
+         throw new TapestryException(String.format("Event %s not handled", 
+            EventConstants.SELECTED), null);
+      }
+      return callback.getResult();
+   }
+
+   public String getCssClass()
+   {
+      return isActiveTab() ? "t-tab-active" : "t-tab-default";
+   }
+
+   public boolean isActiveTab()
+   {
+      return currentTabId.equals(active);
+   }
+   
+   public String getActive()
+   {
+      return active;
+   }
+
+   public Tab getCurrentTab()
+   {
+      return getTab(currentTabId);
+   }
+
+   private Tab getTab(String tabId)
+   {
+      return (Tab) resources.getContainerResources().getEmbeddedComponent(tabId);
+   }
+   
+   public String [] getTabs()
+   {
+      if(tabsCache == null)
+      {
+         tabsCache = TapestryInternalUtils.splitAtCommas(tabs);
+      }
+      return tabsCache;
+   }
+
+}
+
+
+<t:container xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+   <div class='t-tab-panel'>
+      <ul class='t-tab-links'>
+         <t:loop t:source='tabs' t:value='currentTabId' t:index='index'>
+
+            <t:unless test='currentTab.disabled'>
+            
+               <li class='${cssClass}'>
+                  <a t:zone='inherit:zone' t:type='eventlink' 
+                     t:context='currentTabId' t:event='selectTab'>${currentTab.title}</a>
+               </li>
+               
+            </t:unless>
+            
+         </t:loop>
+      </ul>
+      <div class='t-tab-content'>
+         <t:body/>
+      </div>
+   </div>
+</t:container>
+
+
+We push TabContext in beginRender phase and pop it out in afterRender, which makes it available to the Tab for its entire component rendering phases. One important point to notice it that the object is pushed and poped in rendering phases and is not available in action phases which means you can’t use this object in event handlers.
+我们使用了标签页上下文对象，注意它只在渲染阶段有效，在动作阶段无效。
+
+TabContext is a simple interface
+
+public interface TabContext
+{
+   boolean isActiveTab(String tabId);
+}
+
+
+The Tab component uses the TabContext to verify if it should render its contents. In case the tab is not active or disabled, rendering is skipped by returning false in beginRender phase.
+
+public class Tab
+{
+   @Parameter(required = true, defaultPrefix = BindingConstants.LITERAL, allowNull = false)
+   private String title;
+   
+   @Parameter(value = "false", defaultPrefix = BindingConstants.LITERAL, allowNull = false)
+   private boolean disabled;
+   
+   @Environmental
+   private TabContext tabContext;
+   
+   @Inject
+   private ComponentResources resources;
+   
+   boolean beginRender()
+   {
+      return isActiveAndEnabled();
+   }
+   
+   private boolean isActiveAndEnabled()
+   {
+      return tabContext.isActiveTab(resources.getId()) && !disabled;
+   }
+
+   public String getTitle()
+   {
+      return title;
+   }
+   
+   public void setTitle(String title)
+   {
+      this.title = title;
+   }
+   
+   public boolean getDisabled()
+   {
+      return disabled;
+   }
+   
+   public void setDisabled(boolean disabled)
+   {
+      this.disabled = disabled;
+   }
+}
+
+<t:container xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+   <t:body/>
+</t:container>
+
+Usage
+
+The typical usage will be
+
+public class TabPanelDemo
+{
+   @Property
+   private String active;
+   
+   void onActivate(String active)
+   {
+      this.active = active;
+   }
+   
+   String onPassivate()
+   {
+      return active;
+   }
+   
+}
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+   <body>
+         <div t:type='tawus/tabpanel' t:tabs='tabA, tabB,tabC' t:active='prop:active' t:id='outer'>
+            <div t:type='tawus/tab' title='Tab A' t:id='tabA'>Content of Tab A</div>
+            <div t:type='tawus/tab' title='Tab B' t:id='tabB'>Content of Tab B</div>
+            </div>
+         </div>
+   </body>
+</html>

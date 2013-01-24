@@ -1,0 +1,66 @@
+﻿Meeting Plastic I: Introduction
+学中注释。
+给所有类加上toString()方法。
+
+http://tawus.wordpress.com/2011/04/18/meeting-plastic/
+
+With Tapestry, you know things improve very fast. For the users, everything stays much the same(Ok, only after Tapestry5) but for developers, it keeps you on your toes especially if you are constantly peeking into the source code. In Tapestry 5.3, we are going to see complete replacement of Javassist by Plastic. It is a wrapper around ASM.
+
+
+Example
+
+Let us first start with the simplest of example. Say, we want to add a toString() method to all the classes in the controlled package. A controlled package is one which contains classes that are to be transformed. In order to perform a transformation, we implement PlasticClassTransformer interface.
+我们希望给控制包下的所有类加上toString()方法。
+
+/**
+ * A simple class transformer which adds a toString method to the
+ * classes to be transformed
+ */
+public class ToStringTransformer implements PlasticClassTransformer {
+
+   /**
+    * Adds a toString() method to the class
+    */
+   public void transform(PlasticClass plasticClass) {
+      plasticClass.addToString("Modified by <ToStringTransformer>");
+   }
+
+}
+
+In the transform method, we use addToString method to add a toString() method to the class.
+
+I have written a small spock test to use this transformer.
+
+/**
+ * A simple test for {@link plasticdemo.transforms.ToStringTransformer}
+ */
+class ToStringTest extends Specification {
+   def pm
+   
+   def setup(){
+      //Create a plastic manager and pass on the controlled package and the transformer
+      pm = PlasticManager.withContextClassLoader().packages(["plasticdemo.controlled"]).
+         delegate(new StandardDelegate(new ToStringTransformer())).create()
+   }
+   
+   def "test if a class in controlled package has our toString method"(){
+      def foo = pm.getClassInstantiator("plasticdemo.controlled.Foo").newInstance()
+      expect: foo.toString().equals("Modified by <ToStringTransformer>")
+   }
+}
+
+The steps involved are
+
+Step #1: Create and configure a PlasticManagerBuilder
+
+PlasticManagerBuilder can be created using either withContextClassLoader() or withClassLoader(ClassLoader) method. In the latter case, class loader can be passed as argument. Once the builder is created, it can be passed our controlled package name and class transformer.
+
+Step #2: Create a PlasticManager
+
+An instance of PlasticManager can be obtained by calling PlasticManagerBuilder.create().
+
+Step #3: Obtain a ClassInstantiator and create instance
+
+To create an instance of the transformed class, we first get ClassInstantiator by calling PlasticManager.getClassInstantiator() and then call its newInstance() method
+
+You can find the source 《here》

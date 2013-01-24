@@ -1,0 +1,131 @@
+﻿Tapestry 5.3+ New Features : Part 2
+学中注释。
+使用AjaxResponseRender更新多个区域。AjaxResponseRender作为一个服务的好处。
+
+http://tawus.wordpress.com/2011/10/01/tapestry-5-3-new-features-part-2/
+
+POSTED BY TAWUS , OCTOBER 1, 2011 
+
+AjaxResponseRender
+
+This is one of the most useful feature of Tapestry 5.3. There is already a concept of Zone in Tapestry for Ajax but now it is complimented by AjaxResponseRenderer. This fills a lot of gaps at least for people coming from Wicket. It is a bit similar to AjaxRequestTarget but empowered with Zones and JSON. I have compiled a small example demonstrating most of the features.
+
+Please Note : This is only a demonstration of how AjaxResponseRenderer is used. Obviously you should always prefer the ‘Zone way’ of doing things. Only when you need a combination of zone updates(multiple), small JavaScript callbacks and JSON callbacks, you can use this service. Also when you want to do different things(explained below) in different event handlers (may be belonging to different components), this service can be of great help.
+更新多个区域。
+
+@Import(library = "testJSON.js")
+public class NewAjax {
+    @Inject
+    private AjaxResponseRenderer ajaxResponseRenderer;
+
+    @InjectComponent
+    private Zone topZone;
+
+    @InjectComponent
+    private Zone bottomZone;
+
+    @Inject
+    private JavaScriptSupport javaScriptSupport;
+
+    @InjectComponent
+    private EventLink jsonCallbackLink;
+
+    @Inject
+    private Messages messages;
+
+    @AfterRender
+    void addJavaScript(){
+        javaScriptSupport.addInitializerCall("testJSON", jsonCallbackLink.getClientId());
+    }
+
+    @OnEvent("serverAlert")
+    void showAlert() {
+        ajaxResponseRenderer.addCallback(new JavaScriptCallback() {
+            public void run(JavaScriptSupport javascriptSupport) {
+                javascriptSupport.addScript(
+                    String.format("alert('%s');", messages.get("server.hello")));
+            }
+        });
+    }
+
+    @OnEvent("sendJSON")
+    void sendJSON() {
+        ajaxResponseRenderer.addCallback(new JSONCallback() {
+            public void run(JSONObject reply) {
+                reply.put("message", messages.get("server.message"));
+            }
+        });
+    }
+
+    @OnEvent("multipleZoneUpdate")
+    void showZones() {
+        ajaxResponseRenderer.addRender("topZone", topZone).
+            addRender("bottomZone", bottomZone);
+    }
+
+    public Date getDate() {
+        return new Date();
+    }
+
+}
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+    <head>
+        <title>New Ajax Features</title>
+    </head>
+
+    <body>
+        <div t:type='zone' t:id='topZone'>
+             Zone ${date}
+        </div>
+
+        <a href='#' t:type='eventLink' 
+           t:event='multipleZoneUpdate' t:zone='topZone' t:id='multipleZoneLink'>
+            Multiple Zone Update
+        </a>
+
+        <div t:type='zone' t:id='bottomZone'>
+            Bottom Zone ${date}
+        </div>
+
+        <br/>
+
+        <a t:type='eventLink' t:zone='topZone' 
+           t:id='javaScriptCallbackLink' t:event='serverAlert'>
+            Show Feedback alert
+        </a>
+
+        <br/>
+
+        <a t:type='eventLink' t:id='jsonCallbackLink' t:event='sendJSON'>
+            Get alert message from server!
+        </a>
+    </body>
+
+</html>
+Tapestry.Initializer.testJSON = function(elementId){
+    $(elementId).observe("click", function(event){
+
+        Tapestry.ajaxRequest($(elementId).href, function(response){
+            alert(response.responseJSON.message);
+        });
+
+        event.preventDefault();
+    });
+};
+server.hello=Hello from Server!
+server.message=Message from Server!!
+
+For Multiple Zone Update
+
+Instead of using MultiZoneUpdate, you can use AjaxRequestRenderer. The advantage is that it is now a service. You can call it from multiple event handlers present in different components handling the same event. Or imagine an event handler in a component which triggers another event that is handled by the container component. Now the component can add its internal zone and then trigger an event to which the container can respond by adding its own zone!!.
+
+使用AjaxResponseRenderer（作者这里用AjaxRequestRenderer为笔误？并没有这个类）的好处是它是一个服务。你能使来自不同组件的多个事件处理方法处理同一个事件。或者想象这种场景，某个组件的事件处理方法触发了另一个由容器处理的事件，该组件可以添加自己的内部区域，然后触发事件，容器处理该事件时可以添加自己的区域。
+
+Using JavaScript callback
+
+You can now do something on server-side and return an alert message !!
+
+Using JSON callback
+
+You can send a JSON response in addition to updating multiple zones !!

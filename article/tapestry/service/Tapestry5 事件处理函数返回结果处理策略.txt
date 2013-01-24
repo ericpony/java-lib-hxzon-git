@@ -1,0 +1,182 @@
+﻿Tapestry5 事件处理函数返回结果处理策略
+
+http://blog.csdn.net/mindhawk/archive/2009/12/13/4999419.aspx
+
+tapestry源码品读
+
+本文主要讨论Tapestry5 (本文针对版本5.1)对事件处理函数所返回的结果进行处理的内部机制。有关事件处理的实现机制可以参见我另一篇博文《Tapestry5 事件分派机制 》。
+
+本文主要讨论内容包括事件返回结果的处理接口，默认配置，和策略机制这三个方面。
+
+1. 处理接口
+
+如果某个事件函数具有返回结果，那么Tapestry内部机制将会调用org.apache.tapestry5.services.ComponentEventResultProcessor这一接口处理这个返回的结果。我们首先看下这个接口：
+
+package org.apache.tapestry5.services;
+import org.apache.tapestry5.ioc.annotations.UsesMappedConfiguration;
+import java.io.IOException;
+/**
+ * 负责处理组件事件处理函数返回的结果
+ * 
+ * Tapestry内建了两个实现了该接口的服务: ComponentEventResultProcessor (用于处理普通的基于页面的请求，用marker标注为
+ * @{@link org.apache.tapestry5.services.Traditional} 或 @{@link org.apache.tapestry5.ioc.annotations.Primary})，
+ * 和 AjaxComponentEventResultProcessor, 用于Ajax请求（通常会返回一个页面的部分渲染内容）， 用marker标注为
+ * @{@link org.apache.tapestry5.services.Ajax} marker annotation.
+ *
+ * @param <T>
+ */
+@UsesMappedConfiguration(key = Class.class, value = ComponentEventResultProcessor.class)
+public interface ComponentEventResultProcessor<T>
+{
+    /**
+     * 对于一个非空的，由组件事件处理函数返回的值，构建并返回一个response
+     *
+     * @param value 事件处理函数返回的值
+     * @throws RuntimeException 如果该返回值不能被处理
+     */
+    void processResultValue(T value) throws IOException;
+}
+可以看出，该接口只有一个方法，用于处理事件处理函数返回的结果。Tapestry内部会有若干这一接口的实现，通过使用策略模式决定当前的返回结果由那一个指定的实现类处理。
+
+2. 默认配置
+
+接下来，我们就详细讨论下Tapestry提供了哪些默认的配置。
+
+Tapestry采用了一种其内部支持的依赖注入框架，该框架会根据配置信息动态的生成一个使用了策略模式的类包装所配置的策略信息。
+
+首先，我们看一下Tapestry是如何配置Traditional和Ajax两类ComponentEventResultProcessor的。
+
+Tapestry5采用了Java类配置的机制，你可以在org.apache.tapestry5.services.TapestryModule中找到整个应用相关的配置信息。
+
+下面我截取了与事件返回处理相关的两个片段：
+
+public void contributeComponentEventResultProcessor(
+            @Traditional @ComponentInstanceProcessor
+            ComponentEventResultProcessor componentInstanceProcessor,
+            MappedConfiguration<Class, ComponentEventResultProcessor> configuration)
+    {
+        configuration.add(Link.class, new ComponentEventResultProcessor<Link>()
+        {
+            public void processResultValue(Link value) throws IOException
+            {
+                response.sendRedirect(value);
+            }
+        });
+        configuration.add(URL.class, new ComponentEventResultProcessor<URL>()
+        {
+            public void processResultValue(URL value) throws IOException
+            {
+                response.sendRedirect(value.toExternalForm());
+            }
+        });
+        configuration.addInstance(String.class, PageNameComponentEventResultProcessor.class);
+        configuration.addInstance(Class.class, ClassResultProcessor.class);
+        configuration.add(Component.class, componentInstanceProcessor);
+        configuration.addInstance(StreamResponse.class, StreamResponseResultProcessor.class);
+    }
+上述代码配置了Traditional的ComponentEventResultProcessor，从中可以看出，Tapestry默认支持6类返回结果，分别是Link、URL、String、Class、Component、和StreamResponse。
+
+实际的服务会有另外一个配置函数负责生产，代码如下：
+
+@Marker({ Primary.class, Traditional.class })
+    public ComponentEventResultProcessor buildComponentEventResultProcessor(
+            Map<Class, ComponentEventResultProcessor> configuration)
+    {
+        return constructComponentEventResultProcessor(configuration);
+    }
+它调用了一个内部函数，细节如下：
+
+private ComponentEventResultProcessor constructComponentEventResultProcessor(
+            Map<Class, ComponentEventResultProcessor> configuration)
+    {
+        Set<Class> handledTypes = CollectionFactory.newSet(configuration.keySet());
+        // A slight hack!
+        configuration.put(Object.class, new ObjectComponentEventResultProcessor(handledTypes));
+        StrategyRegistry<ComponentEventResultProcessor> registry = StrategyRegistry.newInstance(
+                ComponentEventResultProcessor.class, configuration);
+        return strategyBuilder.build(registry);
+    }
+这段代码中，会默认的加入对Object的处理，并会使用到一个策略构造器构造一个新的对象，作为应用中用做处理返回结果的服务。
+
+综上所述，普通的页面请求可以处理7类返回结果，我们仔细分析下这几类结果分别会如何处理：
+
+返回对象-->处理策略
+Link-->重定向到一个内部链接
+URL-->重定向到一个外部链接
+String-->渲染指定的页面，返回给客户端。即显示返回的页面（有可能是重定向到这一页面）
+Class-->与String相似，但必须是一个页面对应的类
+Component-->渲染与组件对应的页面。通常是页面的根组件，其它非根组件也可以被接受，但是会报出一个警告
+StreamResponse-->该对象（org.apache.tapestry5.StreamResponse）所包含的流将作为最终的实际输出
+Object-->报出一个异常，不支持这一输出
+
+下面我们在看一下Ajax请求时返回值的处理策略，首先还是看一些配置了的处理策略。
+
+public static void contributeAjaxComponentEventResultProcessor(
+            MappedConfiguration<Class, ComponentEventResultProcessor> configuration)
+    {
+        configuration.addInstance(RenderCommand.class, RenderCommandComponentEventResultProcessor.class);
+        configuration.addInstance(Component.class, AjaxComponentInstanceEventResultProcessor.class);
+        configuration.addInstance(JSONObject.class, JSONObjectEventResultProcessor.class);
+        configuration.addInstance(JSONArray.class, JSONArrayEventResultProcessor.class);
+        configuration.addInstance(StreamResponse.class, StreamResponseResultProcessor.class);
+        configuration.addInstance(String.class, AjaxPageNameComponentEventResultProcessor.class);
+        configuration.addInstance(Link.class, AjaxLinkComponentEventResultProcessor.class);
+        configuration.addInstance(Class.class, AjaxPageClassComponentEventResultProcessor.class);
+        configuration.addInstance(MultiZoneUpdate.class, MultiZoneUpdateEventResultProcessor.class);
+    }
+上述代码配置了9中返回值的处理策略，分别是RenderCommand、Component、JSONObject、JSONArray、StreamResponse、String、Link、Class、MultiZoneUpdate。
+
+实际的服务会有另外一个配置函数负责生产，代码如下：
+
+@Marker(Ajax.class)
+    public ComponentEventResultProcessor buildAjaxComponentEventResultProcessor(
+            Map<Class, ComponentEventResultProcessor> configuration)
+    {
+        return constructComponentEventResultProcessor(configuration);
+    }
+它也调用了一个与Traditional相同的内部函数，同样也就加入了一个对Object返回对象的处理。也就是说总共可以处理10类的返回对象类型。
+
+下面仔细分析下这几类结果分别会如何处理：
+
+返回对象-->处理策略
+RenderCommand-->对应于页面的一个局部区域，比如zone.getBody()的返回值就会进入这个策略处理，如果是一个普通的组件，则会生成一个RenderCommand，使用它再次调用Ajax的结果处理服务。
+Component-->如果组件是一个页面，则会查找如页面名(String)，使用它再次调用Ajax的结果处理服务。如果是一个非页面组件，则会生成一个RenderCommand，使用它再次调用Ajax的结果处理服务。
+JSONObject-->直接返回这个JSON对象
+JSONArray-->直接返回这个JSON数组
+StreamResponse-->该对象（org.apache.tapestry5.StreamResponse）所包含的流将作为最终的实际输出
+String-->生成一个Link，使用它再次调用Ajax的结果处理服务。
+Link-->重定向到指定的内部链接。
+Class-->必须是页面的类。找出对应的页面名(String)后，使用它再次调用Ajax的结果处理服务。
+MultiZoneUpdate-->刷新多个Zone的内容。
+Object-->报出一个异常，不支持这一输出
+
+3. 策略机制
+
+Tapestry使用了一种类生产的机制来实现策略模式。生成的对象与每个处理策略一样，也实现了ComponentEventResultProcessor这一接口，不同的是，在处理之前会调用一个策略查找机制，找出实际处理结果的类。
+
+从上述服务生成代码可以看出，它们调用了一个 strategyBuilder（org.apache.tapestry5.ioc.services.StrategyBuilder）。这个构造器 会自动的根据配置参数生成一个使用了策略模式的类，为ComponentEventResultProcessor生成的代码如下。
+
+public class $ComponentEventResultProcessor_12587fbd34d extends java.lang.Object
+  implements org.apache.tapestry5.services.ComponentEventResultProcessor{
+  private final org.apache.tapestry5.ioc.util.StrategyRegistry _registry;
+  public $ComponentEventResultProcessor_12587fbd34d(org.apache.tapestry5.ioc.util.StrategyRegistry $1){
+    _registry = $1;
+  }
+  public void processResultValue(java.lang.Object $1)  throws java.io.IOException{
+    Object selector = $1;
+    org.apache.tapestry5.services.ComponentEventResultProcessor adapter = 
+(org.apache.tapestry5.services.ComponentEventResultProcessor) _registry.getByInstance(selector);
+
+    //$$表示传入的参数与函数定义的参数一致
+    return ($r) adapter.processResultValue($$);
+  }
+  public java.lang.String toString(){
+    return "<Strategy for org.apache.tapestry5.services.ComponentEventResultProcessor>";
+  }
+}
+
+这个生成的类包含了一个StrategyRegistry属性，这个属性在服务生成时（如上述constructComponentEventResultProcessor（）代函数示）。
+
+StrategyRegistry的代码我就不贴出来了，原理很简单，就是根据配置的信息与当前返回的数据类型作比较，选用一个匹配的策略处理。简单的说就是一个映射过程。
+
+这样，Tapestry框架就能根据请求类型选择合适的ComponentEventResultProcessor处理事件处理函数返回的对象了。

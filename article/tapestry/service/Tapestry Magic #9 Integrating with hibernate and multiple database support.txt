@@ -1,0 +1,429 @@
+﻿Tapestry Magic #9: Integrating with hibernate and multiple database support
+学中注释。
+使用注解来标明使用哪个数据库。参见《Tapestry hibernate multiple databases》
+
+http://tawus.wordpress.com/2011/04/28/tapestry-magic-9-integrating-with-hibernate-and-multiple-database-support/
+
+
+Tapestry5 already has a module for integration with hibernate. This module is restricted to only one database. In this post I will create a small module which can support multiple databases. I am not going to provide all the facilities that tapestry-hibernate module already provides but just enough to solve the multiple database access problem.
+支持多个数据库。
+
+In order to support multiple database, we will use a session factory identifier or afactoryId to identify a SessionFactory. This will be used as the service id to identify the service. This way we can use @InjectService("factoryId") or @Named("factoryId")@Inject
+
+We define a SessionFactorySource which will be responsible for creating and managing SessionFactorys
+
+public interface SessionFactorySource {
+   public SessionFactory getSessionFactory(String factoryID);
+   
+   public SessionFactory getSessionFactory(Class<?> entityClass);
+   
+   public Session createSession(Class<?> entityClass);
+   
+   public Session createSession(String factoryID);
+
+   public String getFactoryID(Class<?> entityClass);
+}
+
+The getSessionFactory() methods return the SessionFactory for a particularfactoryId or entity class. The createSession() method is responsible for creating a new session. The getFactoryId() method provides a mapping from entity class to session factory id. The implementation of this service takes a collection of configurations for configuring different SessionFactorys. The configuration is
+
+public class SessionFactoryConfiguration {
+   private final String[] packageNames;
+   private final String id;
+
+   public SessionFactoryConfiguration(final String[] packageNames, final String id) {
+      this.packageNames = packageNames;
+      this.id = id;
+   }
+
+   public String[] getPackageNames() {
+      return packageNames;
+   }
+
+   public final String getSymbol() {
+      return id;
+   }
+   
+   public void configure(Configuration configuration){
+      
+   }
+}
+
+In the configuration we can specify the package names containing the domain objects/entities and the factory id to be used to identify a particular SessionFactory. There is a configure() method which can be used to configure the SessionFactory.
+
+The implementation of SessionFactorySource is as under
+
+public class SessionFactorySourceImpl implements SessionFactorySource,
+   RegistryShutdownListener {
+
+   private final Map<String, SessionFactory> symbolMap = new HashMap<String, SessionFactory>();
+   private final Map<Class<?>, String> entityMap = new HashMap<Class<?>, String>();
+   private final ClassNameLocator classNameLocator;
+
+   public SessionFactorySourceImpl(final ClassNameLocator classNameLocator,
+       final List<SessionFactoryConfiguration> configurations) {
+      this.classNameLocator = classNameLocator;
+      for(final SessionFactoryConfiguration configuration : configurations){
+         setupSessionFactory(configuration);
+      }
+   }
+
+   private void setupSessionFactory(
+      final SessionFactoryConfiguration configuration) {
+
+      final Configuration hibernateConfig = new Configuration();
+      final List<Class<?>> entities = loadEntityClasses(configuration);
+
+      // Load entity classes
+      for(final Class<?> entityClass : entities){
+         hibernateConfig.addAnnotatedClass(entityClass);
+         entityMap.put(entityClass, configuration.getSymbol());
+      }
+
+      configuration.configure(hibernateConfig);
+      
+      final SessionFactory sf = hibernateConfig.buildSessionFactory();
+      if(configuration.getSymbol() != null){
+         symbolMap.put(configuration.getSymbol(), sf);
+      }
+   }
+
+   private List<Class<?>> loadEntityClasses(
+      final SessionFactoryConfiguration configuration) {
+
+      final ClassLoader classLoader = Thread.currentThread()
+         .getContextClassLoader();
+
+      final List<Class<?>> entityClasses = new ArrayList<Class<?>>();
+
+      for(final String packageName : configuration.getPackageNames()){
+         for(final String className : classNameLocator
+            .locateClassNames(packageName)){
+
+            try{
+               Class<?> entityClass = null;
+               entityClass = classLoader.loadClass(className);
+               if(entityClass.getAnnotation(javax.persistence.Entity.class) != null ||
+                   entityClass.getAnnotation(javax.persistence.MappedSuperclass.class) != null){
+                  entityClasses.add(entityClass);
+               }
+            }catch(ClassNotFoundException e){
+               throw new RuntimeException(e);
+            }
+
+         }
+      }
+      return entityClasses;
+   }
+
+   public SessionFactory getSessionFactory(final String factoryID) {
+      SessionFactory sf = symbolMap.get(factoryID);
+      if(sf == null){
+         throw new RuntimeException("No session factory found for factoryID: "
+            + factoryID);
+      }
+      return sf;
+   }
+
+   public SessionFactory getSessionFactory(final Class<?> factoryID) {
+      SessionFactory sf = getSessionFactory(entityMap.get(factoryID));
+      if(sf == null){
+         throw new RuntimeException("No session factory found for entity: "
+            + factoryID);
+      }
+      return sf;
+   }
+
+   public void registryDidShutdown() {
+      for(final SessionFactory sessionFactory : symbolMap.values()){
+         sessionFactory.close();
+      }
+   }
+
+   public Session createSession(Class<?> entityClass) {
+      return createSession(getFactoryID(entityClass));
+   }
+
+   public Session createSession(String factoryID) {
+      final Session session = getSessionFactory(factoryID).openSession();
+      return session;
+   }
+
+   public String getFactoryID(Class<?> entityClass) {
+      return entityMap.get(entityClass);
+   }
+}
+
+In the constructor we loop over all the configurations and set up SessionFactorys. We add to it all the classes annotated with @Entity and @MappedSuperclass in the specified packages. We keep a map of SessionFactory and factoryIds. We also keep a map of all the entity classes and their associated SessionFactorys. The other methods are just for retrieving values from these maps.
+
+Next we define a per-thread service for managing sessions.
+创建一个per-thread的服务来管理hibernate会话。
+
+public interface HibernateSessionManager {
+   
+   public Session getSession(Class<?> entityClass);
+   
+   public Session getSession(String factoryID);
+   
+   public Session getSession();
+}
+
+
+The methods are used to retrieve Session based on factoryId or entityType. The method without parameter retrieves the session for default factory id (specified by the symbol DEFAULT_FACTORY_ID).
+
+The implementation is as under
+
+public class HibernateSessionManagerImpl implements HibernateSessionManager,
+   ThreadCleanupListener {
+
+   private SessionFactorySource sessionFactorySource;
+   private String defaultFactoryID;
+   private Map<String, Session> sessions = new HashMap<String, Session>();
+
+   public HibernateSessionManagerImpl(
+      @Symbol(TapestryHibernateMultipleConstants.DEFAULT_FACTORY_ID) String defaultFactoryID,
+      SessionFactorySource sessionFactorySource) {
+      this.sessionFactorySource = sessionFactorySource;
+      this.defaultFactoryID = defaultFactoryID;
+   }
+
+   public Session getSession(Class<?> entityClass) {
+      return getSession(sessionFactorySource.getFactoryID(entityClass));
+   }
+   
+   public Session getSession(String factoryID) {
+      factoryID = nvl(factoryID);
+      Session session = sessions.get(factoryID);
+      if( session == null){
+         session = createSession(factoryID);
+      }      
+      return session;
+   }
+
+   public Session getSession() {
+      return getSession(defaultFactoryID);
+   }
+
+   public void threadDidCleanup() {
+      for(final Session session: sessions.values()){
+         session.close();
+      }
+      sessions.clear();
+   }
+   
+   private String nvl(String factoryID) {
+      return (factoryID == null || "".equals(factoryID)) ? defaultFactoryID : factoryID;
+   }
+
+   public Session createSession(String factoryID) {
+      factoryID = nvl(factoryID);
+      final Session session = sessionFactorySource.createSession(factoryID);
+      sessions.put(factoryID, session);
+      return session;
+   }
+
+   public Session createSession() {
+      return createSession(defaultFactoryID);
+   }
+   
+   public void setSession(String factoryID, Session session) {
+      sessions.put(nvl(factoryID), session);      
+   }   
+
+}
+
+
+Now a new session can be accessed by injecting HibernateSessionManager and using getSession(factoryId) or getSession(entityClass) methods. In order to access the session as a service, we will need a Shadow builder for SessionFactory which will access its method getService(factoryId) to create a Session service.
+
+//Interface
+public interface SessionShadowBuilder {
+   Session build(HibernateSessionManager sm, String sessionFactoryId);
+}
+
+//Implementation
+public class SessionShadowBuilderImpl implements SessionShadowBuilder {
+   private final ClassFactory classFactory;
+
+   public SessionShadowBuilderImpl(@Builtin ClassFactory classFactory) {
+      this.classFactory = classFactory;
+   }
+
+   @SuppressWarnings("unchecked")
+   public Session build(HibernateSessionManager sm, String sessionFactoryId) {
+      Class sourceClass = sm.getClass();
+      ClassFab cf = classFactory.newClass(Session.class);
+
+      cf.addField("_source", Modifier.PRIVATE | Modifier.FINAL, sourceClass);
+      cf.addConstructor(new Class[] { sourceClass }, null, "_source = $1;");
+
+      BodyBuilder body = new BodyBuilder();
+      body.begin();
+
+      body.addln("%s result = _source.getSession("%s");", sourceClass.getName(), sessionFactoryId);
+
+      body.addln("if (result == null)");
+      body.begin();
+      body
+            .addln(
+                  "throw new NullPointerException(%s.buildMessage(_source, "getSession(%s)"));",
+                  getClass().getName(), sessionFactoryId);
+      body.end();
+      body.addln("return result;");
+      body.end();
+
+      MethodSignature sig = new MethodSignature(Session.class, "_delegate",
+            null, null);
+      cf.addMethod(Modifier.PRIVATE, sig, body.toString());
+
+      String toString = String.format("<Shadow: getSession(%s) of HibernateSessionManager>",
+            sessionFactoryId);
+
+      cf.proxyMethodsToDelegate(Session.class, "_delegate()", toString);
+
+      Class shadowClass = cf.createClass();
+      try {
+         Constructor cc = shadowClass.getConstructors()[0];
+         Object instance = cc.newInstance(sm);
+         return (Session)instance;
+      } catch (Exception ex) {
+         // Should not be reachable
+         throw new RuntimeException(ex);
+      }
+
+   }
+
+   public static final String buildMessage(Object source, String propertyName) {
+      return String
+            .format(
+                  "Unable to delegate method invocation to property '%s' of %s, because the property is null.",
+                  propertyName, source);
+   }
+}
+
+This service creates a proxy for Session which delegates every call to a session created using HibernateSessionFactory#getSession(factoryId).
+
+Finally we make the contributions in our Module class
+
+public class TapestryHibernateMultipleModule {
+
+   public static void bind(ServiceBinder binder) {
+      binder.bind(SessionFactorySource.class, SessionFactorySourceImpl.class);
+      binder.bind(SessionShadowBuilder.class, SessionShadowBuilderImpl.class);
+   }
+
+   public void contributeFactoryDefaults(
+         MappedConfiguration<String, String> defaults) {
+      defaults.add(TapestryHibernateMultipleConstants.DEFAULT_FACTORY_ID,
+            "default");
+   }
+
+   @Scope(ScopeConstants.PERTHREAD)
+   public HibernateSessionManager buildHibernateSessionManager(
+         @Symbol(TapestryHibernateMultipleConstants.DEFAULT_FACTORY_ID) String defaultFactoryID,
+         SessionFactorySource sessionFactorySource,
+         PerthreadManager threadManager) {
+      HibernateSessionManagerImpl sm = new HibernateSessionManagerImpl(
+            defaultFactoryID, sessionFactorySource);
+      threadManager.addThreadCleanupListener(sm);
+      return sm;
+   }
+   
+   @ServiceId("default")
+   public Session buildDefaultSession(
+         @Symbol(TapestryHibernateMultipleConstants.DEFAULT_FACTORY_ID) String defaultFactoryID,
+         SessionShadowBuilder sessionShadowBuilder,
+         HibernateSessionManager sessionManager){
+      return sessionShadowBuilder.build(sessionManager, defaultFactoryID);
+   }
+
+}
+
+
+For using this module, we have to contribute a HibernateSessionConfigurationin the Module class
+
+   public static void contributeFactoryDefaults(MappedConfiguration<String,String> configuration){
+      configuration.add(TapestryHibernateMultipleConstants.DEFAULT_FACTORY_ID, "default");
+   }
+
+   @Contribute(SessionFactorySource.class)
+   public void providerSessionFactorySource(
+         Configuration<SessionFactoryConfiguration> configuration) {
+      configuration.add(
+            new SessionFactoryConfiguration(
+                  new String[] { "com.googlecode.tawus.hibernate.models" },
+                  "default") {
+               @Override
+               public void configure(
+                     org.hibernate.cfg.Configuration configuration) {
+                  Properties prop = new Properties();
+                  prop.put("hibernate.dialect",
+                        "org.hibernate.dialect.HSQLDialect");
+                  prop.put("hibernate.connection.driver_class",
+                        "org.hsqldb.jdbcDriver");
+                  prop
+                        .put("hibernate.connection.url",
+                              "jdbc:hsqldb:mem:testdb");
+                  prop.put("hibernate.connection.username", "sa");
+                  prop.put("hibernate.connection.password", "");
+                  prop.put("hibernate.connection.pool_size", "1");
+                  prop.put("hibernate.connection.autocommit", "false");
+                  prop.put("hibernate.hbm2ddl.auto", "create-drop");
+                  prop.put("hibernate.show_sql", "true");
+                  prop.put("hibernate.current_session_context_class", "thread");
+                  configuration.addProperties(prop);
+               }
+            });
+      
+      configuration.add(
+            new SessionFactoryConfiguration(
+                  new String[] { "com.googlecode.tawus.hibernate.models2" },
+                  "second") {
+               @Override
+               public void configure(
+                     org.hibernate.cfg.Configuration configuration) {
+                  Properties prop = new Properties();
+                  prop.put("hibernate.dialect",
+                        "org.hibernate.dialect.HSQLDialect");
+                  prop.put("hibernate.connection.driver_class",
+                        "org.hsqldb.jdbcDriver");
+                  prop
+                        .put("hibernate.connection.url",
+                              "jdbc:hsqldb:hsql://localhost/firstdb");
+                  prop.put("hibernate.connection.username", "sa");
+                  prop.put("hibernate.connection.password", "");
+                  prop.put("hibernate.connection.pool_size", "1");
+                  prop.put("hibernate.connection.autocommit", "false");
+                  prop.put("hibernate.hbm2ddl.auto", "create-drop");
+                  prop.put("hibernate.show_sql", "true");
+                  prop.put("hibernate.current_session_context_class", "thread");
+                  configuration.addProperties(prop);
+               }
+            });
+
+   }
+   
+   @ServiceId("second")
+   public Session buildFinacleSession(
+         SessionShadowBuilder sessionShadowBuilder,
+         HibernateSessionManager sessionManager){
+      return sessionShadowBuilder.build(sessionManager, "second");
+   }
+
+
+TapestryHibernateMultipleConstants is a simple class containing symbolic constants
+
+public class TapestryHibernateMultipleConstants {
+   public static final String DEFAULT_FACTORY_ID = "default";
+}
+
+Now we can get the sessions in the page as
+
+   public class TestPage {
+      @InjectService("default")
+      private Session session;
+
+      @InjectService("second")
+      private Session otherSession;
+
+   }
+
+If we have only one sessionfactory we can continue using @Inject Session.

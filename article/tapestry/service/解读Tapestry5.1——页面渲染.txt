@@ -1,0 +1,722 @@
+﻿解读Tapestry5.1——页面渲染
+
+学中修订部分字眼。
+
+http://blog.csdn.net/mindhawk/archive/2009/12/16/5021371.aspx
+
+tapestry源码品读
+
+本文旨在介绍Tapestry5.1的页面渲染(render)过程，希望最终能给出一个完整清晰的页面渲染流程，以便大家能更好的理解Tapestry页面渲染的过程，构架出更漂亮的Tapestry组件。
+
+页面渲染简单的说就是生产HTML页面，响应输入的HTTP请求。在我另一篇博文中简要的谈到了http请求转化为页面渲染处理的机制和页面渲染的流程，本文将继续详细介绍页面渲染的流程，有关请求处理流程的细节可以参见《解读Tapestry5.1——请求调用链 》。
+
+为了描述清楚整个渲染过程，在介绍渲染细节之前，我首先会简要介绍渲染的基本概念 ，然后介绍Tapestry组件与框架在渲染过程中的职责划分 ，以理清渲染过程中组件与框架的关系。最后，我将详细讨论组件职责 和框架职责 。对于组件，将着重说明它的生命周期 ，而对于框架则着重说明它是如何支持这一生命周期的，主要包括：环境构造 ，调度策略 ，中间结构这几部分。
+
+1. 基本概念
+
+首先，我们回顾一下jsp是如何渲染出一个HTML文档的。当一个请求到达jsp页面时，jsp引擎会解析jsp文件，生成一个servlet类。文件中静态的部分会原样输出，而动态的部分则作为程序代码看待。
+
+那么Tapestry的渲染思路呢？
+
+本质上，Tapestry还是遵循了这一思路，静态的文本原样输出，而动态的部分则视为组件。
+
+那么组件又是什么呢？
+
+在介绍Tapestry之前，我们先看看java的swing控件，Tapestry的组件和swing控件是有一定的相似性的。我们可以从三个方面考察Swing控件，一个是UI展示，一个是数据模型，一个是事件处理。Swing控件统一处理了这三个方面的内容，具体的说，它既负责UI的显示，又负责处理输入的数据模型，还会产生相应的事件交由外部处理。在使用组件时，只需要考虑如何提供数据并处理事件，并不用关系展示和监听用户输入(比如鼠标动 作等)的细节。
+
+Tapestry的组件也是这样组织的。UI、数据和事件这三者有机的统一，使用组件只需要考虑如何提供数据，并处理响应事件即可。对于如何生成HTML片段，如何处理HTTP请求细节，如何接收用户输入等等都不必考虑。
+
+为了能更好的支持这三者的统一，Tapestry将其分别划分到渲染和事件着两个阶段完成。
+
+我们也可以拿jsp与这两个阶段做类比，回想下写过的jsp程序，其中有一部分代码我们是用来做显示的，而有一部分是在用户触发一些事件后，响应用户请求的。
+
+Tapestry将其划分为两个阶段正好有效地分离这两部分的代码。接下来本文将详细讨论渲染的过程，而有关事件的处理可以参见我另几篇篇博文《解读Tapestry5.1——请求调用链 》、《Tapestry5 事件分派机制 》和《解读Tapestry5.1——Form》。
+
+
+2.职责划分
+
+渲染需要处理的问题相当多，比方说生成各类HTML标签用于显示页面，生成用于响应用户事件的URL以便能将请求传回给组件处理，处理其它页面传入的参数，自动引入组件使用到的js或者css文件，等等。
+
+那么，如此多的问题都要如何处理呢？换句话说，哪些职责由组件需要负责？哪些职责又由框架提供呢？
+
+这正是本文试图说明的问题。
+
+简单的说，框架承担了调度和管理者的职责，而组件负责执行与实施的职责。
+
+详细点讲，框架需要提供资源管理的机制，提供URL生成、编码与解编码的方式，提供组件渲染所需的生命周期的支持，等底层细节操作。而组件则是负责在框架的调度下，使用这些服务，生成对应HTML标签。
+
+下面，我将分组件和框架两部分讨论各自的职责。
+
+
+3.组件职责
+
+对于使用Tapestry进行Web开发而言，最重要的，最频繁接触的是组件，而最终展示给用户的页面也是一个特殊的组件。所以，要了解页面渲染的过程，首先需要了解组件的职责。
+
+我们先回忆一下曾经写过的页面，里面除了正常的HTML标签外，还有很多用于做循环和选择的控制逻辑。因为页面很多情况下并不是一成不变的，而是根据不同的状态，有选择性的展现出不同的样式，比如显示table的时候总会循环的生成tr，再比如对于等于用户我们需要显示用户名，而对于非登录用户我们需要显示登录框。
+
+所以，组件按期职责可以分为两类：显示组件和控制组件。
+
+“显示组件”负责生成一段与这个组件相关的HTML代码片段，而“控制组件”则类似于程序的控制逻辑，控制选择和循环操作。实际上，还可以分出一类“交互性组件”，但交互性组件和显示组件在渲染时的行为是相似的，只是多了一个事件处理，可以看作一类特殊的显示组件。不过，很多时候组件的界限并不一定非常明显，它可能即会生成一段HTML代码，又会控制页面的逻辑，我们这种划分只是为了能更好的说明组件的职责。
+
+通过这样的划分不难看出，组件的主要职责是生成HTML代码与控制渲染流程。
+
+下面一节我们将继续讨论组件是如何履行这些职责的。
+
+3.1 生命周期
+
+Tapestry框架为组件定义了一个标准的生命周期，所以要了解组件是如何履行其职责的，就必须先了解组件的生命周期。因为，不论是哪一类组件， 实现上并没有明显的区别。它们都会按照一定的生命周期执行，所不同的是，渲染组件会在生命周期执行过程中生成HTML代码，而控制组件只会在生命周期中改 变它所包含组件的渲染流程。
+
+http://tapestry.apache.org/tapestry5.1/guide/rendering.html
+http://p.blog.csdn.net/images/p_blog_csdn_net/mindhawk/EntryImages/20091217/component-render-states.png
+
+上图给出了一个组件的标准渲染过程，定义了10个主要的执行阶段，可以看出每个阶段都有两条边输出边，分别对应着true和false两个选择。组件执行过程中，每个阶段都可以返回一个boolean值，决定下一步的执行路径（对于返回值为void的函数，默认为true）。
+
+我们再回头看看显示组件，它们一般不会改变组件生命周期的顺序，每个阶段都会选择true的那条边往下走，并在适当的阶段输出HTML代码片段。
+
+比如一个PageLink组件（用于生成指向其它页面的链接的组件），它会在Begin Render阶段输出一段类似于"<a href='page link'>"的代码，并在After Render阶段输出结束标签“</a>”，从而形成一个完整的<a>标签。而在<a>标签之间的文字或图片则是在 Render Body阶段完成。有一点值得注意， href 属性值是通过调用到Tapestry服务实现的，并非组件自己构造。
+
+对于控制组件则恰好相反，它们会在不同的阶段通过返回不同的值来控制页面的显示流程，但并不会生成HTML代码片段。
+
+比如 If 组件（用于控制其所包含组件是否显示的组件），如果允许其内嵌的组件显示，则会在Begin Render阶段返回true，这样最终就会进入Render Body阶段，显示其内嵌的组件。再比如Loop组件（用于循环显示的组件），如果循环没有结束，它会在After Render阶段返回false，这样该组件又会重新回到BeginRender阶段，并重新经过Render Body阶段，使得其内嵌的组件可以循环的被执行。
+
+总的来说，组件实现其职责的大致思路是分阶段的处理整个渲染流程。
+
+下面我们看看最重要的几个阶段：Setup Render, Begin Render, Render Template, Render Body，After Render，和Cleanup Render。
+
+Setup Render 阶段主要用于渲染前的准备操作，比如初始化一些数据；
+
+Begin Render 主要用于生成一个HTML的开始标签，或者控制渲染流程；
+
+Render Template 主要用于渲染模板中的内容（页面和组件都可以具有模板）。这个阶段一般会有多个组件需要渲染，每进入一个组件，都会依次调用这个组件的各个生命周期阶段， 也就是说，此处是一个从上层组件到其下层组件的一个递归入口，只有其下层组件渲染结束，该组件才会继续其后续阶段的操作。
+
+Render Body 与Render Template相似，也是渲染一段模板中的内容，所不同的是模板是组件和页面所具有的tml文件，而body是组件被使用时，内嵌在组件中的一小段模板片段。比如对于pagelink组件（<a t:type="pagelink" page="index">this is body</a>），它的body是“this is body”这几个文字。虽然对于模板的概念与Render Template略有区别，但是它同样也是一个递归的入口。
+
+After Render 阶段一般用于生成一个结束标签，或者控制其内嵌组件的执行流程。
+
+Cleanup Render 这个阶段一般用于清除数据，但是由于框架会自动的清空页面的属性，所以一般不需要自己清除状态。除非你使用了一些特殊的资源需要清除。
+
+其它几个阶段并非经常用到，更多是保证生命周期的完整性，必要情况下，也可以生成HTML代码或修改组件的执行流程。
+
+
+4.框架职责
+
+现在，渲染一个页面，组件要做什么我们已经清楚了，接下来就到了讲述框架职责的阶段了。因为所有的底层服务，以及组件的调度都是由框架负责的。所以，要深入了解渲染的过程，仅了解组件的职责还是不够的。下面，我们首先了解下渲染的流程。
+
+当一个请求实际到达“渲染处理器”时，该处理器首先会向目标页面发出一个activate事件，为页面提供一个准备渲染，并处理传入参数的机会。
+
+之后，渲染流程就会传入一个org.apache.tapestry5.internal.services.PageResponseRenderer服务，该服务会实际的调度页面渲染。
+
+渲染过程大致如下：
+
+首先，获得页面类型(content type)，默认为"text/html"；然后，根据这一类型生产一个输出器org.apache.tapestry5.MarkupWriter，组件若有需要输出HTML片段，则会输出到这个输出器中；其后，org.apache.tapestry5.internal.services.PageMarkupRenderer这一渲染器将会开始调度组件开始执行其生命周期；最后，MarkupWriter生成的中间结构会实际的输出到返回给客户端的输出流中。
+
+获得页面类型并没有复杂的流程，所以本文就不详细介绍了。而MarkupWriter和最后的中间结构又是紧密相关的，所以将它们并在中间结构这部分讲述。剩下的核心环节“页面渲染器（PageMarkupRenderer）”将进一步分为“环境构造”，“调度策略”两个环节介绍。
+
+接下来，我将就环境构造 ，调度策略 和中间结构这三个部分详细讲述。
+
+但这之前，我想插入一个话题，也就是与activate对应的passivate事件是何时被激发的？
+
+我们知道activate是用于给页面一个初始化的机会，其它页面跳转过来时传递的参数就是通过这个事件让目标页面获取的。
+
+那么passivate呢？passivate是同一个页面渲染结束时，希望传入下一次渲染的参数。一个典型的用途是在Form提交事件处理完之后，传递参数给接下来的渲染使用。因为Tapestry默认的会在Form提交后，通过重定向渲染页面。也就是说渲染实际上是一个新的请求，Form提交事件里生成的数据，都被清空了。为了让渲染可以获得Form处理事件产生的数据，一个不用消耗存储空间(session)的方式就是在passivate 事件中返回所需的数据。因为这个数据会保存在URL里面，在下一次请求到达服务器时传递到activate这个事件中。
+
+所以，为了保证passivate返回的数据能传到activate事件，就必须保证不管通过何种方式，链接也好，Form也好，重定向也好，传递到服务上的URL中都保存有passivate返回的数据。
+
+因此，为了保证数据的可回传性，passivate事件并不是在渲染的某个阶段被激发，而是在生产链接的服务里被激发。由于页面所有的链接都是通过这个服务生产，所以数据就肯定可以回传到activate事件。实际上，这个时候有一件事情就需要注意了，passivate的事件处理函数最好能缓存一下需要返回的数据，不要每次都构造。
+
+好了，现在框架的大致流程已经介绍完了，下面进入渲染的正题，即框架是如何构造一个渲染的环境并调度组件执行。
+
+
+4.1 环境构造
+
+环境构造是页面渲染器（PageMarkupRenderer）的一部分，对应于 org.apache.tapestry5.services.MarkupRenderer这个服务。Tapestry使用了其一贯的风格，采用一个管道来组织这个服务，这个管道的配置代码如下：
+
+public void contributeMarkupRenderer(OrderedConfiguration<MarkupRendererFilter> configuration,
+                                          @Symbol(SymbolConstants.PRODUCTION_MODE)
+                                          final boolean productionMode,
+                                          @Path("${tapestry.spacer-image}")
+                                          final Asset spacerImage,
+                                          @Symbol(SymbolConstants.OMIT_GENERATOR_META)
+                                          final boolean omitGeneratorMeta,
+                                          @Inject @Symbol(SymbolConstants.TAPESTRY_VERSION)
+                                          final String tapestryVersion,
+                                          @Symbol(SymbolConstants.COMBINE_SCRIPTS)
+                                          final boolean combineScripts,
+                                          final SymbolSource symbolSource,
+                                          final AssetSource assetSource,
+                                          final ClientDataEncoder clientDataEncoder,
+                                          final ClientInfrastructure clientInfrastructure)
+     {
+         MarkupRendererFilter documentLinker = new MarkupRendererFilter()
+         {
+             public void renderMarkup(MarkupWriter writer, MarkupRenderer renderer)
+             {
+                 DocumentLinkerImpl linker = new DocumentLinkerImpl(productionMode,
+                                                                    omitGeneratorMeta,
+                                                                    tapestryVersion,
+                                                                    combineScripts,
+                                                                    request.getContextPath(),
+                                                                    clientDataEncoder);
+                 environment.push(DocumentLinker.class, linker);
+                 renderer.renderMarkup(writer);
+                 environment.pop(DocumentLinker.class);
+                 linker.updateDocument(writer.getDocument());
+             }
+         };
+         MarkupRendererFilter renderSupport = new MarkupRendererFilter()
+         {
+             public void renderMarkup(MarkupWriter writer, MarkupRenderer renderer)
+             {
+                 DocumentLinker linker = environment.peekRequired(DocumentLinker.class);
+                 RenderSupportImpl support = new RenderSupportImpl(linker, symbolSource, assetSource,
+                                                                   clientInfrastructure);
+                 environment.push(RenderSupport.class, support);
+                 renderer.renderMarkup(writer);
+                 environment.pop(RenderSupport.class);
+                 support.commit();
+             }
+         };
+         MarkupRendererFilter injectDefaultStylesheet = new MarkupRendererFilter()
+         {
+             public void renderMarkup(MarkupWriter writer, MarkupRenderer renderer)
+             {
+                 RenderSupport renderSupport = environment.peek(RenderSupport.class);
+                 for (Asset stylesheet : clientInfrastructure.getStylesheetStack())
+                 {
+                     renderSupport.addStylesheetLink(stylesheet, null);
+                 }
+                 renderer.renderMarkup(writer);
+             }
+         };
+         MarkupRendererFilter clientBehaviorSupport = new MarkupRendererFilter()
+         {
+             public void renderMarkup(MarkupWriter writer, MarkupRenderer renderer)
+             {
+                 RenderSupport renderSupport = environment.peekRequired(RenderSupport.class);
+                 ClientBehaviorSupportImpl clientBehaviorSupport = new ClientBehaviorSupportImpl(renderSupport);
+                 environment.push(ClientBehaviorSupport.class, clientBehaviorSupport);
+                 renderer.renderMarkup(writer);
+                 environment.pop(ClientBehaviorSupport.class);
+                 clientBehaviorSupport.commit();
+             }
+         };
+         MarkupRendererFilter heartbeat = new MarkupRendererFilter()
+         {
+             public void renderMarkup(MarkupWriter writer, MarkupRenderer renderer)
+             {
+                 Heartbeat heartbeat = new HeartbeatImpl();
+                 heartbeat.begin();
+                 environment.push(Heartbeat.class, heartbeat);
+                 renderer.renderMarkup(writer);
+                 environment.pop(Heartbeat.class);
+                 heartbeat.end();
+             }
+         };
+         MarkupRendererFilter defaultValidationDecorator = new MarkupRendererFilter()
+         {
+             public void renderMarkup(MarkupWriter writer, MarkupRenderer renderer)
+             {
+                 ValidationDecorator decorator = new DefaultValidationDecorator(environment, spacerImage, writer);
+                 environment.push(ValidationDecorator.class, decorator);
+                 renderer.renderMarkup(writer);
+                 environment.pop(ValidationDecorator.class);
+             }
+         };
+         configuration.add("DocumentLinker", documentLinker, "before:RenderSupport");
+         configuration.add("RenderSupport", renderSupport);
+         configuration.add("InjectDefaultStyleheet", injectDefaultStylesheet, "after:RenderSupport");
+         configuration.add("ClientBehaviorSupport", clientBehaviorSupport, "after:RenderSupport");
+         configuration.add("Heartbeat", heartbeat, "after:RenderSupport");
+         configuration.add("DefaultValidationDecorator", defaultValidationDecorator, "after:Heartbeat");
+     }
+
+可以看出，这段代码为MarkupRenderer配置了六个过滤器，分别是文档链接过滤器（DocumentLinker）、渲染支持过滤器 （RenderSupport）、默认风格过滤器（InjectDefaultStyleheet）、客户端行为支持过滤器 （ClientBehaviorSupport）、心跳过滤器（Heartbeat）、默认验证修饰过滤器 （DefaultValidationDecorator）。组件在渲染过程中使用@Environment注入的的环境服务，都是在这个在这个阶段完成的。所以，在渲染的时候，Environment就可以理解为渲染环境，这样就可以很容易的和Inject区分开了。
+
+“文档链接过滤器”的主要职责是为环境加入一个管理页面资源链接（比如css和js）的环境服务。如果某个组件需要引入资源，则可以通过这个环境服务加入，但Tapestry提供了一个更容易理解的方式，就是使用渲染支持服务。
+
+“渲染支持过滤器”的主要职责是为环境加入一个支持渲染的环境服务。DocumentLinker这个服务实际上就被包装在RenderSupport服务中。RenderSupport服务还会提供分配id，添加初始化script代码等功能。
+
+“默认风格过滤器”的主要职责是给RenderSupport中添加默认风格的css。
+
+“客户端行为支持过滤器”的主要职责是为环境加入一个支持客户端行为的环境服务，比如关联zone，加入客户端验证等与客户端行为相关的支持。
+
+“心跳过滤器”的主要职责是为环境加入一个心跳服务，并产生一次心跳。以保证渲染过程中最终会有一次心跳产生。
+
+“默认验证修饰过滤器”的主要职责是为环境加入一个默认的验证修饰服务，也就是加入组件的客户端验证的一些修饰，比如输入框后的那个“红叉”图片。
+
+Ajax请求的渲染过程也有这样一个管道，基本结构和这个管道的组织是一样的，除了少了一个默认风格过滤器。因为页面渲染时已经引入过来了，所以此时不需要再引入资源了。
+
+渲染环境的构造大概就是这样，这个管道的终端服务将会调用一个渲染队列，见下一节分解。
+
+
+4.2 调度策略
+
+上一节提到了一个渲染队列org.apache.tapestry5.internal.services.PageRenderQueue。这个队列是Tapestry调度页面渲染的核心，它负责激发组件的不同生命周期，调度整棵组件树依次执行，生成整个HTML页面。
+
+在介绍具体的调度策略之前，我先介绍一些Tapestry组织组件的结构，这样才能更好的理解调度策略。
+
+Tapestry组件在运行时有两个主要结构，一个是org.apache.tapestry5.ComponentResources，一个是 org.apache.tapestry5.internal.structure.ComponentPageElement。
+
+ComponentResources是用于管理组件资源的结构，通常可以看作组件实例。它维护的是组件的资源，以及组件容器以及它的子组件的关系。比如页面组件是谁，直接使用它的组件是谁，但它并不包含组件在模板中的关系，也就是模板中组件之间的嵌套关系。
+
+ComponentPageElement则是用于维护组件在模板中的嵌套关系的结构，主要在渲染过程中使用。
+
+我们用下面的一个页面说明这两个结构的区别。
+
+Example.tml
+
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_1_0.xsd">
+<body>
+ <div t:type="div">
+  <span t:type="WriteValue" value="value"/>
+ </div>
+    <form t:type="form">
+     <input t:type="textfield" value="value"/>
+     <input t:type="submit" value="submit"/>
+    </form>
+</body>
+</html>
+
+Example.java
+
+public class Example {
+ @Property
+ @Persist
+ private String value;
+}
+
+为了说明问题，我特地写了两个组件，一个是div（输出一个div标签），一个是WriteValue（输出参数value的值）。它们的代码分别如下：
+
+Div.java (该组件没有模板)
+
+public class Div {
+ void beginRender(MarkupWriter writer) {
+  writer.element("div");
+ }
+ void afterRender(MarkupWriter writer) {
+  writer.end(); 
+ }
+}
+
+WriteValue.tml
+
+<span xmlns:t="http://tapestry.apache.org/schema/tapestry_5_1_0.xsd">
+    ${value}
+</span>
+
+WriteValue.java
+
+public class WriteValue {
+ @Property
+ @Parameter(defaultPrefix=BindingConstants.PROP)
+ private String value;
+}
+
+WriteValue和Div组件是两个非常简单的组件，它们并没有实际存在的价值，目的只是为了说明组件的渲染过程。
+
+Example页面对应的ComponentPageElement组织组件的架构如下图所示。
+
+http://p.blog.csdn.net/images/p_blog_csdn_net/mindhawk/EntryImages/20091220/example.jpg
+
+
+图中绿色代表一个页面，也就是我们例子中的Example页面。黑色的标识一个HTML的标签，这些标签并不是Tapestry的组件，但是框架会将它们按照标签处理，为什么这么处理我们在后续的中间结构说明。蓝色表示组件，页面中总共用到了Div、Form、WriteValue、 TextField和Submit组件。黄色表示与组件关联的模板或者内嵌元素(body)。红色表示表达式，用于输出value的表达式。
+
+ComponentResources又是如何组织的呢?
+
+这里就不给出图形说明了，因为它的结构更简单直接。Div、Form、WriteValue、TextField和Submit组件的父节点都是Example页面。
+
+之所以要用两个结构是因为，一个是用于显示的结构，一个是用于操作的结构。想想如果没有树形的结构，就很难输出与模板对应的HTML页面。而当操作的时候，需要的是数据绑定和事件通知。而此时，我们只需要知道一个页面使用了那些组件，并不关心它们之间的排列结构。
+
+理解了ComponentPageElement的组件树，再回想一下组件的生命周期，就能基本上了解渲染的调度过程了。
+
+对于非组件的结构，比如Start[HTML]，Expression等直接输出就可以了，而对于组件，则递归的调度其执行生命周期。这样，最后就能完整的输出整个页面了。
+
+整个渲染的流程大致如下：
+
+Example页面首先被激活，由于没有定义生命周期响应函数，直接进入模板渲染阶段。此时，Start[HTML]和Start[Body]这两个开始Tag被执行。之后，进入Div组件，由于Div组件具有BeginRender函数，所以进入该函数输出Div的开始Tag。接着因为Div组件没有模板，直接进入渲染body阶段，此时开始渲染WriteValue。WriteValue组件也因没有生命周期响应函数，所以直接进入模板。然后，Start[Span]被执行输出span Tag。接着，Expression又被执行，输出参数value中的值，之后span的结束Tag输出。其后，由于WriteValue没有生命周期函数，所以会直接回到Div的AfterRender阶段，输出div的结束Tag。随后便会调度Form、End[Body]和End[HTML]执行， 过程与前面类似，这里就不鳌述了。
+
+但是为了提高渲染的效率，Tapestry并没有采用递归的方式调度，而是采用了一种非递归的方式调度页面渲染，并采用了一些消去策略，去除了一些不存在的渲染阶段。比方说，如果一个组件并没有定义BeginRender事件，那么就没有必要激发这个事件。
+
+为了实现这种非递归的算法，定义了一个叫做org.apache.tapestry5.runtime.RenderCommand的接口，和一系列实现类，其中有些用于输出文本和HTML标签的，有一些用于输出Template或者Body，有一些用于输出表达式，而组件的每一个阶段都会有一个相应的实现类。
+
+PageRenderQueue虽然命名是一个队列，实际上是按照堆栈的方式调度RenderCommand执行。每个RenderCommand 都可以按照需要，在执行的过程中向PageRenderQueue中添加后继的RenderCommand。这样，就可以将递归的算法，转变为非递归的算法。
+
+具体算法涉及的面比较广，后续我给出一个这个例子的调用栈的实例，而具体算法就不给出来了。
+
+这里我只说明一点比较特殊的地方，也就是template和body的渲染。
+
+前面已经说过，template和body是非常相似的两个部分，不同的呢只是一个是定义在组件的模板中，一个是定义在组件的body中。所以，对它们的处理也是很相似的。
+
+不论组件是否定义了template，渲染template阶段都是存在的。如果组件定义了模板，则渲染的就是模板中的内容，如果组件没有定义模板，那么渲染的就是body的内容。
+
+对于body而言，如果组件有body，那么这个阶段就会实际的执行，如果没有，那么就会直接跳过。
+
+也就是说，对于一个组件，template和body是2选1的，定义了模板，就不会自动的进入body，需要body就不能定义模板。
+
+那么，如果即希望有模板，又希望有body怎么办呢？
+
+Tapestry给出的解决方案是在模板中显示的给出一个<t:body/>标签，用来告诉组件，在模板的什么位置插入body的内容。也就是说此时渲染body的行为类似于使用了一个组件<t:body/>完成，而不是框架自动的调度。
+
+实际上，也只有这样template和body的语言才是明确的，不会因为框架的自动引入调用而打乱地显示内容。
+
+下面，我们就仔细看看这个例子的实际调用过程，如果感兴趣可以点击展开（点击“+”），查看栈的变化，我已在栈中加入了注释。栈顶的元素是当前正处理的RenderCommand，下一个栈中新增的元素则是这个RenderCommand向PageRenderQueue中新增的 RenderCommand。这个栈被调度了48次，从00开始，标注在最左边。
+
+00：Stack[ComponentPageElement[Example]]//Example页面首先入栈处理，在它调用完后，会插入后续的RenderCommand，并准备渲染
+01：Stack[RenderTemplate[Example],//因为没有定义其它的生命周期函数，所以直接进入渲染模板阶段
+PostRenderCleanup[Example]]//这个RenderCommand用于检查组件输出的Tag是否匹配，清楚一些渲染时用到的变量
+02：Stack[CompositeRenderCommand[Start[ html], Text[], Start[ body], Text[]], //模板中的内容实际进入站，首先是开始html和body。它们被并在一个command里面处理。而Text则是模板中的换行符
+ComponentPageElement[Example:div], //模板中的div组件
+Text[], //模板中的换行符
+ComponentPageElement[Example:form], //模板中的Form组件
+CompositeRenderCommand[Text[], End, Text[], End], //模板中的结束html和body的tag，还有换行符
+PostRenderCleanup[Example]]
+03：Stack[ComponentPageElement[Example:div], //div组件进入渲染
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+04：Stack[BeginRender[Example:div], //开始div组件的BeginRender阶段，它会插入后续command,，并准备渲染
+PostRenderCleanup[Example:div], //清理并检查div组件的渲染过程
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+05：Stack[RenderTemplate[Example:div], //渲染div组件的模板入栈，准备渲染
+AfterRender[Example:div], //AfterRender入栈，准备执行
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+06：Stack[RenderBody[div], //Div的RenderBody入栈，准备渲染
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+07：Stack[BeforeRenderBody[Example:div], //BeforeRenderBody入栈，准备渲染
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+08：Stack[Block[Body of Example:div, at context:Example.tml, line 3], //body的实际类容入栈，准备渲染
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+09：Stack[Text[], //body中的换行符准备渲染
+ComponentPageElement[Example:writevalue], //body中的WriteValue组件
+Text[], //body中的换行符
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+10：Stack[ComponentPageElement[Example:writevalue], //WriteValue组件准备渲染
+Text[], 
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+11：Stack[RenderTemplate[Example:writevalue], //渲染WriteValue组件的模板
+PostRenderCleanup[Example:writevalue], //检查并清理WriteValue组件的渲染过程
+Text[], 
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+12：Stack[CompositeRenderCommand[Start[ span], Text[]], //WriteValue组件模板中的<span>和换行符进入栈，准备渲染
+Expansion[PropBinding[expansion Example:writevalue(value)]], //WriteValue组件模板中的表达式
+CompositeRenderCommand[Text[], End], //WriteValue组件模板中的换行符和结束tag入栈
+PostRenderCleanup[Example:writevalue], 
+Text[], 
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+13：Stack[Expansion[PropBinding[expansion Example:writevalue(value)]], //渲染表达式
+CompositeRenderCommand[Text[], End], 
+PostRenderCleanup[Example:writevalue], 
+Text[], 
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+14：Stack[CompositeRenderCommand[Text[], End], //渲染换行符和结束Tag
+PostRenderCleanup[Example:writevalue], 
+Text[], 
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+15：Stack[PostRenderCleanup[Example:writevalue], //检查WriteValue的渲染
+Text[], 
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+16：Stack[Text[], //渲染换行符
+AfterRender[Example:div], 
+PostRenderCleanup[Example:div], Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+17：Stack[AfterRender[Example:div], //激发div组件的AfterRender
+PostRenderCleanup[Example:div], 
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+18：Stack[PostRenderCleanup[Example:div], //检查div组件的渲染
+Text[], 
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+19：Stack[Text[], //渲染换行符
+ComponentPageElement[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+20：Stack[ComponentPageElement[Example:form], //渲染那form组件
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+21：Stack[SetupRender[Example:form], //form组件的SetupRender阶段入栈，准备渲染
+PostRenderCleanup[Example:form], //检查form组件command入栈
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+22：Stack[BeginRender[Example:form], //form组件的BeginRender阶段入栈，准备渲染
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+23：Stack[RenderTemplate[Example:form], //form组件的templage入栈，准备渲染
+AfterRender[Example:form], //form组件的AfterRender阶段入栈
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+24：Stack[RenderBody[form], //form组件的body入栈，准备渲染
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+25：Stack[BeforeRenderBody[Example:form], //form组件的BeforeRenderBody阶段激发
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+26：Stack[Block[Body of Example:form, at context:Example.tml, line 6], //form组件的body实际入栈，准备渲染
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+27：Stack[Text[], //body中的换行入栈，准备渲染
+ComponentPageElement[Example:textfield], //TextField组件入栈
+Text[], //换行符入栈
+ComponentPageElement[Example:submit], //Submit组件入栈
+Text[], //换行符入栈
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+28：Stack[ComponentPageElement[Example:textfield], //TextField组件入栈，准备渲染
+Text[], 
+ComponentPageElement[Example:submit], 
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+29：Stack[SetupRender[Example:textfield], //TextField组件的SetupRender阶段被激发
+PostRenderCleanup[Example:textfield], //TextField组件的清理与检查
+Text[], 
+ComponentPageElement[Example:submit], 
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+30：Stack[BeginRender[Example:textfield], //TextField组件的BeginRender阶段被激发
+PostRenderCleanup[Example:textfield], 
+Text[], 
+ComponentPageElement[Example:submit], 
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+31：Stack[RenderTemplate[Example:textfield], //TextField组件的RenderTemplate阶段入栈，准备渲染
+AfterRender[Example:textfield], //TextField组件的AfterRender入栈
+PostRenderCleanup[Example:textfield], 
+Text[], 
+ComponentPageElement[Example:submit], 
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+32：Stack[RenderBody[textfield], //TextField组件的RenderBody阶段入栈，准备渲染
+AfterRender[Example:textfield], //TextField组件的AfterRender
+PostRenderCleanup[Example:textfield], 
+Text[], 
+ComponentPageElement[Example:submit], 
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+33：Stack[AfterRender[Example:textfield], //TextField组件的AfterRender激发
+PostRenderCleanup[Example:textfield], 
+Text[], 
+ComponentPageElement[Example:submit], 
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+34：Stack[PostRenderCleanup[Example:textfield], //检查TextField渲染
+Text[], 
+ComponentPageElement[Example:submit], Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+35：Stack[Text[], //渲染换行符
+ComponentPageElement[Example:submit], Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+36：Stack[ComponentPageElement[Example:submit], //Submit组件准备渲染
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+37：Stack[BeginRender[Example:submit], //Submit组件的BeginRender入栈，准备渲染
+PostRenderCleanup[Example:submit], //检查Submit组件渲染command入栈
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+38：Stack[RenderTemplate[Example:submit], //Submit组件的Template入栈，准备渲染那
+AfterRender[Example:submit], //Submit组件的AfterRender
+PostRenderCleanup[Example:submit], 
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+39：Stack[RenderBody[submit], //Submit组件的RenderBody入栈，准备渲染那
+AfterRender[Example:submit], 
+PostRenderCleanup[Example:submit], 
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+40：Stack[AfterRender[Example:submit], //Submit组件的AfterRender入栈，准备渲染那
+PostRenderCleanup[Example:submit], 
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+41：Stack[PostRenderCleanup[Example:submit], //检查submit组件渲染
+Text[], 
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+42：Stack[Text[], //渲染换行符
+AfterRender[Example:form], 
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+43：Stack[AfterRender[Example:form], //form组件的AfterRender被激发
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+44：Stack[CleanupRender[Example:form], //form组件的CleanupRender被激发
+PostRenderCleanup[Example:form], 
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+45：Stack[PostRenderCleanup[Example:form], //检查Form组件的渲染
+CompositeRenderCommand[Text[], End, Text[], End], 
+PostRenderCleanup[Example]]
+46：Stack[CompositeRenderCommand[Text[], End, Text[], End], //渲染html和body的结束tag
+PostRenderCleanup[Example]]
+47：Stack[PostRenderCleanup[Example]]//检查Example的渲染
+
+4.3 中间结构
+
+下面进入渲染的最后一个部分——中间结构。
+
+加入这部分并不是因为它有什么特别，而是Tapestry5在这方面做了一次大的调整。页面在渲染过程中，并没有实际的输出到response的输出流中，而是保存在一个中间结构中。
+
+Tapestry采用了一种类似与XML文档结构的方法组织这个中间结构，也就是说和HTML文档DOM结构很相似的结构。
+
+采用了这个结构的一个好处是页面在渲染过程中可以随意的在渲染的最后阶段修改和添加某些元素。比如Label组件，关联到了TextField组件。但是一般Label会在TextField组件之前渲染，所以Label组件得不到TextField组件的ID。但是引入了DOM的中间结构，可以在TextField组件渲染之后再为Label组件加入TextField的ID。
+
+前面所谈到的MarkupWriter，正是维护这个DOM结构的输出器，调用它输出的内容会实际的输出到DOM中。
+
+在页面渲染结束之后，DOM保存的数据就会实际的输出到response的输出流中。
+
+这时我们再回到前面遗留的一个问题。为什么非组件的HTML标签也被作为DOM的元素处理呢？
+
+因为这样不仅可以使页面严格的符号XHTML的标准，而且可以更好的处理js和css等资源的引进。也就是说如果页面自己有head标签，就可以在这个标签中添加内容，如果页面没有head那么就可以在合适的位置插入head，再添加所需要的资源。
+
+本实例输出的HTML代码如下所示，感兴趣可以展开（点击“+”）查看。仔细观察这个结果，会发现Form中有一个input存放了一段经过编码的数据，该数据的作用我会在《解读Tapestry5.1——Form》中详细说明。
+
+<html> 
+<head>
+<link type="text/css" rel="stylesheet" href="/assets/tapestry/5.1.0.5/default.css" mce_href="assets/tapestry/5.1.0.5/default.css"></link>
+<link type="text/css" rel="stylesheet" href="/assets/blackbird/5.1.0.5/blackbird.css" mce_href="assets/blackbird/5.1.0.5/blackbird.css"></link>
+<meta content="Apache Tapestry Framework (version 5.1.0.5)" name="generator"></meta>
+<mce:script src="/assets/scriptaculous/5.1.0.5/prototype.js" mce_src="assets/scriptaculous/5.1.0.5/prototype.js" type="text/javascript"></mce:script>
+<mce:script src="/assets/scriptaculous/5.1.0.5/scriptaculous.js" mce_src="assets/scriptaculous/5.1.0.5/scriptaculous.js" type="text/javascript"></mce:script>
+<mce:script src="/assets/scriptaculous/5.1.0.5/effects.js" mce_src="assets/scriptaculous/5.1.0.5/effects.js" type="text/javascript"></mce:script>
+<mce:script src="/assets/tapestry/5.1.0.5/tapestry.js" mce_src="assets/tapestry/5.1.0.5/tapestry.js" type="text/javascript"></mce:script>
+<mce:script src="/assets/blackbird/5.1.0.5/blackbird.js" mce_src="assets/blackbird/5.1.0.5/blackbird.js" type="text/javascript"></mce:script>
+<mce:script src="/assets/tapestry/5.1.0.5/tapestry-messages.js" mce_src="assets/tapestry/5.1.0.5/tapestry-messages.js" type="text/javascript"></mce:script>
+</head>
+<body>
+<div>
+<span>
+
+</span>
+</div>
+<form onsubmit="javascript:Tapestry.waitForPage(event);" action="example.form" method="post" id="form" name="form">
+<div class="t-invisible">
+<input value="H4sIAAAAAAAAAFvzloG1XJhB0LUiMbcgJ9WqJLWiJC0zNSeluIjBNL8oXS+xIDE5I1WvJLEgtbikqNJULzm/KDUnM0kvKbE4
+Vc8xCSiYmFziBtKiEpxaUlqgGnqY+6Ho8T9MDIw+DNzJ+XklRfk5fom5qSUMQj5ZiWWJ+jmJeen6wSVFmXnp1hUFJQyccEtxucSRVJcEFOUnpxY
+XB5cm5WYWF2fm5x1el2KS9m3eOSYGhoqCcgEGPpg1xSAlJUA7HPDakZyfW5Cfl5pXUqwHNrQE04pnD4O+NrsufgHxeGpOai5QOcjjhQx1DIwgj7
+JBLAMAHFY4RHQBAAA=" name="t:formdata" type="hidden"></input>
+</div>
+<input id="textfield" name="textfield" type="text"></input><img id="textfield-icon" class="t-error-icon t-invisible" alt="" 
+src="/assets/tapestry/5.1.0.5/spacer.gif" mce_src="assets/tapestry/5.1.0.5/spacer.gif"/>
+<input value="submit" name="submit" type="submit"></input>
+</form>
+<mce:script type="text/javascript"><!--
+Tapestry.DEBUG_ENABLED = true;
+Tapestry.onDOMLoaded(function() {
+$('textfield').activate();
+});
+// --></mce:script></body>
+</html>

@@ -1,0 +1,286 @@
+﻿Meeting Plastic V: A Method Shadow Builder
+
+http://tawus.wordpress.com/2011/05/22/meeting-plastic-v-a-method-shadow-builder/
+
+There are two shadow builders in tapestry, PropertyShadowBuilder(tapestry-ioc) and EnvironmentalShadowBuilder(tapestry-core) . PropertyShadowBuilder is used to create a service from a property of an object(source). It create a proxy for the service interface and then delegates all method calls of that service to the getter method of the source. In this post we will create a more generic shadow builder which will take a source, a method name and a set of parameters and in return create a service that will delegate all method calls to the given source method.
+
+The service interface for the shadow builder is
+
+public class MethodShadowBuilderImpl implements MethodShadowBuilder {
+   private PlasticManager pm;
+
+   public MethodShadowBuilderImpl(PlasticManager pm) {
+      this.pm = pm;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public <T> T build(final Object source, final String methodName,
+            final Class<T> interfaceType, final Object... args) {
+      final String sourceClass = PlasticUtils.toTypeName(source.getClass());
+      final String interfaceClass = PlasticUtils.toTypeName(interfaceType);
+
+      // Ensure it is an interface
+      if (!interfaceType.isInterface()) {
+         throw new RuntimeException(interfaceType.getName()
+                  + " is not an interface");
+      }
+
+      // Get argument types
+      final Class<?>[] parameterTypes = new Class<?>[args.length];
+      for (int i = 0; i < parameterTypes.length; ++i) {
+         parameterTypes[i] = args[i].getClass();
+      }
+
+      // Check and get matching method
+      final Method matchingMethod = getCompatibleMethod(source.getClass(),
+               methodName, parameterTypes);
+      if (matchingMethod == null) {
+         throw new RuntimeException("Could not find method " + methodName
+                  + " with arguments " + parameterTypes);
+      }
+
+      // Create a new class which implements the interface
+      final ClassInstantiator<T> instantiator = pm.createProxy(interfaceType,
+               new PlasticClassTransformer() {
+
+                  public void transform(PlasticClass plasticClass) {
+                     final PlasticField field = plasticClass.introduceField(
+                              sourceClass, "_$source");
+                     field.inject(source);
+
+                     final PlasticField[] argumentFields = new PlasticField[parameterTypes.length];
+                     for (int i = 0; i < argumentFields.length; ++i) {
+                        argumentFields[i] = plasticClass.introduceField(
+                                 args[i].getClass(), "_$field" + i);
+                        argumentFields[i].inject(args[i]);
+                     }
+
+                     PlasticMethod delegateMethod = plasticClass
+                              .introduceMethod(new MethodDescription(
+                                       interfaceClass, "_delegate"));
+                     delegateMethod
+                              .changeImplementation(new InstructionBuilderCallback() {
+
+                                 public void doBuild(InstructionBuilder builder) {
+                                    builder.loadThis().getField(field);
+
+                                    for (int i = 0; i < argumentFields.length; ++i) {
+                                       builder.loadThis()
+                                                .getField(argumentFields[i])
+                                                .castOrUnbox(
+                                                         PlasticUtils
+                                                                  .toTypeName(matchingMethod
+                                                                           .getParameterTypes()[i]));
+                                    }
+
+                                    builder.invokeVirtual(
+                                             sourceClass,
+                                             interfaceClass,
+                                             methodName,
+                                             PlasticUtils
+                                                      .toTypeNames(matchingMethod
+                                                               .getParameterTypes()));
+                                    builder.returnResult();
+                                 }
+
+                              });
+
+                     for (Method method : interfaceType.getMethods()) {
+                        plasticClass.introduceMethod(method).delegateTo(
+                                 delegateMethod);
+                     }
+
+                  }
+
+               });
+
+      return instantiator.newInstance();
+   }
+
+   /**
+    * Get a compatible constructor to the supplied parameter types. Most of this
+    * method is copied from {@linkplain http
+    * ://christerblog.wordpress.com/2010/02
+    * /27/java-reflection-matching-formal-parameter
+    * -list-to-actual-parameter-list/ This Blog}
+    * 
+    * @param clazz
+    *           the class which we want to construct
+    * @param parameterTypes
+    *           the types required of the constructor
+    * 
+    * @return a compatible constructor or null if none exists
+    */
+   public static Method getCompatibleMethod(Class<?> clazz, String methodName,
+            Class<?>[] parameterTypes) {
+      Method[] methods = clazz.getDeclaredMethods();
+      for (int i = 0; i < methods.length; i++) {
+         if (!methods[i].getName().equals(methodName)) {
+            continue;
+         }
+
+         if (methods[i].getParameterTypes().length == (parameterTypes != null ? parameterTypes.length
+                  : 0)) {
+            Class<?>[] methodTypes = methods[i].getParameterTypes();
+            boolean isCompatible = true;
+            for (int j = 0; j < (parameterTypes != null ? parameterTypes.length
+                     : 0); j++) {
+               if (!methodTypes[j].isAssignableFrom(parameterTypes[j])) {
+                  if (parameterTypes[j].isPrimitive()) {
+                     Class<?> wrapperType = PlasticUtils
+                              .toWrapperType(parameterTypes[j]);
+                     if (methodTypes[j].isAssignableFrom(wrapperType)) {
+                        isCompatible = false;
+                     }
+                  }
+
+                  if (!isCompatible && methodTypes[j].isPrimitive()) {
+                     Class<?> wrapperType = PlasticUtils
+                              .toWrapperType(methodTypes[j]);
+                     if (!wrapperType.isAssignableFrom(parameterTypes[j])) {
+                        isCompatible = false;
+                     }
+                  }
+               }
+            }
+            if (isCompatible) {
+               return methods[i];
+            }
+         }
+      }
+      return null;
+   }
+}
+The steps involved are :-
+
+Check if the interfaceClass passed is actually an interface.
+Get the parameters types from passed arguments
+Get matching method
+Create a proxy class which implements the desired interface
+During transformation, create fields for source and passed arguments and inject corresponding values into them
+Create a “_degate” method which calls source.methodName(arguments)
+For each method in the interface, create a corresponding method and then delegate to the “_delegate” method
+Usage
+
+This spock test shows the usage
+
+class MethodShadowBuilderTest extends Specification {
+
+   public static class Service2 {
+      public Service1 createService1(Object ... values){
+         return new Service1(){
+            public String process(){
+               return values.toString();
+            }
+         }
+      }
+   }
+   
+   public static class Service3 {
+      public Service1 createService1(){
+         return new Service1(){
+            public String process(){
+               return "none";
+            }
+         }
+      }
+   }
+
+   public static class Service4 {
+      public Service1 createService1(ArrayList<String> values){
+         return new Service1(){
+            public String process(){
+               return values.toString();
+            }
+         }
+      }
+   }
+
+   public static class Service5 {
+      public Service1 createService1(long value){
+         return new Service1(){
+            public String process(){
+               return String.valueOf(value);
+            }
+         }
+      }
+   }
+   
+   public static class Service6 {
+      public Service1 createService1(Long value){
+         return new Service1(){
+            public String process(){
+               return String.valueOf(value);
+            }
+         }
+      }
+   }
+
+   public static class Service7 {
+      public Service1 createService1(Object value){
+         return new Service1(){
+            public String process(){
+               return String.valueOf(value);
+            }
+         }
+      }
+   }
+   def pm
+   
+   def setup(){
+      pm = PlasticManager.withContextClassLoader().create();
+   }
+   
+   def "test service creation"(){
+      setup:
+      MethodShadowBuilder builder = new MethodShadowBuilderImpl(pm);
+      Service2 service2 = new Service2();
+      when:
+      Service1 proxyService = builder.build(service2,  "createService1", Service1, [[] as Object[]] as Object[]);
+      then:
+      proxyService.process().equals("[]")
+      
+      when:  
+      proxyService = builder.build(service2,  "createService1", Service1, [["foo"] as Object[]] as Object[]);
+      then:
+      proxyService.process().equals("[foo]")
+      
+      when:
+      proxyService = builder.build(service2,  "createService1", Service1, [["foo", "bar"] as Object[]] as Object[]);
+      then:
+      proxyService.process().equals("[foo, bar]")
+      
+      when:
+      Service3 service3 = new Service3()
+      proxyService = builder.build(service3,  "createService1", Service1);
+      then:
+      proxyService.process().equals("none")
+      
+      when:
+      Service4 service4 = new Service4()
+      proxyService = builder.build(service4,  "createService1", Service1, ["foo", "bar"]);
+      then:
+      proxyService.process().equals("[foo, bar]")
+      
+      when:
+      Service5 service5 = new Service5()
+      proxyService = builder.build(service5,  "createService1", Service1, 20L);
+      then:
+      proxyService.process().equals("20")
+
+      when:
+      Service6 service6 = new Service6()
+      proxyService = builder.build(service6,  "createService1", Service1, 20L);
+      then:
+      proxyService.process().equals("20")
+      
+      when:
+      Service7 service7 = new Service7()
+      proxyService = builder.build(service7,  "createService1", Service1, 20L);
+      then:
+      proxyService.process().equals("20")
+   }
+   
+}

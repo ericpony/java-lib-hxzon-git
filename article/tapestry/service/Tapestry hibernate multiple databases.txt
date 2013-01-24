@@ -1,0 +1,249 @@
+﻿Tapestry hibernate multiple databases
+学中注释。
+使用注解来表明使用哪个数据库。参见《Tapestry Magic #9: Integrating with hibernate and multiple database support》
+
+http://tawus.wordpress.com/2012/03/03/tapestry-hibernate-multiple-databases/
+
+
+In a recent project, I had a requirement of connecting to multiple databases using hibernate. As tapestry-hibernate module does not provide an out-of-box support, I thought of adding one. https://github.com/tawus/tapestry5
+使用hibernate，支持多个数据库。
+
+Now that the application is in production, I thought of writing a simple “How to”.
+
+I have cloned the latest stable(5.3.2) tapestry project at
+
+https://github.com/tawus/tapestry5
+
+and have added multiple database support to it.
+
+Single Database
+
+It is almost fully compatible with the previous integration when using a single database except for a few things
+
+1) HibernateConfigurer has changed
+
+public interface HibernateConfigurer
+{
+   /**
+    * Passed the configuration so as to make changes.
+    */
+   void configure(Configuration configuration);
+
+   /**
+    * Factory Id for which this configurer is meant for
+    */
+   Class<? extends Annotation> getMarker();
+
+   /**
+    * Entity package names
+    * 
+    * @return
+    */
+   String[] getPackageNames();
+}
+
+
+2) There is no HibernateEntityPackageManager, as the packages can be contributed by adding more HibernateConfigurers with the same Markers.
+
+Multiple databases
+
+For multiple database, a marker has to be used for accessing Session or HibernateSessionManager
+
+@Inject
+@XDB
+private Session session;
+
+@Inject
+@YDB
+private HibernateSessionManager sessionManager;
+
+@XDB
+@CommitAfter
+void myMethod(){
+
+}
+
+
+Also you have to define a HibernateSessionManager and a Session for the secondary database in the Module class.
+
+    @Scope(ScopeConstants.PERTHREAD)
+    @Marker(DatabaseTwo.class)
+    public static HibernateSessionManager buildHibernateSessionManagerForFinacle(
+        HibernateSessionSource sessionSource,
+        PerthreadManager perthreadManager)
+    {
+        HibernateSessionManagerImpl service = new HibernateSessionManagerImpl(sessionSource,
+            DatabaseTwo.class);
+
+        perthreadManager.addThreadCleanupListener(service);
+
+        return service;
+    }
+
+    @Marker(DatabaseTwo.class)
+    public static Session buildSessionForFinacle(
+        @Local HibernateSessionManager
+            sessionManager,
+        PropertyShadowBuilder propertyShadowBuilder)
+    {
+        return propertyShadowBuilder.build(sessionManager, "session", Session.class);
+    }
+
+Notice an annotation @DatabaseTwo.class. This is a Factory marker and is used to identify a service related to a particular SessionFactory.
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target( {ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
+@FactoryMarker
+@Documented
+public @interface DatabaseTwo
+{
+
+}
+
+A typical AppModule for two databases will be
+
+public class AppModule
+{
+
+    public static void bind(ServiceBinder binder)
+    {
+        binder.bind(DemoService.class, DemoServiceImpl.class);
+    }
+
+    @Contribute(HibernateSessionSource.class)
+    public static void configureHibernateSources(OrderedConfiguration<HibernateConfigurer>
+        configurers)
+    {
+        configurers.add("databaseOne", new HibernateConfigurer()
+        {
+            public void configure(org.hibernate.cfg.Configuration configuration)
+            {
+                configuration.configure("/databaseOne.xml");
+            }
+
+            public Class<? extends Annotation> getMarker()
+            {
+                return DefaultFactory.class;
+            }
+
+            public String[] getPackageNames()
+            {
+                return new String[] {"org.example.demo.one"};
+            }
+        });
+
+        configurers.add("databaseTwo", new HibernateConfigurer()
+        {
+            public void configure(org.hibernate.cfg.Configuration configuration)
+            {
+                configuration.configure("/databaseTwo.xml");
+            }
+
+            public Class<? extends Annotation> getMarker()
+            {
+                return DatabaseTwo.class;
+            }
+
+            public String[] getPackageNames()
+            {
+                return new String[] {"org.example.demo.two"};
+            }
+        });
+    }
+
+    @Contribute(SymbolProvider.class)
+    @ApplicationDefaults
+    public static void addSymbols(MappedConfiguration<String, String> configuration)
+    {
+        configuration.add(HibernateSymbols.DEFAULT_CONFIGURATION, "false");
+        configuration.add("tapestry.app-package", "org.example.demo");
+    }
+
+
+    @Scope(ScopeConstants.PERTHREAD)
+    @Marker(DatabaseTwo.class)
+    public static HibernateSessionManager buildHibernateSessionManagerForFinacle(
+        HibernateSessionSource sessionSource,
+        PerthreadManager perthreadManager)
+    {
+        HibernateSessionManagerImpl service = new HibernateSessionManagerImpl(sessionSource,
+            DatabaseTwo.class);
+
+        perthreadManager.addThreadCleanupListener(service);
+
+        return service;
+    }
+
+    @Marker(DatabaseTwo.class)
+    public static Session buildSessionForFinacle(
+        @Local HibernateSessionManager
+            sessionManager,
+        PropertyShadowBuilder propertyShadowBuilder)
+    {
+        return propertyShadowBuilder.build(sessionManager, "session", Session.class);
+    }
+
+}
+
+Injecting into Services
+
+You can inject a session in a service using the marker. As DatabaseOne is being used as the default configuration, in order to inject its Session, you have to annotate it with @DefaultFactory. For DatabaseTwo, you can use @DatabaseTwo annotation.
+
+public class DemoServiceImpl implements DemoService
+{
+    private Session sessionOne;
+
+    private Session sessionTwo;
+
+    public DemoServiceImpl(
+        @DefaultFactory Session sessionOne,
+        @DatabaseTwo Session sessionTwo)
+    {
+        this.sessionOne = sessionOne;
+        this.sessionTwo = sessionTwo;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<EntityOne> listOnes()
+    {
+        return sessionOne.createCriteria(EntityOne.class).list();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<EntityTwo> listTwos()
+    {
+        return sessionTwo.createCriteria(EntityTwo.class).list();
+    }
+
+    public void save(EntityOne entityOne)
+    {
+        sessionOne.saveOrUpdate(entityOne);
+    }
+
+    public void save(EntityTwo entityTwo)
+    {
+        sessionTwo.saveOrUpdate(entityTwo);
+    }
+}
+
+
+Using @CommitAfter
+
+You can add an advice the same way you used to. The only change is in @CommitAfter. You have to additionally annotate the method with the respective marker.
+
+public interface DemoService
+{
+    List<EntityOne> listOnes();
+
+    List<EntityTwo> listTwos();
+
+    @CommitAfter
+    @DefaultFactory
+    void save(EntityOne entityOne);
+
+    @CommitAfter
+    @DatabaseTwo
+    void save(EntityTwo entityTwo);
+}
+
+Here is an example.

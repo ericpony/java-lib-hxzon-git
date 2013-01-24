@@ -1,0 +1,75 @@
+﻿Scheduling Jobs With Tapestry
+学中注释。
+使用@Startup和PeriodicExecutor实现任务调度。本文较简单。
+
+作者：Igor Drobiazko | 来自：Tapestry 5 Blog
+http://blog.tapestry5.de/index.php/2011/09/18/scheduling-jobs-with-tapestry/
+
+Frequently web applications have a requirement to execute some business logic which is not bound to any HTTP request. For example, you might want to execute some periodic maintenance job to cleanup the database or a job sending messages to your users. In this article I’ll show you how to register jobs to be executed by Tapestry without blocking any incoming HTTP request.
+
+Interval Jobs
+
+Imagine you have a CleanupService service to be executed for database cleanup. The service’s interface is shown in the following example. The service implementation details are not interesting for this article as they are very specific to your application.
+假设有一个清理数据库的服务。
+
+public interface CleanupService {
+    void clean();
+}
+
+Now let’s schedule a periodic execution of the cleanup at application’s startup. This is accomplished by contributing to the RegistryStartup service’s configuration, as shown in the following example.
+
+使用PeriodicExecutor运行定时任务。
+
+public class AppModule {
+
+    @Startup
+    public static void scheduleJobs(
+                   PeriodicExecutor executor,
+                   final CleanupService cleanupService) {
+
+        executor.addJob(
+            new IntervalSchedule(300000L),
+            "Cleanup Job",
+            new Runnable() {
+                public void run() {
+                    cleanupService.clean();
+                }
+            });
+    }
+}
+
+As of Tapestry 5.3 the PeriodicExecutor service can be used to schedule jobs. In the example above, this service is injected into a startup method. The service’s addJob method is used to register jobs to be executed.This method takes three parameters:
+
+Instance of Schedule:defines when to execute the next job
+
+Name used in debugging output related to the job
+Instance of Runnable that represents the work to be done
+In the example above, a IntervalSchedule instance is used to schedule a job to be executed every 300000 milliseconds (5 minutes). Note that the Runnable is just a wrapper around the CleanupService.
+
+Using CRON expressions
+使用CRON表达式。
+
+Instead of defining intervals for job executions, Tapestry also allows you to use CRON expressions, such as described here. Note that Tapestry uses the CRON parser from the Quartz Scheduler without depending on it.
+
+The following example demonstrates how to use CRON expressions.
+
+public class AppModule {
+
+    @Startup
+    public static void scheduleJobs(
+                   PeriodicExecutor executor,
+                   final CleanupService cleanupService) {
+
+        executor.addJob(
+            new CronSchedule("0 0/5 14 * * ?"),
+            "Cleanup Job",
+            new Runnable() {
+                public void run() {
+                    cleanupService.clean();
+                }
+            });
+    }
+}
+In the example above, a job is registered to be executed every 5 minutes starting at 2pm and ending at 2:55pm, every day.
+
+Happy scheduling.

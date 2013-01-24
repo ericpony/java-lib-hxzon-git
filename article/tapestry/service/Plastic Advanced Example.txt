@@ -1,0 +1,51 @@
+﻿Plastic: Advanced Example
+学中注释。
+
+http://tapestryjava.blogspot.com/2012/02/plastic-advanced-example.html
+http://feedproxy.google.com/~r/TapestryCentral/~3/N1cotcbT4ms/plastic-advanced-example.html
+
+Howard Lewis Ship
+
+Plastic is Tapestry's built-in Aspect Oriented Programming library, which primarily operates at the byte code level, but shields you from most byte code level thinking: normally, your code is implemented in terms of having method invocations or field reads and writes passed to callback objects that act as delegates or filters.
+字节码操作。
+
+Sometimes, though, you need to get a little more low-level and generate the implementation of a method more directly. Plastic includes a fluent interface for this as well: InstructionBuilder.
+指令创建器。
+
+This is an example from Tapestry's Inversion Of Control (IoC) container code; the proxy instance is the what's exposed to other services, and encapsulates two particular concerns: First, the late instantiation of the actual service implementation, and second, the ability to serialize the proxy object (even though the services and other objects are decidedly not serializable).
+
+
+In terms of serialization, what actually gets serialized is a ServiceProxyToken object; when a ServiceProxyToken is later de-serialized, it can refer back to the equivalent proxy object in the new JVM and IoC Service Registry. The trick is to use the magic writeReplace() method so that when the proxy is serialized, the token is written instead. Here's the code:
+
+（缺代码？）
+
+To kick things off, we use the PlasticProxyFactory service to create a proxy that implements the service's interface.
+
+The callback passed to createProxy() is passed the PlasticClass object. This is initially an implementation of the service interface where each interface method does nothing.
+
+The basic setup includes making the proxy implement Serializable and creating and injecting values into new fields for the other data that's needed.
+
+Next, a method called delegate() is created; it is responsible for lazily creating the real service when first needed. This is actually encapsulated inside an instance of ObjectCreator; the delegate() method simply invokes the create() method and casts the result to the service interface.
+接着创建代理方法。当服务首次被使用时，这个方法用来创建服务对象。
+
+The methods on InstructionBuilder have a very close correspondence to JVM byte codes. So, for example, loading an instance field involves ensuring that the object containing the field is on the stack (via loadThis()), then consuming the this value and replacing it with the instance field value on the stack, which requires knowing the class name, field name, and field type of the field to be loaded. Fortunately, the PlasticField knows all this information, which streamlines the code.
+
+
+Once the ObjectCreator is on the stack, a method on it can be invoked; at the byte code level, this requires the class name for the class containing the method, the return type of the method, and the name of the method (and, for methods with parameters, the parameter types). The result of that is the service implementation instance, which is cast to the service interface type and returned.
+
+
+Now that the delegate() method is in place, it's time to make each method invocation on the proxy invoke delegate() and then re-invoke the method on the late-instantiated service implementation. Because this kind of delegation is so common, its supported by the delegateTo() method.
+
+
+introduceMethod() can access an existing method or create a new one; for the writeReplace() method, the introduceMethod call creates a new, empty method. The call to changeImplementation() is used to replace the default empty method implementation with a new once; again, loading an injected field value, but then simply returning it.
+
+
+Finally, because I feel strongly about including a useful toString() method in virtually all objects, this is also made easy in Plastic.
+
+Once the class has been defined, it's just a matter of invoking the newInstance() method on the ClassInstantiator object to instantiate a new instance of the proxy class. Behind the scenes, Plastic has created a constructor to set the injected field values, but another of the nice parts of the Plastic API is that you don't have to manage that: ClassInstantiator does the work.
+
+
+I'm pretty proud of the Plastic APIs in general; I think they strike a good balance between making common operations simple and concise, but still providing you with an escape-valve to more powerful (or more efficient) mechanisms, such as the InstructionBuilder examples above. Of course, the deeply-nested callback approach can be initially daunting, but that's mostly a matter of syntax, which may be addressed in JDK 8 with the addition of proper closures to the Java language.
+
+
+I strongly feel that Plastic is a general purpose tool, that goes beyond inversion of control and the other manipulations that are specific to Tapestry ... and Plastic was designed specifically to be reused outside of Tapestry. It seems like it could be used for anything from implementing simple languages and DSLs, to providing all kinds of middleware code in new domains ... I have a fuzzy idea involving JMS and JSON with a lot of wiring and dispatch that could be handled using Plastic. I'd love to hear other people's ideas!

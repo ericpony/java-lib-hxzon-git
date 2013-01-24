@@ -1,10 +1,11 @@
-Spock @RunJetty
+﻿Spock @RunJetty
 http://tawus.wordpress.com/2012/08/03/spock-runjetty/
 
 Tapestry source code viewer
 http://tawus.wordpress.com/2012/07/03/tapestry-source-code-viewer/
 
 Tapestry: Using ComponentRequestFilter
+使用组件请求过滤器和注解检查会话属性值来跳转页面。
 http://tawus.wordpress.com/2012/07/03/tapestry-using-componentrequestfilter/
 
 Tapestry Grid & Hibernate Criteria
@@ -14,12 +15,11 @@ Tapestry Conquering the World !!
 http://tawus.wordpress.com/2012/03/09/tapestry-conquering-the-world/
 
 Tapestry hibernate multiple databases
-http://tawus.wordpress.com/2012/03/03/tapestry-hibernate-multiple-databases/
-
-Tapestry hibernate multiple databases
+使用注解来表明使用哪个数据库。参见《Tapestry Magic #9: Integrating with hibernate and multiple database support》
 http://tawus.wordpress.com/2012/03/03/tapestry-hibernate-multiple-databases/
 
 Some Reporting tricks with class-transformations
+使用注解和ComponentClassTransformWorker2向客服端报告异常。
 http://tawus.wordpress.com/2012/02/03/some-reporting-tricks-with-class-transformations/
 
 Integrating Bootstrap JS with Tapestry5
@@ -32,9 +32,11 @@ Tapestry : Using reCaptcha
 http://tawus.wordpress.com/2011/10/14/tapestry-using-recaptcha/
 
 Tapestry 5.3+ New Features : Part 2
+使用AjaxResponseRender更新多个区域。AjaxResponseRender作为一个服务的好处。
 http://tawus.wordpress.com/2011/10/01/tapestry-5-3-new-features-part-2/
 
 Tapestry 5.3+ : New Features
+演示定时任务，checklist组件和树组件。本文较简单。
 http://tawus.wordpress.com/2011/08/24/tapestry53/
 
 Tapestry Facebook Integration
@@ -44,39 +46,49 @@ Tweeting with Tapestry
 http://tawus.wordpress.com/2011/08/14/tweeting-with-tapestry/
 
 Tapestry Mixins & ClassTransformations
+用ComponentClassTransformWorker2给所有的label加上某个“混入”。
 http://tawus.wordpress.com/2011/08/01/tapestry-mixins-classtransformations/
 
 Tapestry JFreeChart integration
 http://tawus.wordpress.com/2011/07/30/tapestry-jfreechart-integration/
 
 Tapestry & AjaxFormLoop
+演示如何使用AjaxFormLoop组件。未达到我想要的效果。
 http://tawus.wordpress.com/2011/07/26/tapestry-ajaxformloop/
 
 A Tooltip component for Tapestry
+悬浮提示组件。
 http://tawus.wordpress.com/2011/07/12/a-tooltip-component-for-tapestry/
 
 A Tab-panel for Tapestry
+标签页组件。
 http://tawus.wordpress.com/2011/07/09/a-tab-panel-for-tapestry/
 
 A Modal Dialog For Tapestry
+模态对话框。
 http://tawus.wordpress.com/2011/07/02/a-modal-dialog-for-tapestry/
 
 A Periodic Zone Refresh Mixin for Tapestry
+定义一个让zone定时刷新的“混入”。
 http://tawus.wordpress.com/2011/07/01/a-periodic-zone-refresh-mixin-for-tapestry/
 
 Ajax Upload for Tapestry
+实现ajax文件上传组件。
 http://tawus.wordpress.com/2011/06/25/ajax-upload-for-tapestry/
 
 Tapestry Magic #15: Integration with cometd
 http://tawus.wordpress.com/2011/06/13/tapestry-magic-15-integration-with-cometd/
 
 A Simpler Select for Tapestry
+一个简单的select组件，使用了属性读取器。
 http://tawus.wordpress.com/2011/06/06/a-simpler-select-for-tapestry/
 
 Tapestry Magic #14: Easy Selection
+使用注解，属性读取器，ComponentClassTransformWorker来实现一个更方便的select组件。
 http://tawus.wordpress.com/2011/06/04/tapestry-magic-14-easy-selection/
 
 Tapestry Magic #13: Generic Data Access Objects
+动态创建一系列服务。
 http://tawus.wordpress.com/2011/05/28/tapestry-magic-13-generic-data-access-objects/
 
 Meeting Plastic V: A Method Shadow Builder
@@ -101,36 +113,44 @@ Tapestry Magic #10: Integrating With Flying Saucer, Generating PDF
 http://tawus.wordpress.com/2011/05/02/tapestry-magic-10/
 
 Tapestry Magic #9: Integrating with hibernate and multiple database support
+使用注解来标明使用哪个数据库。参见《Tapestry hibernate multiple databases》
 http://tawus.wordpress.com/2011/04/28/tapestry-magic-9-integrating-with-hibernate-and-multiple-database-support/
 
 Tapestry Magic #8: ApplicationStateManager
+使用应用状态管理器，渲染过滤器，PropertyShadowBuilder通知用户。参见《Tapestry Magic #6: Environment》
 http://tawus.wordpress.com/2011/04/28/tapestry-magic-8-applicationstatemanager/
 
 Tapestry Magic #7: Tapestry Integration With Perf4J
 http://tawus.wordpress.com/2011/04/26/tapestry-magic-7-tapestry-integration-with-perf4j/
 
 Tapestry Magic #6: Environment
+创建“环境”服务来显示通知。参见《Tapestry Magic #8: ApplicationStateManager》
 http://tawus.wordpress.com/2011/04/25/tapestry-magic-6-environment/
 
 Tapestry Magic #5: Advising Services
+使用注解和MethodAdvice完成事务管理。
 http://tawus.wordpress.com/2011/04/23/tapestry-magic-5-advising-services/
 
 Tapestry Magic #4: Integrating Guice
 http://tawus.wordpress.com/2011/04/22/tapestry-magic-4-integrating-guice/
 
 Meeting Plastic III: @Property
+使用Plastic实现@Property注解。
 http://tawus.wordpress.com/2011/04/21/plastic-property/
 
 Tapestry Magic #3: Plugin Blocks
+插件式block。
 http://tawus.wordpress.com/2011/04/20/tapestry-magic-3-plugin-blocks/
 
 Meeting Plastic II: Simple ChainBuilder(Plastic Chains: Simple ChainBuilder)
 http://tawus.wordpress.com/2011/04/19/plastic-chains-simple-chainbuilder/
 
 Meeting Plastic I: Introduction
+给所有类加上toString()方法。
 http://tawus.wordpress.com/2011/04/18/meeting-plastic/
 
 Tapestry Magic #2: Ajax with Graceful Degradation
+使用ComponentClassTransformWorker和注解让一个处理ajax请求的方法支持处理普通请求。
 http://tawus.wordpress.com/2011/04/16/tapestry-magic-2-ajax-with-graceful-degradation/
 
 Tapestry Magic #1: Using Class Transformations
@@ -143,3 +163,5 @@ Easy Wicket & JSR 303 Integration Part I
 http://tawus.wordpress.com/2010/05/25/hello-world/
 
 ===============================
+Tapestry and ‘Editable for Bootstrap’
+http://tawus.wordpress.com/2012/11/25/tapestry-and-editable-for-bootstrap/

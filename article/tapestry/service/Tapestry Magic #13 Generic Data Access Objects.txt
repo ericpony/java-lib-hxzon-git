@@ -1,0 +1,282 @@
+﻿Tapestry Magic #13: Generic Data Access Objects
+动态创建一系列服务。
+
+http://tawus.wordpress.com/2011/05/28/tapestry-magic-13-generic-data-access-objects/
+
+With the help of modern day ORMs, Generic DAOs are very easy to create. All we need from an IOC is the ability to differentiate between two services(implementing the same interface) by their generic type.The problem is tapestry-ioc can differentiate between two services based on service Id or marker annotations, not by generic type. So, if we have a generic DAO implementation, we cannot do something like
+
+tapestry使用id来区分一个服务的不同实现，不能使用泛型来区分。
+
+@Inject
+private EntityDAO<User> userDAO;
+
+
+(Note, I am using the term EntityDAO for a generic dao.) One of the solutions will be something like
+
+@InjectDAO(User.class)
+private EntityDAO<User> userDAO;
+
+
+Another one can be
+
+@ServiceId("UserDAO")
+@Inject
+private EntityDAO<User> userDAO;
+
+
+The latter one can be implemented if we are able to expose our DAO as a service. The former one can be then implemented in terms of the latter one using class transformations.
+后一种方式我们可以通过将DAO注册为服务实现。前者可以用class transformations实现。
+
+The second issue is how to register a DAO for each entity. It can be done manually like
+第二个问题是我们如何为每个实体类注册一个DAO。
+
+static public EntityDAO<User> buildUserDAO(){
+   return new EntityDAOImpl(User.class);
+}
+
+But imagine doing this for a database with hundreds of entities(especially if you are a lazy tapestry user). A solution will be to load the entities at start-up and create corresponding DAOs. This would have been great but tapestry does not provide a dynamic way of contributing new services. Yes, you can contribute an ObjectProvider to the MasterObjectProvider, but with that you are creating an object, not a service. Some of the features that you loose with that is the ability to directly apply advices to your services and not able to use @InjectService annotation.
+
+So, here is a trick to create a service dynamically. We create a new Module definition which takes a list of entity definitions as argument and creates service definition for each. The service definition does not create an instance of a service, instead delegates it to another service, EntityDAOSource. This can be a chain builder service to which you can easily contribute services.
+这里演示一种动态创建服务的方式。我们新建一个模块，它含有实体类列表，然后为每个实体类创建一个服务定义。服务定义并没有创建一个服务实例，而是让另一个服务EntityDAOSource代理。
+
+So, here is our module definition
+模块定义如下：
+
+public class EntityModuleDef implements ModuleDef {
+   private Map<String, ServiceDef> serviceDefs = new HashMap<String, ServiceDef>();
+   
+   public EntityModuleDef(EntityLocator locator){
+      for(EntityDef entityDef: locator.getEntityDefs()){
+         serviceDefs.put(entityDef.getServiceId(), new EntityDAOServiceDef(entityDef));
+      }
+   }
+
+   public Set<String> getServiceIds() {
+      return serviceDefs.keySet();
+   }
+
+   public ServiceDef getServiceDef(String serviceId) {
+      return serviceDefs.get(serviceId);
+   }
+
+   public Set<DecoratorDef> getDecoratorDefs() {
+      return CollectionFactory.newSet();
+   }
+
+   public Set<ContributionDef> getContributionDefs() {
+      return CollectionFactory.newSet();
+   }
+
+   @SuppressWarnings("rawtypes")
+   public Class getBuilderClass() {
+      return null;
+   }
+
+   public String getLoggerName() {
+      return EntityModuleDef.class.getName();
+   }
+
+}
+
+The EntityLocator interface provides entity definitions.
+
+//Entity definition
+public interface EntityDef {
+
+   //Get the service id
+   String getServiceId();
+
+   //Get the entity type
+   Class<?> getType();
+
+}
+
+public interface EntityLocator {
+   //Gets the list of entity definitions
+   Set<EntityDef> getEntityDefs();
+}
+
+A simple implementation of EntityLocator would be :-
+
+public abstract class SimpleEntityLocator implements EntityLocator {
+   private Set<EntityDef> entityDefs = new HashSet<EntityDef>();
+   
+   public AbstractEntityLocator(Set<String> packageNames){
+      ClassNameLocator locator = new ClassNameLocatorImpl(new ClasspathURLConverterImpl());
+      for(String packageName: packageNames){
+         for(String className: locator.locateClassNames(packageName)){
+            try {
+               final Class<?> entityClass = Class.forName(className);
+               if(isEntity(entityClass)){
+                  entityDefs.add(new EntityDef(){
+
+                     public String getServiceId() {
+                        return entityClass.getSimpleName() + "DAO";
+                     }
+
+                     public Class<?> getType() {
+                        return entityClass;
+                     }
+                     
+                     @Override
+                     public String toString(){
+                        return "Entity Definition for " + getServiceId();
+                     }
+                     
+                  });
+               }
+            } catch (ClassNotFoundException e) {
+               throw new RuntimeException(e);
+            }
+         }
+      }
+   }
+
+   public boolean isEntity(Class<?> entityClass){
+      return entityClass.getAnnotation(javax.persistence.Entity.class) != null ||
+         entityClass.getAnnotation(javax.persistence.MappedSuperClass.class) != null;
+   }
+
+   public Set<EntityDef> getEntityDefs() {
+      return entityDefs;
+   }
+
+}
+
+The service definition is
+服务定义如下：
+public class EntityDAOServiceDef implements ServiceDef {
+
+   private EntityDef entityDef;
+
+   public EntityDAOServiceDef(EntityDef entityDef) {
+      this.entityDef = entityDef;
+   }
+
+   public ObjectCreator createServiceCreator(final ServiceBuilderResources resources) {
+      return new ObjectCreator() {
+
+         public Object createObject() {
+            Object object = resources.getService(EntityDAOSource.class).get(entityDef.getType());
+            
+            if(object == null){
+               throw new EntityDAONotFoundException(
+                     "Could not find EntityDAO implementation for " + entityDef.getType());
+            }
+            return object;
+         }
+
+      };
+   }
+
+   public String getServiceId() {
+      return entityDef.getServiceId();
+   }
+
+   @SuppressWarnings("rawtypes")
+   public Set<Class> getMarkers() {
+      return CollectionFactory.newSet();
+   }
+
+   @SuppressWarnings("rawtypes")
+   public Class getServiceInterface() {
+      return EntityDAO.class;
+   }
+
+   public String getServiceScope() {
+      return ScopeConstants.DEFAULT;
+   }
+
+   public boolean isEagerLoad() {
+      return false;
+   }
+
+}
+
+The service definition does everything except for actually creating the service, which is delegated to EntityDAOSource.
+
+As an example, let us consider a generic DAO implemented in Hibernate
+
+public interface EntityDAO<E> {
+   List<E> list();
+   void save(E entity);
+   void saveOrUpdate(E entity);
+   void update(E entity);
+   void remove(E entity);
+   int count();
+   E find(Serializable id);
+}
+
+public class HibernateEntityDAOImpl<T> implements EntityDAO<T> {
+   private Class<?> type;
+
+   public HibernateEntityDAOImpl(Class<T> type) {
+      this.type = type;
+   }
+   
+   protected Session getSession() {
+      return //Get current session...
+   }
+
+   public T find(Serializable id) {
+      return (T) getSession().get(type, id);
+   }
+
+   public void save(T entity) {
+      getSession().save(entity);
+   }
+
+   public void update(T entity) {
+      getSession().update(entity);
+   }
+
+   public void remove(T entity) {
+      getSession().delete(entity);
+   }
+
+   public void saveOrUpdate(T entity) {
+      getSession().saveOrUpdate(entity);
+   }
+
+   public List<T> list(){
+      return (List<T>)getSession().createCriteria(type).query();
+   }
+
+   public int count(){
+      return (int)getSession().createCriteria(type).setProjection(Projections.rowCount()).uniqueResult();
+   }
+
+}
+
+For this implementation, EntityDAOSource can be implemented like
+
+public class HibernateEntityDAOSource implements EntityDAOSource {
+   public <E> EntityDAO<E> get(Class<E> entityClass) {
+      return new HibernateEntityDAOImpl<E>(type);
+   }
+}
+
+Finally this module definition can be contributed by overriding provideExtraModuleDefs() method in TapestryFilter.
+覆盖TapestryFilter方法：
+
+public class TapestryTawusFilter extends TapestryFilter {
+   private static final String MODEL_PACKAGES = "tawus-model-packages";
+
+   @Override
+   protected ModuleDef [] provideExtraModuleDefs(ServletContext context){
+      String packages = context.getInitParameter(MODEL_PACKAGES);
+      if(packages == null){
+         return new ModuleDef[]{};
+      }
+      
+      EntityLocator entityLocator = new AbstractEntityLocator(CollectionFactory.newSet(
+            TapestryInternalUtils.splitAtCommas(packages))){
+         @SuppressWarnings("unchecked")
+         public boolean isEntity(@SuppressWarnings("rawtypes") Class entityType){
+            return entityType.getAnnotation(Entity.class) != null;
+         }
+      };
+
+      return new ModuleDef[]{ new EntityModuleDef(entityLocator)};
+   }
+}

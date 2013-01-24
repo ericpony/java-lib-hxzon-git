@@ -1,0 +1,133 @@
+﻿Better Namespacing in JavaScript
+学中注释。
+在js中使用更好的命名空间。
+
+作者：Howard | 来自：Tapestry Central
+http://feedproxy.google.com/~r/TapestryCentral/~3/Zo1ceMdODws/better-namespacing-in-javascript.html
+
+In my previous post, I discussed some upcoming changes in Tapestry's client-side JavaScript. Here we're going to dive a little deep on an important part of the overall package: using namespaces to keep client-side JavaScript from conflicting.
+
+I'm not claiming to originate these ideas; they have been in use, in some variations, for several years on pages throughout the web.
+
+Much as with Tapestry's Java code, it is high time that there is a distinction between public JavaScript functions and private, internal functions. I've come to embrace modular JavaScript namespacing.
+
+One of the challenges of JavaScript is namespacing: unless you go to some measures, every var and function you define gets attached to the global window object. This can lead to name collisions ... hilarity ensues.
+
+How do you avoid naming collisions? In Java you use packages ... but JavaScript doesn't have those. Instead, we define JavaScript objects to contain the variables and functions. Here's an example from Tapestry's built-in library:
+
+Tapestry = {
+
+  FORM_VALIDATE_EVENT : "tapestry:formvalidate",
+
+  onDOMLoaded : function(callback) {
+    document.observe("dom:loaded", callback);
+  },
+
+  ajaxRequest : function(url, options) {
+    ...
+  }, 
+
+  ...
+};
+Obviously, just an edited excerpt ... but even here you can see the clumsy prototype for an abstraction layer. The limitation with this technique is two fold:
+
+Everything is public and visible. There's no private modifier, no way to hide things.
+所有的东西都是公开的可见的，没办法私有。
+
+You can't rely on using this to reference other properties in the same object, at least not inside event handler methods (wherethis is often the window object, rather than what you'd expect).
+你不能使用this引用本对象的其它属性，因为它可能指向是全局对象。
+
+These problems can be addressed using a key feature of JavaScript: functions can have embedded variable and functions that are only visible inside that function. We can start to recode Tapestry as follows:
+
+Tapestry = { 
+    FORM_VALIDATE_EVENT : "tapestry:formvalidate"
+};
+
+function initializeTapestry() {
+  var aPrivateVariable = 0;
+
+  function aPrivateFunction() { }
+
+  Tapestry.onDOMLoaded = function(callback) {
+      document.observe("dom:loaded", callback);
+  };
+
+  Tapestry.ajaxRequest = function(url, options) {
+    ...
+  };
+}
+
+initializeTapestry();
+
+Due to the rules of JavaScript closures, aPrivateVariable and aPrivateFunction() can be referenced from the other functions with no need for the this prefix; they are simply values that are in scope. And they are only in scope to functions defined inside the initializeTapestry() function.
+
+Often you'll see the function definition and evaluation rolled together:
+
+Tapestry = { 
+    FORM_VALIDATE_EVENT : "tapestry:formvalidate"
+};
+
+(function() {
+  var aPrivateVariable = 0;
+
+  function aPrivateFunction() { }
+
+  Tapestry.onDOMLoaded = function(callback) {
+      document.observe("dom:loaded", callback);
+  };
+
+  Tapestry.ajaxRequest = function(url, options) {
+    ...
+  };
+})();
+
+使用匿名立即执行函数。
+
+That's more succinct, but not necessarily more readable. I've been prototyping a modest improvement in TapX, that will likely be migrated over to Tapestry 5.3.
+
+Tapx = {
+
+  extend : function(destination, source) {
+    if (Object.isFunction(source))
+      source = source();
+
+    Object.extend(destination, source);
+  },
+  
+  extendInitializer : function(source) {
+    this.extend(Tapestry.Initializer, source);
+  }
+}
+
+This function, Tapx.extend() is used to modify an existing namespace object. It is passed a function that returns an object; the function is invoked and the properties of the returned object are copied onto the destintation namespace object (the implementation of extend() is currently based on utilities from Prototype, but that will change). Very commonly, it is Tapestry.Initializer that needs to be extended, to support initialization for a Tapestry component.
+
+Tapx.extendInitializer(function() {
+
+  function doAnimate(element) {
+    ...
+  }
+
+  function animateRevealChildren(element) {
+    $(element).addClassName("tx-tree-expanded");
+
+    doAnimate(element);
+  }
+
+  function animateHideChildren(element) {
+    $(element).removeClassName("tx-tree-expanded");
+
+    doAnimate(element);
+  }
+
+  function initializer(spec) {
+    ...
+  }
+
+  return {
+    tapxTreeNode : initializer
+  };
+});
+
+This time, the function defines internal functions doAnimate(), animateRevealChildren(), animateHideChildren() andinitializer(). It bundles up initializer() at the end, exposing it to the rest of the world as Tapestry.Initializer.tapxTreeNode.
+
+This is the pattern going forward as Tapestry's tapestry.js library is rewritten ... but the basic technique is applicable to any JavaScript application where lots of seperate JavaScript files need to be combined together.

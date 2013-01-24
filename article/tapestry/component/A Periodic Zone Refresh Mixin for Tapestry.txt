@@ -1,0 +1,159 @@
+﻿A Periodic Zone Refresh Mixin for Tapestry
+学中注释。
+定义一个让zone定时刷新的“混入”。
+
+POSTED BY TAWUS ? JULY 1, 2011
+
+http://tawus.wordpress.com/2011/07/01/a-periodic-zone-refresh-mixin-for-tapestry/
+
+Tapestry uses a concept of Zones for Ajax based updates. Zones are components which are used to identify/mark a portion of a component/page for Ajax updates. 
+
+Usually zones are connected to client events of other components e.g. click of EventLink or ActionLink component, change event of Select component or submit event of Form component. But what if we just want a zone which refreshes itself with its own contents.This is what we are going to do.
+让一个zone自己定时刷新。
+
+The JavaScript part is very simple. We just have to use PeriodicalExecuter to periodically update the zone. There is just one catch. As the zone gets updated each time, the script that we call will be called each time. That also means, if we instantiate a PeriodicalExecutor in the script, the same will be done each time the zone is loaded. This will cause recursive instantiation of timers. In order to avoid that we need to keep track of the timers.
+
+if (!Tapestry.ZoneRefresh)
+{
+   Tapestry.ZoneRefresh = {};
+}
+
+Tapestry.Initializer.zoneRefresh = function(params)
+{
+   //  Ensure a valid period. Not required as PeriodicalUpdater already takes care of it
+   // but will will skip unnecessary steps
+   if(params.period <= 0)
+   {
+      return;   
+   }
+         
+   // If the timer is already present, don't create a new one
+   if (Tapestry.ZoneRefresh[params.id])
+   {
+      // Timer already in use
+      return;
+   }
+
+   // Set zone
+   var element = $(params.id);
+   $T(element).zoneId = params.id;
+
+   // Function to be called for each refresh
+   var keepUpdatingZone = function(e)
+   {
+      try 
+      {
+         var zoneManager = Tapestry.findZoneManager(element);
+         zoneManager.updateFromURL(params.URL);
+      }
+      catch(e)
+      {
+         e.stop();
+         Tapestry.error(Tapestry.Messages.invocationException, {
+            fname : "Tapestry.Initializer.zoneRefresh",
+            params : params,
+            exception : e
+            });
+      }
+   };
+
+   // Create and store the executor
+   Tapestry.ZoneRefresh[params.id] = new PeriodicalExecuter(keepUpdatingZone, params.period);
+};
+
+// Before unload clear all the timers
+Event.observe(window, "beforeunload", function()
+{
+   if (Tapestry.ZoneRefresh)
+   {
+      for ( var propertyName in Tapestry.ZoneRefresh)
+      {
+         var property = Tapestry.ZoneRefresh[propertyName];
+         property.stop();
+      }
+   }
+});
+
+
+We have used a Tapestry.ZoneRefresh variable to store the timers for each zone. Before instantiating a new timer, we check with this variable if the timer has already been instantiated. The function takes a json-object which has three parameters, the zone id, time period after which the zone will be refreshed and the URL that should be used to refresh the zone.
+
+Now the Tapestry’s job is to call the script with the proper parameters and then handle the event which is called on each refresh.
+
+
+@Import(library = "zone-refresh.js")
+public class ZoneRefresh
+{
+   /**
+    *  Period is seconds 
+    */
+   @Parameter(required = true, defaultPrefix = BindingConstants.LITERAL)
+   private int period;
+   
+   /**
+    * Context passed to the event
+    */
+   @Parameter
+   private Object[] context;
+   
+   @InjectContainer
+   private Zone zone;
+
+   @Inject
+   private JavaScriptSupport javaScriptSupport;
+   
+   @Inject
+   private ComponentResources resources;
+   
+   public ZoneRefresh()
+   {
+   }
+   
+   //For testing purpose
+   ZoneRefresh(Object [] context, ComponentResources resources, 
+      JavaScriptSupport javaScriptSupport, Zone zone)
+   {
+      this.context = context;
+      this.resources = resources;
+      this.javaScriptSupport = javaScriptSupport;
+      this.zone = zone;
+   }
+
+   @AfterRender
+   void addJavaScript()
+   {
+      JSONObject params = new JSONObject();
+      
+      params.put("period", period);
+      params.put("id", zone.getClientId());
+      params.put("URL", createEventLink());
+      
+      javaScriptSupport.addInitializerCall(InitializationPriority.LATE, 
+       "zoneRefresh", params);
+   }
+
+   private Object createEventLink()
+   {
+      Link link = resources.createEventLink("zoneRefresh", context);
+      return link.toAbsoluteURI();
+   }
+   
+   Object onZoneRefresh()
+   {
+      CaptureResultCallback<Object> callback = new CaptureResultCallback<Object>();
+      resources.triggerEvent(TawusAddonsEventConstants.REFRESH, context, callback);
+      
+      if(callback.getResult() != null){
+         return callback.getResult();
+      }
+      
+      return zone;
+   }
+
+}
+
+The mixin assumes that it has been added to a zone. It passes the zone id along with the zone refresh period and an event link to the script. The event handler triggers a “refresh” event. If the event handler in the container returns a value, then that value is returned otherwise the zone is returned by default.
+如果容器的事件处理方法返回值，这个值将返回，否则返回这个zone。
+
+Usage
+
+<div t:type='zone' t:mixins='tawus/zonerefresh' t:period='10'>Anything inside <div>
