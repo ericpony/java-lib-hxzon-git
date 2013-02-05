@@ -1,0 +1,26 @@
+﻿1,
+这里有一点注意,如果使用windows7操作系统 在push到服务器上 会出现错误 "git did not exit cleanly (exit code 128)" error 
+需要调整一下该文件夹的权限, 右键文件夹-> 安全 -> 选择user 然后点编辑  把完全控制,写,读 都打上勾就可以了。
+2，
+git config http.postBuffer 5M
+git config --global http.postBuffer 5M
+3，
+在Windows上使用TortoiseGit执行Push时出现以下错误
+
+
+git.exe push --progress  "origin" master:master
+ 
+Counting objects: 189, done.
+Compressing objects: 100% (158/158)
+Writing objects: 100% (189/189), 1016.00 KiB | 997 KiB/s
+Writing objects: 100% (189/189), 1.12 MiB | 997 KiB/s, done.
+remote: error: 'receive.denyCurrentBranch' configuration variable to 'refuse'.
+To git@10.73.4.46:channelv.git
+! [remote rejected] master -> master (branch is currently checked out)
+error: failed to push some refs to 'git@10.73.4.46:channelv.git'
+ 
+git did not exit cleanly (exit code 1)
+在服务器对应的库目录下执行以下命令增加配置即可
+
+1
+git config --bool core.bare true
