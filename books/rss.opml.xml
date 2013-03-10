@@ -47,6 +47,8 @@
 <outline text="__编程相关（英文）" title="__编程相关（英文）">
 <outline text="InfoQ Personalized Feed" title="InfoQ Personalized Feed" type="rss" htmlUrl="http://www.infoq.com" xmlUrl="http://www.infoq.com/rss/rss.action?token=xxx">
 </outline>
+<outline text="Mysema Blog Feed" title="Mysema Blog Feed" type="rss" htmlUrl="http://blog.mysema.com/" xmlUrl="http://blog.mysema.com/feeds/posts/default">
+</outline>
 <outline text="www.thoughtworks.com aggregator" title="www.thoughtworks.com aggregator" type="rss" htmlUrl="http://www.thoughtworks.com/blogs/current" xmlUrl="http://www.thoughtworks.com/blogs/rss/current">
 </outline>
 <outline text="Paul Graham: Essays" title="Paul Graham: Essays" type="rss" htmlUrl="http://www.paulgraham.com/" xmlUrl="http://www.aaronsw.com/2002/feeds/pgessays.rss">
