@@ -117,6 +117,22 @@ http://www.ituring.com.cn/book/850?q=Oracle
 http://www.amazon.cn/Oracle-PL-SQL%E5%AE%9E%E6%88%98-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E5%88%97-%E5%9B%BE%E7%81%B5%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E4%B8%9B%E4%B9%A6-John-Beresniewicz/dp/B00A0GVS4G/
 66.20(7.4折)，想买
 ----
+128，Oracle Database 11g完全参考手册
+罗尼(Kevin Loney) (作者), 刘伟琴 (译者), 张格仙 (译者) 
+118.50(7.5折)
+----
+134，Oracle PL/SQL最佳实践
+Steven Feuerstein (作者), 龚波 (译者), 张平 (译者), 潘显俊 (译者) 
+36.00(7.5折)
+----
+135，Oracle Database 11g SQL开发指南
+皮拉斯 (Price.J.) (作者), 史新元 (译者), 北英 (译者) 
+61.40(7.9折)，想买
+----
+136，Oracle PL/SQL程序设计(第5版)(套装上下册)
+弗伊尔斯坦(Steven Feuerstein) (作者), 普瑞拜尔(Bill Pribyl) (作者), 张晓明 (译者) 
+111.80(7.5折)，对翻译评价较差
+----
 131，Oracle索引技术
 http://www.ituring.com.cn/book/951?q=Oracle
 ----
@@ -337,6 +353,4 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20
 ----
-128，
-----
-134，
+137，
