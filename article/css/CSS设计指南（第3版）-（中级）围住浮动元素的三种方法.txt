@@ -1,0 +1,266 @@
+﻿CSS设计指南（第3版）-（中级）围住浮动元素的三种方法
+http://www.ituring.com.cn/article/17052
+http://www.ituring.com.cn/article/tagged/270?sort=vote&page=1
+http://www.ituring.com.cn/article/tagged/364
+
+本文节选自《CSS设计指南（第3版）》。
+第1章完全免费试读，电子书在线热卖中：http://www.ituring.com.cn/book/1111
+
+以下内容节选自第3章。
+
+浮动元素脱离了文档流，其父元素也看不到它了，因而也不会包围它。这种情况有时候并非我们想要的，本节向大家传授三种围住浮动子元素的方法。记住，这三种方法你都得掌握，这样才能审时度势，选择最合适的一种。
+
+为了演示浮动元素的行为，这种行为对布局会产生什么影响，以及解决这个问题的三种方法，我们首先要从一张带标题的图片开始。图片和标签包含在一个section元素中，而section元素后面跟着一个footer元素。可以把这个footer元素想象成很多网页底部都会有的与页面同宽的页脚。
+
+<section>
+    <img src="images/rubber_duck2.jpg">
+    <p>It’s fun to float.</p>
+</section>
+<footer> Here is the footer element that runs across the bottom of the page.</footer>
+这样，你才会知道究竟会发生什么。图3-18展示了应用以下规则后的section和footer的元素盒子。
+
+section {border:1px solid blue; margin:0 0 10px 0;}
+/*删除默认的上下外边距*/    
+p {margin 0;}
+/*为简明起见，省略了字体声明*/
+footer {border:1px solid red;}
+
+图3-18 可以看到页面中的两个块级元素section和footer，前者包含一张图片及标题，后者在正常文档中位于前者下方
+
+现在我们看到的是正常文档流，即块级元素包围着所有子元素，而且在页面中自上而下相互堆叠在一起。假设我们想让图片标题位于图片右侧，而不是像现在这样位于下方。运用刚刚学到的知识，我们知道实现这个目标最简单的方式就是浮动图片。试试看吧。
+
+section {border:1px solid blue; margin:0 0 10px 0;}
+img {float:left;}
+footer {border:1px solid red;}
+图3-19展示了结果。
+
+
+图3-19 浮动图片后标题跑到了右边，但父元素section也收缩到只包含文本的高度高度
+
+妈呀！标题倒是跑到右边了，可section也不再包围浮动元素了，它只包围非浮动的元素。于是，footer被提了上来，紧挨着前一个块级元素——section。这样是没错儿，可结果呢，不是我们想要的。
+
+方法一：为父元素添加overflow:hidden
+
+第一个方法很简单，缺点是不太直观，即为父元素应用overflow:hidden，以强制它包围浮动元素。
+
+section {border:1px solid blue; margin:0 0 10px 0; overflow:hidden;}
+img {float:left;}
+p {border:1px solid red;}
+把overflow:hidden声明应用到容器元素后，footer又回到了我们期望的位置，如图3-20所示。
+
+
+图3-20 给容器元素应用overflow:hidden声明后，它又包围了浮动元素
+
+实际上，overflow:hidden声明的真正用途是防止包含元素被超大内容撑大。应用overflow:hidden之后，包含元素依然保持其设定的宽度，而超大的子内容则会被容器剪切掉。除此之外，overflow:hidden还有另一个作用，即它能可靠地迫使父元素包含其浮动的子元素。
+
+方法二：同时浮动父元素
+
+第二种促使父元素包围其浮动子元素的方法，是也让父元素浮动起来。
+
+section {border:1px solid blue; float:left; width:100%;}
+img {float:left;}
+footer {border:1px solid red; clear:left;}
+浮动section以后，不管其子元素是否浮动，它会紧紧地包围（也称收缩包裹）住它的子元素。因此，需要用width:100%再让section与浏览器容器同宽。另外，由于section现在也浮动了，所以footer会努力往上挤到它旁边去。为了强制footer依然呆在section下方，要给它应用clear:left。被清除的元素不会被提升到浮动元素的旁边。以上代码能得到与图3-20相同的效果。
+
+方法三：添加非浮动的清除元素
+
+第三种强制父元素包含其浮动子元素的方法，就是给父元素的最后添加一个非浮动的子元素，然后清除该子元素。由于包含元素一定会包围非浮动的子元素，而且清除会让这个子元素位于（清除一侧）浮动元素的下方，因此包含元素一定会包含这个子元素——以及前面的浮动元素。（这一句原文交待不清，译文增加了一句。——译者注）在包含元素最后添加子元素作为清除元素的方式有两种。
+
+第一种方式不太理想，也就是简单地在HTML标记中添加一个子元素，并给它应用clear属性。由于没有默认的样式，不会引入多余空间，div元素很适合这个目的。
+
+<section>
+    <img src="images/rubber_duck.jpg">
+    <p>It's fun to float.</p>
+    <div class="clear_me"></div>
+</section>
+<footer> Here is the footer element…</footer>
+在此，我为div添加了一个类，以便于在CSS中添加它。SS
+
+section {border:1px solid blue;}
+img {float:left;}
+.clear_me {clear:left;}
+footer {border:1px solid red;}
+这样，浮动的元素被父元素包围住了，结果如图3-20所示。如果你特别不想添加这个纯表现性元素，我再告诉你一个用CSS来添加这个清除元素的方法。首先，要给section添加一个类。
+
+<section class="clearfix">
+    <img src="images/rubber_duck.jpg">
+    <p>It's fun to float.</p>
+</section>
+<footer> Here is the footer element…</footer>
+然后，再使用这个神奇的clearfx规则！
+
+.clearfix:after {
+    content:".";
+    display:block;
+    height:0;
+    visibility:hidden;
+    clear:both;
+}
+这个clearfix规则最早是由程序员Tony Aslett发明的，它只添加了一个清除的包含句点作为非浮动元素（必须得有内容，而句点是最小的内容）1。规则中的其他声明是为了确保这个伪元素没有高度，而且在页面上不可见。
+
+1 :after会在元素内容——而不是元素后面插入一个伪元素。——译者注
+
+使用clear:both意味着section中新增的子元素会清除左、右浮动元素（位于左、右浮动元素下方）。这里当然可以只用left，但both也适用于将来图片float:right的情况。
+
+同样，浮动的元素又像图3-20所示的一样被包围住了。但这次标记里没有额外硬编码的元素。好奇的话，你可以临时把clearfix规则中的height和visibility声明删除，看一看通过伪元素添加到标记中的句点。
+
+我在自己写的所有网站中都使用clearfix规则来解决浮动问题，因为浮动是实现多栏布局（在更多浏览器支持CSS3的Multi-column Layout Module之前）唯一最可靠的方式。这一点第5章会跟大家详细解释。
+
+好了，该回过头来作个总结了。要想强迫父元素包围其浮动的子元素有三种方式，哪三种？
+
+为父元素应用overflow:hidden
+浮动父元素
+在父元素内容的末尾添加非浮动元素，可以直接在标记中加，也可以通过给父元素添加clearfix类来加（当然，样式表中得需要相应的clearfix规则）
+这三种方法的使用要因地制宜。比如，不能在下拉菜单的顶级元素上应用overflow:hidden，否则作为其子元素的下拉菜单就不会显示了。因为下拉菜单会显示在其父元素区域的外部，而这恰恰是overflow:hidden所要阻止的。再比如，不能对已经靠自动外边距居中的元素使用“浮动父元素”技术，否则它就不会再居中，而是根据浮动值浮动到左边或右边了。总之，掌握了这三种技术之后，再碰到需要包围浮动元素的情况，你有能够游刃有余了。
+
+没有父元素时如何清除
+
+有时候，在清除某些浮动元素时，不一定正好有那么个父元素可以作为容器来强行包围它们。此时，最简单的办法就是给一个浮动元素应用clear:both，强迫它定位在前一个浮动元素下方。然而，在空间足以容纳多个元素向上浮动时，这个简单的办法未必奏效，我们还得另辟蹊径。
+
+为了演示这种情况，图3-21展示了一个页面，其中包含6个元素：3张图片和介绍它们的3个文本段落。这个页面布局是通过浮动图片实现的，因此在标记中跟在图片后面的文本会向上走，停靠在浮动图片的右侧。
+
+
+图3-21 由于第二段文字下方有空间，所以第三张图片及说明文字会上浮到第二张图片右侧，这不是我们想要的结果
+
+以下是图3-21中页面对应的HTML（为节省版面，删除了部分文字）：
+
+<section>
+    <img src="images/rubber_duck3.jpg">
+    <p>This text sits next to the image and because the…</p>
+    <img src="images/beach_ball.jpg">
+    <p>This text is short, so the next image can float up…</p>
+    <img src="images/yellow_float.jpg">
+    <p>Because the previous image’s text does not…</p>
+</section>
+相应的CSS如下：
+
+section {width:300px; border:1px solid red;}
+img {float:left; margin:0 4px 4px 0;}
+/*为简明起见，省略了字体声明*/
+p {margin:0 0 5px 0;}
+我们的目标是让每段文字停靠在相应的图片旁边。然而，第二段文字太短了，都没有够到第二张浮动图片的下沿。这就给下一对儿图片/段落向上浮动留出了空间。
+
+这个例子中的布局效果从技术角度看是正确的：第三对儿图片/段落有条件（有空间）停靠在第二张浮动图片旁边，于是它们就毫不客气地靠了过去。毕竟，浮动元素的使命不就是尽可能地向左上或右上迁移吗。可这个视觉上的结果却不是我们想要的。
+
+由于每一对儿图片/段落都没有包含元素，在此就无法使用前面讨论的“强制父元素包围”的战术。不过，我照样可以使用clearfix规则呀！
+
+.clearfix:after {
+    content:".";
+    display:block;
+    height:0;
+    visibility:hidden;
+    clear:both;
+}
+像这样给每个段落都加上clearfix类：
+
+<section>
+    <img src="images/rubber_duck3.jpg">
+    <p class="clearfix">This text sits next to the image and because the…</p>
+    <img src="images/beach_ball.jpg">
+    <p class="clearfix">This text is short, so the next image can float up…</p>
+    <img src="images/yellow_float.jpg">
+    <p class="clearfix">Because the previous image’s text does not…</p>.
+</section>
+如图3-22所示，在每个段落内容的最后添加了“清除子元素”，我们想要的布局效果实现了。因为第三对儿图片和段落前面增加了一个清除元素，所以它们就不能再往上走了。注意，我没有只给第二个段落添加clearfix类，而是每个段落都加上了一个。如果是真正的网站开发，就得这么做啊。这样，无论将来哪个段落的文本高度低于图片了，页面布局都不会被破坏。
+
+说到这儿，相信读者对float和clear属性都有了深入理解了。本章最后，再给大家介绍两个对CSS布局至关重要的属性：position和display。
+
+李松峰 
+发表于 2012-11-15 09:00
+============
+CSS围住浮动元素的三种方法
+http://www.ituring.com.cn/article/33397
+
+对CSS围住浮动元素的三种方法总结一下。
+先给出总结性方法 - 围住浮动元素的三种方法：
+
+第一个方法很简单，缺点是不太直观，即为父元素应用overflow:hidden，以强制它包围浮动元素。
+第二种促使父元素包围其浮动子元素的方法，是也让父元素浮动起来。
+第三种添加非浮动的清除元素：第三种强制父元素包含其浮动子元素的方法，就是给父元素的最后添加一个非浮动的子元素，然后清除该子元素。
+div元素
+使用clearfix规则
+问题的提出
+代码：
+
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <title>Examples</title>
+   <style>
+
+   section {border:1px solid blue; margin:0 0 10px 0;}
+   p {margin 0;}
+   footer {border:1px solid red;}
+   img {float:left;}
+   </style>
+</head>
+<body>
+   <section> 
+       <img src="./码农.gif" />
+       <p>It's fun to float.</p>
+   </section> 
+   <footer> Here is the footer element that runs across the bottom of the page.</footer> 
+</body>
+</html>
+运行如下：
+
+
+footer被提了上来，这不是我们想要的。这是因为section只包含非浮动元素了，它管不了浮动元素（图片），footer必然紧跟着section。但文字还是环绕着图片。
+如何能让section包含浮动元素，从而让footer放在section（图片）下面呢？就是我们前面提到的三种方法。
+
+第一种：给section的样式添加如下“overflow:hidden;”代码。
+
+section {border:1px solid blue; margin:0 0 10px 0; overflow:hidden;}
+第二种：浮动父元素，同时footer应用clear:left样式，强制清除左边的浮动影响，如下代码。
+
+section {border:1px solid blue; margin:0 0 10px 0; float:left; width:100%;}
+footer {border:1px solid red; clear:left;}
+注意：浮动非图片元素时，必须给它设定宽度，否则后果难以预料。
+
+第三种：添加非浮动的清除元素
+
+添加div元素
+
+<body>
+    <section class="clearfix"> 
+        <img src="./码农.gif" />
+        <p>It's fun to float.</p>
+        <div class="clear_me"></div>
+    </section> 
+    <footer> Here is the footer element that runs across the bottom of the page.</footer> 
+</body>
+样式：
+
+<style>
+section {border:1px solid blue; margin:0 0 10px 0;}
+p {margin 0;}
+footer {border:1px solid red;}
+img {float:left;}
+.clear_me {clear:left;}
+</style>
+clearfix规则
+
+<section class="clearfix"> 
+<img src="images/rubber_duck.jpg"> 
+<p>It's fun to float.</p> 
+</section>
+样式：
+
+.clearfix:after { 
+content:"."; 
+display:block; 
+height:0; 
+visibility:hidden; 
+clear:both; 
+}
+这个clearfix规则最早是由程序员Tony Aslett发明的，它只添加了一个清除的包含句点作为非浮动元素（必须得有内容，而句点是最小的内容）①。规则中的其他声明是为了确保这个伪元素没有高度，而且在页面上不可见。 使用clear:both意味着section中新增的子元素会清除左、右浮动元素（位于左、右浮动元素下方）。这里当然可以只用left，但both也适用于将来图片float:right的情况。
+
+① AFTER会在元素内容后面而不是元素后面插入一个伪元素。
+
+以上几种方式，都能正确显示如下，当然，不同方式，是有其具体适用或不适用场景的。
+
+
+浮动是实现多栏布局（在更多浏览器支持CSS3的Multi-column Layout Module之前）唯一最可靠的方式。
+
+读《CSS设计指南（第三版）》，收获不少，推荐之~~~~~~！
