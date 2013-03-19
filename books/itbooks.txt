@@ -112,11 +112,6 @@ http://product.dangdang.com/product.aspx?product_id=20192214
 129，Oracle性能优化求生指南
 http://www.ituring.com.cn/book/772?q=Oracle
 ----
-130，Oracle PL/SQL实战
-http://www.ituring.com.cn/book/850?q=Oracle
-http://www.amazon.cn/Oracle-PL-SQL%E5%AE%9E%E6%88%98-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E5%88%97-%E5%9B%BE%E7%81%B5%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E4%B8%9B%E4%B9%A6-John-Beresniewicz/dp/B00A0GVS4G/
-66.20(7.4折)，想买
-----
 128，Oracle Database 11g完全参考手册
 罗尼(Kevin Loney) (作者), 刘伟琴 (译者), 张格仙 (译者) 
 118.50(7.5折)
@@ -143,6 +138,9 @@ http://www.amazon.cn/DBA的思想天空-感悟Oracle数据库本质-白鳝/dp/B0
 ----
 133，深入NoSQL
 http://www.ituring.com.cn/book/845?q=%E6%B7%B1%E5%85%A5NoSQL
+----
+138，Erlang/OTP并发编程实战
+61.10(7.7折)，想买
 ===========================================================
 c和linux
 ----
@@ -353,4 +351,4 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20
 ----
-137，
+139，

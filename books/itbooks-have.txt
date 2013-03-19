@@ -68,6 +68,11 @@ http://product.dangdang.com/product.aspx?product_id=22508163
 96，Oracle Database 11g数据库管理艺术
 104.30(75折)-12，已购
 ----
+130，Oracle PL/SQL实战
+http://www.ituring.com.cn/book/850?q=Oracle
+http://www.amazon.cn/Oracle-PL-SQL%E5%AE%9E%E6%88%98-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E5%88%97-%E5%9B%BE%E7%81%B5%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E4%B8%9B%E4%B9%A6-John-Beresniewicz/dp/B00A0GVS4G/
+66.20(7.4折)，69.50-10，已购
+----
 123，SQL反模式
 http://product.dangdang.com/product.aspx?product_id=22506160
 46.50(79折)-20=26.50，已购，常见问题的思考与总结
@@ -98,6 +103,9 @@ http://product.dangdang.com/product.aspx?product_id=22606835
 ----
 17，Windows7脚本编程和命令行工具指南(详尽讲解微软最新命令行自动化工具Windows PowerShell)
 59.20，已购
+----
+137，中文版Excel 2010高级VBA编程宝典
+74.30-10，已购
 ----
 7，Scala程序设计：Java虚拟机多核编程实战
 29.20(75折)，已购，入门，过时
