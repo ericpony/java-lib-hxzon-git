@@ -11,6 +11,15 @@ ISBN: 9787115308474
 ASIN: B00BN5N7R4
 http://www.amazon.cn/Clojure%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1-Stuart-Halloway/dp/B00BN5N7R4
 -------------
+出版社: The Pragmatic Programmers; 2nd Revised edition (2012年4月17日)
+平装: 296页
+语种： 英语
+ISBN: 1934356867
+条形码: 9781934356869
+商品尺寸: 19.1 x 2.3 x 22.9 cm
+商品重量: 572 g
+ASIN: 1934356867
+-------------
 作者简介
 作者：（美国）Stuart Halloway （美国）Aaron Bedra 译者：温瑞云
 
