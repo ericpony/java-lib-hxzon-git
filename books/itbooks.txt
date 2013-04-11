@@ -211,8 +211,21 @@ http://product.dangdang.com/product.aspx?product_id=20518616
 ----
 51，数据库系统实现
 44.20 (75折)
+----
+142，领域特定语言
+Martin?Fowler (作者), ThoughtWorks (译者)
+66.70(75折)
 =======================================================
 工具实践
+----
+141，Real World Haskell
+2008-12出版
+http://book.realworldhaskell.org/read/
+--
+真实世界的Haskell(影印版) 
+沙利文(Bryan O'sullivan)、戈尔(Jobn Goerzen)、 斯图尔特(Don Stewart) 
+东南大学出版社 (2010-01出版)
+缺货，想买
 ----
 138，Erlang/OTP并发编程实战
 61.10(7.7折)，想买
@@ -307,6 +320,9 @@ http://product.dangdang.com/product.aspx?product_id=22846300
 http://product.dangdang.com/product.aspx?product_id=22606834
 2011年Jolt生产效率大奖获奖图书
 44.30(75折)，想买
+----
+143，HBase权威指南(影印版)(英文版)
+53.60(74折)
 ===============================================================
 css,html5
 ----
@@ -348,4 +364,8 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20
 ----
-141，
+144，SQL应用重构
+----
+145，R和Ruby数据分析之旅
+----
+146，
