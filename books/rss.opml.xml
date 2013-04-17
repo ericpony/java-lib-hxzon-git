@@ -43,6 +43,10 @@
 </outline>
 <outline text="蔡學鏞【言程序】部落格" title="蔡學鏞【言程序】部落格" type="rss" htmlUrl="http://www.jerry-tsai.com/" xmlUrl="http://www.jerry-tsai.com/feeds/posts/default">
 </outline>
+<outline text="博客园_λ-calculus in CnBlogs" title="博客园_λ-calculus in CnBlogs" type="rss" htmlUrl="http://www.cnblogs.com/geniusvczh/" xmlUrl="http://www.cnblogs.com/geniusvczh/rss.aspx">
+</outline>
+<outline text="寂静之声" title="寂静之声" type="rss" htmlUrl="http://blog.sina.com.cn/yinwang0" xmlUrl="http://blog.sina.com.cn/rss/1569777711.xml">
+</outline>
 </outline>
 <outline text="__编程相关（英文）" title="__编程相关（英文）">
 <outline text="InfoQ Personalized Feed" title="InfoQ Personalized Feed" type="rss" htmlUrl="http://www.infoq.com" xmlUrl="http://www.infoq.com/rss/rss.action?token=xxx">
@@ -183,8 +187,20 @@
 </outline>
 <outline text="aw&#39;s blog 姿态永恒? 理性" title="aw&#39;s blog 姿态永恒? 理性" type="rss" htmlUrl="http://www.awflasher.com/blog" xmlUrl="http://feed.awflasher.com">
 </outline>
+<outline text="CSDN 软件研发频道(资讯)" title="CSDN 软件研发频道(资讯)" type="rss" htmlUrl="http://sd.csdn.net/" xmlUrl="http://sd.csdn.net/rss_sd.html">
+</outline>
+<outline text="CSDN 极客头条(最新)" title="CSDN 极客头条(最新)" type="rss" htmlUrl="http://geek.csdn.net/" xmlUrl="http://geek.csdn.net/news/rss">
+</outline>
+<outline text="CSDN 云计算频道(资讯)" title="CSDN 云计算频道(资讯)" type="rss" htmlUrl="http://cloud.csdn.net/" xmlUrl="http://news.csdn.net/rss_cloud.html">
+</outline>
+<outline text="推荐博文_51CTO技术博客" title="推荐博文_51CTO技术博客" type="rss" htmlUrl="http://blog.51cto.com/" xmlUrl="http://blog.51cto.com/rss_recommend.php">
+</outline>
+<outline text="业界资讯_51CTO技术博客" title="业界资讯_51CTO技术博客" type="rss" htmlUrl="http://developer.51cto.com/col/1553" xmlUrl="http://www.51cto.com/php/rss.php?typeid=1553">
+</outline>
 </outline>
 <outline text="_JVM-lang" title="_JVM-lang">
+<outline text="Clojure中文社区" title="Clojure中文社区" type="rss" htmlUrl="http://blog.clojure.cn/" xmlUrl="http://blog.clojure.cn/?feed=rss2">
+</outline>
 <outline text="Clojure" title="Clojure" type="rss" htmlUrl="http://clojure.blogspot.com/" xmlUrl="http://clojure.blogspot.com/feeds/posts/default">
 </outline>
 <outline text="The Scala Programming Language" title="The Scala Programming Language" type="rss" htmlUrl="http://www.scala-lang.org/" xmlUrl="http://www.scala-lang.org/rss.xml">
