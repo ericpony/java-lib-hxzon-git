@@ -197,6 +197,10 @@ http://product.dangdang.com/product.aspx?product_id=9320416
 35，算法设计——世界著名计算机教材精选
 http://product.dangdang.com/product.aspx?product_id=9272815
 56.20(75折)
+----
+146，具体数学:计算机科学基础(第2版) [平装]
+~ Ronald L. Graham (作者), Donald E. Knuth (作者), Oren Patashnik (作者), 张明尧 (译者), 张凡 (译者) 
+74.20(75折)
 -----
 36，并行性：状态模型与Java程序 Concurrency: State Models and Java Pro
 http://product.dangdang.com/product.aspx?product_id=20029732
@@ -291,6 +295,10 @@ http://www.ituring.com.cn/book/951?q=Oracle
 http://www.ituring.com.cn/book/972?q=Oracle
 http://www.amazon.cn/DBA的思想天空-感悟Oracle数据库本质-白鳝/dp/B009PIQ99E
 44.50(5折)
+----
+144，SQL应用重构
+----
+145，R和Ruby数据分析之旅
 =============================================================
 NoSql,云计算,大数据
 ----
@@ -364,8 +372,4 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20
 ----
-144，SQL应用重构
-----
-145，R和Ruby数据分析之旅
-----
-146，
+147，
