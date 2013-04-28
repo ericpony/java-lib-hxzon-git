@@ -37,6 +37,7 @@ http://www.ituring.com.cn/book/800
 19，软件随想录：程序员部落酋长Joel谈软件
 36.80(75折)，已读，不错
 ===================================
+css,html
 ----
 85，精通CSS与HTML设计模式
 Pro CSS and HTML Design Patterns
@@ -50,6 +51,11 @@ http://www.ituring.com.cn/book/369
 --
 Stylin’ with CSS: A Designer’s Guide, Third Edition
 已出新版《CSS设计指南（第3版）》，有中文电子版
+===============================
+js
 ----
 41，Prototype与script.aculo.us终极揭秘
 48.80(75折)，只是使用，不是源码解析，prototype已过时。
+----
+66，犀利开发:jQuery内核详解与实践
+36.80
