@@ -1,0 +1,145 @@
+﻿tapestry5.1.0.5初体验
+
+by hxzon
+
+1，生成的URL很友好。漂亮的URL使用了两次请求的机制，不严重影响性能的情况下觉得值得。
+
+2，用@OnEvent(value=EventConstants.ACTIVATE)获取页面参数，而用@SetupRender初始化数据。
+@OnEvent(value = EventConstants.PASSIVATE)
+
+3，编辑页面，用@OnEvent(value=EventConstants.ACTIVATE)获取编辑对象的ID并初始化非常惬意，比struts2的两次parameter拦截舒服得多。
+
+4，组合搜索物料，表单获取参数，通过两次请求机制，重写的url带有搜索条件，可被收藏。
+    //init()->initalize->onPassivate->init(xxx)->display
+    public Object initialize(Material material,long size,long first){
+        this.material=material;
+        page.setPageSize(size);
+        page.setCurrentPage(first);
+        return this;
+    }
+    
+    @OnEvent(value=EventConstants.ACTIVATE)
+    Object init(){
+        return null;
+    }
+    
+    @OnEvent(value=EventConstants.ACTIVATE)
+    Object init(String code, String name, String spec, String desc, String pcb, String state,
+            String foot, String brand, String supplier, String remark,long size,long first){
+        this.material=MaterialUtil.toMaterial(code, name, spec, desc, pcb, state, foot, brand, supplier, remark);
+        page.setPageSize(size);
+        page.setCurrentPage(first);
+        return null;
+    }
+    
+    @SetupRender
+    Object display(){
+        if(material!=null){
+            page.setRowCount(materialSer.countLike(material));
+            list=materialSer.getLike(material, page.getCurrentRow(), page.getPageSize());
+            logger.debug("search result size:"+page.getRowCount());
+        }
+        return null;
+    }
+    
+    @OnEvent(value=EventConstants.PASSIVATE)
+    Object onPassivate(){
+        return MaterialUtil.toUrl(material, page.getPageSize(), page.getCurrentPage());
+    }
+
+5，捕获异常。
+    Object onException(Throwable cause) {
+        logger.error("error", cause);
+        // ComponentEventException
+        message = cause.getMessage();
+        if (cause.getCause() instanceof AuthenticationException) {
+            return login;
+        }
+        return this;// null
+    }
+
+6，URL中含有空格等，通过URLRewriterRule可以解决，即把路径中的空格都去除。
+
+7，一开始不知道用方括号来传递URL的onActivate参数。
+<t:pagelink page="bom/list" context="[50,1]">
+
+--------------------------------------------------
+css，js，图片的路径
+
+1，tapestry使用/assets/来处理css，js，图片路径，但是js中的图片路径无法被处理。
+不过这个问题可以用URLRewriterRule来解决，即把对图片的请求改写为/assets/请求。
+
+2，/assets/存在安全漏洞，可以用它输出WEB-INF下的文件。
+这个问题也可以用URLRewriterRule来解决，即把对WEN-INF下的文件请求改写到其它路径。
+
+3，对国际化支持非常方便，图片，页面都可以国际化，如hello_zh_CN.png,home_zh_CN.tml。
+
+---------------------------------------------------
+1，页面类注入
+@Inject
+private HttpServletRequest request;即可发送和读取cookie。
+需注意cookie的路径，例如设为"/"，否则可能读取不到。
+
+2，使用@Persist和@SessionState来存储会话数据很方便。
+
+3，简洁漂亮的客户端校验，注意@Validate仅仅用于客户端校验。
+
+---------------------------------------------------
+组件
+
+1，通用库的添加。希望改为有顺序的配置，这样可以有同名组件，例如用我的扩展的textfield组件替换掉自带的textfield组件。
+    public static void contributeComponentClassResolver(Configuration<LibraryMapping> configuration) {
+        configuration.add(new LibraryMapping("core", "org.hxzon.tapestry5"));
+    }
+
+2，上传用Upload组件，但是一个参数名只能上传一个文件。不过自己写一个参数名上传多个文件的组件非常容易。
+
+3，下载也很容易，return new FileStreamResponse(upload.getFileName(), upload.getFileType(), targetFile);即可。
+
+4，Grid组件很强大，不过一开始没看到怎么重写grid的标题栏，甚至以为得自己写一个组件覆盖或封转它，直到看源代码才发现不用。不过Grid组件无法读取非简单属性，需重写xxxcell。
+
+org.apache.tapestry5.corelib.components.GridColumns
+    public Block getBlockForColumn()
+    {
+        Block override = overrides.getOverrideBlock(columnModel.getId() + "Header");
+        if (override != null) return override;
+        return standardHeader;
+    }
+//================================
+public class GridCell extends AbstractPropertyOutput
+{
+    Object beginRender(MarkupWriter writer)
+    {
+        return renderPropertyValue(writer, getPropertyModel().getId() + "Cell");
+    }
+}
+
+5，用layout组件完成页面模板的功能，但是只有<t:body />，没有与sitemesh类似的<t:head/>和<t:title/>。不过通过在layout组件中添加title参数，并在页面使用时传进可类似解决。
+但还是喜欢sitemesh，sitemesh是制定规则，然后符合规则的会被应用模板，而tapestry必须每个页面写上这个layout组件，像struts1的Tiles一样。
+
+6，使用@Property注解，省掉了很多getter和setter方法，看起来比较简洁，不过也有一定不便。
+@Property强制为private，希望可以放宽至protected。也希望在存在getter或setter时就不要再动态生成该方法，而不是抛出错误。
+
+7，想给textfield组件添加trim功能时发现需要覆盖protected void processSubmission(String elementName)方法，
+这时发现所要用的属性都是private的，并且没有getter和setter方法，以为要另起炉灶。
+不过尝试发现，只要把属性复制一遍到子类中即可，不会报错。
+
+8，textfield组件把空字符串变为null，替换NullFieldStrategy即可。
+    public static void contributeNullFieldStrategySource(MappedConfiguration<String, NullFieldStrategy> configuration) {
+        configuration.override("default", new EmptyNullFieldStrategy());
+    }
+
+9，struts2中通过parameter拦截器可以统一对所有参数进行拦截处理，tapestry通过对textfield组件的值处理，以及用URLRewriterRule，
+也算是能进行统一的处理。
+
+10，if组件功能较弱，因为原先使用ognl动态调用效率太低，不过自己还是写了一个ognlIf。
+
+11，没有CheckboxGroup，自己写了一个，也是用ognl完成的。
+
+12，写了一个分页的组件，SplitPageBar，基于简单的URL。
+
+-------------------------------------------------------
+模板
+
+1，表达式用惯了ognl，jsp，所以tapestry的表达式感觉比较弱。
+

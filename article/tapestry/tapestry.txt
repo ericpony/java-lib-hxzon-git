@@ -9,3 +9,8 @@ tapestry-security module is based on and depends on Apache Shiro.
 http://tynamo.org/tapestry-ckeditor+guide
 --
 http://tynamo.org/tapestry-resteasy+guide
+3，
+http://tapestry5-jquery.com/
+https://github.com/got5/tapestry5-jquery
+4，
+If the Form or Link is enclosed by the Zone itself, then the zone parameter may be set to the special value ^.

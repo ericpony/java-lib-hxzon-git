@@ -1,0 +1,89 @@
+﻿tapestry5.1.0.5升级到Tapestry5.2.4初体验
+
+by hxzon
+
+1.路径重写
+原来的URLRewriterRule废弃，改用PageRenderLinkTransformer，
+但前者是在AssetDispatcher之前运行，后者却在AssetDispatcher之后运行。
+导致在PageRenderLinkTransformer重写路径不生效。
+只能定位到一个伪页面暂时解决问题。
+public PageRenderRequestParameters decodePageRenderRequest(Request request) {
+    String path = request.getPath();
+    // delete whitespace
+    path = StringUtils.deleteWhitespace(path);
+    logger.trace("path incoming:" + path);
+    if (path.toLowerCase().contains("web-inf")) {
+        logger.debug("path contains web-info,rewrite to root");
+        return new PageRenderRequestParameters(Index.class.getSimpleName(), new EmptyEventContext(), false);
+    }
+    if (path.contains("/css/") && !path.contains("/assets/")) {
+    path = path.substring(path.indexOf("/css"));
+    logger.debug("path contains css ,rewrite to assets path:" + path);
+    return new PageRenderRequestParameters(pageName, new OneStringEventContext(path), false);
+    }
+    return null;
+}
+
+public class StaticSourceFile {
+    @Inject
+    private Logger logger;
+
+    @OnEvent(value = EventConstants.ACTIVATE)
+    protected Object response(String path) {
+        InputStream targetFile = null;
+        try {
+            targetFile = FileUtils.openInputStream(new File(WebUtil.contextPath + "/" + path));
+            return new FileStreamResponse("", targetFile);
+        } catch (Exception e) {
+            logger.error("文件不存在:{}", e.getMessage());
+        }
+        return null;
+    }
+}
+
+2.把自己的库加入核心库空间下：
+
+2.1,把自己的核心库加入核心库，即
+public static void contributeComponentClassResolver(Configuration<LibraryMapping> configuration) {
+    configuration.add(new LibraryMapping("core", "org.hxzon.tapestry5"));
+}
+出错，因为与tapestry5.2.4的核心库包名org.apache.tapestry5.xxx共同字段少于2。
+但我的代码并非tapestry的一部分，不想改为org.apache.tapestry5.hxzon.
+
+2.2,作为补充库，即
+configuration.add(new LibraryMapping("h", "org.hxzon.tapestry5"));
+则原来大把模板文件都要修改，即添加h.前缀，如t:h.textfieldEx。
+并且org.hxzon.tapestry5下的page也找不到。
+
+2.3，configuration.add(new LibraryMapping("", "org.hxzon.tapestry5"));
+可解决问题，但js路径变为
+/material5/assets/3//components/SplitPageBar.js
+文件找不到。
+
+2.4，最终添加两次，即
+public static void contributeComponentClassResolver(Configuration<LibraryMapping> configuration) {
+    configuration.add(new LibraryMapping("h", "org.hxzon.tapestry5"));
+    configuration.add(new LibraryMapping("", "org.hxzon.tapestry5"));
+}
+这样js文件路径为/material5/assets/3/h/components/SplitPageBar.js ，正确。
+而tml文件中使用库时也不必加前缀。
+解决问题。
+不知是否有更好的方法。
+
+3.自己写的TextFieldEx类在升级时出错，
+@Parameter(required = true, allowNull = false, defaultPrefix = BindingConstants.TRANSLATE)
+private FieldTranslator<Object> translate;
+
+@Parameter(defaultPrefix = BindingConstants.VALIDATE)
+private FieldValidator<Object> validate;
+等域为空。因为更改了defaultXXX的实现方式，
+加入下述代码解决：
+//hxzon:fix bug when update to tapestry 5.2,but why?
+    final Binding defaultTranslate() {
+        return defaultProvider.defaultTranslatorBinding("value", resources);
+    }
+
+    final Binding defaultValidate() {
+        return defaultProvider.defaultValidatorBinding("value", resources);
+    }
+
