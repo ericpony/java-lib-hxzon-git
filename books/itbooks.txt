@@ -51,7 +51,9 @@ http://www.amazon.cn/Modern-C-Design-Applied-Generic-and-Design-Patterns-Alexand
 ----
 110，泛型编程与STL
 http://product.china-pub.com/9864
-已缺货，观望，想买
+作者: Matthew H. Austern 译者: 侯捷 中国电力出版社2003-1
+本书阐述了泛型编程的中心思想：concepts、modeling、refinement，并为你展示这些思想如何导出STL的基础概念：iterators、containers、function Objects。循此路线，你可以把STL想像为一个由concepts(而非明确之functions或classes)组成的程序库。你将学习其正式结构并因此获得其潜在威力所带采的完整优势。
+已缺货，观望，暂缓
 ----
 111，深入探索C++对象模型
 http://product.china-pub.com/3290
@@ -92,6 +94,11 @@ http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%
 《Microsoft Windows Internals（Fourth Edition》，覆盖Windows XP和Windows Server 2003中所做的内核变化
 深入解析Windows操作系统(第5版.英文版)，2009.9，针对Windows Vista和Windows Server 2008进行了全面的更新
 74.30(7.5折)，中文版2007.4
+--
+深入解析Windows操作系统，卷1（英文版 第6版）
+深入解析Windows操作系统，卷2（英文版 第6版）
+《Windows Internals, Part 2》
+http://www.ituring.com.cn/book/1083
 ----
 118，Visual C++2010入门经典(第5版)
 http://www.amazon.cn/Visual-C-2010%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8-%E9%9C%8D%E9%A1%BF/dp/B004GHO45A/ref=pd_sim_b_18
@@ -100,7 +107,7 @@ http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=0470500883
 http://www.amazon.com/Ivor-Hortons-Beginning-Visual-Programmer/dp/0470500883/ref=sr_1_1?s=books&ie=UTF8&qid=1347515759&sr=1-1&keywords=Visual+C%2B%2B
 《Ivor Horton's Beginning Visual C++ 2012》，2012.10.2
 http://www.amazon.com/Ivor-Hortons-Beginning-Visual-2012/dp/1118368088/ref=sr_1_4?s=books&ie=UTF8&qid=1347515759&sr=1-4&keywords=Visual+C%2B%2B
-89.60(7折)，中文版2010.12，想买
+89.60(7折)，中文版2010.12
 ===========================================================
 c和linux
 ----
@@ -114,7 +121,7 @@ http://product.dangdang.com/product.aspx?product_id=20645962
 22，LINUX技术手册（影印版）（第5版）
 72.00(73折)，不买，已出第6版
 ----
-91，国外计算机科学经典教材?Unix & Linux大学教程
+91，国外计算机科学经典教材Unix & Linux大学教程
 78.40
 ----
 45，C程序设计语言(第2版新版)
@@ -122,10 +129,10 @@ http://product.dangdang.com/product.aspx?product_id=8766529
 20.70(69折)，(2004.1)，（美）Brian W.Kernighan,Dennis M.Ritchie
 ----
 70，C专家编程
-30.70 (68折)，想买
+30.70 (68折)
 ----
 71，C陷阱与缺陷
-25.10 (84折)，想买，只适用老版本c？
+25.10 (84折)，只适用老版本c？
 ----
 93，C语言程序设计:现代方法(第2版)
 55.30(7折)
@@ -148,10 +155,10 @@ http://product.dangdang.com/product.aspx?product_id=22543344
 81.00，观望，有中文电子版
 ----
 13，编程之魂：与27位编程语言创始人对话
-44.90，观望
+44.90
 ----
 14，编程人生：15位软件先驱访谈录
-59.20，观望
+59.20
 ----
 15，软件框架设计的艺术
 56.20，48.40，观望
@@ -167,11 +174,11 @@ http://product.dangdang.com/product.aspx?product_id=21006215
 ----
 10，汇编语言（第2版）
 http://product.dangdang.com/product.aspx?product_id=20196660
-24.80，观望
+24.80
 ----
 42，编译原理（第2版）——计算机科学丛书
 http://product.dangdang.com/product.aspx?product_id=20427584
-66.80(75折)，想买
+66.80(75折)，暂缓
 ----
 43，算法导论（原书第2版）
 http://product.dangdang.com/product.aspx?product_id=9211884#catalog
@@ -217,7 +224,7 @@ http://product.dangdang.com/product.aspx?product_id=20518616
 44.20 (75折)
 ----
 142，领域特定语言
-Martin?Fowler (作者), ThoughtWorks (译者)
+Martin Fowler (作者), ThoughtWorks (译者)
 66.70(75折)
 =======================================================
 工具实践
@@ -229,15 +236,17 @@ http://book.realworldhaskell.org/read/
 真实世界的Haskell(影印版) 
 沙利文(Bryan O'sullivan)、戈尔(Jobn Goerzen)、 斯图尔特(Don Stewart) 
 东南大学出版社 (2010-01出版)
-缺货，想买
+缺货，想买，编程思想
 ----
 138，Erlang/OTP并发编程实战
-61.10(7.7折)，59.30，想买
+61.10(7.7折)，59.30，暂缓
+-
+OTP:oper telecom platform,是一个应用操作系统和一堆函数库，用来构建大型、容错和分布式应用，是一个Erlang开发的中间件，为了容错性和兼容性设计的，支持代码热部署，包含一个完整的web服务器，一个ftp服务器，一个corba orb等。
 ----
 139，Clojure程序设计
 2013年3月20日
 Programming Clojure, Second Edition，The Pragmatic Programmers，2012年4月17日
-36.80 (7.5折)，想买
+36.80 (7.5折)，不买
 ----
 140，Clojure编程
 2013年4月10日
@@ -248,7 +257,7 @@ Clojure Programming，O'Reilly Media, Inc, USA (2012年4月19日)
 46.20(67折)，想买
 ----
 92，Git权威指南
-53.40(60折)，观望
+53.40(60折)
 ----
 24，深入理解Java虚拟机:JVM高级特性与最佳实践
 46.20(67折)
@@ -286,7 +295,7 @@ Steven Feuerstein (作者), 龚波 (译者), 张平 (译者), 潘显俊 (译者)
 ----
 135，Oracle Database 11g SQL开发指南
 皮拉斯 (Price.J.) (作者), 史新元 (译者), 北英 (译者) 
-61.40(7.9折)，想买
+61.40(7.9折)，观望
 ----
 136，Oracle PL/SQL程序设计(第5版)(套装上下册)
 弗伊尔斯坦(Steven Feuerstein) (作者), 普瑞拜尔(Bill Pribyl) (作者), 张晓明 (译者) 
@@ -301,6 +310,7 @@ http://www.amazon.cn/DBA的思想天空-感悟Oracle数据库本质-白鳝/dp/B0
 44.50(5折)
 ----
 144，SQL应用重构
+38.90(7.9折)，观望
 ----
 145，R和Ruby数据分析之旅
 =============================================================
@@ -331,7 +341,7 @@ http://product.dangdang.com/product.aspx?product_id=22846300
 126，社交网站的数据挖掘与分析
 http://product.dangdang.com/product.aspx?product_id=22606834
 2011年Jolt生产效率大奖获奖图书
-44.30(75折)，想买
+44.30(75折)，观望
 ----
 143，HBase权威指南(影印版)(英文版)
 53.60(74折)
@@ -345,6 +355,12 @@ http://product.dangdang.com/product.aspx?product_id=20176096
 89，Pro CSS for High Traffic Websites
 高流量网站CSS开发技术
 http://www.ituring.com.cn/book/979
+----
+147，HTTP权威指南
+81.80(7.5折)
+----
+149，CDN技术详解
+51.80(7.5折)
 ==============================================================
 javascript
 ----
@@ -373,6 +389,8 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20
 ----
-147，
+150，JavaScript异步编程：设计快速响应的网络应用
+Async JavaScript: Build More Responsive Apps with Less Code
+http://www.ituring.com.cn/book/1132
 ----
-149，
+151，
