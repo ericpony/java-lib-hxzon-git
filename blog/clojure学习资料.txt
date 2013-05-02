@@ -1,0 +1,159 @@
+﻿clojure学习资料
+
+append by hxzon
+
+http://qiujj.com/static/clojure-handbook.html
+
+=======================
+web
+
+1，Ring
+
+类似于Python's WSGI and Ruby's Rack
+
+https://github.com/mmcgrana/ring (主页)
+https://github.com/laurentpetit/ring-java-servlet (Servlet)
+http://mmcgrana.github.com/2010/03/clojure-web-development-ring.html (教程)
+
+2，Compojure
+
+对Ring的DSL化包装
+
+https://github.com/weavejester/compojure
+
+Compojure is a small routing library for Ring that allows web applications to be composed of small, independent parts.
+
+路由解析。
+
+3， Conjure
+
+https://github.com/macourtney/Conjure
+
+Conjure is a Rails like framework for the Clojure programming language. 
+The goal of Conjure is to simplify the development of database backed web applications. 
+To do this Conjure relies heavily on third party libraries including:ring，clj-record，hiccup。
+
+4，Weld
+
+https://github.com/mmcgrana/weld
+
+5，Noir
+
+http://www.webnoir.org/
+
+基于Ring 和 Compojure，采用hiccup生成html。
+ 
+6，hiccup
+
+https://github.com/weavejester/hiccup
+clj-html的加强版，用法相同：vector来对应tag，map来对应tag的属性
+
+7，Enlive模板引擎
+
+https://github.com/cgrand/enlive
+https://github.com/swannodette/enlive-tutorial/
+
+使用css选择器语法。
+
+8，Ringfinger
+
+https://github.com/myfreeweb/ringfinger
+
+9，http://immutant.org
+
+The most notable of which is Immutant, an application server for Clojure built on top of JBoss。
+
+=======================
+jdbc
+
+1，clojure.java.jdbc
+
+2，ClojureQL
+
+http://www.clojureql.org/
+用更DSL的方式书写SQL语句，自动转化为SQL92，支持MySQL和Postgresql。
+
+3，
+RDBMS的DSL
+http://sqlkorma.com/
+
+4， MongoDB操作
+
+https://github.com/aboekhoff/congomongo
+
+5，hibernate
+
+
+=======================
+网络资源
+
+6，http://java.ociweb.com/mark/clojure/article.html
+在线教程：Clojure - Functional Programming for the JVM
+
+19，http://planet.clojure.in/
+http://planet.clojure.in/atom.xml
+Clojure的一个blog集合
+
+
+
+1，http://clojure.github.com/clojure-contrib/
+
+2，http://clojuredocs.org/
+
+3，http://clojure.org/cheatsheet
+Clojure 1.3 and 1.4 Cheat Sheet
+
+4，http://www.clojure-toolbox.com/
+常用lib分类列表
+
+5，http://clojure-examples.appspot.com/
+
+
+7，http://clojure-euler.wikispaces.com/
+ProjectEuler的Clojure解答
+
+8，http://en.wikibooks.org/wiki/Clojure_Programming/Examples/Cookbook
+Clojure Programming/Examples/Cookbook
+
+9，http://www.gettingclojure.com/cookbook:clojure-cookbook
+Clojure cookbook
+
+10，http://alexott.net/en/clojure/video.html
+Video lectures & presentations about Clojure
+
+11，http://langref.org/
+几个语言的常用功能代码对比
+
+12，http://clojars.org/
+Clojure的库repo
+
+13，http://www.glenstampoultzis.net/blog/clojure-web-infrastructure/
+Clojure Web Infrastructure
+
+14，http://thegeektalk.com/
+Geek Talks，使用Clojure、Scala的geek挺多
+
+15，http://nakkaya.com/
+个人blog，使用Clojure处理摄像头、图像等：
+http://nakkaya.com/2010/01/12/fun-with-clojure-opencv-and-face-detection/
+http://nakkaya.com/2010/01/19/clojure-opencv-detecting-movement/
+下载OpenCV的jni接口库（可能需翻墙）：
+http://ubaa.net/shared/processing/opencv/
+
+16，http://www.ic.unicamp.br/~meidanis/courses/mc336/2006s2/funcional/L-99_Ninety-Nine_Lisp_Problems.html
+99个Lisp练习题，
+对应的Scala网站：http://aperiodic.net/phil/scala/s-99/
+
+17，http://catb.org/~esr/faqs/hacker-howto.html
+《How To Become A Hacker》 by Eric Steven Raymond
+
+18，http://incanter.org/
+数值统计算法及图形展示。相关：
+
+
+20，http://clojure-libraries.appspot.com/
+收集clojure的各种library
+
+21，repl中自动reload所有ns的工具clojure.tools.namespace
+https://github.com/clojure/tools.namespace
+
