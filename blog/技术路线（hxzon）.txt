@@ -96,7 +96,14 @@ jruby：对比groovy没有优势？
 
 groovy：流行，比java友好。功能库丰富。
 
-grails：流行。是否在orm上有所改善？
+grails：流行。
+是否在orm上有所改善？
+grails-6.4.2 Where Queries
+http://grails.org/doc/latest/guide/GORM.html#whereQueries
+
+Gradle：构建工具。
+
+spock：测试框架。
 
 5，scala
 
@@ -112,7 +119,7 @@ scheme：抽象能力最强大？直接编译成可执行文件时比clojure更�
 clojure：对java友好。
 
 7，haskell
-编程思想的学习。
+编程思想的学习。《Real World Haskell》
 
 ---------------------
 java web框架
