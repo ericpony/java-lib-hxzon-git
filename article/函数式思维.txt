@@ -1,0 +1,99 @@
+﻿函数式思维
+
+函数式思维: 以函数式的方式思考，第 1 部分
+学习如何像函数式程序员一样思考
+http://www.ibm.com/developerworks/cn/java/j-ft1/index.html
+Functional thinking: Thinking functionally, Part 1
+http://www.ibm.com/developerworks/java/library/j-ft1/index.html
+
+函数式思维: 运用函数式思维，第 2 部分
+探索函数编程和控制
+http://www.ibm.com/developerworks/cn/java/j-ft2/index.html
+Functional thinking: Thinking functionally, Part 2
+http://www.ibm.com/developerworks/java/library/j-ft2/index.html
+
+函数式思维: 运用函数式思维，第 3 部分
+过滤、单元测试和代码重用的技巧
+http://www.ibm.com/developerworks/cn/java/j-ft3/index.html
+Functional thinking: Thinking functionally, Part 3
+http://www.ibm.com/developerworks/java/library/j-ft3/index.html
+
+函数式思维: 不变性
+通过较少的改动来提供功能更强大的 Java 代码
+http://www.ibm.com/developerworks/cn/java/j-ft4/index.html
+Functional thinking: Immutability
+http://www.ibm.com/developerworks/java/library/j-ft4/index.html
+
+函数式思维: 耦合和组合，第 1 部分
+探讨原生耦合抽象的含义
+http://www.ibm.com/developerworks/cn/java/j-ft5/index.html
+Functional thinking: Coupling and composition, Part 1
+http://www.ibm.com/developerworks/java/library/j-ft5/index.html
+
+函数式思维: 耦合和组合，第 2 部分
+面向对象构建块 VS 函数式构建块
+http://www.ibm.com/developerworks/cn/java/j-ft6/index.html
+Functional thinking: Coupling and composition, Part 2
+http://www.ibm.com/developerworks/java/library/j-ft6/index.html
+
+函数式思维: Groovy 中的函数式特性，第 1 部分
+隐藏在 Groovy 中的宝藏
+http://www.ibm.com/developerworks/cn/java/j-ft7/index.html
+Functional thinking: Functional features in Groovy, Part 1
+http://www.ibm.com/developerworks/java/library/j-ft7/index.html
+
+函数式思维: Groovy 中的函数式特性，第 2 部分
+元编程 + Functional Java
+http://www.ibm.com/developerworks/cn/java/j-ft8/index.html
+Functional thinking: Functional features in Groovy, Part 2
+http://www.ibm.com/developerworks/java/library/j-ft8/index.html
+
+函数式思维: Groovy 中的函数式特性，第 3 部分内存化和缓存
+Functional thinking: Functional features in Groovy, Part 3
+http://www.ibm.com/developerworks/java/library/j-ft9/index.html
+
+函数式思维: 函数设计模式，第 1 部分
+模式在函数世界中的表现方式
+http://www.ibm.com/developerworks/cn/java/j-ft10/index.html
+Functional thinking: Functional design patterns, Part 1
+http://www.ibm.com/developerworks/java/library/j-ft10/index.html
+
+函数式思维: 函数设计模式，第 2 部分
+相同的问题，不同的范式
+http://www.ibm.com/developerworks/cn/java/j-ft11/index.html
+
+函数式思维: 函数设计模式，第 3 部分
+解释器模式和扩展语言
+http://www.ibm.com/developerworks/cn/java/j-ft12/index.html
+
+函数式思维: 利用 Either 和 Option 进行函数式错误处理
+类型安全的函数式异常
+http://www.ibm.com/developerworks/cn/java/j-ft13/index.html
+
+函数式思维: Either 树和模式匹配
+使用 Either 和泛型在 Java 中创建 Scala 风格的模式匹配
+http://www.ibm.com/developerworks/cn/java/j-ft14/index.html
+
+函数式思维: 对调度（dispatch）的反思
+下一代 JVM 语言如何为方法调度添加一些玄妙之处
+http://www.ibm.com/developerworks/cn/java/j-ft15/index.html
+
+函数式思维: 大量转换
+同义词掩盖了相似性
+http://www.ibm.com/developerworks/cn/java/j-ft16/index.html
+
+函数式思维: 转换和优化
+各种语言的更多功能比较
+http://www.ibm.com/developerworks/cn/java/j-ft17/index.html
+
+函数式思维: 惰性计算，第 1 部分
+探索 Java 中的惰性计算
+http://www.ibm.com/developerworks/cn/java/j-ft18/index.html
+
+Functional thinking: Laziness, Part 2
+Delving deeper into lazy evaluation
+http://www.ibm.com/developerworks/java/library/j-ft19/index.html
+
+Functional thinking: Why functional programming is on the rise
+Why you should care about functional programming, even if you don't plan to change languages any time soon
+http://www.ibm.com/developerworks/java/library/j-ft20/index.html

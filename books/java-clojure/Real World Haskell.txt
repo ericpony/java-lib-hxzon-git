@@ -1,0 +1,387 @@
+﻿Real World Haskell
+Code You Can Believe In
+By Bryan O'Sullivan, John Goerzen, Donald Bruce Stewart
+Publisher: O'Reilly Media
+Released: November 2008
+Pages: 714
+==================
+Chapter 1 Getting Started
+Chapter 2 Types and Functions
+Chapter 3 Defining Types, Streamlining Functions
+Chapter 4 Functional Programming
+Chapter 5 Writing a Library: Working with JSON Data
+Chapter 6 Using Typeclasses
+Chapter 7 I/O
+Chapter 8 Efficient File Processing, Regular Expressions, and Filename Matching
+Chapter 9 I/O Case Study: A Library for Searching the Filesystem
+Chapter 10 Code Case Study: Parsing a Binary Data Format
+
+Chapter 11 Testing and Quality Assurance
+Chapter 12 Barcode Recognition
+
+Chapter 13 Data Structures
+Chapter 14 Monads
+Chapter 15 Programming with Monads
+
+Chapter 16 Using Parsec
+Chapter 17 Interfacing with C: The FFI
+
+Chapter 18 Monad Transformers
+Chapter 19 Error Handling
+Chapter 20 Systems Programming in Haskell
+Chapter 21 Using Databases
+Chapter 22 Extended Example: Web Client Programming
+Chapter 23 GUI Programming with gtk2hs
+
+Chapter 24 Concurrent and Multicore Programming
+
+Chapter 25 Profiling and Optimization
+Chapter 26 Advanced Library Design: Building a Bloom Filter
+Chapter 27 Sockets and Syslog
+Appendix Installing GHC and Haskell Libraries
+Appendix Characters, Strings, and Escaping Rules
+Colophon
+==================
+Chapter 1 Getting Started
+
+Your Haskell Environment
+Getting Started with ghci, the Interpreter
+Basic Interaction: Using ghci as a Calculator
+Command-Line Editing in ghci
+Lists
+Strings and Characters
+First Steps with Types
+A Simple Program
+
+Chapter 2 Types and Functions
+
+Why Care About Types?
+Haskell’s Type System
+What to Expect from the Type System
+Some Common Basic Types
+Function Application
+Useful Composite Data Types: Lists and Tuples
+Functions over Lists and Tuples
+Function Types and Purity
+Haskell Source Files, and Writing Simple Functions
+Understanding Evaluation by Example
+Polymorphism in Haskell
+The Type of a Function of More Than One Argument
+Why the Fuss over Purity?
+Conclusion
+
+Chapter 3 Defining Types, Streamlining Functions
+
+Defining a New Data Type
+Type Synonyms
+Algebraic Data Types
+Pattern Matching
+Record Syntax
+Parameterized Types
+Recursive Types
+Reporting Errors
+Introducing Local Variables
+The Offside Rule and Whitespace in an Expression
+The case Expression
+Common Beginner Mistakes with Patterns
+Conditional Evaluation with Guards
+
+Chapter 4 Functional Programming
+
+Thinking in Haskell
+A Simple Command-Line Framework
+Warming Up: Portably Splitting Lines of Text
+Infix Functions
+Working with Lists
+How to Think About Loops
+Anonymous (lambda) Functions
+Partial Function Application and Currying
+As-patterns
+Code Reuse Through Composition
+Tips for Writing Readable Code
+Space Leaks and Strict Evaluation
+
+Chapter 5 Writing a Library: Working with JSON Data
+
+A Whirlwind Tour of JSON
+Representing JSON Data in Haskell
+The Anatomy of a Haskell Module
+Compiling Haskell Source
+Generating a Haskell Program and Importing Modules
+Printing JSON Data
+Type Inference Is a Double-Edged Sword
+A More General Look at Rendering
+Developing Haskell Code Without Going Nuts
+Pretty Printing a String
+Arrays and Objects, and the Module Header
+Writing a Module Header
+Fleshing Out the Pretty-Printing Library
+Creating a Package
+Practical Pointers and Further Reading
+
+Chapter 6 Using Typeclasses
+
+The Need for Typeclasses
+What Are Typeclasses?
+Declaring Typeclass Instances
+Important Built-in Typeclasses
+Automatic Derivation
+Typeclasses at Work: Making JSON Easier to Use
+Living in an Open World
+How to Give a Type a New Identity
+JSON Typeclasses Without Overlapping Instances
+The Dreaded Monomorphism Restriction
+Conclusion
+
+Chapter 7 I/O
+
+Classic I/O in Haskell
+Working with Files and Handles
+Extended Example: Functional I/O and Temporary Files
+Lazy I/O
+The IO Monad
+Is Haskell Really Imperative?
+Side Effects with Lazy I/O
+Buffering
+Reading Command-Line Arguments
+Environment Variables
+
+Chapter 8 Efficient File Processing, Regular Expressions, and Filename Matching
+
+Efficient File Processing
+Filename Matching
+Regular Expressions in Haskell
+More About Regular Expressions
+Translating a glob Pattern into a Regular Expression
+An important Aside: Writing Lazy Functions
+Making Use of Our Pattern Matcher
+Handling Errors Through API Design
+Putting Our Code to Work
+
+Chapter 9 I/O Case Study: A Library for Searching the Filesystem
+
+The find Command
+Starting Simple: Recursively Listing a Directory
+A Naive Finding Function
+Predicates: From Poverty to Riches, While Remaining Pure
+Sizing a File Safely
+A Domain-Specific Language for Predicates
+Controlling Traversal
+Density, Readability, and the Learning Process
+Another Way of Looking at Traversal
+Useful Coding Guidelines
+
+Chapter 10 Code Case Study: Parsing a Binary Data Format
+
+Grayscale Files
+Parsing a Raw PGM File
+Getting Rid of Boilerplate Code
+Implicit State
+Introducing Functors
+Writing a Functor Instance for Parse
+Using Functors for Parsing
+Rewriting Our PGM Parser
+Future Directions
+
+Chapter 11 Testing and Quality Assurance
+
+QuickCheck: Type-Based Testing
+Testing Case Study: Specifying a Pretty Printer
+Measuring Test Coverage with HPC
+
+Chapter 12 Barcode Recognition
+
+A Little Bit About Barcodes
+Introducing Arrays
+Encoding an EAN-13 Barcode
+Constraints on Our Decoder
+Divide and Conquer
+Turning a Color Image into Something Tractable
+What Have We Done to Our Image?
+Finding Matching Digits
+Life Without Arrays or Hash Tables
+Turning Digit Soup into an Answer
+Working with Row Data
+Pulling It All Together
+A Few Comments on Development Style
+
+Chapter 13 Data Structures
+
+Association Lists
+Maps
+Functions Are Data, Too
+Extended Example: /etc/passwd
+Extended Example: Numeric Types
+Taking Advantage of Functions as Data
+General-Purpose Sequences
+
+Chapter 14 Monads
+
+Revisiting Earlier Code Examples
+Looking for Shared Patterns
+The Monad Typeclass
+And Now, a Jargon Moment
+Using a New Monad: Show Your Work!
+Mixing Pure and Monadic Code
+Putting a Few Misconceptions to Rest
+Building the Logger Monad
+The Maybe Monad
+The List Monad
+Desugaring of do Blocks
+The State Monad
+Monads and Functors
+The Monad Laws and Good Coding Style
+
+Chapter 15 Programming with Monads
+
+Golfing Practice: Association Lists
+Generalized Lifting
+Looking for Alternatives
+Adventures in Hiding the Plumbing
+Separating Interface from Implementation
+The Reader Monad
+A Return to Automated Deriving
+Hiding the IO Monad
+
+Chapter 16 Using Parsec
+
+First Steps with Parsec: Simple CSV Parsing
+The sepBy and endBy Combinators
+Choices and Errors
+Extended Example: Full CSV Parser
+Parsec and MonadPlus
+Parsing a URL-Encoded Query String
+Supplanting Regular Expressions for Casual Parsing
+Parsing Without Variables
+Applicative Functors for Parsing
+Applicative Parsing by Example
+Parsing JSON Data
+Parsing a HTTP Request
+
+Chapter 17 Interfacing with C: The FFI
+
+Foreign Language Bindings: The Basics
+Regular Expressions for Haskell: A Binding for PCRE
+Passing String Data Between Haskell and C
+Matching on Strings
+
+Chapter 18 Monad Transformers
+
+Motivation: Boilerplate Avoidance
+A Simple Monad Transformer Example
+Common Patterns in Monads and Monad Transformers
+Stacking Multiple Monad Transformers
+Moving Down the Stack
+Understanding Monad Transformers by Building One
+Transformer Stacking Order Is Important
+Putting Monads and Monad Transformers into Perspective
+
+Chapter 19 Error Handling
+
+Error Handling with Data Types
+Exceptions
+Error Handling in Monads
+
+Chapter 20 Systems Programming in Haskell
+
+Running External Programs
+Directory and File Information
+Program Termination
+Dates and Times
+Extended Example: Piping
+
+Chapter 21 Using Databases
+
+Overview of HDBC
+Installing HDBC and Drivers
+Connecting to Databases
+Transactions
+Simple Queries
+SqlValue
+Query Parameters
+Prepared Statements
+Reading Results
+Database Metadata
+Error Handling
+
+Chapter 22 Extended Example: Web Client Programming
+
+Basic Types
+The Database
+The Parser
+Downloading
+Main Program
+
+Chapter 23 GUI Programming with gtk2hs
+
+Installing gtk2hs
+Overview of the GTK+ Stack
+User Interface Design with Glade
+Event-Driven Programming
+Initializing the GUI
+The Add Podcast Window
+Long-Running Tasks
+Using Cabal
+
+Chapter 24 Concurrent and Multicore Programming
+
+Defining Concurrency and Parallelism
+Concurrent Programming with Threads
+Simple Communication Between Threads
+The Main Thread and Waiting for Other Threads
+Communicating over Channels
+Useful Things to Know About
+Shared-State Concurrency Is Still Hard
+Using Multiple Cores with GHC
+Parallel Programming in Haskell
+Parallel Strategies and MapReduce
+
+Chapter 25 Profiling and Optimization
+
+Profiling Haskell Programs
+Controlling Evaluation
+Understanding Core
+Advanced Techniques: Fusion
+
+Chapter 26 Advanced Library Design: Building a Bloom Filter
+
+Introducing the Bloom Filter
+Use Cases and Package Layout
+Basic Design
+The ST Monad
+Designing an API for Qualified Import
+Creating a Mutable Bloom Filter
+The Immutable API
+Creating a Friendly Interface
+Creating a Cabal Package
+Testing with QuickCheck
+Performance Analysis and Tuning
+
+Chapter 27 Sockets and Syslog
+
+Basic Networking
+Communicating with UDP
+Communicating with TCP
+Chapter 28 Software Transactional Memory
+The Basics
+Some Simple Examples
+STM and Safety
+Retrying a Transaction
+Choosing Between Alternatives
+I/O and STM
+Communication Between Threads
+A Concurrent Web Link Checker
+Practical Aspects of STM
+
+Appendix Installing GHC and Haskell Libraries
+
+Installing GHC
+Installing Haskell Software
+
+Appendix Characters, Strings, and Escaping Rules
+
+Writing Character and String Literals
+International Language Support
+Escaping Text
+
+Colophon

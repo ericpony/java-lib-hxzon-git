@@ -1,0 +1,83 @@
+﻿AngularJS
+By Brad Green, Shyam Seshadri
+Publisher: O'Reilly Media
+Released: April 2013
+Pages: 196
+=================
+Chapter 1 Introduction to AngularJS
+
+Concepts
+An Example: Shopping Cart
+Up Next
+
+Chapter 2 Anatomy of an AngularJS Application
+
+Invoking Angular
+Model View Controller
+Templates and Data Binding
+Organizing Dependencies with Modules
+Formatting Data with Filters
+Changing Views with Routes and $location
+Talking to Servers
+Changing the DOM with Directives
+Validating User Input
+Moving On
+
+Chapter 3 Developing in AngularJS
+
+Project Organization
+Tools
+Running Your Application
+Testing with AngularJS
+Unit Tests
+End-to-End/Integration Tests
+Compilation
+Other Awesome Tools
+Yeoman: Optimizing Your Workflow
+Integrating AngularJS with RequireJS
+
+Chapter 4 Analyzing an AngularJS App
+
+The Application
+Relationship Between Model, Controller, and Template
+The Model
+Controllers, Directives, and Services, Oh My!
+The Templates
+The Tests
+
+Chapter 5 Communicating with Servers
+
+Communicating Over $http
+Unit Testing
+Working with RESTful Resources
+The $q and the Promise
+Response Interception
+Security Considerations
+
+Chapter 6 Directives
+
+Directives and HTML Validation
+API Overview
+Moving On
+
+Chapter 7 Other Concerns
+
+$location
+AngularJS Module Methods
+Communicating Between Scopes with $on, $emit, and $broadcast
+Cookies
+Internationalization and Localization
+Sanitizing HTML & the Sanitize Module
+
+Chapter 8 Cheatsheet and Recipes
+
+Wrapping a jQuery Datepicker
+The Teams List App: Filtering and Controller Communication
+File Upload in AngularJS
+Using Socket.IO
+A Simple Pagination Service
+Working with Servers and Login
+Conclusion
+
+Index
+Colophon

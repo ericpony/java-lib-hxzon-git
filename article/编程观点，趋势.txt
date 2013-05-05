@@ -1,0 +1,327 @@
+﻿编程观点，趋势
+
+by hxzon
+
+1，受禁锢的异步编程思维
+2011-12-19 13:49 by 老赵
+http://blog.zhaojie.me/2011/12/the-stuck-mind-of-asynchronous-programming.html
+
+非回调的方式，保持自然的逻辑。
+
+36，函数式思维
+
+
+4，语言设计者的笔记本
+ 
+语言设计者的笔记本: 定量语言设计
+http://www.ibm.com/developerworks/cn/java/j-ldn1/index.html
+Language designer's notebook: Quantitative language design
+http://www.ibm.com/developerworks/java/library/j-ldn1/index.html
+语言设计者的笔记本: 首先，不要造成伤害
+http://www.ibm.com/developerworks/cn/java/j-ldn2/index.html
+Language designer's notebook: First, do no harm
+http://www.ibm.com/developerworks/java/library/j-ldn2/index.html
+语言设计者的笔记本: 一揽子交易
+http://www.ibm.com/developerworks/cn/java/j-ldn3/index.html
+Language designer's notebook: Package deals
+http://www.ibm.com/developerworks/java/library/j-ldn3/index.html
+
+
+33，C#之父Anders Hejlsberg演讲解读：编程语言大趋势
+
+
+编程语言的发展趋势及未来方向（1）：历史回顾及趋势概述
+http://blog.zhaojie.me/2010/04/trends-and-future-directions-in-programming-languages-by-anders-1-history-and-trends.html
+
+编程语言的发展趋势及未来方向（2）：声明式编程与DSL
+http://blog.zhaojie.me/2010/04/trends-and-future-directions-in-programming-languages-by-anders-2-declarative-programming-and-dsl.html
+
+编程语言的发展趋势及未来方向（3）：函数式编程
+http://blog.zhaojie.me/2010/05/trends-and-future-directions-in-programming-languages-by-anders-3-functional-programming-and-fsharp.html
+
+编程语言的发展趋势及未来方向（4）：动态语言
+http://blog.zhaojie.me/2010/05/trends-and-future-directions-in-programming-languages-by-anders-4-dynamic-languages.html
+
+编程语言的发展趋势及未来方向（5）：元编程
+http://blog.zhaojie.me/2010/05/trends-and-future-directions-in-programming-languages-by-anders-5-meta-programming.html
+
+编程语言的发展趋势及未来方向（6）：并发
+http://blog.zhaojie.me/2010/05/trends-and-future-directions-in-programming-languages-by-anders-6-concurrency.html
+
+编程语言的发展趋势及未来方向（7）：总结
+http://blog.zhaojie.me/2010/06/trends-and-future-directions-in-programming-languages-by-anders-7-conclusion.html
+
+
+37，Java 语言中的函数编程 （2004 年 7 月 13 日）
+http://www.ibm.com/developerworks/cn/java/j-fp/
+
+3，On GUI Architecture: GUI应用的若干问题和模式
+http://blog.csdn.net/chelsea/article/details/7297859
+
+
+5，观点：Scala会成为新的EJB 2吗？
+http://www.infoq.com/cn/news/2011/12/scala-ejb2
+http://gosu-lang.org/
+http://ceylon-lang.org/documentation/introduction/
+http://confluence.jetbrains.net/display/Kotlin/Welcome
+http://fantom.org/
+http://blog.joda.org/2011/11/scala-feels-like-ejb-2-and-other.html
+作者 Alex Blewitt 译者 张龙 发布于 2011年12月8日
+
+24，Laforge、Rocher谈：Groovy、Grails和Java的未来
+http://www.infoq.com/cn/interviews/rocher-laforge-groovy-grails
+概要
+在本次访谈中，来自SpringSource的Graeme Rocher 和 Guillaume Laforge与我们讨论了Grails框架及Groovy语言的现在和将来。Rocher讲述了Grails 1.4【现已更名为2.0，具体信息参见这里】及其增强功能，比如对GORM的改进。Laforge则谈到了Groovy 1.8, 其中包括新的DSL表达能力。他们还谈到了Java未来的变化对他们项目的影响。
+
+6，Latests Happenings and Future of Groovy: 1.8, 2.0 and Beyond.
+http://www.infoq.com/news/2011/11/groovy-updates
+Posted by Rick Hightower on Nov 30, 2011
+
+7，Grails 2.0发布，增强了易用性、类加载和查询DSL
+作者 Rick Hightower 译者 胡键 发布于 2011年12月24日
+http://www.infoq.com/cn/news/2011/12/groovy-on-rails-2
+
+48，精通 Grails: GORM - 有趣的名称，严肃的技术
+理解数据库和 Grails
+http://www.ibm.com/developerworks/cn/java/j-grails02128/
+http://www.ibm.com/developerworks/cn/java/j-grails/
+
+49，精通 Grails: 构建您的第一个 Grails 应用程序
+小小 Web 框架包威力大
+http://www.ibm.com/developerworks/cn/java/j-grails01158/
+
+10，Spring 3.1 RC1: Environments, Comprehensive @Configuration, Cache, c: namespace, Java 7
+http://www.infoq.com/news/2011/10/spring-3.1-rc1-release
+Posted by Bienvenido David on Oct 29, 2011
+
+12，Previewing ZK 6
+http://blog.zkoss.org/index.php/2011/10/12/previewing-zk-6/
+http://martinfowler.com/eaaDev/PresentationModel.html
+http://books.zkoss.org/wiki/Small%20Talks/2011/January/Envisage%20ZK%206:%20An%20Annotation%20Based%20Composer%20For%20MVC
+http://books.zkoss.org/wiki/Small%20Talks/2011/July/Envisage%20ZK%206.0:%20Rendering%20List%20and%20Tree%20Model%20with%20Templates
+October 12, 2011 by Timothy Clare
+
+
+8，Java数据网格规范：JSR-347
+作者 Rick Hightower 译者 王丽娟 发布于 2011年11月15日
+http://www.infoq.com/cn/news/2011/11/java-data-grid
+
+39，为什么Lisp语言如此先进？（译文）
+http://www.ruanyifeng.com/blog/2010/10/why_lisp_is_superior.html
+http://www.paulgraham.com/icad.html
+作者： 阮一峰
+日期： 2010年10月14日
+
+9，为什么我喜欢Lisp语言
+http://www.aqee.net/why-i-love-lisp/
+
+2，为什么我们要学习Haskell这样的编程语言
+http://www.aqee.net/learn-you-a-haskell-for-great-good/
+
+17，为什么我喜欢Smalltalk？
+本文是从 Why I love Smalltalk 这篇文章翻译而来。
+http://www.aqee.net/why-i-love-smalltalk/
+ 
+11，与Neal Gafter探讨Java的未来
+http://www.infoq.com/cn/articles/neal-gafter-on-java
+作者 Charles Humble 译者 赵劼 发布于 2011年10月28日
+
+13，JavaOne 2011战略主题：Java ME、SE和EE的未来规划
+http://www.infoq.com/cn/news/2011/10/javaone-strategy-keynote
+作者 Srini Penchikala 译者 贾国清 发布于 2011年10月18日
+
+14，JavaOne演讲亮点：JavaFX 2.0发布，Java 9登场
+http://www.infoq.com/cn/news/2011/10/javaone-tech-keynote
+作者 Charles Humble 译者 贾国清 发布于 2011年10月5日
+
+15，Never, never, never use String in Java (or at least less often :-)
+http://codemonkeyism.com/never-never-never-use-string-in-java-or-at-least-less-often/
+http://codemonkeyism.com/generation-java-programming-style/
+May 2, 2008 by Stephan Schmidt
+
+19，JSR-107（JCache）正在制定当中，将成为Java EE 7的一部分
+作者 Rick Hightower 译者 王丽娟 发布于 2011年9月11日
+http://www.infoq.com/cn/news/2011/09/jcache-jsr-lives
+
+21，Adam Messinger谈Java 7与8
+http://www.infoq.com/cn/news/2011/08/messinger-vava7-qanda
+http://www.infoq.com/news/2011/08/messinger-vava7-qanda 
+Adam Messinger Talks to InfoQ About Java 7 and 8
+作者 Charles Humble 译者 张龙 发布于 2011年8月16日
+
+23，Java SE 7发布：2006年12月后的首次重要更新
+http://www.infoq.com/cn/news/2011/07/javase7-ga
+作者 Charles Humble 译者 丁雪丰 发布于 2011年7月31日
+ 
+16，对象-函数式编程简史
+http://www.aqee.net/a-brief-history-of-object-functional-programming/
+http://www.aqee.net/clojure-vs-scala/
+
+18，讨论：Java编程风格的改变
+http://www.infoq.com/cn/news/2009/08/java-programming-style
+http://www.infoq.com/cn/bycategory/newsbycategory.action?idx=6&alias=Scala
+http://www.infoq.com/cn/scala
+http://www.infoq.com/scala
+作者 赵劼 发布于 2009年8月17日
+
+20，实现继承，语言缺陷
+http://dreamhead.blogbus.com/logs/156324613.html
+
+22，领域驱动设计和实践
+作者 池建强 发布于 2011年8月17日
+http://www.infoq.com/cn/articles/cjq-ddd
+
+25，架构腐化之谜
+作者 陈金洲 发布于 2011年7月5日
+http://www.infoq.com/cn/articles/cjz-architecture-corruption
+
+26，The scala.swing package in 2.8 and beyond
+http://ingomaier.blogspot.com/2010/11/scalaswing-package-in-28-and-beyond.html
+
+27，AWT, SWT, Swing: Java GUI Clean Up (1)
+http://blogs.sun.com/Swing/entry/awt_swt_swing_java_gui
+
+28，Java深度历险（五）——Java泛型
+http://www.infoq.com/cn/articles/cf-java-generics
+
+29，Pete Muir谈Seam 3、RichFaces 4及来到Infinispan的动因
+作者 Charles Humble 译者 张龙 发布于 2011年2月22日 上午4时3分
+http://www.infoq.com/cn/news/2011/02/muir_seam3
+
+30，Mobl——用于创建HTML移动应用程序的新DSL
+作者 Abel Avram译者 侯伯薇发布于 2011年2月12日 下午6时44分
+http://www.infoq.com/cn/news/2011/02/Mobl
+
+31，Vaadin - 来自北欧的 Web 应用开发利器，第 1 部分: Vaadin 的基本概况和基础开发
+Vaadin 的基本功能介绍、开发环境的配置以及基础的开发技术概述
+http://www.ibm.com/developerworks/cn/web/1101_wangyc_vaadin1/index.html
+
+32，纵观jBPM:从jBPM3到jBPM5以及Activiti5
+?http://www.infoq.com/cn/articles/rh-jbpm5-activiti5
+作者 荣浩发布于 2010年12月28日 上午12时0分
+
+34，企业中的NoSQL
+非关系数据库比较
+http://www.infoq.com/cn/articles/nosql-in-the-enterprise
+http://www.infoq.com/articles/nosql-in-the-enterprise
+作者 Sourav Mazumder 译者 黄璜 发布于 2010年7月9日 上午1时50分
+
+35，图形数据库、NOSQL和Neo4j
+hxzon：查询需自定义实现，对比sql的声明式表达显得很不方便。
+作者 Peter Neubauer 译者 胡键 发布于 2010年9月8日 上午12时0分
+http://www.infoq.com/cn/articles/graph-nosql-neo4j
+
+
+
+38，面向 Java 开发人员的 Scala 指南
+http://www.ibm.com/developerworks/cn/java/j-scala/  面向 Java 开发人员的 Scala 指南系列 Ted Neward
+http://www.ibm.com/developerworks/views/java/libraryview.jsp?search_by=scala+neward  The busy Java developer's guide to Scala
+-------------------------------
+第 4 期，关于特征和行为：使用 Scala 版本的 Java 接口 （2008 年 7 月）
+http://www.ibm.com/developerworks/cn/java/j-scala04298.html
+第 3 期，Scala 控制结构内部揭密 （2007 年 6 月）good
+http://www.ibm.com/developerworks/cn/java/j-scala03268.html
+第 8 期，构建计算器，第 1 部分：Scala 的 case 类和模式匹配 （2008 年 9 月）good
+http://www.ibm.com/developerworks/cn/java/j-scala08268.html
+第 5 期，实现继承：当 Scala 继承中的对象遇到函数 （2008 年 8 月）good
+http://www.ibm.com/developerworks/cn/java/j-scala05298.html
+第 2 期，类操作：理解 Scala 的类语法和语义 （2008 年 3 月）
+http://www.ibm.com/developerworks/cn/java/j-scala02198.html
+
+
+40，jQuery vs MooTools
+May, 2009 - Aaron Newton of Clientcide
+Also available in Portuguese (Brazil), Chinese, Farsi (Persian) and Spanish. | How to submit a translation.
+http://jqueryvsmootools.com/
+
+41，Circumflex ORM -scala
+http://circumflex.ru/index.html
+http://circumflex.ru/orm.html
+Introducing Circumflex
+Circumflex is a set of software components for quick and robust application development using the Scala programming language.
+Circumflex consists of several separate projects:
+Circumflex Web Framework
+Circumflex ORM
+Circumflex FreeMarker Views
+Circumflex Markdown
+Circumflex Docco
+Circumflex Maven Plugin
+
+42，LinkedList的局限
+http://www.tech-q.cn/viewthread.php?tid=11949
+http://rdc.taobao.com/team/jm/archives/322
+
+43，Scala拾趣--从Java7说开来
+http://www.javaeye.com/topic/190608
+
+44，scala orm
+http://scalagroup.group.javaeye.com/group/topic/19125
+
+45，GJ 是 Java 5 泛型的工作原型
+http://homepages.inf.ed.ac.uk/wadler/gj/
+GJ 是 Java 5 泛型的工作原型
+http://homepages.inf.ed.ac.uk/wadler/topics/gj.html
+
+46，Scala 2.8.0 final
+http://www.scala-lang.org/node/7009
+http://www.scala-lang.org/node/6895
+http://www.scala-ide.org/
+Scala 2.8.0 final Created by admin on 2010-07-14. Updated: 2010-07-14, 21:37
+
+47，开源面向对象数据库 db4o 之旅
+hxzon：查询需自定义实现，对比sql的声明式表达显得很不方便。
+http://www.ibm.com/developerworks/cn/java/j-lo-db4o1/
+http://www.ibm.com/developerworks/cn/java/j-lo-db4o2/
+http://www.ibm.com/developerworks/cn/java/j-lo-db4o3/
+开源面向对象数据库 db4o 之旅，第 2 部分: db4o 查询方式
+
+
+50，OGNL 的性能
+http://www.ibm.com/developerworks/cn/opensource/os-cn-ognl/index.html#main
+http://struts.apache.org/2.0.14/docs/ognl-expression-compilation.html
+
+51，你不知道的 JavaScript - “this”
+ECMAScript 对象作用域
+http://www.w3school.com.cn/js/pro_js_object_scope.asp
+
+52，Scala as the long term replacement for java/javac?
+http://macstrac.blogspot.com/2009/04/scala-as-long-term-replacement-for.html
+
+59，Scala & Spring: Combine the best of both worlds
+http://www.infoq.com/articles/scala_and_spring
+
+56，Hibernate vs. Rails: The Persistence Showdown
+http://www.theserverside.com/news/1364757/Hibernate-vs-Rails-The-Persistence-Showdown
+
+53，ActiveJDBC == ActiveRecord for Java
+By Igor Polevoy
+August 2010
+http://code.google.com/p/activejdbc/
+
+54，ActiveObjects: An Easier Java ORM
+https://activeobjects.dev.java.net/
+
+55，Active Record Java
+http://arjava.sourceforge.net/index.html
+
+57，Five cool things you can do with Play framework
+http://www.playframework.org/documentation/1.0.3/controllers
+
+58，Java 理论与实践: 非阻塞算法简介
+看吧，没有锁定！
+http://www.ibm.com/developerworks/cn/java/j-jtp04186/
+
+60，给Oracle支招：改善Java的15种方式
+
+61，jQuery 1.4新特性及其变化
+
+62，Relational DB vs. Key-Value store
+http://blog.csdn.net/historyasamirror/archive/2009/04/29/4135859.aspx
+
+63，struts2框架安全缺陷
+
+64，Tiger 中的注释，第 2 部分: 定制注释
+Write your own annotations in Java 5
+http://www.ibm.com/developerworks/cn/java/j-annotate2.html
+
+65，
