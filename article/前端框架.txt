@@ -1,14 +1,16 @@
-﻿前端框架
+?前端框架
 
 by hxzon
 
 1，JavaScript MVC框架PK：Angular、Backbone、CanJS与Ember
+
 http://www.ituring.com.cn/article/38394
-原文地址：http://sporto.github.io/.../comparison-angular-backbone-can-ember/
+原文地址：http://sporto.github.io/blog/2013/04/12/comparison-angular-backbone-can-ember/
 原文作者：Sebastian Porto @Twitter
 本文译者：@李松峰
 
 2，JavaScript宝座：七大框架论剑
+
 http://www.ituring.com.cn/article/details/8108
 
 原文链接：Rich JavaScript Applications – the Seven Frameworks　作者：Steven Sanderson
@@ -27,7 +29,153 @@ http://coding.smashingmagazine.com/2012/07/27/journey-through-the-javascript-mvc
 除了这篇文章本身，文中推荐的这篇文章也非常好：Learning JavaScript Design Patterns
 http://addyosmani.com/resources/essentialjsdesignpatterns/book/#detailmvcmvp
 
-http://todomvc.com/
+4，http://todomvc.com/
 
-4，
+28，开源前端框架纵横谈
+http://www.programmer.com.cn/15552/
 
+10，The Top 10 Javascript MVC Frameworks Reviewed
+
+http://codebrief.com/2012/01/the-top-10-javascript-mvc-frameworks-reviewed/
+
+12，12种JavaScript MVC框架之比较
+
+http://www.infoq.com/cn/news/2012/05/js-mvc-framework
+
+http://www.oschina.net/news/29257/12-javascript-mvc-framework
+
+
+26，A survey of client MVC frameworks
+
+Peter Bell (peter@pbell.com), Senior VP of Engineering, General Assembly
+Date:  12 Jun 2012 
+
+http://www.ibm.com/developerworks/web/library/wa-clientmvc/index.html
+
+27，Key Principles of Maintainable JavaScript
+
+Jonathan Creamer on Jun 20th 2012
+http://net.tutsplus.com/tutorials/javascript-ajax/principles-of-maintainable-javascript
+
+=================================
+29，Javascript模块化编程（一）：模块的写法
+http://www.ruanyifeng.com/blog/2012/10/javascript_module.html
+
+Javascript模块化编程（二）：AMD规范
+http://www.ruanyifeng.com/blog/2012/10/asynchronous_module_definition.html
+
+Javascript模块化编程（三）：require.js的用法
+http://www.ruanyifeng.com/blog/2012/11/require_js.html
+
+=======================
+Ember
+
+5，Getting Into Ember
+http://net.tutsplus.com/tutorials/javascript-ajax/getting-into-ember-part-1
+http://net.tutsplus.com/tutorials/javascript-ajax/getting-into-ember-part-2
+http://net.tutsplus.com/tutorials/javascript-ajax/getting-into-ember-part-3
+http://net.tutsplus.com/tutorials/javascript-ajax/getting-into-ember-part-4
+
+6，Ember.js - Web Applications Done Right
+Posted by Joachim Haagen Skeie on Apr 17, 2013
+http://www.infoq.com/articles/Emberjs-Web-Applications
+
+7，Ember.js: Rich Web Applications Done Right
+Posted by Joachim Haagen Skeie on Mar 22, 2012
+
+http://www.infoq.com/articles/emberjs
+
+8，Game On: Backbone and Ember
+http://net.tutsplus.com/tutorials/javascript-ajax/game-on-backbone-and-ember
+
+José Mota on Aug 31st 2012
+
+9，点燃圣火！ Ember.js 的初学者指南
+http://www.adobe.com/cn/devnet/html5/articles/flame-on-a-beginners-guide-to-emberjs.html
+
+=========================
+AngularJS
+
+11，Getting Started with AngularJS
+
+http://www.jacopretorius.net/2013/04/getting-started-with-angularjs.html
+
+13，Angularjs Controller 间通信机制
+
+2013-04-16 20:56:32
+http://whitewolfblog.blog.51cto.com/3973901/1179536
+
+14，Localytics：AngularJS代替Backbone 代码减少一半
+
+http://www.csdn.net/article/2013-04-12/2814864-Localytics-AngularJS-Backbone
+
+15，使用AngularJS构建大型Web应用
+
+作者 侯伯薇 发布于 2013年2月6日
+http://www.infoq.com/cn/news/2013/02/angular-web-app
+
+16，3 Reasons to Choose AngularJS for Your Next Project
+
+Adam Conrad on Dec 26th 2012
+http://net.tutsplus.com/tutorials/javascript-ajax/3-reasons-to-choose-angularjs-for-your-next-project
+http://nettuts.s3.amazonaws.com/2178_angular/source.zip
+
+17，Replacing JQuery With Angular
+
+Published: 03 Mar 2012
+http://paulhammant.com//2012/03/03/replacing-jquery-with-angular
+
+==============================
+18，Backbone JS框架指南
+
+http://blog.eood.cn/backbone
+Posted Mar.13, 2011
+
+19，Make Backbone Better With Extensions
+
+Joe Zimmerman on Mar 18th 2013
+http://net.tutsplus.com/tutorials/javascript-ajax/make-backbone-better-with-extensions
+
+20，开始学习 Backbone:如何将模型-视图-控制器 (MVC) 架构引入 Ajax Web 应用程序
+
+Sebastiano Armeli-Battana, 软件工程师, 自由职业者
+发布日期： 2012 年 9 月 06 日 
+http://www.ibm.com/developerworks/cn/web/wa-backbonejs/index.html
+
+21，Building and Testing a Backbone App
+
+http://net.tutsplus.com/tutorials/javascript-ajax/building-and-testing-a-backbone-app
+
+Claudio Ortolina on Aug 27th 2012
+http://nettuts.s3.amazonaws.com/2108_backbone/code_final.zip
+
+================================
+22，10 reasons why I switched to Spine.js
+
+http://destroytoday.com/blog/reasons-for-spinejs/
+
+===============================
+23，Event-Based Programming: What Async Has Over Sync
+
+Jonathan Creamer on Feb 13th 2013
+http://net.tutsplus.com/tutorials/javascript-ajax/event-based-programming-what-async-has-over-sync
+
+24，Twitter发布基于组件的轻量级JavaScript框架——Flight
+
+作者 郑柯 发布于 2013年2月3日
+http://www.infoq.com/cn/news/2013/02/Twitter-Flight-Framework
+
+25，Best Practices When Working With JavaScript Templates
+
+Andrew Burgess on Dec 10th 2012
+http://net.tutsplus.com/tutorials/javascript-ajax/best-practices-when-working-with-javascript-templates
+
+Underscore for Simple, Handlebars for Complex
+
+
+30，淘宝玉伯引发Web前后端研发模式讨论
+
+作者 郑柯 发布于 2012年6月6日
+http://www.infoq.com/cn/news/2012/06/web-front-back-development
+
+31，
