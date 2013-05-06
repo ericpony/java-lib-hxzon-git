@@ -1,0 +1,169 @@
+﻿Programming Grails
+Best Practices for Experienced Grails Developers
+By Burt Beckwith
+Publisher: O'Reilly Media
+Released: April 2013
+Pages: 364
+=======================
+Chapter 1 Introduction to Groovy
+Chapter 2 Grails Internals
+
+Chapter 3 Persistence
+Chapter 4 Spring
+Chapter 5 Hibernate
+
+Chapter 6 Integration
+Chapter 7 Configuration
+Chapter 8 Plugins
+
+Chapter 9 Security
+
+Chapter 10 The Cloud
+Chapter 11 AOP
+Chapter 12 Upgrading Applications and Plugins
+
+Index
+Colophon
+=======================
+Chapter 1 Introduction to Groovy
+
+Installing Groovy
+Optional Typing
+Collections and Maps
+Properties
+Closures
+Groovy’s Contributions in the War Against Verbosity
+Differences Between Java and Groovy
+Groovy Strings
+Static this
+The Groovy JDK (GDK)
+Metaprogramming and the MOP
+Adding Methods
+Operators
+Overload Your Operators
+def Considered Harmful
+Closures Versus Methods
+TypeChecked, CompileStatic, and invokedynamic
+
+Chapter 2 Grails Internals
+
+Installing Grails
+The Grails Command Line
+IDE Support
+Plugins
+Conventions
+More Information
+
+Chapter 3 Persistence
+
+Data Mapping
+Data Validation
+Transients
+Mapping Collections
+Querying
+Saving, Updating, and Deleting
+NoSQL Support
+
+Chapter 4 Spring
+
+Inversion of Control and Dependency Injection
+Bean Scopes
+Transactional Services
+Bean Life Cycles and Interfaces
+Bean Postprocessors
+Bean Aliases
+Internationalization
+Resources
+Data Binding and Validation
+Database Persistence
+Spring MVC
+Remoting
+JMS
+EJBs
+JMX
+Email
+Cache Abstraction
+
+Chapter 5 Hibernate
+
+Mapping Domain Classes
+Dialects
+Hibernate Without GORM
+The Session
+Open Session in View
+Custom User Types
+Optimistic and Pessimistic Locking
+Accessing the Session’s Connection
+schema-export
+SQL Logging
+Proxies
+Caching
+HQL
+Collections Performance
+Session.createFilter()
+Custom Configurations
+Mapping Views and Subselect Classes
+get(), load(), and read()
+Performance
+
+Chapter 6 Integration
+
+JMS
+Mail
+SOAP Web Services
+REST
+JMX
+
+Chapter 7 Configuration
+
+External config Files
+Splitting resources.groovy
+Modularizing Within resources.groovy
+Environment-Specific Spring Beans
+Options for BuildConfig.groovy
+Adding Additional Source Folders
+
+Chapter 8 Plugins
+
+Creating a Plugin
+The Plugin Descriptor
+Splitting Applications into Plugins
+Building and Releasing
+Running the Tests
+Custom Plugin Repositories
+Plugin Documentation
+Custom Artifacts
+Some Notes on Plugin Development Workflow
+
+Chapter 9 Security
+
+OWASP
+Security Plugins
+Other Plugins and Libraries
+General Best Practices
+
+Chapter 10 The Cloud
+
+Cost Savings
+What You Give Up
+Cloud Foundry
+Heroku
+Other Providers
+Other Uses for Cloud Services
+
+Chapter 11 AOP
+
+Grails Filters
+HTTP Filters
+Groovy AOP
+Spring AOP
+
+Chapter 12 Upgrading Applications and Plugins
+
+Why Doesn’t the Upgrade Script Do More?
+A General Approach to Upgrading
+A Short History of Grails
+Notes on Upgrading
+
+Index
+Colophon

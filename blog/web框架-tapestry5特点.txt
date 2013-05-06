@@ -24,3 +24,7 @@ submitNotifier：form提交时触发一次事件
 loop：
 tree：dom原始事件-》组件事件-》ajax请求-》ajax更新
 zone：
+
+10，自定义组件
+基于js ui框架-》js ui事件触发组件事件（ajax请求）-》返回html片段或json数据-》js ui更新
+

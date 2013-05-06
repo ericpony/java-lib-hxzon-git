@@ -1,0 +1,33 @@
+﻿前端框架
+
+by hxzon
+
+1，JavaScript MVC框架PK：Angular、Backbone、CanJS与Ember
+http://www.ituring.com.cn/article/38394
+原文地址：http://sporto.github.io/.../comparison-angular-backbone-can-ember/
+原文作者：Sebastian Porto @Twitter
+本文译者：@李松峰
+
+2，JavaScript宝座：七大框架论剑
+http://www.ituring.com.cn/article/details/8108
+
+原文链接：Rich JavaScript Applications – the Seven Frameworks　作者：Steven Sanderson
+http://blog.stevensanderson.com/2012/08/01/rich-javascript-applications-the-seven-frameworks-throne-of-js-2012/
+翻译：@李松峰
+
+3，JavaScript MVC丛林里的旅行  
+
+http://anotherwayaround.blog.163.com/blog/static/19006622020127121234412/
+
+2012-08-12 17:59:47
+
+原文链接：Journey Through The JavaScript MVC Jungle
+http://coding.smashingmagazine.com/2012/07/27/journey-through-the-javascript-mvc-jungle/
+
+除了这篇文章本身，文中推荐的这篇文章也非常好：Learning JavaScript Design Patterns
+http://addyosmani.com/resources/essentialjsdesignpatterns/book/#detailmvcmvp
+
+http://todomvc.com/
+
+4，
+
