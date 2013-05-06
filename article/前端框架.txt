@@ -1,4 +1,4 @@
-?前端框架
+前端框架
 
 by hxzon
 
@@ -154,6 +154,20 @@ http://nettuts.s3.amazonaws.com/2108_backbone/code_final.zip
 
 http://destroytoday.com/blog/reasons-for-spinejs/
 
+====================================
+31，优秀的Meteor学习资源
+http://www.csdn.net/article/2013-04-25/2815040-Best-Learning-Resources-for-Meteor.js
+
+32，使用 Meteor 和 Node.js 构建实时应用
+英文原文：Introduction to Realtime Web with Meteor and Node.js
+http://www.oschina.net/translate/introduction-to-realtime-web-meteor-and-nodejs
+
+33，使用 Meteor 轻松开发实时网站
+快速实现几乎实时地响应用户交互的数据驱动应用程序
+David Berube, 所有者, Berube Consulting
+发布日期： 2013 年 3 月 14 日 
+http://www.ibm.com/developerworks/cn/web/wa-meteor/index.html
+
 ===============================
 23，Event-Based Programming: What Async Has Over Sync
 
@@ -178,4 +192,5 @@ Underscore for Simple, Handlebars for Complex
 作者 郑柯 发布于 2012年6月6日
 http://www.infoq.com/cn/news/2012/06/web-front-back-development
 
-31，
+
+34，
