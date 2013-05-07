@@ -1,4 +1,4 @@
-前端框架
+﻿前端框架
 
 by hxzon
 
@@ -173,6 +173,10 @@ http://www.ibm.com/developerworks/cn/web/wa-meteor/index.html
 
 Jonathan Creamer on Feb 13th 2013
 http://net.tutsplus.com/tutorials/javascript-ajax/event-based-programming-what-async-has-over-sync
+
+Async JavaScript - Build More Responsive Apps with Less Code
+《JavaScript异步编程：设计快速响应的网络应用》
+
 
 24，Twitter发布基于组件的轻量级JavaScript框架——Flight
 

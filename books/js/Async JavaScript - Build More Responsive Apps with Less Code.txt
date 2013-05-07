@@ -1,0 +1,83 @@
+﻿Async JavaScript - Build More Responsive Apps with Less Code
+
+《JavaScript异步编程：设计快速响应的网络应用》
+
+104 pages
+Published: 2012-11-28
+Release: P1.0 (2012-11-28)
+ISBN: 978-1-93778-527-7
+=========================
+Contents
+
+Acknowledgments . . . . . . . . . . . ix
+Introduction . . . . . . . . . . . . . xi
+
+1. Understanding JavaScript Events . . . . . . . . 1
+2. Distributing Events . . . . . . . . . . . 19
+3. Promises and Deferreds . . . . . . . . . . 31
+4. Flow Control with Async.js . . . . . . . . . 47
+5. Multithreading with Workers . . . . . . . . 61
+6. Async Script Loading . . . . . . . . . . 69
+A1. Tools for Taming JavaScript. . . . . . . . . 81
+==================
+Contents
+
+Acknowledgments . . . . . . . . . . . ix
+Introduction . . . . . . . . . . . . . xi
+
+1. Understanding JavaScript Events . . . . . . . . 1
+1.1 Scheduling Events 1
+1.2 Types of Async Functions 4
+1.3 Writing Async Functions 7
+1.4 Handling Async Errors 12
+1.5 Un-nesting Callbacks 17
+1.6 What We’ve Learned 18
+
+2. Distributing Events . . . . . . . . . . . 19
+2.1 PubSub 20
+2.2 Evented Models 24
+2.3 Custom jQuery Events 26
+2.4 What We’ve Learned 28
+
+3. Promises and Deferreds . . . . . . . . . . 31
+
+3.1 A Very Brief History of Promises 32
+3.2 Making Promises 33
+3.3 Passing Data to Callbacks 37
+3.4 Progress Notifications 38
+3.5 Combining Promises 39
+3.6 Binding to the Future with pipe 41
+3.7 jQuery vs. Promises/A 43
+3.8 Replacing Callbacks with Promises 44
+3.9 What We’ve Learned 45
+
+4. Flow Control with Async.js . . . . . . . . . 47
+
+4.1 The Async Ordering Problem 48
+4.2 Async Collection Methods 49
+4.3 Organizing Tasks with Async.js 53
+4.4 Dynamic Async Queuing 54
+4.5 Minimalist Flow Control with Step 58
+4.6 What We’ve Learned 59
+
+5. Multithreading with Workers . . . . . . . . 61
+
+5.1 Web Workers 62
+5.2 Node Workers with cluster 64
+5.3 What We’ve Learned 67
+
+6. Async Script Loading . . . . . . . . . . 69
+
+6.1 Limitations and Caveats 70
+6.2 Reintroducing the <script> Tag 70
+6.3 Programmatic Loading 74
+6.4 What We’ve Learned 79
+
+A1. Tools for Taming JavaScript. . . . . . . . . 81
+
+A1.1 TameJS 81
+A1.2 StratifiedJS 81
+A1.3 Kaffeine 82
+A1.4 Streamline.js 82
+A1.5 Node-Fibers 83
+A1.6 The Future of JavaScript: Generators 83
