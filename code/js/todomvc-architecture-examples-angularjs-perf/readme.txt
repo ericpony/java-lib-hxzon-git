@@ -1,0 +1,1 @@
+﻿https://github.com/addyosmani/todomvc/tree/gh-pages/architecture-examples/angularjs-perf

@@ -31,6 +31,12 @@ http://addyosmani.com/resources/essentialjsdesignpatterns/book/#detailmvcmvp
 
 4，http://todomvc.com/
 
+
+35，前端技术（文/李晶）
+http://www.programmer.com.cn/14761/
+https://github.com/JacksonTian/fks
+
+
 28，开源前端框架纵横谈
 http://www.programmer.com.cn/15552/
 
@@ -155,6 +161,8 @@ http://nettuts.s3.amazonaws.com/2108_backbone/code_final.zip
 http://destroytoday.com/blog/reasons-for-spinejs/
 
 ====================================
+Meteor
+
 31，优秀的Meteor学习资源
 http://www.csdn.net/article/2013-04-25/2815040-Best-Learning-Resources-for-Meteor.js
 
@@ -167,6 +175,12 @@ http://www.oschina.net/translate/introduction-to-realtime-web-meteor-and-nodejs
 David Berube, 所有者, Berube Consulting
 发布日期： 2013 年 3 月 14 日 
 http://www.ibm.com/developerworks/cn/web/wa-meteor/index.html
+
+34，Book Review and Interview: Discover Meteor 
+
+Posted by Zef Hemel on May 07, 2013
+http://www.infoq.com/articles/discover-meteor
+
 
 ===============================
 23，Event-Based Programming: What Async Has Over Sync
@@ -183,6 +197,7 @@ Async JavaScript - Build More Responsive Apps with Less Code
 作者 郑柯 发布于 2013年2月3日
 http://www.infoq.com/cn/news/2013/02/Twitter-Flight-Framework
 
+
 25，Best Practices When Working With JavaScript Templates
 
 Andrew Burgess on Dec 10th 2012
@@ -197,4 +212,4 @@ Underscore for Simple, Handlebars for Complex
 http://www.infoq.com/cn/news/2012/06/web-front-back-development
 
 
-34，
+36，
