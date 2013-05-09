@@ -79,15 +79,6 @@ http://product.dangdang.com/product.aspx?product_id=22506160
 =======================================
 工具实践
 ----
-48，Programming Concurrency on the JVM
-英文打印版
-----
-127，Seven Languages in Seven Weeks
-《七周七语言》，不买，只是入门简介
-英文打印版（Clojure，Haskell）
-Clojure:简单介绍，day1基本数据类型，绑定，day2集合，延迟计算，类和接口，day3并发（引用，原子，代理）
-Haskell:
-----
 57，Java并发编程实战
 http://product.dangdang.com/product.aspx?product_id=22606835
 51.80 (75折)，48.4，已购，收益匪浅
@@ -149,11 +140,7 @@ http://www.amazon.cn/VC-%E6%B7%B1%E5%85%A5%E8%AF%A6%E8%A7%A3-%E5%AD%99%E9%91%AB/
 http://www.amazon.cn/VC-%E6%B7%B1%E5%85%A5%E8%AF%A6%E8%A7%A3-%E5%AD%99%E9%91%AB/dp/B00114KKB8/ref=pd_rhf_se_p_t_2
 =======================================
 javascript
-----
-79，
-《HTML5游戏开发》
-http://product.dangdang.com/product.aspx?product_id=22508162
-英文打印版，32.90 (67折)，不买
+
 ----
 64，《JavaScript权威指南》（第六版）
 http://ued.taobao.com/javascript
@@ -161,33 +148,8 @@ http://ued.taobao.com/javascript
 ----
 29，JavaScript高级程序设计(第2版)
 61.40(69折)，已购，有中文版电子书（2009，2010），已推出第3版
-----
-63，O'Reilly, 2011:JavaScript Web Applications
-http://jayli.github.com/jswebapps/
-《JavaScript Web 富应用开发》
-英文打印版，如何开发javascript框架，3个javascript mvc框架的使用
-----
-84，designing with progressive enhancement(building the web that works for everyone)
-http://filamentgroup.com/dwpe/#aboutthisbook
-《构建多平台可用的网站——渐进增强设计实践》
-http://www.ituring.com.cn/book/922
-英文打印版，html，css，浏览器检测和自定义控件
-----
-119，JavaScript Patterns
-by Stoyan Stefanov，2010
-英文打印版
 =======================================
 css和html
-----
-75，Pro HTML5 and CSS3 Design Patterns
-《精通HTML5和CSS3设计模式》
-http://www.ituring.com.cn/book/903
-英文打印版，css多态性
-----
-87，Smashing CSS: Professional Techniques for Modern Layout
-《精彩绝伦的CSS》
-http://www.ituring.com.cn/book/924
-英文打印版
 ----
 124，CSS权威指南(第3版)
 42.70(74折)-20=22.70，已购

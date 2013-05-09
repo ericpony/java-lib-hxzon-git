@@ -1,0 +1,93 @@
+﻿ebooks-have
+
+========================
+js
+
+----
+150，JavaScript异步编程：设计快速响应的网络应用
+Async JavaScript: Build More Responsive Apps with Less Code
+http://www.ituring.com.cn/book/1132
+
+----
+154，AngularJS
+
+----
+63，O'Reilly, 2011:JavaScript Web Applications
+http://jayli.github.com/jswebapps/
+《JavaScript Web 富应用开发》
+英文打印版，如何开发javascript框架，3个javascript mvc框架的使用
+
+----
+84，designing with progressive enhancement(building the web that works for everyone)
+http://filamentgroup.com/dwpe/#aboutthisbook
+《构建多平台可用的网站——渐进增强设计实践》
+http://www.ituring.com.cn/book/922
+英文打印版，html，css，浏览器检测和自定义控件
+
+----
+119，JavaScript Patterns
+by Stoyan Stefanov，2010
+英文打印版
+
+----
+152，Jquery1.2.6源码分析
+
+----
+153，Professional JavaScript Frameworks : Prototype, YUI, Ext JS, Dojo and MooTools
+英文打印版，节选“Part III: Ext JS”部分。
+
+----
+79，
+《HTML5游戏开发》
+http://product.dangdang.com/product.aspx?product_id=22508162
+英文打印版，32.90 (67折)，不买
+
+
+=========================
+css
+
+----
+75，Pro HTML5 and CSS3 Design Patterns
+《精通HTML5和CSS3设计模式》
+http://www.ituring.com.cn/book/903
+英文打印版，css多态性
+
+----
+87，Smashing CSS: Professional Techniques for Modern Layout
+《精彩绝伦的CSS》
+http://www.ituring.com.cn/book/924
+英文打印版
+
+
+==========================
+java-clojure
+
+----
+48，Programming Concurrency on the JVM
+英文打印版
+
+----
+127，Seven Languages in Seven Weeks
+《七周七语言》，不买，只是入门简介
+英文打印版，节选“7 Clojure，8 Haskell”部分。
+
+Clojure:简单介绍，day1基本数据类型，绑定，day2集合，延迟计算，类和接口，day3并发（引用，原子，代理）
+
+Haskell:
+
+
+==========================
+java-scala
+
+
+==========================
+java-groovy
+
+
+==========================
+java-swing
+
+----
+151，Filthy Rich Clients,2007
+英文打印版
+

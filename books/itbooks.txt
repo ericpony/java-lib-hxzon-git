@@ -388,9 +388,6 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 ----
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20
+
 ----
-150，JavaScript异步编程：设计快速响应的网络应用
-Async JavaScript: Build More Responsive Apps with Less Code
-http://www.ituring.com.cn/book/1132
-----
-151，
+155，
