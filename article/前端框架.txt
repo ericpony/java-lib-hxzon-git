@@ -102,6 +102,13 @@ http://www.adobe.com/cn/devnet/html5/articles/flame-on-a-beginners-guide-to-embe
 =========================
 AngularJS
 
+36，我的web开发最强组合：Play1+angularjs+bootstrap ++ (idea + livereload)
+http://freewind.me/blog/20121226/1167.html
+
+37，AngularJS入门教程
+http://www.angularjs.cn/tag/AngularJS_%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B
+
+
 11，Getting Started with AngularJS
 
 http://www.jacopretorius.net/2013/04/getting-started-with-angularjs.html
@@ -212,4 +219,4 @@ Underscore for Simple, Handlebars for Complex
 http://www.infoq.com/cn/news/2012/06/web-front-back-development
 
 
-36，
+38，
