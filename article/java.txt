@@ -1,0 +1,7 @@
+﻿java
+
+1，Java 8 的新特性和改进总览
+英文原文：Everything about Java 8
+http://www.oschina.net/translate/everything-about-java-8
+
+2，

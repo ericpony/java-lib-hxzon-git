@@ -2,6 +2,7 @@
 
 专注jvm平台。
 重点在前端，js。
+区分单页面应用还是多页面应用，选择合适的技术。
 
 ---------------
 编程语言：关注web后端开发方面。
@@ -79,10 +80,14 @@ icefaces：
 
 5，play
 
+play1很受欢迎，但已停止开发。
+
+play2偏向scala，对java不友好？
+
 6，js
 需认真学习。
 编程思想的学习。实用。
-js mvc，js ui（jquery，extjs，dojo）。
+js mvc（angularjs），js ui（jquery，extjs，dojo）。
 
 7，nodejs
 
@@ -93,14 +98,34 @@ http://www.infoq.com/cn/news/2012/05/vertx
 java持久框架
 
 1，hibernate
+
 在用，继续深入。
 
+自动建表。
+动态生成sql，所以修改字段名工作量少。
+自动处理分页。
+临时字段不能参与sql返回的结果映射。
+为了性能，最终还是要关注hql/sql。
+hql与sql各有所长，不能完全取代。
+
+
 2，ibatis
-用过。子部件查询较灵活。
-常用功能没有hibernate方便简单。
+
+用过。子部件查询较灵活？
+
+自己写sql建表（hibernate自动建表，这不是大问题）。
+sql分散，修改字段名工作量多。（对比hibernate这是最大的缺陷，通过复用sql片段降低工作量）。
+每个数据库的分页sql不同（hibernate屏蔽了这种不同，这不是大问题，每种数据库总有自己的特性，把这当做特性）。
+传参数使用map，bean，很不方便（自定义一个方法使用可变参数来生成参数map？）。
+
+
+
 
 3，spring jdbc
 观望。
+
+子部件的映射困难？
+集合属性的获取困难？
 
 ----------------
 数据库

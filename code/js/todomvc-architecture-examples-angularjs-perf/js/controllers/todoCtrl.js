@@ -6,6 +6,8 @@
  * - retrieves and persists the model via the todoStorage service
  * - exposes the model to the template and provides event handlers
  */
+
+//定义todomvc模块的控制器TodoCtrl。
 todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage, filterFilter) {
 	var todos = $scope.todos = todoStorage.get();
 
@@ -19,6 +21,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
 	$scope.location = $location;
 
+	//使用$scope.$watch监视location.path()的变化。
 	$scope.$watch('location.path()', function (path) {
 		$scope.statusFilter = (path === '/active') ?
 			{ completed: false } : (path === '/completed') ?
@@ -48,6 +51,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 		$scope.editedTodo = todo;
 	};
 
+	//失去焦点时触发。
 	$scope.doneEditing = function (todo) {
 		$scope.editedTodo = null;
 
@@ -57,13 +61,13 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
 		todoStorage.put(todos);
 	};
-
+	//点击删除按钮。
 	$scope.removeTodo = function (todo) {
 		$scope.remainingCount -= todo.completed ? 0 : 1;
 		todos.splice(todos.indexOf(todo), 1);
 		todoStorage.put(todos);
 	};
-
+	//点击完成复选框（监听checkbox的change事件）。
 	$scope.todoCompleted = function (todo) {
 		if (todo.completed) {
 			$scope.remainingCount--;
@@ -79,7 +83,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 		});
 		todoStorage.put(todos);
 	};
-
+	//点击全选复选框（监听checkbox的change事件）。
 	$scope.markAll = function (completed) {
 		todos.forEach(function (todo) {
 			todo.completed = completed;
