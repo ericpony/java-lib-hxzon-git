@@ -1,0 +1,432 @@
+﻿hibernate学习笔记-Chapter 16. HQL The Hibernate Query Language
+
+by hxzon
+
+http://docs.jboss.org/hibernate/orm/4.1/manual/en-US/html/ch16.html
+
+
+Chapter 16. HQL: The Hibernate Query Language
+
+Table of Contents
+
+16.1. Case Sensitivity
+大小写问题
+16.2. The from clause
+from子句
+16.3. Associations and joins
+对象字段
+16.4. Forms of join syntax
+不同形式的join
+16.5. Referring to identifier property
+ID字段
+16.6. The select clause
+select子句
+16.7. Aggregate functions
+聚集函数
+16.8. Polymorphic queries
+多态查询
+16.9. The where clause
+where子句
+16.10. Expressions
+表达式
+16.11. The order by clause
+order by子句
+16.12. The group by clause
+group by子句
+16.13. Subqueries
+子查询
+16.14. HQL examples
+示例
+16.15. Bulk update and delete
+批量更新和删除
+16.16. Tips & Tricks
+提示和技巧
+16.17. Components
+组件
+16.18. Row value constructor syntax
+元组
+
+
+===============
+Hibernate uses a powerful query language (HQL) that is similar in appearance to SQL. Compared with SQL, however, HQL is fully object-oriented and understands notions like inheritance, polymorphism and association.
+对比sql，hql是面向对象的，它能够处理继承，多态和关联字段。
+==================
+16.1. Case Sensitivity
+
+With the exception of names of Java classes and properties, queries are case-insensitive. So SeLeCT is the same as sELEct is the same as SELECT, but org.hibernate.eg.FOO is not org.hibernate.eg.Foo, and foo.barSet is not foo.BARSET.
+
+java的类和字段名是区分大小写的。
+
+This manual uses lowercase HQL keywords. Some users find queries with uppercase keywords more readable, but this convention is unsuitable for queries embedded in Java code.
+==================
+16.2. The from clause
+
+The simplest possible Hibernate query is of the form:
+
+from eg.Cat
+
+This returns all instances of the class eg.Cat. You do not usually need to qualify the class name, since auto-import is the default. For example:
+你不用使用类名全称，因为默认使用auto-import。
+
+from Cat
+
+In order to refer to the Cat in other parts of the query, you will need to assign an alias. For example:
+
+from Cat as cat
+
+This query assigns the alias cat to Cat instances, so you can use that alias later in the query. The askeyword is optional. You could also write:
+
+from Cat cat
+
+Multiple classes can appear, resulting in a cartesian product or "cross" join.
+
+from Formula, Parameter
+
+from Formula as form, Parameter as param
+
+It is good practice to name query aliases using an initial lowercase as this is consistent with Java naming standards for local variables (e.g. domesticCat).
+
+=====================
+16.3. Associations and joins
+关联字段
+
+You can also assign aliases to associated entities or to elements of a collection of values using a join. For example:
+
+from Cat as cat
+    inner join cat.mate as mate
+    left outer join cat.kittens as kitten
+
+from Cat as cat left join cat.mate.kittens as kittens
+
+from Formula form full join form.parameter param
+
+The supported join types are borrowed from ANSI SQL:
+支持的联接类型如下：
+
+inner join
+left outer join
+right outer join
+full join (not usually useful)
+
+The inner join, left outer join and right outer join constructs may be abbreviated.
+内联接，左联接，右联接能够更简短。
+
+
+from Cat as cat
+    join cat.mate as mate
+    left join cat.kittens as kitten
+
+You may supply extra join conditions using the HQL with keyword.
+
+from Cat as cat
+    left join cat.kittens as kitten
+        with kitten.bodyWeight > 10.0
+
+
+A "fetch" join allows associations or collections of values to be initialized along with their parent objects using a single select. 
+This is particularly useful in the case of a collection. 
+It effectively overrides the outer join and lazy declarations of the mapping file for associations and collections. 
+See Section 20.1, “Fetching strategies” for more information.
+
+“fetch” join允许你使用单个查询语句来加载关联对象字段和集合字段。
+这在加载集合字段时特别有用。
+这也会覆盖outer join和延迟加载对象字段和集合字段。
+查看20.1节获得更多加载策略信息。
+
+from Cat as cat
+    inner join fetch cat.mate
+    left join fetch cat.kittens
+
+
+A fetch join does not usually need to assign an alias, because the associated objects should not be used in the where clause (or any other clause). 
+The associated objects are also not returned directly in the query results. 
+Instead, they may be accessed via the parent object. The only reason you might need an alias is if you are recursively join fetching a further collection:
+
+“fetch” join一般不需要使用别名，因为关联对象不能再where子句或其它子句使用。
+关联对象不会直接出现在查询结果中。
+关联对象通过它们的父对象取得。
+唯一需要使用别名的原因是你需要递归的获取更多的集合。
+
+from Cat as cat
+    inner join fetch cat.mate
+    left join fetch cat.kittens child
+    left join fetch child.kittens
+
+The fetch construct cannot be used in queries called using iterate() (though scroll() can be used). 
+Fetch should be used together with setMaxResults() or setFirstResult(), as these operations are based on the result rows which usually contain duplicates for eager collection fetching, hence, the number of rows is not what you would expect. 
+Fetch should also not be used together with impromptu with condition. 
+It is possible to create a cartesian product by join fetching more than one collection in a query, so take care in this case. 
+Join fetching multiple collection roles can produce unexpected results for bag mappings, so user discretion is advised when formulating queries in this case. Finally, note that full join fetch and right join fetch are not meaningful.
+
+最后，全联接和右联接通常没有什么意义。
+
+If you are using property-level lazy fetching (with bytecode instrumentation), it is possible to force Hibernate to fetch the lazy properties in the first query immediately using fetch all properties.
+
+如果你使用属性级别的延迟加载，你可以使用“fetch all”强制让hibernate立即加载所有字段。
+
+from Document fetch all properties order by name
+
+from Document doc fetch all properties where lower(doc.name) like '%cats%'
+
+=========================
+16.4. Forms of join syntax
+
+HQL supports two forms of association joining: implicit and explicit.
+hql支持两种形式的关联字段加载：隐世和显示。
+
+The queries shown in the previous section all use the explicit form, that is, where the join keyword is explicitly used in the from clause. This is the recommended form.
+
+在前面的章节中，使用的是显示形式，即使用join关键字。这是推荐的形式。
+
+The implicit form does not use the join keyword. Instead, the associations are "dereferenced" using dot-notation. implicit joins can appear in any of the HQL clauses. implicit join result in inner joins in the resulting SQL statement.
+
+隐式形式不适用join关键字，而是使用点号。隐式join能在任何hql子句中使用。
+
+
+from Cat as cat where cat.mate.name like '%s%'
+
+==========================
+16.5. Referring to identifier property
+引用ID字段。
+
+
+There are 2 ways to refer to an entity's identifier property:
+有两种方式来引用一个实体的ID字段。
+
+The special property (lowercase) id may be used to reference the identifier property of an entity provided that the entity does not define a non-identifier property named id.
+可以使用特殊的小写的“id”来引用实体。
+
+If the entity defines a named identifier property, you can use that property name.
+如果一个实体定义了一个ID字段，你可以使用它的字段名字。
+
+References to composite identifier properties follow the same naming rules. If the entity has a non-identifier property named id, the composite identifier property can only be referenced by its defined named. Otherwise, the special id property can be used to reference the identifier property.
+引用组合ID字段的规则相同。
+
+Important
+
+Please note that, starting in version 3.2.2, this has changed significantly. In previous versions, id always referred to the identifier property regardless of its actual name. 
+A ramification of that decision was that non-identifier properties named id could never be referenced in Hibernate queries.
+注意，从3.2.2版本开始，hibernate做了一些修改。在之前的版本中，id总是指向实体的ID字段。
+名为id的非ID字段不能在hql中使用。
+
+=================
+16.6. The select clause
+
+The select clause picks which objects and properties to return in the query result set. Consider the following:
+
+select mate
+from Cat as cat
+    inner join cat.mate as mate
+
+The query will select mates of other Cats. You can express this query more compactly as:
+
+select cat.mate from Cat cat
+
+Queries can return properties of any value type including properties of component type:
+
+select cat.name from DomesticCat cat
+where cat.name like 'fri%'
+
+select cust.name.firstName from Customer as cust
+
+Queries can return multiple objects and/or properties as an array of type Object[]:
+查询可以返回多个对象或多个字段，使用object数组。
+
+select mother, offspr, mate.name
+from DomesticCat as mother
+    inner join mother.mate as mate
+    left outer join mother.kittens as offspr
+
+Or as a List:
+返回一个list。
+
+
+select new list(mother, offspr, mate.name)
+from DomesticCat as mother
+    inner join mother.mate as mate
+    left outer join mother.kittens as offspr
+
+Or - assuming that the class Family has an appropriate constructor - as an actual typesafe Java object:
+
+select new Family(mother, mate, offspr)
+from DomesticCat as mother
+    join mother.mate as mate
+    left join mother.kittens as offspr
+
+You can assign aliases to selected expressions using as:
+
+select max(bodyWeight) as max, min(bodyWeight) as min, count(*) as n
+from Cat cat
+
+This is most useful when used together with select new map:
+返回一个map。
+
+select new map( max(bodyWeight) as max, min(bodyWeight) as min, count(*) as n )
+from Cat cat
+
+This query returns a Map from aliases to selected values.
+
+========================
+16.7. Aggregate functions
+聚集函数。
+
+
+HQL queries can even return the results of aggregate functions on properties:
+hql可以返回字段的聚集。
+
+
+select avg(cat.weight), sum(cat.weight), max(cat.weight), count(cat)
+from Cat cat
+
+The supported aggregate functions are:
+
+avg(...), sum(...), min(...), max(...)
+count(*)
+count(...), count(distinct ...), count(all...)
+
+You can use arithmetic operators, concatenation, and recognized SQL functions in the select clause:
+你可以在select子句中使用数学运算，字符串连接和其它sql函数。
+
+select cat.weight + sum(kitten.weight)
+from Cat cat
+    join cat.kittens kitten
+group by cat.id, cat.weight
+
+select firstName||' '||initial||' '||upper(lastName) from Person
+
+The distinct and all keywords can be used and have the same semantics as in SQL.
+
+select distinct cat.name from Cat cat
+
+select count(distinct cat.name), count(cat) from Cat cat
+
+==================================
+16.8. Polymorphic queries
+多态查询。
+
+
+A query like:
+
+from Cat as cat
+
+returns instances not only of Cat, but also of subclasses like DomesticCat. 
+Hibernate queries can name any Java class or interface in the from clause. 
+The query will return instances of all persistent classes that extend that class or implement the interface. 
+The following query would return all persistent objects:
+上述查询返回的不只是cat实体，还包括所有的子类实体。
+hql允许在from子句中使用任何java类和接口。
+
+
+
+from java.lang.Object o
+
+The interface Named might be implemented by various persistent classes:
+
+from Named n, Named m where n.name = m.name
+
+These last two queries will require more than one SQL SELECT. 
+This means that the order by clause does not correctly order the whole result set. 
+It also means you cannot call these queries using Query.scroll().
+上面的两条查询会导致多条sql select语句。
+这意味着order by子句不能正常工作。
+这也意味着你不能使用scroll()方法。
+
+==============================
+16.9. The where clause
+where子句。
+
+The where clause allows you to refine the list of instances returned. If no alias exists, you can refer to properties by name:
+
+
+from Cat where name='Fritz'
+
+If there is an alias, use a qualified property name:
+
+from Cat as cat where cat.name='Fritz'
+
+This returns instances of Cat named 'Fritz'.
+
+The following query:
+
+select foo
+from Foo foo, Bar bar
+where foo.startDate = bar.date
+
+returns all instances of Foo with an instance of bar with a date property equal to the startDate property of the Foo. 
+Compound path expressions make the where clause extremely powerful. Consider the following:
+
+from Cat cat where cat.mate.name is not null
+
+This query translates to an SQL query with a table (inner) join. For example:
+上述查询生成的原生sql使用表联接。
+
+
+from Foo foo
+where foo.bar.baz.customer.address.city is not null
+
+would result in a query that would require four table joins in SQL.
+
+
+
+The = operator can be used to compare not only properties, but also instances:
+=操作符还可用于对象比较。
+
+from Cat cat, Cat rival where cat.mate = rival.mate
+
+select cat, mate
+from Cat cat, Cat mate
+where cat.mate = mate
+
+The special property (lowercase) id can be used to reference the unique identifier of an object. See Section 16.5, “Referring to identifier property” for more information.
+小写的id可用于引用ID字段。
+
+from Cat as cat where cat.id = 123
+
+from Cat as cat where cat.mate.id = 69
+
+The second query is efficient and does not require a table join.
+上面第二条查询不会使用表联接。
+
+
+Properties of composite identifiers can also be used. 
+Consider the following example where Person has composite identifiers consisting of country and medicareNumber:
+也可以使用组合主键。
+下面的例子中，person使用国籍和社保号作为组合主键。
+
+
+from bank.Person person
+where person.id.country = 'AU'
+    and person.id.medicareNumber = 123456
+
+
+from bank.Account account
+where account.owner.id.country = 'AU'
+    and account.owner.id.medicareNumber = 123456
+
+Once again, the second query does not require a table join.
+上面第二条查询不会使用表联接。
+
+
+
+See Section 16.5, “Referring to identifier property” for more information regarding referencing identifier properties)
+
+The special property class accesses the discriminator value of an instance in the case of polymorphic persistence. 
+A Java class name embedded in the where clause will be translated to its discriminator value.
+在多态时，使用“class”鉴别值来指明类型。
+
+
+from Cat cat where cat.class = DomesticCat
+
+You can also use components or composite user types, or properties of said component types. 
+See Section 16.17, “Components” for more information.
+
+
+
+An "any" type has the special properties id and class that allows you to express a join in the following way (where AuditLog.item is a property mapped with <any>):
+
+from AuditLog log, Payment payment
+where log.item.class = 'Payment' and log.item.id = payment.id
+
+The log.item.class and payment.class would refer to the values of completely different database columns in the above query.
+
+

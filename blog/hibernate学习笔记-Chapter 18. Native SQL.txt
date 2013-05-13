@@ -17,95 +17,145 @@ Hibernate3 allows you to specify handwritten SQL, including stored procedures, f
 
 
 Execution of native SQL queries is controlled via the SQLQuery interface, which is obtained by calling Session.createSQLQuery(). The following sections describe how to use this API for querying.
+使用SQLQuery接口来执行原生sql。
 
 18.1.1. Scalar queries
 
 The most basic SQL query is to get a list of scalars (values).
+原生sql查询的基础用法是返回一个标量数组的列表。
 
 sess.createSQLQuery(SELECT  FROM CATS).list();
+
 sess.createSQLQuery(SELECT ID, NAME, BIRTHDATE FROM CATS).list();
+
 These will return a List of Object arrays (Object[]) with scalar values for each column in the CATS table. Hibernate will use ResultSetMetadata to deduce the actual order and types of the returned scalar values.
+这些方法返回一个标量数组的列表。
+
 
 To avoid the overhead of using ResultSetMetadata, or simply to be more explicit in what is returned, one can use addScalar()
+为了避免过度使用元数据信息，或者为了显示的指明哪些列需要取得，可以使用addScalar()方法。
+
 
 sess.createSQLQuery(SELECT  FROM CATS)
  .addScalar(ID, Hibernate.LONG)
  .addScalar(NAME, Hibernate.STRING)
  .addScalar(BIRTHDATE, Hibernate.DATE)
+ 
 This query specified
 
 the SQL query string
 the columns and types to return
-This will return Object arrays, but now it will not use ResultSetMetadata but will instead explicitly get the ID, NAME and BIRTHDATE column as respectively a Long, String and a Short from the underlying resultset. This also means that only these three columns will be returned, even though the query is using  and could return more than the three listed columns.
+
+This will return Object arrays, but now it will not use ResultSetMetadata but will instead explicitly get the ID, NAME and BIRTHDATE column as respectively a Long, String and a Short from the underlying resultset. 
+This also means that only these three columns will be returned, even though the query is using  and could return more than the three listed columns.
+这同样会返回一个标量数组，但显示的指明需要哪些列，而不是使用元数据信息。
+这意味着即使查询返回了更多的列，也只会返回这三列的值。
 
 It is possible to leave out the type information for all or some of the scalars.
+显示指明标量值时，可以不指明该标量的数据类型。
 
 sess.createSQLQuery(SELECT  FROM CATS)
  .addScalar(ID, Hibernate.LONG)
  .addScalar(NAME)
  .addScalar(BIRTHDATE)
+
 This is essentially the same query as before, but now ResultSetMetaData is used to determine the type of NAME and BIRTHDATE, where as the type of ID is explicitly specified.
+上述例子显示的指定了ID列的数据类型，而name和birthdate列将使用元数据信息来自动检测数据类型。
 
-How the java.sql.Types returned from ResultSetMetaData is mapped to Hibernate types is controlled by the Dialect. If a specific type is not mapped, or does not result in the expected type, it is possible to customize it via calls to registerHibernateType in the Dialect.
 
+How the java.sql.Types returned from ResultSetMetaData is mapped to Hibernate types is controlled by the Dialect. 
+If a specific type is not mapped, or does not result in the expected type, it is possible to customize it via calls to registerHibernateType in the Dialect.
+
+数据库方言控制着java sql类型与结果集之间的映射。
+如果一个类型找不到映射类型，或者不符合所需要的类型，你可以在方言里使用registerHibernateType来定制类型映射。
 
 
 18.1.2. Entity queries 实体查询（返回实体）
 
-The above queries were all about returning scalar values, basically returning the raw values from the resultset. The following shows how to get entity objects from a native sql query viaaddEntity().
+The above queries were all about returning scalar values, basically returning the raw values from the resultset. The following shows how to get entity objects from a native sql query via addEntity().
+
+上述查询返回的是标量，通过addEntity()方法你可以将查询结果映射成实体。
 
 sess.createSQLQuery(SELECT  FROM CATS).addEntity(Cat.class);
+
 sess.createSQLQuery(SELECT ID, NAME, BIRTHDATE FROM CATS).addEntity(Cat.class);
+
 This query specified
 
 the SQL query string
 the entity returned by the query
-Assuming that Cat is mapped as a class with the columns ID, NAME and BIRTHDATE the above queries will both return a List where each element is a Cat entity.
 
-If the entity is mapped with a many-to-one to another entity it is required to also return this when performing the native query, otherwise a database specific column not found error will occur. The additional columns will automatically be returned when using the  notation, but we prefer to be explicit as in the following example for a many-to-one to a Dog
+Assuming that Cat is mapped as a class with the columns ID, NAME and BIRTHDATE the above queries will both return a List where each element is a Cat entity.
+上述例子将返回一个cat列表。
+
+If the entity is mapped with a many-to-one to another entity it is required to also return this when performing the native query, otherwise a database specific column not found error will occur. 
+The additional columns will automatically be returned when using the  notation, but we prefer to be explicit as in the following example for a many-to-one to a Dog
+如果存在多对一关系，
+如果使用特定命名，属于对象字段的列也能正常使用。
+
 
 sess.createSQLQuery(SELECT ID, NAME, BIRTHDATE, DOG_ID FROM CATS).addEntity(Cat.class);
+
 This will allow cat.getDog() to function properly.
 
 
-
-18.1.3. Handling associations and collections 处理对象属性和集合属性
+18.1.3. Handling associations and collections 处理对象字段和集合字段
 
 It is possible to eagerly join in the Dog to avoid the possible extra roundtrip for initializing the proxy. This is done via the addJoin() method, which allows you to join in an association or collection.
+
+你可以使用预先加载。你可以使用addJoin()方法来加载对象字段或集合字段。
 
 sess.createSQLQuery(SELECT c.ID, NAME, BIRTHDATE, DOG_ID, D_ID, D_NAME FROM CATS c, DOGS d WHERE c.DOG_ID = d.D_ID)
  .addEntity(cat, Cat.class)
  .addJoin(cat.dog);
-In this example, the returned Cat's will have their dog property fully initialized without any extra roundtrip to the database. Notice that you added an alias name (cat) to be able to specify the target property path of the join. It is possible to do the same eager joining for collections, e.g. if the Cat had a one-to-many to Dog instead.
+
+
+In this example, the returned Cat's will have their dog property fully initialized without any extra roundtrip to the database. Notice that you added an alias name (cat) to be able to specify the target property path of the join. 
+It is possible to do the same eager joining for collections, e.g. if the Cat had a one-to-many to Dog instead.
+在上面的例子中，返回的cat列表，它们的dog字段都是完全加载的。注意，你添加了一个别名cat来指定join路径的目标字段。
+同样，你可以使用这种方式来预加载集合字段，例如cat有一个dog集合字段，如下。
 
 sess.createSQLQuery(SELECT ID, NAME, BIRTHDATE, D_ID, D_NAME, CAT_ID FROM CATS c, DOGS d WHERE c.ID = d.CAT_ID)
  .addEntity(cat, Cat.class)
  .addJoin(cat.dogs);
-At this stage you are reaching the limits of what is possible with native queries, without starting to enhance the sql queries to make them usable in Hibernate. Problems can arise when returning multiple entities of the same type or when the default aliascolumn names are not enough.
 
-
+At this stage you are reaching the limits of what is possible with native queries, without starting to enhance the sql queries to make them usable in Hibernate. Problems can arise when returning multiple entities of the same type or when the default alias column names are not enough.
+在这种情况下，
+当返回多个相同类型的实体，或默认的列的别名不足，可能出现问题。
 
 18.1.4. Returning multiple entities 返回多个实体
 
 Until now, the result set column names are assumed to be the same as the column names specified in the mapping document. This can be problematic for SQL queries that join multiple tables, since the same column names can appear in more than one table.
+当sql语句使用了多个表联接时，如果多个表有相同的列名，就会导致问题。
+
 
 Column alias injection is needed in the following query (which most likely will fail)
+下面的查询语句就必须使用列别名。
 
 sess.createSQLQuery(SELECT c., m.  FROM CATS c, CATS m WHERE c.MOTHER_ID = c.ID)
  .addEntity(cat, Cat.class)
  .addEntity(mother, Cat.class)
+ 
+
 The query was intended to return two Cat instances per row a cat and its mother. The query will, however, fail because there is a conflict of names; the instances are mapped to the same column names. Also, on some databases the returned column aliases will most likely be on the form c.ID, c.NAME, etc. which are not equal to the columns specified in the mappings (ID and NAME).
 
+上述查询试图在一行中返回两个cat实例，一个是cat本身，一个是cat的母亲。这个查询会失败，因为列名冲突。如果使用前缀，那么这些列则无法匹配元数据信息。
+
 The following form is not vulnerable to column name duplication
+下面的形式能够解决重复的列名。
 
 sess.createSQLQuery(SELECT {cat.}, {m.}  FROM CATS c, CATS m WHERE c.MOTHER_ID = m.ID)
  .addEntity(cat, Cat.class)
  .addEntity(mother, Cat.class)
+
 This query specified
 
 the SQL query string, with placeholders for Hibernate to inject column aliases
 the entities returned by the query
+
 The {cat.} and {mother.} notation used above is a shorthand for all properties. Alternatively, you can list the columns explicitly, but even in this case Hibernate injects the SQL column aliases for each property. The placeholder for a column alias is just the property name qualified by the table alias. In the following example, you retrieve Cats and their mothers from a different table (cat_log) to the one declared in the mapping metadata. You can even use the property aliases in the where clause.
+
+如上例子，使用大括号的语法。
 
 String sql = SELECT ID as {c.id}, NAME as {c.name},  +
          BIRTHDATE as {c.birthDate}, MOTHER_ID as {c.mother}, {mother.}  +
@@ -114,9 +164,15 @@ String sql = SELECT ID as {c.id}, NAME as {c.name},  +
 List loggedCats = sess.createSQLQuery(sql)
         .addEntity(cat, Cat.class)
         .addEntity(mother, Cat.class).list()
+
+------------------
 18.1.4.1. Alias and property references
+别名和属性语法指引
+
 
 In most cases the above alias injection is needed. For queries relating to more complex mappings, like composite properties, inheritance discriminators, collections etc., you can use specific aliases that allow Hibernate to inject the proper aliases.
+
+在许多情况下，上述别名都是必须的。在含有对象字段（组合），继承，集合字段的查询中，你必须使用特殊的别名来告知hibernate如何加载字段。
 
 The following table shows the different ways you can use the alias injection. Please note that the alias names in the result are simply examples; each alias will have a unique and probably different name when used.
 
@@ -134,35 +190,46 @@ property of the element in the collection	{[aliasname].element.[propertyname]}	N
 All properties of the element in the collection	{[aliasname].element.}	{coll.element.}
 All properties of the collection	{[aliasname].}	{coll.}
 
-
+----------------
 18.1.5. Returning non-managed entities
+返回不受管理的实体
 
 It is possible to apply a ResultTransformer to native SQL queries, allowing it to return non-managed entities.
+通过使用ResultTransformer，可以允许原生sql返回不受管理的实体。
+
 
 sess.createSQLQuery(SELECT NAME, BIRTHDATE FROM CATS)
         .setResultTransformer(Transformers.aliasToBean(CatDTO.class))
+
 This query specified
 
 the SQL query string
 a result transformer
+
 The above query will return a list of CatDTO which has been instantiated and injected the values of NAME and BIRTHNAME into its corresponding properties or fields.
+上述语句会返回一个catDTO列表，该列表的实体都是不受管理的。
 
-
-
+-------------------
 18.1.6. Handling inheritance
+处理继承关系
 
 Native SQL queries which query for entities that are mapped as part of an inheritance must include all properties for the baseclass and all its subclasses.
+原生sql查询，必须包含所有的基类和子类字段。
 
-
-
+-------------------
 18.1.7. Parameters
+sql语句参数。
 
-Native SQL queries support positional as well as named parameters支持基于位置和命名的sql参数
+
+Native SQL queries support positional as well as named parameters
+原生sql查询支持基于位置和基于命名的sql参数。
 
 Query query = sess.createSQLQuery(SELECT  FROM CATS WHERE NAME like ).addEntity(Cat.class);
+
 List pusList = query.setString(0, Pus%).list();
-     
+
 query = sess.createSQLQuery(SELECT  FROM CATS WHERE NAME like name).addEntity(Cat.class);
+
 List pusList = query.setString(name, Pus%).list();
 
 
@@ -173,6 +240,10 @@ List pusList = query.setString(name, Pus%).list();
 
 
 Named SQL queries can also be defined in the mapping document and called in exactly the same way as a named HQL query (see Section 11.4.1.7, “Externalizing named queries”). In this case, you do not need to call addEntity().
+
+可以在映射文件里定义命名的sql查询语句，类似于命名的hql语句。
+在这种情况下，你不需要使用addEntity()方法。
+
 
 Example 18.1. Named sql query using the sql-query maping element
 
@@ -195,6 +266,8 @@ List people = sess.getNamedQuery(persons)
 
 
 The return-join element is use to join associations and the load-collection element is used to define queries which initialize collections,
+return-join节点用来定义对象字段的加载语句，load-collocation节点用来定义集合字段的加载语句。
+
 
 Example 18.3. Named sql query with association
 
@@ -216,6 +289,8 @@ sql-query
 
 
 A named SQL query may return a scalar value. You must declare the column alias and Hibernate type using the return-scalar element
+命名的sql查询语句可以返回一个标量值，你必须在return-scalar节点定义列别名和数据类型，见如下例子。
+
 
 Example 18.4. Named query returning a scalar
 
@@ -229,6 +304,9 @@ sql-query
 
 
 You can externalize the resultset mapping information in a resultset element which will allow you to either reuse them across several named queries or through the setResultSetMapping() API.
+
+通过resultset节点，你可以在sql-query之外定义结果集映射，以复用（通过resultset-ref引用），见如下例子。
+
 
 Example 18.5. resultset mapping used to externalize mapping information
 
@@ -253,6 +331,7 @@ sql-query
 
 
 You can, alternatively, use the resultset mapping information in your hbm files directly in java code.
+在映射文件定义的结果集映射，你也可以用于setResultSetMapping()方法，见如下例子。
 
 Example 18.6. Programmatically specifying the result mapping information
 
@@ -263,13 +342,29 @@ List cats = sess.createSQLQuery(
     .list();
 
 
-So far we have only looked at externalizing SQL queries using Hibernate mapping files. The same concept is also available with anntations and is called named native queries. You can use@NamedNativeQuery (@NamedNativeQueries) in conjunction with @SqlResultSetMapping (@SqlResultSetMappings). Like @NamedQuery, @NamedNativeQuery and @SqlResultSetMapping can be defined at class level, but their scope is global to the application. Lets look at a view examples.
+So far we have only looked at externalizing SQL queries using Hibernate mapping files. The same concept is also available with anntations and is called named native queries. You can use @NamedNativeQuery (@NamedNativeQueries) in conjunction with @SqlResultSetMapping (@SqlResultSetMappings). Like @NamedQuery, @NamedNativeQuery and @SqlResultSetMapping can be defined at class level, but their scope is global to the application. Lets look at a view examples.
 
-Example 18.7, “Named SQL query using @NamedNativeQuery together with @SqlResultSetMapping” shows how a resultSetMapping parameter is defined in @NamedNativeQuery. It represents the name of a defined@SqlResultSetMapping. The resultset mapping declares the entities retrieved by this native query. Each field of the entity is bound to an SQL alias (or column name). All fields of the entity including the ones of subclasses and the foreign key columns of related entities have to be present in the SQL query. Field definitions are optional provided that they map to the same column name as the one declared on the class property. In the example 2 entities, Night and Area, are returned and each property is declared and associated to a column name, actually the column name retrieved by the query.
+你也可以使用@NamedNativeQuery注解来定义命名sql语句，@SqlResultSetMapping注解来定义结果集映射。这些定义都是全局的。
 
-In Example 18.8, “Implicit result set mapping” the result set mapping is implicit. We only describe the entity class of the result set mapping. The property  column mappings is done using the entity mapping values. In this case the model property is bound to the model_txt column.
+Example 18.7, “Named SQL query using @NamedNativeQuery together with @SqlResultSetMapping” shows how a resultSetMapping parameter is defined in @NamedNativeQuery. It represents the name of a defined @SqlResultSetMapping. 
+The resultset mapping declares the entities retrieved by this native query. 
+Each field of the entity is bound to an SQL alias (or column name). 
+All fields of the entity including the ones of subclasses and the foreign key columns of related entities have to be present in the SQL query. 
+Field definitions are optional provided that they map to the same column name as the one declared on the class property. 
+In the example 2 entities, Night and Area, are returned and each property is declared and associated to a column name, actually the column name retrieved by the query.
 
-Finally, if the association to a related entity involve a composite primary key, a @FieldResult element should be used for each foreign key column. The @FieldResult name is composed of the property name for the relationship, followed by a dot (.), followed by the name or the field or property of the primary key. This can be seen in Example 18.9, “Using dot notation in @FieldResult for specifying associations ”.
+
+In Example 18.8, “Implicit result set mapping” the result set mapping is implicit. 
+We only describe the entity class of the result set mapping. 
+The property  column mappings is done using the entity mapping values. 
+In this case the model property is bound to the model_txt column.
+
+
+Finally, if the association to a related entity involve a composite primary key, a @FieldResult element should be used for each foreign key column. 
+The @FieldResult name is composed of the property name for the relationship, followed by a dot (.), followed by the name or the field or property of the primary key. 
+This can be seen in Example 18.9, “Using dot notation in @FieldResult for specifying associations ”.
+如果是组合主键，需在组合主键的每个字段上使用@FieldResult注解。使用点号。
+
 
 Example 18.7. Named SQL query using @NamedNativeQuery together with @SqlResultSetMapping
 
@@ -277,6 +372,7 @@ Example 18.7. Named SQL query using @NamedNativeQuery together with @SqlResultSe
     +  night.night_date, area.id aid, night.area_id, area.name 
     + from Night night, Area area where night.area_id = area.id, 
                   resultSetMapping=joinMapping)
+
 @SqlResultSetMapping(name=joinMapping, entities={
     @EntityResult(entityClass=Night.class, fields = {
         @FieldResult(name=id, column=nid),
@@ -296,11 +392,14 @@ Example 18.7. Named SQL query using @NamedNativeQuery together with @SqlResultSe
 Example 18.8. Implicit result set mapping
 
 @Entity
+
 @SqlResultSetMapping(name=implicit,
                      entities=@EntityResult(entityClass=SpaceShip.class))
+
 @NamedNativeQuery(name=implicitSample, 
                   query=select  from SpaceShip, 
                   resultSetMapping=implicit)
+
 public class SpaceShip {
     private String name;
     private String model;
@@ -337,6 +436,7 @@ public class SpaceShip {
 Example 18.9. Using dot notation in @FieldResult for specifying associations
 
 @Entity
+
 @SqlResultSetMapping(name=compositekey,
         entities=@EntityResult(entityClass=SpaceShip.class,
             fields = {
@@ -355,6 +455,7 @@ Example 18.9. Using dot notation in @FieldResult for specifying associations
     query=select name, model, speed, lname as lastn, fname as firstn, length, width, length  width as surface from SpaceShip, 
     resultSetMapping=compositekey)
 } )
+
 public class SpaceShip {
     private String name;
     private String model;
@@ -409,8 +510,11 @@ public class SpaceShip {
     }
 }
 
+
 @Entity
+
 @IdClass(Identity.class)
+
 public class Captain implements Serializable {
     private String firstname;
     private String lastname;
@@ -436,22 +540,36 @@ public class Captain implements Serializable {
 
 
 Tip
+
 If you retrieve a single entity using the default mapping, you can specify the resultClass attribute instead of resultSetMapping
+如果你使用默认的映射来取得单个实体，你可以使用@NamedNativeQuery注解的resultClass属性而不用resultSetMapping属性。
+
 @NamedNativeQuery(name=implicitSample, query=select  from SpaceShip, resultClass=SpaceShip.class)
+
 public class SpaceShip {
+
 In some of your native queries, you'll have to return scalar values, for example when building report queries. You can map them in the @SqlResultsetMapping through @ColumnResult. You actually can even mix, entities and scalar returns in the same native query (this is probably not that common though).
+如果你需要在某些原生sql查询中返回标量，例如在报表查询时。你可以使用@ColumnResult注解，见如下例子。
+
 
 Example 18.10. Scalar values via @ColumnResult
 
 @SqlResultSetMapping(name=scalar, columns=@ColumnResult(name=dimension))
+
 @NamedNativeQuery(name=scalar, query=select lengthwidth as dimension from SpaceShip, resultSetMapping=scalar)
 
 
 An other query hint specific to native queries has been introduced org.hibernate.callable which can be true or false depending on whether the query is a stored procedure or not.
 
-18.2.1. Using return-property to explicitly specify columnalias names
 
-You can explicitly tell Hibernate what column aliases to use with return-property, instead of using the{}-syntax to let Hibernate inject its own aliases.For example
+
+18.2.1. Using return-property to explicitly specify column alias names
+
+
+You can explicitly tell Hibernate what column aliases to use with return-property, instead of using the {}-syntax to let Hibernate inject its own aliases.
+For example
+
+你可以使用return-property节点来显示的告诉hibernate列的别名，而不是使用大括号语法。
 
 sql-query name=mySqlQuery
     return alias=person class=eg.Person
@@ -464,7 +582,9 @@ sql-query name=mySqlQuery
            person.SEX AS mySex,
     FROM PERSON person WHERE person.NAME LIKE name
 sql-query
+
 return-property also works with multiple columns. This solves a limitation with the {}-syntax which cannot allow fine grained control of multi-column properties.
+return-property节点也可用于多列。
 
 sql-query name=organizationCurrentEmployments
     return alias=emp class=Employment
@@ -481,15 +601,23 @@ sql-query name=organizationCurrentEmployments
         WHERE EMPLOYER = id AND ENDDATE IS NULL
         ORDER BY STARTDATE ASC
 sql-query
+
+
 In this example return-property was used in combination with the {}-syntax for injection. This allows users to choose how they want to refer column and properties.
 
 If your mapping has a discriminator you must use return-discriminator to specify the discriminator column.
+如果你的映射中含有鉴别器，你需要使用return-discriminator节点来指定用于鉴别的列。
 
-
-
+------------------
 18.2.2. Using stored procedures for querying 用存储过程查询
 
-Hibernate3 provides support for queries via stored procedures and functions. Most of the following documentation is equivalent for both. The stored procedurefunction must return a resultset as the first out-parameter to be able to work with Hibernate. An example of such a stored function in Oracle 9 and higher is as follows
+Hibernate3 provides support for queries via stored procedures and functions. Most of the following documentation is equivalent for both. 
+The stored procedure function must return a resultset as the first out-parameter to be able to work with Hibernate. 
+An example of such a stored function in Oracle 9 and higher is as follows
+
+hibernate3支持存储过程和函数查询。下面的文档对于两者都是适用的。
+存储过程/函数返回的结果集的第一个参数必须是出参数。
+下面的例子演示了oracle9以上的存储过程。
 
 CREATE OR REPLACE FUNCTION selectAllEmployments
     RETURN SYS_REFCURSOR
@@ -503,7 +631,9 @@ BEGIN
  FROM EMPLOYMENT;
       RETURN  st_cursor;
  END;
+
 To use this query in Hibernate you need to map it via a named query.
+使用上述的存储过程语句，你必须将它定义为一个命名语句。
 
 sql-query name=selectAllEmployees_SP callable=true
     return alias=emp class=Employment
@@ -520,20 +650,50 @@ sql-query name=selectAllEmployees_SP callable=true
     return
     {  = call selectAllEmployments() }
 sql-query
+
+
 Stored procedures currently only return scalars and entities. return-join and load-collection are not supported.
+当前，存储过程只能返回标量和实体，不支持对象字段和集合字段。
+
 
 18.2.2.1. Ruleslimitations for using stored procedures 使用存储过程的规则和限制
 
-You cannot use stored procedures with Hibernate unless you follow some procedurefunction rules. If they do not follow those rules they are not usable with Hibernate. If you still want to use these procedures you have to execute them via session.connection(). The rules are different for each database, since database vendors have different stored procedure semanticssyntax.
+You cannot use stored procedures with Hibernate unless you follow some procedure/function rules. 
+If they do not follow those rules they are not usable with Hibernate. 
+If you still want to use these procedures you have to execute them via session.connection(). 
+The rules are different for each database, since database vendors have different stored procedure semantics syntax.
 
-Stored procedure queries cannot be paged with setFirstResult()setMaxResults().
+对不同的数据库，hibernate对存储过程/函数的使用有不同的规则和限制。
 
-The recommended call form is standard SQL92 {  = call functionName(parameters) } or{  = call procedureName(parameters}. Native call syntax is not supported.
+Stored procedure queries cannot be paged with setFirstResult()/setMaxResults().
+
+存储过程查询不支持分页。
+
+The recommended call form is standard SQL92 {  = call functionName(parameters) } or{  = call procedureName(parameters}. 
+Native call syntax is not supported.
+
+推荐的存储过程调用语法是SQL92标准，特定数据库的语法不支持。
 
 For Oracle the following rules apply
+对oracle数据库有如下规则：
 
-A function must return a result set. The first parameter of a procedure must be an OUT that returns a result set. This is done by using a SYS_REFCURSOR type in Oracle 9 or 10. In Oracle you need to define a REF CURSOR type. See Oracle literature for further information.
+A function must return a result set. 
+The first parameter of a procedure must be an OUT that returns a result set. 
+This is done by using a SYS_REFCURSOR type in Oracle 9 or 10. 
+In Oracle you need to define a REF CURSOR type. See Oracle literature for further information.
+
+函数必须返回一个结果集。
+存储过程的第一个参数必须是返回结果集的出参数。
+
 For Sybase or MS SQL server the following rules apply
+对Sybase数据库和MS SQL数据库有如下规则：
 
-The procedure must return a result set. Note that since these servers can return multiple result sets and update counts, Hibernate will iterate the results and take the first result that is a result set as its return value. Everything else will be discarded.
+The procedure must return a result set. 
+Note that since these servers can return multiple result sets and update counts, 
+Hibernate will iterate the results and take the first result that is a result set as its return value. 
+Everything else will be discarded.
 If you can enable SET NOCOUNT ON in your procedure it will probably be more efficient, but this is not a requirement.
+存储过程必须返回一个结果集。
+注意，由于这些数据库能返回多个结果集和更新行数，hibernate会遍历这些结果，只取第一个结果集，其它的会丢弃。
+如果你在存储过程中能启用不计数，这会更好，但这不是必须的。
+

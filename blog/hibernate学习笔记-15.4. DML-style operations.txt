@@ -1,0 +1,147 @@
+﻿hibernate学习笔记-15.4. DML-style operations
+
+======================================
+http://docs.jboss.org/hibernate/orm/4.1/manual/en-US/html/ch15.html#batch-direct
+
+15.4. DML-style operations
+
+As already discussed, automatic and transparent object/relational mapping is concerned with the management of the object state. 
+The object state is available in memory. 
+This means that manipulating data directly in the database (using the SQL Data Manipulation Language (DML) the statements: INSERT,UPDATE, DELETE) will not affect in-memory state. 
+However, Hibernate provides methods for bulk SQL-style DML statement execution that is performed through the Hibernate Query Language (Chapter 16, HQL: The Hibernate Query Language).
+
+正如已讨论过的，or映射只关心对象状态的管理。对象的状态保存在内存中。
+这意味着在数据库中对数据的直接操作，对内存中的状态不会有影响。
+但hibernate提供了方法来执行dml语句。
+
+
+The pseudo-syntax for UPDATE and DELETE statements is:( UPDATE | DELETE ) FROM? EntityName (WHERE where_conditions)?.
+
+
+Some points to note:
+
+In the from-clause, the FROM keyword is optional
+There can only be a single entity named in the from-clause. It can, however, be aliased. 
+If the entity name is aliased, then any property references must be qualified using that alias. 
+If the entity name is not aliased, then it is illegal for any property references to be qualified.
+No Section 16.4, “Forms of join syntax”, either implicit or explicit, can be specified in a bulk HQL query. 
+Sub-queries can be used in the where-clause, where the subqueries themselves may contain joins.
+The where-clause is also optional.
+
+在from语句中，from关键字是可选的。
+在from语句中只能有一个实体，但是可以使用别名。
+如果使用别名，则所有的字段名都必须加上别名。
+如果不使用别名，则任何使用前缀的字段都是不合法的。
+在16.4节，可以在批量hql查询使用显示或隐式join。
+可以在where子句中使用带有join的子查询。
+where子句是可选的。
+
+As an example, to execute an HQL UPDATE, use the Query.executeUpdate() method. 
+The method is named for those familiar with JDBC's PreparedStatement.executeUpdate():
+
+Session session = sessionFactory.openSession();
+Transaction tx = session.beginTransaction();
+
+String hqlUpdate = "update Customer c set c.name = :newName where c.name = :oldName";
+// or String hqlUpdate = "update Customer set name = :newName where name = :oldName";
+int updatedEntities = s.createQuery( hqlUpdate )
+        .setString( "newName", newName )
+        .setString( "oldName", oldName )
+        .executeUpdate();
+tx.commit();
+session.close();
+
+
+In keeping with the EJB3 specification, HQL UPDATE statements, by default, do not effect the ??? or the Section 5.1.3.2, “Timestamp” property values for the affected entities. 
+However, you can force Hibernate to reset the version or timestamp property values through the use of a versioned update. 
+This is achieved by adding the VERSIONED keyword after the UPDATE keyword.
+
+为了符合ejb3规范，hql更新语句在默认情况下不好影响时间戳字段的值。
+但你可以通过版本更新来强制hibernate重置版本号或时间戳。
+即在update关键字后加上versioned关键字，见如下例子。
+
+Session session = sessionFactory.openSession();
+Transaction tx = session.beginTransaction();
+String hqlVersionedUpdate = "update versioned Customer set name = :newName where name = :oldName";
+int updatedEntities = s.createQuery( hqlUpdate )
+        .setString( "newName", newName )
+        .setString( "oldName", oldName )
+        .executeUpdate();
+tx.commit();
+session.close();
+
+
+Custom version types, org.hibernate.usertype.UserVersionType, are not allowed in conjunction with a update versioned statement.
+自定义的版本类型则不允许使用update versioned语句。
+
+
+To execute an HQL DELETE, use the same Query.executeUpdate() method:
+
+Session session = sessionFactory.openSession();
+Transaction tx = session.beginTransaction();
+
+String hqlDelete = "delete Customer c where c.name = :oldName";
+// or String hqlDelete = "delete Customer where name = :oldName";
+int deletedEntities = s.createQuery( hqlDelete )
+        .setString( "oldName", oldName )
+        .executeUpdate();
+tx.commit();
+session.close();
+
+
+The int value returned by the Query.executeUpdate() method indicates the number of entities effected by the operation. 
+This may or may not correlate to the number of rows effected in the database. 
+An HQL bulk operation might result in multiple actual SQL statements being executed (for joined-subclass, for example). 
+The returned number indicates the number of actual entities affected by the statement. 
+Going back to the example of joined-subclass, a delete against one of the subclasses may actually result in deletes against not just the table to which that subclass is mapped, but also the "root" table and potentially joined-subclass tables further down the inheritance hierarchy.
+
+The pseudo-syntax for INSERT statements is: INSERT INTO EntityName properties_list select_statement. 
+insert语句的语法为：
+
+Some points to note:
+
+Only the INSERT INTO ... SELECT ... form is supported; not the INSERT INTO ... VALUES ... form.
+只支持insert into...select...形式，不支持insert into... values形式。
+
+The properties_list is analogous to the column specification in the SQL INSERT statement. 
+For entities involved in mapped inheritance, only properties directly defined on that given class-level can be used in the properties_list. 
+Superclass properties are not allowed and subclass properties do not make sense. 
+不允许使用子类字段。
+
+In other words, INSERT statements are inherently non-polymorphic.
+换言之，insert语句本质上是非多态的。
+
+select_statement can be any valid HQL select query, with the caveat that the return types must match the types expected by the insert. 
+
+Currently, this is checked during query compilation rather than allowing the check to relegate to the database. 
+
+This might, however, cause problems between Hibernate Types which are equivalent as opposed to equal. 
+
+This might cause issues with mismatches between a property defined as a org.hibernate.type.DateType and a property defined as a org.hibernate.type.TimestampType, even though the database might not make a distinction or might be able to handle the conversion.
+
+
+For the id property, the insert statement gives you two options. 
+
+You can either explicitly specify the id property in the properties_list, in which case its value is taken from the corresponding select expression, or omit it from the properties_list, in which case a generated value is used. 
+
+
+This latter option is only available when using id generators that operate in the database; attempting to use this option with any "in memory" type generators will cause an exception during parsing. 
+
+For the purposes of this discussion, in-database generators are considered to be org.hibernate.id.SequenceGenerator (and its subclasses) and any implementers of org.hibernate.id.PostInsertIdentifierGenerator. 
+
+The most notable exception here is org.hibernate.id.TableHiLoGenerator, which cannot be used because it does not expose a selectable way to get its values.
+
+For properties mapped as either version or timestamp, the insert statement gives you two options. 
+
+You can either specify the property in the properties_list, in which case its value is taken from the corresponding select expressions, or omit it from the properties_list, in which case the seed value defined by the org.hibernate.type.VersionType is used.
+
+The following is an example of an HQL INSERT statement execution:
+
+Session session = sessionFactory.openSession();
+Transaction tx = session.beginTransaction();
+
+String hqlInsert = "insert into DelinquentAccount (id, name) select c.id, c.name from Customer c where ...";
+int createdEntities = s.createQuery( hqlInsert )
+        .executeUpdate();
+tx.commit();
+session.close();
