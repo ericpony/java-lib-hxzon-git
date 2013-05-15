@@ -51,43 +51,91 @@ group by子句
 16.10. Expressions
 
 Expressions used in the where clause include the following:
+可以在where子句中使用下面的表达式：
 
 mathematical operators: +, -, *, /
+数学运算符
+
 binary comparison operators: =, >=, <=, <>, !=, like
+二元比较运算符
+
 logical operations and, or, not
+逻辑运算符
+
 Parentheses ( ) that indicates grouping
+用于分组的括号
+
 in, not in, between, is null, is not null, is empty, is not empty, member of and not member of
+
+
 "Simple" case, case ... when ... then ... else ... end, and "searched" case,case when ... then ... else ... end
+
+
 string concatenation ...||... or concat(...,...)
+字符串拼接
+
 current_date(), current_time(), and current_timestamp()
+
 second(...), minute(...), hour(...), day(...), month(...), and year(...)
+
+
 Any function or operator defined by EJB-QL 3.0:substring(), trim(), lower(), upper(), length(), locate(), abs(), sqrt(), bit_length(), mod()
 coalesce() and nullif()
+
+ejbql 3.0中定义的函数
+
 str() for converting numeric or temporal values to a readable string
-cast(... as ...), where the second argument is the name of a Hibernate type, andextract(... from ...) if ANSI cast() and extract() is supported by the underlying database
+
+cast(... as ...), where the second argument is the name of a Hibernate type, and extract(... from ...) if ANSI cast() and extract() is supported by the underlying database
+如果底层数据库支持，还可以使用类型转换操作符。
+
 the HQL index() function, that applies to aliases of a joined indexed collection
-HQL functions that take collection-valued path expressions:size(), minelement(), maxelement(), minindex(), maxindex(), along with the special elements() and indicesfunctions that can be quantified using some, all, exists, any, in.
+
+
+HQL functions that take collection-valued path expressions:size(), minelement(), maxelement(), minindex(), maxindex(), along with the special elements() and indices functions that can be quantified using some, all, exists, any, in.
+
+
 Any database-supported SQL scalar function like sign(), trunc(), rtrim(), and sin()
+数据库支持的标量函数
+
 JDBC-style positional parameters ?
+jdbc基于位置的参数
+
 named parameters :name, :start_date, and :x1
+jdbc命名参数
+
 SQL literals 'foo', 69, 6.66E+2, '1970-01-01 10:00:01.0'
+sql字面值
+
 Java public static final constants eg.Color.TABBY
+java常量
+--
 in and between can be used as follows:
+in和between示例如下：
 
 from DomesticCat cat where cat.name between 'A' and 'B'
+
 from DomesticCat cat where cat.name in ( 'Foo', 'Bar', 'Baz' )
+--
 The negated forms can be written as follows:
+not示例如下：
 
 from DomesticCat cat where cat.name not between 'A' and 'B'
+
 from DomesticCat cat where cat.name not in ( 'Foo', 'Bar', 'Baz' )
+--
 Similarly, is null and is not null can be used to test for null values.
 
+is null和is not null用于测试null值。
+--
 Booleans can be easily used in expressions by declaring HQL query substitutions in Hibernate configuration:
+在hibernate配置件中，可以配置true和false的转换值。
 
 <property name="hibernate.query.substitutions">true 1, false 0</property>
 
 
 This will replace the keywords true and false with the literals 1 and 0 in the translated SQL from this HQL:
+这会把true和false关键字在转换成sql时会使用字面值1和0。
 
 from Cat cat where cat.alive = true
 
@@ -96,13 +144,14 @@ You can test the size of a collection with the special property size or the spec
 你可以使用size或size()来测试一个集合。
 
 from Cat cat where cat.kittens.size > 0
+
 from Cat cat where size(cat.kittens) > 0
 
 For indexed collections, you can refer to the minimum and maximum indices using minindex and maxindex functions. 
 Similarly, you can refer to the minimum and maximum elements of a collection of basic type using the minelement and maxelement functions. 
 For example:
-你可以使用minindex和maxindex来引用集合中的最小值和最大值。
-类似的，你也可以使用minelement和maxelement函数来引用集合中的最大值和最小值。
+在可索引的集合中，你可以使用minindex和maxindex来引用集合中的第一个值和最后一个值。
+类似的，你也可以使用minelement和maxelement函数来引用（元素为基本类型的）集合中的最大值和最小值。
 
 from Calendar cal where maxelement(cal.holidays) > current_date
 
@@ -111,6 +160,8 @@ from Order order where maxindex(order.items) > 100
 from Order order where minelement(order.items) > 10000
 
 The SQL functions any, some, all, exists, in are supported when passed the element or index set of a collection (elements and indices functions) or the result of a subquery (see below):
+
+存在类操作符可以用于elements和indices函数的返回值（集合）。
 
 select mother from Cat as mother, Cat as kit
 where kit in elements(foo.kittens)
@@ -128,7 +179,7 @@ Note that these constructs - size, elements, indices, minindex, maxindex, minele
 注意，这些结构在hibernate3中只能用于where子句。
 
 Elements of indexed collections (arrays, lists, and maps) can be referred to by index in a where clause only:
-
+只能在where子句中对基于索引的集合，如数组，列表，映射使用索引即[]操作符。
 
 from Order order where order.items[0].id = 1234
 
@@ -136,30 +187,38 @@ select person from Person person, Calendar calendar
 where calendar.holidays['national day'] = person.birthDay
     and person.nationality.calendar = calendar
 
+
 select item from Item item, Order order
 where order.items[ order.deliveredItemIndices[0] ] = item and order.id = 11
+
 
 select item from Item item, Order order
 where order.items[ maxindex(order.items) ] = item and order.id = 11
 
+
 The expression inside [] can even be an arithmetic expression:
 []里的表达式可以使用数学运算。
+
 
 select item from Item item, Order order
 where order.items[ size(order.items) - 1 ] = item
 
-HQL also provides the built-in index() function for elements of a one-to-many association or collection of values.
 
+HQL also provides the built-in index() function for elements of a one-to-many association or collection of values.
+hql内建了index()函数用于集合字段。
 
 select item, index(item) from Order order
     join order.items item
 where index(item) < 5
 
+
 Scalar SQL functions supported by the underlying database can be used:
+如果底层数据库支持，也可以使用标量函数。
 
 from DomesticCat cat where upper(cat.name) like 'FRI%'
 
 Consider how much longer and less readable the following query would be in SQL:
+对比一下hql的简洁和sql的冗长。
 
 select cust
 from Product prod,
@@ -218,7 +277,7 @@ group by foo.id
 
 
 A having clause is also allowed.
-支持having子句。
+可带有having子句。
 
 select cat.color, sum(cat.weight), count(cat)
 from Cat cat
@@ -227,7 +286,7 @@ having cat.color in (eg.Color.TABBY, eg.Color.BLACK)
 
 
 SQL functions and aggregate functions are allowed in the having and order by clauses if they are supported by the underlying database (i.e., not in MySQL).
-having子句和order by子句允许使用sql函数和聚集函数，加入底层数据库支持。
+having子句和order by子句允许使用sql函数和聚集函数，假如底层数据库支持。
 
 
 select cat
@@ -253,18 +312,20 @@ hibernate不扩展被分组的实体，所以如果cat的所有字段都是非�
 For databases that support subselects, Hibernate supports subqueries within queries. 
 A subquery must be surrounded by parentheses (often by an SQL aggregate function call). 
 Even correlated subqueries (subqueries that refer to an alias in the outer query) are allowed.
+如果底层数据库支持子选择，hibernate也支持子查询。
+
 
 from Cat as fatcat
 where fatcat.weight > (
     select avg(cat.weight) from DomesticCat cat
 )
-
+选择体重大于DomesticCat类型的猫的平均体重的所有猫
 
 from DomesticCat as cat
 where cat.name = some (
     select name.nickName from Name as name
 )
-
+选择名字在Name表中存在的猫。
 
 from Cat as cat
 where not exists (
@@ -276,6 +337,7 @@ from DomesticCat as cat
 where cat.name not in (
     select name.nickName from Name as name
 )
+选择名字不在Name表中的猫。
 
 select cat.id, (select max(kit.weight) from cat.kitten kit)
 from Cat as cat
@@ -286,7 +348,7 @@ Note that HQL subqueries can occur only in the select or where clauses.
 
 
 Note that subqueries can also utilize row value constructor syntax. See Section 16.18, “Row value constructor syntax” for more information.
-
+子查询在元组中很有用。
 ================================
 16.14. HQL examples
 
@@ -295,10 +357,18 @@ In fact, the power of the query language is one of Hibernate's main strengths.
 The following example queries are similar to queries that have been used on recent projects. 
 Please note that most queries you will write will be much simpler than the following examples.
 
+hql可以非常强大和复杂。
+事实上，hibernate的主要强项就是强大的查询语言。
+大部分时候，你的查询语句都会比下面的例子更简单。
+
 The following query returns the order id, number of items, the given minimum total value and the total value of the order for all unpaid orders for a particular customer. 
 The results are ordered by total value. 
 In determining the prices, it uses the current catalog. 
 The resulting SQL query, against the ORDER,ORDER_LINE, PRODUCT, CATALOG and PRICE tables has four inner joins and an (uncorrelated) subselect.
+下面的例子返回特定客户的订单ID，订单项的数目，最小的总值和所有没付款的订单总值。
+结果集按总价排序。
+生成的sql语句，使用了四次内联接和一个子选择。
+
 
 select order.id, sum(price.amount), count(item)
 from Order as order
@@ -322,6 +392,7 @@ order by sum(price.amount) desc
 
 What a monster! Actually, in real life, I'm not very keen on subqueries, so my query was really more like this:
 
+
 select order.id, sum(price.amount), count(item)
 from Order as order
     join order.lineItems as item
@@ -338,6 +409,7 @@ order by sum(price.amount) desc
 
 
 The next query counts the number of payments in each status, excluding all payments in the AWAITING_APPROVAL status where the most recent status change was made by the current user. 
+
 It translates to an SQL query with two inner joins and a correlated subselect against the PAYMENT,PAYMENT_STATUS and PAYMENT_STATUS_CHANGE tables.
 
 select count(payment), status.name
@@ -358,7 +430,7 @@ order by status.sortOrder
 
 
 If the statusChanges collection was mapped as a list, instead of a set, the query would have been much simpler to write.
-
+如果statusChanges集合使用list，而不是set，查询语句会更简洁。
 
 select count(payment), status.name
 from Payment as payment
@@ -371,6 +443,7 @@ order by status.sortOrder
 
 The next query uses the MS SQL Server isNull() function to return all the accounts and unpaid payments for the organization to which the current user belongs. 
 It translates to an SQL query with three inner joins, an outer join and a subselect against the ACCOUNT, PAYMENT, PAYMENT_STATUS, ACCOUNT_TYPE, ORGANIZATION and ORG_USER tables.
+
 
 select account, payment
 from Account as account
@@ -396,6 +469,7 @@ order by account.type.sortOrder, account.accountNumber, payment.dueDate
 批量更新和删除。
 
 HQL now supports update, delete and insert ... select ... statements. See Section 15.4, “DML-style operations” for more information.
+
 hql现在支持update，delete和insert...select语句，参见15.4节。
 
 ===========================
@@ -418,11 +492,14 @@ order by count(msg)
 
 
 If your database supports subselects, you can place a condition upon selection size in the where clause of your query:
+如果底层数据库支持子选择，你可以在子句使用size()函数。
 
 from User usr where size(usr.messages) >= 1
 
 
 If your database does not support subselects, use the following query:
+如果底层数据库不支持子选择，则使用下面的查询语句：
+
 
 select usr.id, usr.name
 from User usr
@@ -432,6 +509,7 @@ having count(msg) >= 1
 
 
 As this solution cannot return a User with zero messages because of the inner join, the following form is also useful:
+上面的方案因使用内联接，所以不能返回没有消息的用户。下面的查询通过使用左联接而更有用：
 
 select usr.id, usr.name
 from User as usr
@@ -439,7 +517,7 @@ from User as usr
 group by usr.id, usr.name
 having count(msg) = 0
 
-
+---------------------
 Properties of a JavaBean can be bound to named query parameters:
 javahean的属性能够用来为命名语句提供参数。
 
@@ -447,7 +525,7 @@ Query q = s.createQuery("from foo Foo as foo where foo.name=:name and foo.size=:
 q.setProperties(fooBean); // fooBean has getName() and getSize()
 List foos = q.list();
 
-
+-----------------
 Collections are pageable by using the Query interface with a filter:
 可以使用filter来为集合分页。
 
@@ -464,6 +542,7 @@ Collection elements can be ordered or grouped using a query filter:
 Collection orderedCollection = s.filter( collection, "order by this.amount" );
 Collection counts = s.filter( collection, "select this.type, count(this) group by this.type" );
 
+-------------------
 You can find the size of a collection without initializing it:
 你通过select count(*)可以直接获得一个集合的大小而不用加载它。
 
@@ -476,35 +555,45 @@ You can find the size of a collection without initializing it:
 
 Components can be used similarly to the simple value types that are used in HQL queries. 
 They can appear in the select clause as follows:
+在hql语句中，组件的用法和简单值类型一样。
+所以你可以向下面这样写：
 
 select p.name from Person p
 
 select p.name.first from Person p
 
 where the Person's name property is a component. 
+这里，用户的名字字段是一个组件。
+
 Components can also be used in the where clause:
+组件同样可以在where子句中使用：
 
 from Person p where p.name = :name
 
 from Person p where p.name.first = :firstName
 
 Components can also be used in the order by clause:
+组件也可以在order by子句中使用：
 
 from Person p order by p.name
 
 from Person p order by p.name.first
 
 Another common use of components is in Section 16.18, “Row value constructor syntax”.
+在16.18节中展示了组件在元组中的使用。
+
 
 ===================================
 16.18. Row value constructor syntax
-
+元组。
 
 HQL supports the use of ANSI SQL row value constructor syntax, sometimes referred to AS tuple syntax, even though the underlying database may not support that notion. 
 hql支持元组，即使底层数据库不支持。
 
 Here, we are generally referring to multi-valued comparisons, typically associated with components. 
 Consider an entity Person which defines a name component:
+这里指多值的比较，例如组件。
+假设一个人含有名字这个组件字段：
 
 from Person p where p.name.first='John' and p.name.last='Jingleheimer-Schmidt'
 
@@ -515,10 +604,12 @@ You can make this more concise by using row value constructor syntax:
 from Person p where p.name=('John', 'Jingleheimer-Schmidt')
 
 It can also be useful to specify this in the select clause:
+在下面的select语句中也很有用：
 
 select p.name from Person p
 
 Using row value constructor syntax can also be beneficial when using subqueries that need to compare against multiple values:
+在子查询中使用元组，会让多值比较更简洁：
 
 from Cat as cat
 where not ( cat.name, cat.color ) in (

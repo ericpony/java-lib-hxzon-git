@@ -16,6 +16,25 @@ Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
 2013 年 5 月 13 日 
 http://www.ibm.com/developerworks/cn/java/j-jn2/index.html
 
+Java.next: The Java.next languages
+Leveraging Groovy, Scala, and Clojure in an increasingly polyglot world
+Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
+Date:  16 Apr 2013 (Published 29 Jan 2013) 
+http://www.ibm.com/developerworks/library/j-jn1/index.html
+
+Java.next: Common ground in Groovy, Scala, and Clojure, Part 2
+Learn how the Java.next languages reduce boilerplate and complexity
+Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
+Date:  06 May 2013 (Published 16 Apr 2013) 
+http://www.ibm.com/developerworks/library/j-jn3/index.html
+
+Java.next: Common ground in Groovy, Scala, and Clojure, Part 3
+Rethinking exceptions, expressions, and emptiness
+Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
+Date:  14 May 2013 
+http://www.ibm.com/developerworks/library/j-jn4/
+
+
 66，实战 Groovy: Groovy：Java 程序员的 DSL
 用 Groovy 编写更少的代码，完成更多的工作
 Scott Davis, 创始人, ThirstyHead.com

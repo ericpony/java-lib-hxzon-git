@@ -38,12 +38,14 @@ group by子句
 16.14. HQL examples
 示例
 16.15. Bulk update and delete
-
+批量更新和删除
 16.16. Tips & Tricks
-
+提示和技巧
 16.17. Components
-
+组件
 16.18. Row value constructor syntax
+元组
+
 
 ===============
 Hibernate uses a powerful query language (HQL) that is similar in appearance to SQL. Compared with SQL, however, HQL is fully object-oriented and understands notions like inheritance, polymorphism and association.
@@ -209,6 +211,8 @@ A ramification of that decision was that non-identifier properties named id coul
 
 =================
 16.6. The select clause
+select语句。
+
 
 The select clause picks which objects and properties to return in the query result set. Consider the following:
 
