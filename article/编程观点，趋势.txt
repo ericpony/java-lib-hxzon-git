@@ -196,11 +196,9 @@ http://www.infoq.com/cn/articles/cjq-ddd
 http://www.infoq.com/cn/articles/cjz-architecture-corruption
 
 
-27，AWT, SWT, Swing: Java GUI Clean Up (1)
-http://blogs.sun.com/Swing/entry/awt_swt_swing_java_gui
+27，
 
-28，Java深度历险（五）——Java泛型
-http://www.infoq.com/cn/articles/cf-java-generics
+28，
 
 29，Pete Muir谈Seam 3、RichFaces 4及来到Infinispan的动因
 作者 Charles Humble 译者 张龙 发布于 2011年2月22日 上午4时3分
@@ -300,14 +298,9 @@ Also available in Portuguese (Brazil), Chinese, Farsi (Persian) and Spanish. | H
 http://jqueryvsmootools.com/
 
 
-42，LinkedList的局限
-http://www.tech-q.cn/viewthread.php?tid=11949
-http://rdc.taobao.com/team/jm/archives/322
+42，
 
-45，GJ 是 Java 5 泛型的工作原型
-http://homepages.inf.ed.ac.uk/wadler/gj/
-GJ 是 Java 5 泛型的工作原型
-http://homepages.inf.ed.ac.uk/wadler/topics/gj.html
+45，
 
 
 47，开源面向对象数据库 db4o 之旅
@@ -318,9 +311,7 @@ http://www.ibm.com/developerworks/cn/java/j-lo-db4o3/
 开源面向对象数据库 db4o 之旅，第 2 部分: db4o 查询方式
 
 
-50，OGNL 的性能
-http://www.ibm.com/developerworks/cn/opensource/os-cn-ognl/index.html#main
-http://struts.apache.org/2.0.14/docs/ognl-expression-compilation.html
+50，
 
 51，你不知道的 JavaScript - “this”
 ECMAScript 对象作用域
@@ -345,9 +336,7 @@ http://arjava.sourceforge.net/index.html
 57，Five cool things you can do with Play framework
 http://www.playframework.org/documentation/1.0.3/controllers
 
-58，Java 理论与实践: 非阻塞算法简介
-看吧，没有锁定！
-http://www.ibm.com/developerworks/cn/java/j-jtp04186/
+58，
 
 60，给Oracle支招：改善Java的15种方式
 
@@ -358,9 +347,7 @@ http://blog.csdn.net/historyasamirror/archive/2009/04/29/4135859.aspx
 
 63，struts2框架安全缺陷
 
-64，Tiger 中的注释，第 2 部分: 定制注释
-Write your own annotations in Java 5
-http://www.ibm.com/developerworks/cn/java/j-annotate2.html
+64，
 
 
 

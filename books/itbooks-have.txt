@@ -22,6 +22,9 @@ http://www.amazon.cn/UNIX%E7%BC%96%E7%A8%8B%E8%89%BA%E6%9C%AF-%E5%A7%9C%E5%AE%8F
 http://product.dangdang.com/product.aspx?product_id=20833536
 39.50(67折)-20=19.50，已购
 ----
+155，领域驱动设计
+51.80 (75折)，已购
+----
 121，设计模式沉思录
 http://product.dangdang.com/product.aspx?product_id=20836579
 28.60(82折)，27.60(79折)，已购
@@ -45,6 +48,10 @@ http://product.dangdang.com/product.aspx?product_id=20170952
 ----
 97，编程语言实现模式
 51.30-20，已购
+----
+142，领域特定语言
+Martin Fowler (作者), ThoughtWorks (译者)
+66.70(75折)，61.60(69折)，已购
 ----
 16，计算机程序的构造和解释：原书第2版
 http://product.dangdang.com/product.aspx?product_id=8793968
@@ -100,6 +107,11 @@ http://product.dangdang.com/product.aspx?product_id=22606835
 ----
 7，Scala程序设计：Java虚拟机多核编程实战
 29.20(75折)，已购，入门，过时
+----
+140，Clojure编程
+2013年4月10日
+Clojure Programming，O'Reilly Media, Inc, USA (2012年4月19日)
+74.20(7.5折)，已购
 =======================================
 c和linux
 ----
@@ -140,7 +152,6 @@ http://www.amazon.cn/VC-%E6%B7%B1%E5%85%A5%E8%AF%A6%E8%A7%A3-%E5%AD%99%E9%91%AB/
 http://www.amazon.cn/VC-%E6%B7%B1%E5%85%A5%E8%AF%A6%E8%A7%A3-%E5%AD%99%E9%91%AB/dp/B00114KKB8/ref=pd_rhf_se_p_t_2
 =======================================
 javascript
-
 ----
 64，《JavaScript权威指南》（第六版）
 http://ued.taobao.com/javascript
