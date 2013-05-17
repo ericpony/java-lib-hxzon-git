@@ -83,7 +83,13 @@ java-scala
 ==========================
 java-groovy
 
+==========================
+交互设计，软件工程，it视野
 
+----
+122，黑客与画家：硅谷创业之父Paul Graham文集
+http://product.dangdang.com/product.aspx?product_id=21049598
+33.80(69折)，电子版，已读，受益匪浅
 ==========================
 java-swing
 

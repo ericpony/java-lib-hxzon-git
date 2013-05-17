@@ -139,14 +139,6 @@ http://product.dangdang.com/product.aspx?product_id=8766529
 ====================================
 软件工程，IT视野
 ----
-86，编程原本(STL之父Alexander Stepanov力作,裘宗燕老师倾情献译)
-http://product.dangdang.com/product.aspx?product_id=22577577
-44.30(75折)
-----
-8，设计原本：计算机科学巨匠Frederick P.Brooks的思考
-http://product.dangdang.com/product.aspx?product_id=21029060
-41.10(75折)
-----
 1，代码大全（第二版2011最新版）
 http://product.dangdang.com/product.aspx?product_id=22543344
 95.90，不买
@@ -174,7 +166,7 @@ http://product.dangdang.com/product.aspx?product_id=21006215
 ----
 10，汇编语言（第2版）
 http://product.dangdang.com/product.aspx?product_id=20196660
-24.80
+24.80，不买
 ----
 42，编译原理（第2版）——计算机科学丛书
 http://product.dangdang.com/product.aspx?product_id=20427584
@@ -207,7 +199,7 @@ http://product.dangdang.com/product.aspx?product_id=9272815
 ----
 146，具体数学:计算机科学基础(第2版) [平装]
 ~ Ronald L. Graham (作者), Donald E. Knuth (作者), Oren Patashnik (作者), 张明尧 (译者), 张凡 (译者) 
-74.20(75折)
+74.20(75折)，想买
 -----
 36，并行性：状态模型与Java程序 Concurrency: State Models and Java Programs
 http://product.dangdang.com/product.aspx?product_id=20029732
@@ -224,20 +216,6 @@ http://product.dangdang.com/product.aspx?product_id=20518616
 44.20 (75折)
 =======================================================
 工具实践
-----
-141，Real World Haskell
-2008-12出版
-http://book.realworldhaskell.org/read/
---
-真实世界的Haskell(影印版) 
-沙利文(Bryan O'sullivan)、戈尔(Jobn Goerzen)、 斯图尔特(Don Stewart) 
-东南大学出版社 (2010-01出版)
-缺货，想买，编程思想
-----
-138，Erlang/OTP并发编程实战
-61.10(7.7折)，59.30，暂缓
--
-OTP:oper telecom platform,是一个应用操作系统和一堆函数库，用来构建大型、容错和分布式应用，是一个Erlang开发的中间件，为了容错性和兼容性设计的，支持代码热部署，包含一个完整的web服务器，一个ftp服务器，一个corba orb等。
 ----
 139，Clojure程序设计
 2013年3月20日
@@ -275,7 +253,7 @@ http://product.dangdang.com/product.aspx?product_id=20192214
 ----
 129，Oracle性能优化求生指南
 http://www.ituring.com.cn/book/772?q=Oracle
-74.20(7.5折)
+74.20(7.5折)，观望
 ----
 128，Oracle Database 11g完全参考手册
 罗尼(Kevin Loney) (作者), 刘伟琴 (译者), 张格仙 (译者) 
@@ -315,7 +293,7 @@ http://www.ituring.com.cn/book/845?q=%E6%B7%B1%E5%85%A5NoSQL
 40.70 (69折)
 ----
 54，深入学习MongoDB
-24.00 (75折)，想买
+24.00 (75折)，观望
 ----
 55，MongoDB 权威指南
 29.20 (75折)
@@ -336,20 +314,17 @@ http://product.dangdang.com/product.aspx?product_id=22606834
 44.30(75折)，观望
 ----
 143，HBase权威指南(影印版)(英文版)
-53.60(74折)
+53.60(74折)，英文不买
 ===============================================================
 css,html5
 ----
 68，Eric Meyer谈CSS(卷2)
 http://product.dangdang.com/product.aspx?product_id=20176096
-36.80 (75折)，有中文电子版
+36.80 (75折)，有中文电子版，不买
 ----
 89，Pro CSS for High Traffic Websites
 高流量网站CSS开发技术
 http://www.ituring.com.cn/book/979
-----
-147，HTTP权威指南
-81.80(7.5折)，70.00(64折)
 ----
 149，CDN技术详解
 51.80(7.5折)
@@ -357,28 +332,43 @@ http://www.ituring.com.cn/book/979
 javascript
 ----
 73，ppk谈JavaScript
+不买
 ----
 28，JavaScript语言精粹
-31.90(91折)
+31.90(91折)，有英文电子版，不买
 ----
 67，高性能JavaScript
 36.80(75折)
 ----
 74，JavaScript高级程序设计(第3版)
 http://www.ituring.com.cn/book/946
+不买
 ----
 83，JavaScript设计模式
 http://www.ituring.com.cn/book/388
 http://product.dangdang.com/product.aspx?product_id=20511558
+有英文电子版，不买
 ----
 65，JavaScript DOM编程艺术(第2版)
-36.80，有第1版中文（2006,2007）
+36.80，有第1版中文（2006,2007），不买
 ----
 72，JavaScript DOM高级程序设计
 AdvancED DOM Scripting: Dynamic Web Design Techniques
-有电子书（，2008）
+有英文电子版（，2008），观望
 ----
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20
 ----
 156，
+面向模式的软件架构，卷1：模式系统
+
+面向模式的软件架构，卷2：并发和联网对象模式
+
+面向模式的软件架构，卷3：资源管理模式
+出版日期：2013-05，49.00
+面向模式的软件架构，卷4：分布式计算的模式语言
+出版日期：2010-06，页数：368，69.00
+面向模式的软件架构，卷5：模式与模式语言
+出版日期：2011-09，页数：284，59.00
+----
+157，
