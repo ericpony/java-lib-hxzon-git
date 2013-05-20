@@ -37,4 +37,13 @@ http://www.ibm.com/developerworks/cn/java/j-jtp04186/
 Write your own annotations in Java 5
 http://www.ibm.com/developerworks/cn/java/j-annotate2.html
 
-10，
+10，用 Java 生成 Java - CodeModel 介绍
+
+简介： 本文将向读者介绍 Java 代码生成器 CodeModel。文中详细介绍了 CodeModel 如何生成 Java 的变量、类、方法、控制语句等，并通过代码演示 - 使用 CodeModel 实现一个单例生成器，让读者对 CodeModel 有一个全面的认识。
+
+发布日期： 2013 年 5 月 20 日
+http://www.ibm.com/developerworks/cn/java/j-lo-codemodel/index.html
+
+11，
+
+12，

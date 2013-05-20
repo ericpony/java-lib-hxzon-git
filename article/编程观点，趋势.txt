@@ -8,32 +8,6 @@ http://blog.zhaojie.me/2011/12/the-stuck-mind-of-asynchronous-programming.html
 
 非回调的方式，保持自然的逻辑。
 
-36，函数式思维
-
-65，Java 下一代: Groovy、Scala 和 Clojure 中的共同点，第 1 部分
-探究这些下一代 JVM 语言如何处理操作符重载
-Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
-2013 年 5 月 13 日 
-http://www.ibm.com/developerworks/cn/java/j-jn2/index.html
-
-Java.next: The Java.next languages
-Leveraging Groovy, Scala, and Clojure in an increasingly polyglot world
-Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
-Date:  16 Apr 2013 (Published 29 Jan 2013) 
-http://www.ibm.com/developerworks/library/j-jn1/index.html
-
-Java.next: Common ground in Groovy, Scala, and Clojure, Part 2
-Learn how the Java.next languages reduce boilerplate and complexity
-Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
-Date:  06 May 2013 (Published 16 Apr 2013) 
-http://www.ibm.com/developerworks/library/j-jn3/index.html
-
-Java.next: Common ground in Groovy, Scala, and Clojure, Part 3
-Rethinking exceptions, expressions, and emptiness
-Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
-Date:  14 May 2013 
-http://www.ibm.com/developerworks/library/j-jn4/
-
 
 66，实战 Groovy: Groovy：Java 程序员的 DSL
 用 Groovy 编写更少的代码，完成更多的工作
@@ -47,6 +21,7 @@ http://www.ibm.com/developerworks/cn/java/j-pg02179.html
 Neal Ford, 软件架构师/Meme Wrangler, ThoughtWorks Inc.
 2010 年 10 月 25 日 
 http://www.ibm.com/developerworks/cn/java/j-eaed16/
+
 
 4，语言设计者的笔记本
  
@@ -62,6 +37,10 @@ http://www.ibm.com/developerworks/java/library/j-ldn2/index.html
 http://www.ibm.com/developerworks/cn/java/j-ldn3/index.html
 Language designer's notebook: Package deals
 http://www.ibm.com/developerworks/java/library/j-ldn3/index.html
+
+36，函数式思维
+
+65，Java 下一代：Groovy、Scala 和 Clojure
 
 
 33，C#之父Anders Hejlsberg演讲解读：编程语言大趋势
@@ -215,9 +194,6 @@ http://www.infoq.com/cn/articles/cjq-ddd
 http://www.infoq.com/cn/articles/cjz-architecture-corruption
 
 
-27，
-
-28，
 
 29，Pete Muir谈Seam 3、RichFaces 4及来到Infinispan的动因
 作者 Charles Humble 译者 张龙 发布于 2011年2月22日 上午4时3分
@@ -317,10 +293,6 @@ Also available in Portuguese (Brazil), Chinese, Farsi (Persian) and Spanish. | H
 http://jqueryvsmootools.com/
 
 
-42，
-
-45，
-
 
 47，开源面向对象数据库 db4o 之旅
 hxzon：查询需自定义实现，对比sql的声明式表达显得很不方便。
@@ -329,8 +301,6 @@ http://www.ibm.com/developerworks/cn/java/j-lo-db4o2/
 http://www.ibm.com/developerworks/cn/java/j-lo-db4o3/
 开源面向对象数据库 db4o 之旅，第 2 部分: db4o 查询方式
 
-
-50，
 
 51，你不知道的 JavaScript - “this”
 ECMAScript 对象作用域
@@ -355,7 +325,7 @@ http://arjava.sourceforge.net/index.html
 57，Five cool things you can do with Play framework
 http://www.playframework.org/documentation/1.0.3/controllers
 
-58，
+
 
 60，给Oracle支招：改善Java的15种方式
 
@@ -366,9 +336,19 @@ http://blog.csdn.net/historyasamirror/archive/2009/04/29/4135859.aspx
 
 63，struts2框架安全缺陷
 
+27，
+
+28，
+
+42，
+
+45，
+
+50，
+
 64，
 
-
+58，
 
 68，
 
