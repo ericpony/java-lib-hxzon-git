@@ -23,7 +23,7 @@ http://product.dangdang.com/product.aspx?product_id=20833536
 39.50(67折)-20=19.50，已购
 ----
 155，领域驱动设计
-51.80 (75折)，已购
+48.30，51.80 (75折)-10=41.80，已购
 ----
 121，设计模式沉思录
 http://product.dangdang.com/product.aspx?product_id=20836579
@@ -47,7 +47,7 @@ http://product.dangdang.com/product.aspx?product_id=20170952
 ----
 142，领域特定语言
 Martin Fowler (作者), ThoughtWorks (译者)
-66.70(75折)，61.60(69折)，已购
+66.70(75折)，61.60(69折)-20=41.60，已购
 ----
 16，计算机程序的构造和解释：原书第2版
 http://product.dangdang.com/product.aspx?product_id=8793968
@@ -107,7 +107,7 @@ http://product.dangdang.com/product.aspx?product_id=22606835
 140，Clojure编程
 2013年4月10日
 Clojure Programming，O'Reilly Media, Inc, USA (2012年4月19日)
-74.20(75折)，已购
+69.30，74.20(75折)-20=54.20，已购
 =======================================
 c和linux
 ----
@@ -189,3 +189,8 @@ OTP:oper telecom platform,是一个应用操作系统和一堆函数库，用来
 ----
 147，HTTP权威指南
 81.80(7.5折)，70.00(64折)，观望
+----
+157，分析模式：可复用的对象模型
+Analysis Patterns : Reusable Object Models
+福勒(Martin Fowler) (作者), 樊东平 (译者), 张路 (译者)
+27.00(5.5折)

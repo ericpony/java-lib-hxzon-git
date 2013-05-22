@@ -10,11 +10,28 @@ http://www.oschina.net/translate/everything-about-java-8
 发布日期： 2013 年 5 月 16 日 
 http://www.ibm.com/developerworks/cn/java/j-lo-jdk7-1/index.html
 
-3，AWT, SWT, Swing: Java GUI Clean Up (1)
-http://blogs.sun.com/Swing/entry/awt_swt_swing_java_gui
+11，详细分析Java中断机制
+作者 丁一 发布于 五月 21, 2013
+http://www.infoq.com/cn/articles/java-interrupt-mechanism
+
+12，深入理解java内存模型
+http://www.infoq.com/cn/minibooks/java_memory_model
 
 4，Java深度历险（五）——Java泛型
 http://www.infoq.com/cn/articles/cf-java-generics
+
+8，Java 理论与实践: 非阻塞算法简介
+看吧，没有锁定！
+http://www.ibm.com/developerworks/cn/java/j-jtp04186/
+
+9，Tiger 中的注释，第 2 部分: 定制注释
+Write your own annotations in Java 5
+http://www.ibm.com/developerworks/cn/java/j-annotate2.html
+
+
+3，AWT, SWT, Swing: Java GUI Clean Up (1)
+http://blogs.sun.com/Swing/entry/awt_swt_swing_java_gui
+
 
 5，LinkedList的局限
 http://www.tech-q.cn/viewthread.php?tid=11949
@@ -29,13 +46,6 @@ http://homepages.inf.ed.ac.uk/wadler/topics/gj.html
 http://www.ibm.com/developerworks/cn/opensource/os-cn-ognl/index.html#main
 http://struts.apache.org/2.0.14/docs/ognl-expression-compilation.html
 
-8，Java 理论与实践: 非阻塞算法简介
-看吧，没有锁定！
-http://www.ibm.com/developerworks/cn/java/j-jtp04186/
-
-9，Tiger 中的注释，第 2 部分: 定制注释
-Write your own annotations in Java 5
-http://www.ibm.com/developerworks/cn/java/j-annotate2.html
 
 10，用 Java 生成 Java - CodeModel 介绍
 
@@ -44,6 +54,5 @@ http://www.ibm.com/developerworks/cn/java/j-annotate2.html
 发布日期： 2013 年 5 月 20 日
 http://www.ibm.com/developerworks/cn/java/j-lo-codemodel/index.html
 
-11，
 
-12，
+13，
