@@ -59,4 +59,9 @@ http://www.ibm.com/developerworks/cn/java/j-lo-codemodel/index.html
 http://ifeve.com/doug-lea/
 
 
-14，
+14，Java SSL/TLS 安全通讯协议介绍-Java 的安全通讯
+刘 进, 高级软件工程师 , IBM
+2013 年 5 月 23 日
+http://www.ibm.com/developerworks/cn/java/j-lo-ssltls/index.html
+
+15，
