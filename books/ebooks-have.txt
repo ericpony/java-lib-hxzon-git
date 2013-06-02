@@ -65,7 +65,7 @@ java-clojure
 ----
 48，Programming Concurrency on the JVM
 英文打印版
-
+《Java虚拟机并发编程》，28.90(51折)
 ----
 127，Seven Languages in Seven Weeks
 《七周七语言》，不买，只是入门简介

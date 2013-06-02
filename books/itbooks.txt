@@ -69,7 +69,7 @@ http://product.china-pub.com/52880
 http://www.amazon.cn/Windows%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1-%E4%BD%A9%E6%8E%AA%E5%B0%94%E5%BE%B7/dp/B00426BTC6/ref=pd_sim_b_1
 http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=157231995X
 《Programming Windows 5th edition》，1998.11
-96.80(7.5折)，中文版2010.9，原版1998年早已过时？
+96.80(7.5折)，63.20(51折)，中文版2010.9，原版1998年早已过时？
 ----
 113，MFC Windows 程序设计（第2版）
 http://product.china-pub.com/3804
@@ -110,7 +110,7 @@ http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=0470500883
 http://www.amazon.com/Ivor-Hortons-Beginning-Visual-Programmer/dp/0470500883/ref=sr_1_1?s=books&ie=UTF8&qid=1347515759&sr=1-1&keywords=Visual+C%2B%2B
 《Ivor Horton's Beginning Visual C++ 2012》，2012.10.2
 http://www.amazon.com/Ivor-Hortons-Beginning-Visual-2012/dp/1118368088/ref=sr_1_4?s=books&ie=UTF8&qid=1347515759&sr=1-4&keywords=Visual+C%2B%2B
-89.60(7折)，中文版2010.12
+89.60(7折)，62.70(51折)，中文版2010.12
 ===========================================================
 c和linux
 ----
@@ -156,7 +156,7 @@ http://product.dangdang.com/product.aspx?product_id=22543344
 59.20
 ----
 15，软件框架设计的艺术
-56.20，48.40，观望
+56.20，48.40，36.80(51折)，观望
 ----
 20，Joel谈优秀软件开发方法
 http://product.dangdang.com/product.aspx?product_id=20001190
@@ -364,18 +364,6 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 有英文电子版（，2008），观望
 ----
 90，深入浅出CoffeeScript/图灵程序设计丛书
-26.20
-----
-156，
-面向模式的软件架构，卷1：模式系统
-
-面向模式的软件架构，卷2：并发和联网对象模式
-
-面向模式的软件架构，卷3：资源管理模式
-出版日期：2013-05，49.00
-面向模式的软件架构，卷4：分布式计算的模式语言
-出版日期：2010-06，页数：368，69.00
-面向模式的软件架构，卷5：模式与模式语言
-出版日期：2011-09，页数：284，59.00
+26.20，17.20(51折)
 ----
 159，
