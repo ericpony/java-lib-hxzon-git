@@ -46,8 +46,11 @@ http://product.china-pub.com/16697
 ----
 109，Modern C++ Design: Applied Generic and Design Patterns
 《C++设计新思维——泛型编程与设计模式之应用》
+曾荣获2001年最佳C++图书称号，书中所开发的Loki已经成为最负盛名的C++程序库之一。
+作者被认为是新一代C++的代表人物，因为对Template技术的精湛运用，震撼了整个C++社群。
 http://product.china-pub.com/9700
 http://www.amazon.cn/Modern-C-Design-Applied-Generic-and-Design-Patterns-Alexandrescu-Andrei/dp/0201704315/ref=sr_1_1?s=books&ie=UTF8&qid=1347035699&sr=1-1
+不买，有清晰的中文版电子书
 ----
 110，泛型编程与STL
 http://product.china-pub.com/9864
