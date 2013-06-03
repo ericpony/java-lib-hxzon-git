@@ -1,0 +1,94 @@
+﻿oracle plsql学习笔记
+
+by hxzon
+
+==============
+1，
+定义存储过程：
+
+create or replace procedure pms2_updateNsrSwjg is begin
+begin
+--根据税务机关代码，回填税务机关ID和税务机关名称
+  update pms2_nsr nsr set (swjgId,swjgName) = 
+(select swjg.swjgId,swjg.swjgname 
+from pms2_swjg swjg
+where nsr.swjgCode=swjg.swjgCode)
+where exists(
+select 1
+from pms2_swjg swjg
+where nsr.swjgCode=swjg.swjgCode
+); -- and rownum=1
+end;
+end pms2_updateNsrSwjg;
+
+执行：
+
+begin
+  pms2_updateNsrSwjg;
+end;
+
+=============
+2，
+使用游标：
+
+create or replace procedure pms2_updateZyhNsr is begin
+declare
+--声明游标：
+cursor resultCursor is
+
+select zyh.zyhId,nsr.nsrId,nsr.nsrcode 
+from pms2_zyh zyh
+left join ukey_gl_zyhxx zyhxx on zyhxx.id=zyh.oldId
+left join ukey_gl_yhdj yhdj on yhdj.id=zyhxx.nsr_id
+left join pms2_nsr nsr on nsr.oldId=yhdj.id;
+--声明记录类型：
+type rR is record(
+  zyhId number,
+  nsrId number,
+  nsrcode varchar(256 char)
+);
+--
+begin
+for rR in resultCursor
+loop
+  update pms2_zyh zyh set nsrId=rR.nsrId ,nsrcode=rR.nsrcode where zyhId=rR.zyhId;
+end loop;
+end;
+
+end pms2_updateZyhNsr;
+
+===============
+3，
+时间函数：
+
+to_char(timeCreate,'YYYY-MM-DD HH24:MI:SSxFF') timecreate
+
+to_date('2000-01-01 00:00:00','yyyy-MM-dd HH24:mi:ss')
+
+===============
+4，
+将o1的timeUkeyFf设为离它最近的类型为110或210的o2的时间：
+
+update pms2_ukeyoper o1 
+set o1.timeukeyff=
+nvl(
+(
+select o2.timeukeyff
+from pms2_ukeyoper o2
+where o2.ukeyid=o1.ukeyid
+and (o2.opertype=110 or o2.opertype=210)
+and o2.timecreate<o1.timecreate
+and not exists(
+select 1 from pms2_ukeyoper o3
+where o3.ukeyid=o2.ukeyid
+and (o3.opertype=110 or o3.opertype=210)
+and o3.timecreate>o2.timecreate
+and o3.timecreate<o1.timecreate
+)
+),to_date('2000-01-01 00:00:00','yyyy-MM-dd HH24:mi:ss'))
+where (o1.opertype!=110 and o1.opertype!=210 and o1.opertype!=141 and o1.opertype!=151)
+
+================
+5，
+oracle的字符串比较区分大小写，考虑的索引的使用等问题，如果不区分大小写，则应统一为大写或小写。
+

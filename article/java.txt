@@ -1,5 +1,10 @@
 ﻿java
 
+16，
+
+
+17，
+
 1，Java 8 的新特性和改进总览
 英文原文：Everything about Java 8
 http://www.oschina.net/translate/everything-about-java-8
@@ -10,6 +15,7 @@ http://www.oschina.net/translate/everything-about-java-8
 发布日期： 2013 年 5 月 16 日 
 http://www.ibm.com/developerworks/cn/java/j-lo-jdk7-1/index.html
 
+=================
 11，详细分析Java中断机制
 作者 丁一 发布于 五月 21, 2013
 http://www.infoq.com/cn/articles/java-interrupt-mechanism
@@ -24,13 +30,27 @@ http://www.infoq.com/cn/articles/cf-java-generics
 看吧，没有锁定！
 http://www.ibm.com/developerworks/cn/java/j-jtp04186/
 
+
+13，Doug Lea并发编程文章全部译文
+http://ifeve.com/doug-lea/
+
+
+14，Java SSL/TLS 安全通讯协议介绍-Java 的安全通讯
+刘 进, 高级软件工程师 , IBM
+2013 年 5 月 23 日
+http://www.ibm.com/developerworks/cn/java/j-lo-ssltls/index.html
+
+15，无锁队列的实现
+2012年9月7日，陈皓
+http://coolshell.cn/articles/8239.html
+--
+无锁HashMap的原理与实现
+2013年5月30日onetwogoo
+http://coolshell.cn/articles/9703.html
+
 9，Tiger 中的注释，第 2 部分: 定制注释
 Write your own annotations in Java 5
 http://www.ibm.com/developerworks/cn/java/j-annotate2.html
-
-
-3，AWT, SWT, Swing: Java GUI Clean Up (1)
-http://blogs.sun.com/Swing/entry/awt_swt_swing_java_gui
 
 
 5，LinkedList的局限
@@ -54,14 +74,6 @@ http://struts.apache.org/2.0.14/docs/ognl-expression-compilation.html
 发布日期： 2013 年 5 月 20 日
 http://www.ibm.com/developerworks/cn/java/j-lo-codemodel/index.html
 
+3，AWT, SWT, Swing: Java GUI Clean Up (1)
+http://blogs.sun.com/Swing/entry/awt_swt_swing_java_gui
 
-13，Doug Lea并发编程文章全部译文
-http://ifeve.com/doug-lea/
-
-
-14，Java SSL/TLS 安全通讯协议介绍-Java 的安全通讯
-刘 进, 高级软件工程师 , IBM
-2013 年 5 月 23 日
-http://www.ibm.com/developerworks/cn/java/j-lo-ssltls/index.html
-
-15，
