@@ -1,0 +1,14 @@
+﻿面向模式的软件架构，卷2：并发和联网对象模式
+
+Douglas C.Schmidt ， Michael Stal ， Hans Rohnert ， Frank Buschmann (作者) 　 张凯峰 (译者)
+==========
+本卷讲述用于创建并发和网络化系统的模式，共涉及17种。
+这些模式构成了用于解决有关分布式、并发和网络化问题的模式语言的基础。
+这些模式是创建并发和网络化系统的核心元素，筒过本书可以获得对构造分布式及并发应用和中间件最佳实践的基本理解。
+==========
+原书书名	 Pattern-Oriented Software Architecture, Vol 2: Patterns for Concurrent and Networked Objects
+原书书号	978-0-471-60695-6
+原书国家	美国
+原书出版社	John Wiley and Sons
+原书页数	666
+

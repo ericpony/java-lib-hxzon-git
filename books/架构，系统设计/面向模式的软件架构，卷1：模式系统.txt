@@ -1,0 +1,11 @@
+﻿面向模式的软件架构，卷1：模式系统
+
+Frank Buschmann ， Hans Rohnert ， Regine Meunier ， Peter Sommerlad ， Michael Stal (作者) 　 袁国忠 (译者)
+===========
+本卷从较深层次探讨了什么是模式、什么不是模式以及如何有效地使用模式。书中尝试从关键字面量出发，开发一种集成模式的全面型的语言，并可将其视为针对所有面向模式的软件架构(POSA)模式的参考指南。
+===========
+原书书名	 Pattern-Oriented Software Architecture Volume 1: A System of Patterns
+原书书号	978-0-471-95869-7
+原书国家	美国
+原书出版社	John Wiley and Sons
+原书页数	476

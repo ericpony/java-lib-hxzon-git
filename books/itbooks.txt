@@ -167,6 +167,10 @@ http://product.dangdang.com/product.aspx?product_id=21006215
 ===============================================
 原理，算法
 ----
+146，具体数学:计算机科学基础(第2版) [平装]
+~ Ronald L. Graham (作者), Donald E. Knuth (作者), Oren Patashnik (作者), 张明尧 (译者), 张凡 (译者) 
+74.20(75折)，48.50(49折)，想买
+----
 10，汇编语言（第2版）
 http://product.dangdang.com/product.aspx?product_id=20196660
 24.80，不买
@@ -187,7 +191,7 @@ http://product.dangdang.com/product.aspx?product_id=20784900
 29.20(75折)
 ----
 32，计算机程序设计艺术（第1卷）基本算法（英文版·第3版）
-87.90(93折)
+87.90(93折)，等待中文版
 ----
 33，算法分析与设计
 http://product.dangdang.com/product.aspx?product_id=9206018
@@ -199,10 +203,6 @@ http://product.dangdang.com/product.aspx?product_id=9320416
 35，算法设计——世界著名计算机教材精选
 http://product.dangdang.com/product.aspx?product_id=9272815
 56.20(75折)
-----
-146，具体数学:计算机科学基础(第2版) [平装]
-~ Ronald L. Graham (作者), Donald E. Knuth (作者), Oren Patashnik (作者), 张明尧 (译者), 张凡 (译者) 
-74.20(75折)，想买
 -----
 36，并行性：状态模型与Java程序 Concurrency: State Models and Java Programs
 http://product.dangdang.com/product.aspx?product_id=20029732
@@ -290,6 +290,8 @@ Joe Celko (作者)米全喜 (译者)
 缺货
 ----
 145，R和Ruby数据分析之旅
+----
+160，统计思维：程序员数学之概率统计
 =============================================================
 NoSql,云计算,大数据
 ----
@@ -366,4 +368,4 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20，17.20(49折)
 ----
-160，
+161，
