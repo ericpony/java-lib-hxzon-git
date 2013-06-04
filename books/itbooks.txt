@@ -69,7 +69,7 @@ http://product.china-pub.com/52880
 http://www.amazon.cn/Windows%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1-%E4%BD%A9%E6%8E%AA%E5%B0%94%E5%BE%B7/dp/B00426BTC6/ref=pd_sim_b_1
 http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=157231995X
 《Programming Windows 5th edition》，1998.11
-96.80(7.5折)，63.20(51折)，中文版2010.9，原版1998年早已过时？
+96.80(7.5折)，63.20(49折)，中文版2010.9，原版1998年早已过时？
 ----
 113，MFC Windows 程序设计（第2版）
 http://product.china-pub.com/3804
@@ -110,7 +110,7 @@ http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=0470500883
 http://www.amazon.com/Ivor-Hortons-Beginning-Visual-Programmer/dp/0470500883/ref=sr_1_1?s=books&ie=UTF8&qid=1347515759&sr=1-1&keywords=Visual+C%2B%2B
 《Ivor Horton's Beginning Visual C++ 2012》，2012.10.2
 http://www.amazon.com/Ivor-Hortons-Beginning-Visual-2012/dp/1118368088/ref=sr_1_4?s=books&ie=UTF8&qid=1347515759&sr=1-4&keywords=Visual+C%2B%2B
-89.60(7折)，62.70(51折)，中文版2010.12
+89.60(7折)，62.70(49折)，中文版2010.12
 ===========================================================
 c和linux
 ----
@@ -156,7 +156,7 @@ http://product.dangdang.com/product.aspx?product_id=22543344
 59.20
 ----
 15，软件框架设计的艺术
-56.20，48.40，36.80(51折)，观望
+56.20，48.40，36.80(49折)，观望
 ----
 20，Joel谈优秀软件开发方法
 http://product.dangdang.com/product.aspx?product_id=20001190
@@ -167,13 +167,17 @@ http://product.dangdang.com/product.aspx?product_id=21006215
 ===============================================
 原理，算法
 ----
+146，具体数学:计算机科学基础(第2版) [平装]
+~ Ronald L. Graham (作者), Donald E. Knuth (作者), Oren Patashnik (作者), 张明尧 (译者), 张凡 (译者) 
+74.20(75折)，48.50(49折)，想买
+----
 10，汇编语言（第2版）
 http://product.dangdang.com/product.aspx?product_id=20196660
 24.80，不买
 ----
 42，编译原理（第2版）——计算机科学丛书
 http://product.dangdang.com/product.aspx?product_id=20427584
-66.80(75折)，暂缓
+66.80(75折)，43.60(49折)，暂缓
 ----
 43，算法导论（原书第2版）
 http://product.dangdang.com/product.aspx?product_id=9211884#catalog
@@ -187,7 +191,7 @@ http://product.dangdang.com/product.aspx?product_id=20784900
 29.20(75折)
 ----
 32，计算机程序设计艺术（第1卷）基本算法（英文版·第3版）
-87.90(93折)
+87.90(93折)，等待中文版
 ----
 33，算法分析与设计
 http://product.dangdang.com/product.aspx?product_id=9206018
@@ -199,10 +203,6 @@ http://product.dangdang.com/product.aspx?product_id=9320416
 35，算法设计——世界著名计算机教材精选
 http://product.dangdang.com/product.aspx?product_id=9272815
 56.20(75折)
-----
-146，具体数学:计算机科学基础(第2版) [平装]
-~ Ronald L. Graham (作者), Donald E. Knuth (作者), Oren Patashnik (作者), 张明尧 (译者), 张凡 (译者) 
-74.20(75折)，想买
 -----
 36，并行性：状态模型与Java程序 Concurrency: State Models and Java Programs
 http://product.dangdang.com/product.aspx?product_id=20029732
@@ -223,10 +223,10 @@ http://product.dangdang.com/product.aspx?product_id=20518616
 139，Clojure程序设计
 2013年3月20日
 Programming Clojure, Second Edition，The Pragmatic Programmers，2012年4月17日
-36.80 (7.5折)，不买
+36.80 (7.5折)，24.00(49折)，不买
 ----
 25，黑客大曝光:Web应用程序安全(原书第3版)(Web安全技术人员必备参考)
-46.20(67折)，想买
+46.20(67折)，31.80(49折)，想买
 ----
 92，Git权威指南
 53.40(60折)
@@ -248,31 +248,31 @@ http://product.dangdang.com/product.aspx?product_id=20192214
 41.20(75折)
 ----
 94，PostgreSQL 数据库内核分析
-59.20 (75折)，观望
+59.20 (75折)，38.70(49折)，观望
 ----
 148，高性能MySQL(第3版)
 施瓦茨、扎伊采夫、特卡琴科、 宁海元 电子工业出版社 (2013-05出版)
-96.00(7.5折)
+96.00(7.5折)，62.70(49折)
 ----
 129，Oracle性能优化求生指南
 http://www.ituring.com.cn/book/772?q=Oracle
-74.20(7.5折)，观望
+74.20(7.5折)，48.50(49折)，观望
 ----
 128，Oracle Database 11g完全参考手册
 罗尼(Kevin Loney) (作者), 刘伟琴 (译者), 张格仙 (译者) 
-118.50(7.5折)
+118.50(7.5折)，77.40(49折)，
 ----
 134，Oracle PL/SQL最佳实践
 Steven Feuerstein (作者), 龚波 (译者), 张平 (译者), 潘显俊 (译者) 
-36.00(7.5折)
+36.00(7.5折)，33.60(49折)，
 ----
 135，Oracle Database 11g SQL开发指南
 皮拉斯 (Price.J.) (作者), 史新元 (译者), 北英 (译者) 
-61.40(7.9折)，观望
+61.40(7.9折)，38.20(49折)，观望
 ----
 136，Oracle PL/SQL程序设计(第5版)(套装上下册)
 弗伊尔斯坦(Steven Feuerstein) (作者), 普瑞拜尔(Bill Pribyl) (作者), 张晓明 (译者) 
-111.80(7.5折)，对翻译评价较差
+111.80(7.5折)，73.00(49折)，对翻译评价较差
 ----
 131，Oracle索引技术
 http://www.ituring.com.cn/book/951?q=Oracle
@@ -280,16 +280,18 @@ http://www.ituring.com.cn/book/951?q=Oracle
 132，DBA的思想天空：感悟Oracle数据库本质
 http://www.ituring.com.cn/book/972?q=Oracle
 http://www.amazon.cn/DBA的思想天空-感悟Oracle数据库本质-白鳝/dp/B009PIQ99E
-44.50(5折)
+44.50(5折)，43.60(49折)，
 ----
 144，SQL应用重构
-38.90(7.9折)，观望
+38.90(7.9折)，24.00(49折)，观望
 ----
 158，SQL解惑(第2版)
 Joe Celko (作者)米全喜 (译者)
 缺货
 ----
 145，R和Ruby数据分析之旅
+----
+160，统计思维：程序员数学之概率统计
 =============================================================
 NoSql,云计算,大数据
 ----
@@ -349,7 +351,7 @@ javascript
 ----
 74，JavaScript高级程序设计(第3版)
 http://www.ituring.com.cn/book/946
-不买
+48.50(49折)，不买
 ----
 83，JavaScript设计模式
 http://www.ituring.com.cn/book/388
@@ -364,6 +366,6 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 有英文电子版（，2008），观望
 ----
 90，深入浅出CoffeeScript/图灵程序设计丛书
-26.20，17.20(51折)
+26.20，17.20(49折)
 ----
-159，
+161，
