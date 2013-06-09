@@ -89,7 +89,7 @@ http://www.amazon.cn/Windows-via-C-C-Jeffrey-M-Richter/dp/0735624240/ref=sr_1_2?
 《Windows via C/C++》，2007.12
 《Windows via C/C++,Fifth Edition》，2011.9.22
 http://www.amazon.com/Windows-via-C-softcover/dp/0735663777/ref=sr_1_1?s=books&ie=UTF8&qid=1347515954&sr=1-1&keywords=Windows+via+C%2FC%2B%2B
-74.00(7.5折)，中文版2008.9
+74.00(7.5折)，49.50，中文版2008.9
 ----
 117，深入解析:Windows操作系统(第4版)
 http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90-Windows%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E7%BD%97%E6%96%AF/dp/B0011F3VZY/ref=pd_sim_b_86
@@ -219,6 +219,9 @@ http://product.dangdang.com/product.aspx?product_id=20518616
 44.20 (75折)
 =======================================================
 工具实践
+----
+161，多核应用编程实战
+39.50 (5折)，较底层，暂不考虑
 ----
 139，Clojure程序设计
 2013年3月20日
@@ -368,4 +371,4 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20，17.20(49折)
 ----
-161，
+163，

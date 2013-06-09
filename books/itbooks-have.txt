@@ -5,6 +5,11 @@
 9，About Face 3交互设计精髓
 57.60(80折)，已购，不错
 ----
+8，设计原本：计算机科学巨匠Frederick P.Brooks的思考
+http://product.dangdang.com/product.aspx?product_id=21029060
+《人月神话》的作者
+41.10(75折)，38.70(49折)，已购
+----
 2，松本行弘的程序世界
 41.80，已购
 ----
@@ -108,6 +113,11 @@ http://product.dangdang.com/product.aspx?product_id=22606835
 2013年4月10日
 Clojure Programming，O'Reilly Media, Inc, USA (2012年4月19日)
 69.30，48.50(49折)，74.20(75折)-20=54.20，已购
+----
+138，Erlang/OTP并发编程实战
+61.10(7.7折)，59.30，38.70(49折)，已购
+-
+OTP:oper telecom platform,是一个应用操作系统和一堆函数库，用来构建大型、容错和分布式应用，是一个Erlang开发的中间件，为了容错性和兼容性设计的，支持代码热部署，包含一个完整的web服务器，一个ftp服务器，一个corba orb等。
 =======================================
 c和linux
 ----
@@ -168,11 +178,6 @@ css和html
 http://product.dangdang.com/product.aspx?product_id=22577577
 44.30(75折)，28.90(49折)，暂缓，是否有必要？
 ----
-8，设计原本：计算机科学巨匠Frederick P.Brooks的思考
-http://product.dangdang.com/product.aspx?product_id=21029060
-《人月神话》的作者
-41.10(75折)，38.70(49折)，已购
-----
 141，Real World Haskell
 2008-12出版
 http://book.realworldhaskell.org/read/
@@ -182,18 +187,13 @@ http://book.realworldhaskell.org/read/
 东南大学出版社 (2010-01出版)
 缺货，编程思想的学习，想买，英文版是否有耐心读？
 ----
-138，Erlang/OTP并发编程实战
-61.10(7.7折)，59.30，38.70(49折)，已购
--
-OTP:oper telecom platform,是一个应用操作系统和一堆函数库，用来构建大型、容错和分布式应用，是一个Erlang开发的中间件，为了容错性和兼容性设计的，支持代码热部署，包含一个完整的web服务器，一个ftp服务器，一个corba orb等。
-----
 147，HTTP权威指南
 81.80(7.5折)，70.00(64折)，观望
 ----
 157，分析模式：可复用的对象模型
 Analysis Patterns : Reusable Object Models
 福勒(Martin Fowler) (作者), 樊东平 (译者), 张路 (译者)
-27.00(5.5折)，24.00，想买
+27.00(5.5折)，24.00，必买
 ----
 156，
 面向模式的软件架构，卷1：模式系统
@@ -204,11 +204,11 @@ Analysis Patterns : Reusable Object Models
 --
 面向模式的软件架构，卷3：资源管理模式
 出版日期：2013-05，
-49.00，39.20(8折)
+49.00，39.20(8折)，24.50(5折)，必买
 --
 面向模式的软件架构，卷4：分布式计算的模式语言
 出版日期：2010-06，页数：368，
-69.00，33.80(49折)
+69.00，33.80(49折)，必买
 --
 面向模式的软件架构，卷5：模式与模式语言
 出版日期：2011-09，页数：284，
@@ -216,4 +216,7 @@ Analysis Patterns : Reusable Object Models
 ----
 159，代码的未来
 [日]松本行弘 (作者), 周自恒 (译者)
-59.20(75折)，想买
+59.20(75折)，39.50(5折)，必看，想买
+----
+162，Java虚拟机并发编程
+《Programming Concurrency on the JVM》，必看，观望

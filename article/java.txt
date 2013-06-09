@@ -1,9 +1,10 @@
 ﻿java
 
-16，
-
-
 17，
+
+16，JDK 8已接近特性完备
+作者 Bienvenido David III ，译者 臧秀涛 发布于 六月 07, 2013
+http://www.infoq.com/cn/news/2013/06/jdk8-almost-feature-complete
 
 1，Java 8 的新特性和改进总览
 英文原文：Everything about Java 8
