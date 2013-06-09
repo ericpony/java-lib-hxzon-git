@@ -219,4 +219,8 @@ Underscore for Simple, Handlebars for Complex
 http://www.infoq.com/cn/news/2012/06/web-front-back-development
 
 
-38，
+38，Sails 0.8.9:深受Rails启发的实时Node MVC框架
+作者 Tim Heckel ，译者 赵震一 发布于 六月 08, 2013 
+http://www.infoq.com/cn/news/2013/06/Sails-0.8.9-Released
+
+39，
