@@ -31,6 +31,7 @@ by Stoyan Stefanov，2010
 
 ----
 152，Jquery1.2.6源码分析
+英文打印版
 
 ----
 153，Professional JavaScript Frameworks : Prototype, YUI, Ext JS, Dojo and MooTools
@@ -66,6 +67,8 @@ java-clojure
 48，Programming Concurrency on the JVM
 英文打印版
 《Java虚拟机并发编程》，28.90(51折)
+
+
 ----
 127，Seven Languages in Seven Weeks
 《七周七语言》，不买，只是入门简介
@@ -83,6 +86,7 @@ java-scala
 ==========================
 java-groovy
 
+
 ==========================
 交互设计，软件工程，it视野
 
@@ -90,6 +94,8 @@ java-groovy
 122，黑客与画家：硅谷创业之父Paul Graham文集
 http://product.dangdang.com/product.aspx?product_id=21049598
 33.80(69折)，电子版，已读，受益匪浅
+
+
 ==========================
 java-swing
 
