@@ -1,0 +1,196 @@
+﻿Event.Processing.in.Action.2010
+事件处理实战
+
+
+Opher Etzion (作者), Peter Niblett (作者) 
+
+pdf
+=========
+出版社: Manning Publications (2010年8月4日)
+平装: 325页
+语种： 英语
+ISBN: 1935182218
+
+
+==========
+　　对于EDA, EDP领域是本很好的入门书。通过一个比较实际的应用例子，让读者体会到在某些领域，以事件为中心建模的解决方案是更好的方法。更自然、更松耦合，更具扩展性。 
+　　 
+　　Part 1. 没啥可说的。与request-response pattern interaction做了对比。EDA大部分应用场景应该也是分布式环境，所以它的特点包括了分布式系统的特点。 
+　　 
+　　Part 2. 从过程式编程的角度来理解，做个对比。如果将EPN(Network)比作一个函数的话，Event Producer是函数参数，Consumer是返回值(多返回值)。而每个EPA就是一个表达式。Context是临时数据，而Global State就是全局数据。差别就在于EPN中元素带有时间次序。简单地说就是用EPA来表达业务逻辑对Event编程。 
+　　 
+　　本书最核心的是Flower Store例子，需要仔细体会，学习设计思路。。。具体CEP系统的实现细节、适用场景基本是没有的。各种EPP Language对复杂事件的表达能力比较是没有的。所以只能定位为入门书了。
+
+==========
+http://www.manning.com/etzion/
+http://book.douban.com/subject/4730837/
+http://book.douban.com/doulist/778874/
+
+
+DESCRIPTION
+Event processing apps collect, analyze, and react to events as they occur. They recognize event patterns—from the obvious to the complex, even predicting outcomes such as power shortages or customer dissatisfaction—and respond to them accordingly. In some applications, such as financial trading, fast reaction times are a must.
+
+Event Processing in Action is a ground-breaking book that shows you how to use, design, and build event processing applications. It follows a detailed example to present the concepts and show you the how-tos of both architecture and implementation. The book and its accompanying website introduce the leading free and commercial tools available, along with several language implementations and many examples.
+
+WHAT'S INSIDE
+Event processing concepts and applications
+The event-driven application lifecycle
+How to fit event-driven architectures into your enterprise apps
+Things to consider in your implementation
+This book is written for software architects and developers. It requires no previous knowledge of event processing.
+
+ABOUT THE AUTHORS
+Dr. Opher Etzion is the chair of the Event Processing Technical Society and leads the Event Processing team at IBM's Haifa research lab. An IBM senior architect, Peter Niblett led IBM's work on the JMS interface definition, and chaired the OASIS Web Services Notification committee.
+
+WHAT REVIEWERS ARE SAYING
+“The book is well-written and shows great depth of knowledge by the authors. They provide an in-depth scenario showing the use — and the particular challenges — of event driven programming.”
+—Hal Helms
+
+“In a nutshell, a well-written and succulent book for avid and articulate professionals, pundits and professors indeed!”
+—Pethuru Raj, Robert Bosch Engineering and Business Solutions (RBEI) Ltd., Lead Architect
+
+“Short summary: buy the book! I really like this book. It's so good. This is the kind of book on event processing that I have been waiting for. I think the authors, Opher Etzion and Peter Niblett, really gets event processing.”
+—Marco Seiri?
+
+==============
+contents
+
+foreword xv 
+preface xvii 
+acknowledgments xxi 
+about the cover illustration xxiii 
+ 
+
+Part 1        The basics
+
+
+1 Entering the world of event processing
+
+1.1 Event-driven behavior and event-driven computing
+1.2 Introduction to event processing
+1.3 The business value of an event processing platform
+1.4 Event processing and its connection to related concepts
+1.5 The Fast Flower Delivery application
+1.6 Using this book’s website
+1.7 Summary
+
+
+2 Principles of event processing
+
+2.1 Events and event-based programming
+2.2 Main concepts of event processing
+2.3 Modeling event processing networks
+2.4 Summary
+
+
+
+Part 2        The building blocks
+
+
+3 Defining the events
+
+3.1 Event types
+3.2 Header attributes
+3.3 Payload attributes
+3.4 Relationships between event types
+3.5 Event types in the Fast Flower Delivery example
+3.6 Event representation in practice
+3.7 Summary
+
+
+4 Producing the events
+
+4.1 Event producer: concept and definition element
+4.2 The various kinds of event producers
+4.3 Producers in the Fast Flower Delivery application
+4.4 Summary
+
+
+5 Consuming the events
+
+5.1 Event consumer: concept and definition element
+5.2 The various kinds of event consumers
+5.3 Interfacing with event consumers
+5.4 Consumers in the Fast Flower Delivery example
+5.5 Summary
+
+
+6 The event processing network
+
+6.1 Event processing networks
+6.2 Event processing agents
+6.3 Event channels
+6.4 Global state elements
+6.5 Event processing networks in practice
+6.6 Summary
+
+
+7 Putting events in context
+
+7.1 The notion of context and its definition element
+7.2 Temporal context
+7.3 Spatial context
+7.4 State-oriented context
+7.5 Segmentation-oriented context
+7.6 Context initiator policies
+7.7 Composite contexts
+7.8 Contexts in the Fast Flower Delivery application
+7.9 Context definitions in practice
+7.10 Summary
+
+
+8 Filtering and transformation
+
+8.1 Filtering in the event processing network
+8.2 Transformation in depth
+8.3 Examples in the Fast Flower Delivery application
+8.4 Filtering and transformation in practice
+8.5 Summary
+
+
+9 Detecting event patterns
+
+9.1 Introduction to event patterns
+9.2 Basic patterns
+9.3 Dimensional patterns
+9.4 Pattern policies
+9.5 Patterns reference table
+9.6 The Fast Flower Delivery patterns
+9.7 Pattern detection in practice
+9.8 Summary
+
+
+
+Part 3        Pragmatics
+
+
+10 Engineering and implementation considerations
+
+10.1 Event processing programming in practice
+10.2 Non-functional properties
+10.3 Performance objectives
+10.4 Optimization types
+10.5 Event processing validation and auditing
+10.6 Summary
+
+
+11 Today’s event processing challenges
+
+11.1 The temporal semantics of event processing
+11.2 Inexact event processing
+11.3 Retraction and causality
+11.4 Summary
+
+
+12 Emerging directions of event processing
+
+12.1 Event processing trends
+12.2 Future directions in event processing technology
+12.3 Epilogue
+
+
+appendix A        Definitions 
+appendix B        The Fast Flower Delivery application 
+
+index
+

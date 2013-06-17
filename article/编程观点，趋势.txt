@@ -114,6 +114,12 @@ http://www.ibm.com/developerworks/cn/java/j-grails01158/
 http://www.infoq.com/news/2011/10/spring-3.1-rc1-release
 Posted by Bienvenido David on Oct 29, 2011
 
+
+28，Spring对基于REST的Web Services增加HATEOAS支持
+作者 Jan Stenberg ，译者 廖煜嵘 发布于 六月 09, 2013
+http://www.infoq.com/cn/news/2013/06/spring-hateoas-rest
+
+
 12，Previewing ZK 6
 http://blog.zkoss.org/index.php/2011/10/12/previewing-zk-6/
 http://martinfowler.com/eaaDev/PresentationModel.html
@@ -343,9 +349,8 @@ http://blog.csdn.net/historyasamirror/archive/2009/04/29/4135859.aspx
 63，struts2框架安全缺陷
 
 
-28，
-
-42，
+42，jQuery 1.10和2.0.1 同步发布
+http://www.infoq.com/cn/news/2013/06/synchronized-jquery-releases
 
 45，
 

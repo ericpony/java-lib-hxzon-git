@@ -63,6 +63,7 @@ http://www.ibm.com/developerworks/web/library/wa-clientmvc/index.html
 Jonathan Creamer on Jun 20th 2012
 http://net.tutsplus.com/tutorials/javascript-ajax/principles-of-maintainable-javascript
 
+
 =================================
 29，Javascript模块化编程（一）：模块的写法
 http://www.ruanyifeng.com/blog/2012/10/javascript_module.html
@@ -72,6 +73,7 @@ http://www.ruanyifeng.com/blog/2012/10/asynchronous_module_definition.html
 
 Javascript模块化编程（三）：require.js的用法
 http://www.ruanyifeng.com/blog/2012/11/require_js.html
+
 
 =======================
 Ember
@@ -98,6 +100,7 @@ José Mota on Aug 31st 2012
 
 9，点燃圣火！ Ember.js 的初学者指南
 http://www.adobe.com/cn/devnet/html5/articles/flame-on-a-beginners-guide-to-emberjs.html
+
 
 =========================
 AngularJS
@@ -137,6 +140,10 @@ http://nettuts.s3.amazonaws.com/2178_angular/source.zip
 
 Published: 03 Mar 2012
 http://paulhammant.com//2012/03/03/replacing-jquery-with-angular
+
+39，如何组织AngularJS项目代码结构
+http://xvfeng.me/posts/the-right-way-of-coding-angularjs-how-to-organize-a-regular-webapp/
+
 
 ==============================
 18，Backbone JS框架指南
@@ -205,6 +212,15 @@ Async JavaScript - Build More Responsive Apps with Less Code
 http://www.infoq.com/cn/news/2013/02/Twitter-Flight-Framework
 
 
+38，Sails 0.8.9:深受Rails启发的实时Node MVC框架
+作者 Tim Heckel ，译者 赵震一 发布于 六月 08, 2013 
+http://www.infoq.com/cn/news/2013/06/Sails-0.8.9-Released
+
+
+40，(譯)深入理解Express.js
+http://xvfeng.me/posts/understanding-expressjs/
+
+
 25，Best Practices When Working With JavaScript Templates
 
 Andrew Burgess on Dec 10th 2012
@@ -219,4 +235,4 @@ Underscore for Simple, Handlebars for Complex
 http://www.infoq.com/cn/news/2012/06/web-front-back-development
 
 
-38，
+41，

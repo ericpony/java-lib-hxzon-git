@@ -1,182 +1,247 @@
 ﻿itbooks-have.txt
+
+
+======================================
+架构，系统设计
+
+----
+120，企业应用架构模式
+http://product.dangdang.com/product.aspx?product_id=20833536
+39.50(67折)-20=19.50，已购
+
+----
+155，领域驱动设计
+48.30，51.80 (75折)-10=41.80，已购，收益匪浅
+
+----
+123，SQL反模式
+http://product.dangdang.com/product.aspx?product_id=22506160
+46.50(79折)-20=26.50，已购，常见问题的思考与总结
+
+----
+121，设计模式沉思录
+http://product.dangdang.com/product.aspx?product_id=20836579
+28.60(82折)，27.60(79折)，已购
+
+
 ======================================
 交互设计，软件工程，it视野
+
 ----
 9，About Face 3交互设计精髓
 57.60(80折)，已购，不错
+
 ----
 8，设计原本：计算机科学巨匠Frederick P.Brooks的思考
 http://product.dangdang.com/product.aspx?product_id=21029060
 《人月神话》的作者
 41.10(75折)，38.70(49折)，已购
+
 ----
 2，松本行弘的程序世界
 41.80，已购
+
 ----
 12，重构：改善既有代码的设计
 http://www.amazon.cn/gp/product/B003BY6PLK/ref=ox_ya_os_product
 48.40，39.5，已购，有电子书2010.4月版
+
 ----
 80，UNIX编程艺术
 http://product.dangdang.com/product.aspx?product_id=21006214
 http://product.dangdang.com/product.aspx?product_id=9149115
 http://www.amazon.cn/UNIX%E7%BC%96%E7%A8%8B%E8%89%BA%E6%9C%AF-%E5%A7%9C%E5%AE%8F/dp/B0050CRP0Q/ref=reg_hu-rd_add_1_dp
 67.20(85折)-20，已购
-----
-120，企业应用架构模式
-http://product.dangdang.com/product.aspx?product_id=20833536
-39.50(67折)-20=19.50，已购
-----
-155，领域驱动设计
-48.30，51.80 (75折)-10=41.80，已购
-----
-121，设计模式沉思录
-http://product.dangdang.com/product.aspx?product_id=20836579
-28.60(82折)，27.60(79折)，已购
+
+
 ======================================
 算法和原理
-----
-4，编程珠玑（英文版·第2版）
-http://product.dangdang.com/product.aspx?product_id=20895273
-29.20(75折)，已购
-----
-5，编程之美——微软技术面试心得
-http://product.dangdang.com/product.aspx?product_id=20170952
-30.00(75折)，已购，不错
-----
-38，多处理器编程的艺术
-39.20(75折)，已购，教材，基础原理和实践
-----
-97，编程语言实现模式
-51.30-20，已购
-----
-142，领域特定语言
-Martin Fowler (作者), ThoughtWorks (译者)
-66.70(75折)，43.60(49折)，61.60(69折)-20=41.60，已购
+
 ----
 16，计算机程序的构造和解释：原书第2版
 http://product.dangdang.com/product.aspx?product_id=8793968
 33.80，22.00(49折)，有电子书，思维锻炼，36.80-20=16.80，已购
+
 ----
 18，实用Common Lisp编程(第16届Jolt生产效率大奖得主)
 http://product.dangdang.com/product.aspx?product_id=22508163
 61.30(69折)，48.00(43折)，思维锻炼，66.80-20=46.80，已购
+
+----
+97，编程语言实现模式
+51.30-20，已购
+
+----
+142，领域特定语言
+Martin Fowler (作者), ThoughtWorks (译者)
+66.70(75折)，43.60(49折)，61.60(69折)-20=41.60，已购
+
+----
+4，编程珠玑（英文版·第2版）
+http://product.dangdang.com/product.aspx?product_id=20895273
+29.20(75折)，已购
+
+----
+5，编程之美——微软技术面试心得
+http://product.dangdang.com/product.aspx?product_id=20170952
+30.00(75折)，已购，不错
+
+----
+38，多处理器编程的艺术
+39.20(75折)，已购，教材，基础原理和实践
+
+
 ======================================
 数据库
+
 ----
 6，MySQL技术内幕InnoDB存储引擎
 51.80(75折)，已购，不错
+
 ----
 98，Oracle Database 9i/10g/11g编程艺术:深入数据库体系结构(第2版)
 53.40(49折)，81.80-20=61.80，已购
+
 ----
 99，Oracle SQL高级编程
 43.60(49折)，61.30-20=41.30，已购
+
 ----
 96，Oracle Database 11g数据库管理艺术
 68.10(49折)，104.30(75折)-12=92.30，已购
+
 ----
 130，Oracle PL/SQL实战
 http://www.ituring.com.cn/book/850?q=Oracle
 http://www.amazon.cn/Oracle-PL-SQL%E5%AE%9E%E6%88%98-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E5%88%97-%E5%9B%BE%E7%81%B5%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E4%B8%9B%E4%B9%A6-John-Beresniewicz/dp/B00A0GVS4G/
 66.20(7.4折)，43.60(49折)，69.50-10=59.50，已购
-----
-123，SQL反模式
-http://product.dangdang.com/product.aspx?product_id=22506160
-46.50(79折)-20=26.50，已购，常见问题的思考与总结
+
+
 =======================================
 工具实践
+
 ----
 57，Java并发编程实战
 http://product.dangdang.com/product.aspx?product_id=22606835
 51.80 (75折)，48.4，已购，收益匪浅
-----
-53，Hadoop权威指南（第2版）修订升级版
-62.20 (70折)，已购
-----
-62，Lucene实战(第2版)
-51.80(75折)，已购
-----
-50，Maven实战
-43.90 (68折)，41.90(64折)-20，已购
-----
-17，Windows7脚本编程和命令行工具指南(详尽讲解微软最新命令行自动化工具Windows PowerShell)
-59.20，已购
-----
-137，中文版Excel 2010高级VBA编程宝典
-48.50(49折)，74.30-10=64.30，已购
-----
-7，Scala程序设计：Java虚拟机多核编程实战
-29.20(75折)，已购，快速入门，过时
+
 ----
 140，Clojure编程
 2013年4月10日
 Clojure Programming，O'Reilly Media, Inc, USA (2012年4月19日)
 69.30，48.50(49折)，74.20(75折)-20=54.20，已购
+
+----
+17，Windows7脚本编程和命令行工具指南(详尽讲解微软最新命令行自动化工具Windows PowerShell)
+59.20，已购
+
+----
+7，Scala程序设计：Java虚拟机多核编程实战
+29.20(75折)，已购，快速入门，过时
+
 ----
 138，Erlang/OTP并发编程实战
 61.10(7.7折)，59.30，38.70(49折)，已购
 -
 OTP:oper telecom platform,是一个应用操作系统和一堆函数库，用来构建大型、容错和分布式应用，是一个Erlang开发的中间件，为了容错性和兼容性设计的，支持代码热部署，包含一个完整的web服务器，一个ftp服务器，一个corba orb等。
+
+----
+53，Hadoop权威指南（第2版）修订升级版
+62.20 (70折)，已购
+
+----
+62，Lucene实战(第2版)
+51.80(75折)，已购
+
+----
+50，Maven实战
+43.90 (68折)，41.90(64折)-20，已购
+
+----
+137，中文版Excel 2010高级VBA编程宝典
+48.50(49折)，74.30-10=64.30，已购
+
+
 =======================================
 c和linux
+
 ----
 3，Linux Shell脚本攻略
 36.80(75折)，已购，不错
+
 ----
 69，C和指针
 40.5，已购
+
 ----
 77，Linux程序设计(第4版)
 http://product.dangdang.com/product.aspx?product_id=20856718
 74.20 (75折)，26.5，已购
+
 ----
 76，UNIX环境高级编程（第2版）
 68.30 (69折)，已购
+
 ----
 81，深入理解LINUX内核（第三版）
 http://product.dangdang.com/product.aspx?product_id=20046247
 76.40(78折)，已购
+
+
 =======================================
+windows和C++
+
 ----
 95，C++演化和设计
 http://product.china-pub.com/5217
 http://www.amazon.cn/C-%E8%AF%AD%E8%A8%80%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%BC%94%E5%8C%96-%E6%96%AF%E7%89%B9%E5%8A%B3%E6%96%AF%E7%89%B9%E9%B2%81%E6%99%AE/dp/B007JFSCPY/ref=sr_1_1?ie=UTF8&qid=1347034593&sr=8-1
 《The Design and Evolution of C++》，（美）Bjarne Stroustrup，(2002.1)
 54.90，59.90(7折)，中文版2012.3，已购
+
 ----
 105，C++沉思录
 http://product.china-pub.com/38130
 http://www.amazon.cn/C%E5%92%8CC-%E7%BB%8F%E5%85%B8%E8%91%97%E4%BD%9C%E2%80%A2C-%E6%B2%89%E6%80%9D%E5%BD%95-Ruminations-on-C-Andrew-Koenig/dp/B0012NMEXU/ref=sr_1_1?ie=UTF8&qid=1347034796&sr=8-1
 《Ruminations on C++》，1997
 36.30，41.30(75折)，中文版2008.2，已购
-=======================================
-windows
+
 ----
 116，VC++深入详解
 http://www.amazon.cn/VC-%E6%B7%B1%E5%85%A5%E8%AF%A6%E8%A7%A3-%E5%AD%99%E9%91%AB/dp/B00114KKB8/ref=pd_sim_b_6
 http://www.amazon.cn/VC-%E6%B7%B1%E5%85%A5%E8%AF%A6%E8%A7%A3-%E5%AD%99%E9%91%AB/dp/B00114KKB8/ref=pd_rhf_se_p_t_2
+
+
 =======================================
 javascript
+
 ----
 64，《JavaScript权威指南》（第六版）
 http://ued.taobao.com/javascript
 81.70，97.30(70折)-17=80.30，已购
+
 ----
 29，JavaScript高级程序设计(第2版)
 61.40(69折)，已购，有中文版电子书（2009，2010），已推出第3版
+
+
 =======================================
 css和html
+
 ----
 124，CSS权威指南(第3版)
 42.70(74折)-20=22.70，已购
+
+
+
 ========================
 ========================
 观望
+
 ----
 86，编程原本(STL之父Alexander Stepanov力作,裘宗燕老师倾情献译)
 http://product.dangdang.com/product.aspx?product_id=22577577
 44.30(75折)，28.90(49折)，暂缓，是否有必要？
+
 ----
 141，Real World Haskell
 2008-12出版
@@ -186,14 +251,17 @@ http://book.realworldhaskell.org/read/
 沙利文(Bryan O'sullivan)、戈尔(Jobn Goerzen)、 斯图尔特(Don Stewart) 
 东南大学出版社 (2010-01出版)
 缺货，编程思想的学习，想买，英文版是否有耐心读？
+
 ----
 147，HTTP权威指南
 81.80(7.5折)，70.00(64折)，观望
+
 ----
 157，分析模式：可复用的对象模型
 Analysis Patterns : Reusable Object Models
 福勒(Martin Fowler) (作者), 樊东平 (译者), 张路 (译者)
 27.00(5.5折)，24.00，必买
+
 ----
 156，
 面向模式的软件架构，卷1：模式系统
@@ -213,10 +281,13 @@ Analysis Patterns : Reusable Object Models
 面向模式的软件架构，卷5：模式与模式语言
 出版日期：2011-09，页数：284，
 59.00，28.90(49折)，已购
+
 ----
 159，代码的未来
 [日]松本行弘 (作者), 周自恒 (译者)
 59.20(75折)，39.50(5折)，必看，想买
+
 ----
 162，Java虚拟机并发编程
-《Programming Concurrency on the JVM》，必看，观望
+《Programming Concurrency on the JVM》，有英文打印版，必看，观望
+

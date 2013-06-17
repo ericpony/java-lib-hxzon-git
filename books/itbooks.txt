@@ -1,6 +1,9 @@
 ﻿itbooks.txt
+
+
 ====================================================
 C++
+
 ----
 100，C++ Primer
 http://product.china-pub.com/28767
@@ -8,41 +11,51 @@ C++Primer中文版(第4版)，2008年7月1日
 http://www.amazon.cn/C-Primer%E4%B8%AD%E6%96%87%E7%89%88-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B00114DX08/ref=pd_rhf_se_s_cp_26
 C++ Primer中文版(第4版·特别版)，2010年2月1日，附加了《C++编程规范：101条规则、准则与最佳实践》一书的全部内容
 http://www.amazon.cn/C-Primer%E4%B8%AD%E6%96%87%E7%89%88-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B0036DB1EC/ref=pd_cp_b_0
+
 --
 C++ Primer (5th Edition),August 16, 2012,Stanley B. Lippman (Author), Josée Lajoie (Author), Barbara E. Moo (Author)
 http://www.amazon.com/Primer-5th-Edition-Stanley-Lippman/dp/0321714113/ref=sr_1_1?ie=UTF8&qid=1347429437&sr=8-1&keywords=C%2B%2B+Primer
 Bestselling Programming Tutorial and Reference Completely Rewritten for the New C++11 Standard
+
 --
 C++ Primer (4th Edition),February 24, 2005,Stanley B. Lippman (Author), Josée Lajoie (Author), Barbara E. Moo (Author)
 http://www.amazon.com/Primer-4th-Edition-Stanley-Lippman/dp/0201721481/ref=sr_1_3?ie=UTF8&qid=1347429437&sr=8-3&keywords=C%2B%2B+Primer
+
 ----
 101，C++程序设计语言
 http://product.china-pub.com/196448
 《The C++ Programming Language: Special Edition》，（美）Bjarne Stroustrup
+
 ----
 104，Think in C++
 http://product.china-pub.com/4801
 http://www.amazon.cn/C-%E7%BC%96%E7%A8%8B%E6%80%9D%E6%83%B3-%E5%9F%83%E5%85%8B%E5%B0%94/dp/B005CFUQR0/ref=pd_rhf_se_s_cp_9
 中文翻译得不好
+
 ----
 102，Effective C++:改善程序与设计的55个具体做法:第3版
 http://product.china-pub.com/197414
 http://www.amazon.cn/Effective-C-%E6%94%B9%E5%96%84%E7%A8%8B%E5%BA%8F%E4%B8%8E%E8%AE%BE%E8%AE%A1%E7%9A%8455%E4%B8%AA%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95-%E6%A2%85%E8%80%B6/dp/B004G72P24/ref=pd_rhf_se_s_cp_2
+
 ----
 103，More Effective C++:35个改善编程与设计的有效方法
 http://product.china-pub.com/197665
 http://www.amazon.cn/More-Effective-C-35%E4%B8%AA%E6%94%B9%E5%96%84%E7%BC%96%E7%A8%8B%E4%B8%8E%E8%AE%BE%E8%AE%A1%E7%9A%84%E6%9C%89%E6%95%88%E6%96%B9%E6%B3%95-%E6%A2%85%E8%80%B6/dp/B004IP8BD6/ref=pd_rhf_se_s_cp_1
+
 ----
 106，Exceptional C++中文版：47个C++难题、编程问题和解决方案
 http://product.china-pub.com/33333
 http://www.amazon.cn/Exceptional-C-47%E4%B8%AAC-%E5%B7%A5%E7%A8%8B%E9%9A%BE%E9%A2%98-%E7%BC%96%E7%A8%8B%E9%97%AE%E9%A2%98%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-%E8%90%A8%E7%89%B9/dp/B008CGKUBS/ref=pd_rhf_se_s_cp_18
+
 ----
 107，More Exceptional C++中文版：40个新的工程难题、编程疑问及解决方法
 http://product.china-pub.com/197666
 http://www.amazon.cn/More-Exceptional-C-40%E4%B8%AA%E6%96%B0%E7%9A%84%E5%B7%A5%E7%A8%8B%E9%9A%BE%E9%A2%98-%E7%BC%96%E7%A8%8B%E7%96%91%E9%97%AE%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95-%E8%88%92%E7%89%B9/dp/B004IUISIO/ref=pd_rhf_se_s_cp_3
+
 ----
 108，Advanced C++
 http://product.china-pub.com/16697
+
 ----
 109，Modern C++ Design: Applied Generic and Design Patterns
 《C++设计新思维——泛型编程与设计模式之应用》
@@ -51,18 +64,23 @@ http://product.china-pub.com/16697
 http://product.china-pub.com/9700
 http://www.amazon.cn/Modern-C-Design-Applied-Generic-and-Design-Patterns-Alexandrescu-Andrei/dp/0201704315/ref=sr_1_1?s=books&ie=UTF8&qid=1347035699&sr=1-1
 不买，有清晰的中文版电子书
+
 ----
 110，泛型编程与STL
 http://product.china-pub.com/9864
 作者: Matthew H. Austern 译者: 侯捷 中国电力出版社2003-1
 本书阐述了泛型编程的中心思想：concepts、modeling、refinement，并为你展示这些思想如何导出STL的基础概念：iterators、containers、function Objects。循此路线，你可以把STL想像为一个由concepts(而非明确之functions或classes)组成的程序库。你将学习其正式结构并因此获得其潜在威力所带采的完整优势。
 已缺货，观望，暂缓
+
 ----
 111，深入探索C++对象模型
 http://product.china-pub.com/3290
 http://www.amazon.cn/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B-%E4%BC%A0%E4%B8%96%E7%BB%8F%E5%85%B8%E4%B9%A6%E4%B8%9B-%E6%96%AF%E5%9D%A6%E5%88%A9%E2%80%A2B-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B006QXQXTM/ref=pd_rhf_se_s_cp_4
+
+
 ==============================================
 windows
+
 ----
 112，Windows程序设计(第5版.珍藏版)
 http://product.china-pub.com/52880
@@ -70,17 +88,20 @@ http://www.amazon.cn/Windows%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1-%E4%BD%A9%E6%8E
 http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=157231995X
 《Programming Windows 5th edition》，1998.11
 96.80(7.5折)，63.20(49折)，中文版2010.9，原版1998年早已过时？
+
 ----
 113，MFC Windows 程序设计（第2版）
 http://product.china-pub.com/3804
 http://www.amazon.cn/MFC-Windows%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1-%E5%B8%95%E7%BD%97%E8%B5%9B%E6%96%AF/dp/B0011F3VMC/ref=pd_rhf_se_s_cp_49
 《Programming Windows with MFC Second Edition》，2001.9
 96.00(7.5折)，中文版2007.5
+
 ----
 114，深入浅出MFC（第二版）
 http://product.china-pub.com/3565
 http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAMFC-%E4%BE%AF%E4%BF%8A%E6%9D%B0/dp/B001175K4M/ref=pd_cp_b_2
 63.50(7.9折)，侯俊杰(侯捷)，2001.1
+
 ----
 115，Windows核心编程(第5版)
 http://product.china-pub.com/209058
@@ -89,7 +110,8 @@ http://www.amazon.cn/Windows-via-C-C-Jeffrey-M-Richter/dp/0735624240/ref=sr_1_2?
 《Windows via C/C++》，2007.12
 《Windows via C/C++,Fifth Edition》，2011.9.22
 http://www.amazon.com/Windows-via-C-softcover/dp/0735663777/ref=sr_1_1?s=books&ie=UTF8&qid=1347515954&sr=1-1&keywords=Windows+via+C%2FC%2B%2B
-74.00(7.5折)，49.50，中文版2008.9
+74.00(7.5折)，49.50，中文版2008.9，优先
+
 ----
 117，深入解析:Windows操作系统(第4版)
 http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90-Windows%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E7%BD%97%E6%96%AF/dp/B0011F3VZY/ref=pd_sim_b_86
@@ -97,13 +119,18 @@ http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%
 《Microsoft Windows Internals（Fourth Edition》，覆盖Windows XP和Windows Server 2003中所做的内核变化
 深入解析Windows操作系统(第5版.英文版)，2009.9，针对Windows Vista和Windows Server 2008进行了全面的更新
 74.30(7.5折)，中文版2007.4
+
 --
-深入解析Windows操作系统，卷1（英文版 第6版）
-深入解析Windows操作系统，卷2（英文版 第6版）
+深入解析Windows操作系统，卷1（英文版 第6版），49.50 (5折)
+深入解析Windows操作系统，卷2（英文版 第6版），49.50 (5折)
 《Windows Internals, Part 2》
 http://www.ituring.com.cn/book/1083
+
 ----
-118，Visual C++2010入门经典(第5版)
+118，Visual C++ 2012入门经典(第6版)
+68.60(7折)，优先？更现代实用？
+--
+Visual C++2010入门经典(第5版)
 http://www.amazon.cn/Visual-C-2010%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8-%E9%9C%8D%E9%A1%BF/dp/B004GHO45A/ref=pd_sim_b_18
 http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=0470500883
 《Ivor Horton's Beginning Visual C++ 2010》，2010.4.12
@@ -111,8 +138,16 @@ http://www.amazon.com/Ivor-Hortons-Beginning-Visual-Programmer/dp/0470500883/ref
 《Ivor Horton's Beginning Visual C++ 2012》，2012.10.2
 http://www.amazon.com/Ivor-Hortons-Beginning-Visual-2012/dp/1118368088/ref=sr_1_4?s=books&ie=UTF8&qid=1347515759&sr=1-4&keywords=Visual+C%2B%2B
 89.60(7折)，62.70(49折)，中文版2010.12
+
+
+
 ===========================================================
 c和linux
+
+----
+167，Linux命令行与shell脚本编程大全(第2版)
+49.50 (5折)
+
 ----
 78，Linux 系统编程（中文版）
 http://product.dangdang.com/product.aspx?product_id=20645962
@@ -120,255 +155,363 @@ http://product.dangdang.com/product.aspx?product_id=20645962
 ----
 30，构建嵌入式LINUX系统
 42.40(88折)
+
 ----
 22，LINUX技术手册（影印版）（第5版）
 72.00(73折)，不买，已出第6版
+
 ----
 91，国外计算机科学经典教材Unix & Linux大学教程
 78.40
+
+
 ----
 45，C程序设计语言(第2版新版)
 http://product.dangdang.com/product.aspx?product_id=8766529
 20.70(69折)，(2004.1)，（美）Brian W.Kernighan,Dennis M.Ritchie
+
 ----
 70，C专家编程
 30.70 (68折)
+
 ----
 71，C陷阱与缺陷
 25.10 (84折)，只适用老版本c？
+
 ----
 93，C语言程序设计:现代方法(第2版)
 55.30(7折)
+
+
 ====================================
 软件工程，IT视野
+
+----
+15，软件框架设计的艺术
+56.20，48.40，36.80(49折)，观望
+
 ----
 1，代码大全（第二版2011最新版）
 http://product.dangdang.com/product.aspx?product_id=22543344
 95.90，不买
+
 ----
 11，Java编程思想（第4版）
 81.00，观望，有中文电子版
+
 ----
 13，编程之魂：与27位编程语言创始人对话
 44.90
+
 ----
 14，编程人生：15位软件先驱访谈录
 59.20
-----
-15，软件框架设计的艺术
-56.20，48.40，36.80(49折)，观望
+
 ----
 20，Joel谈优秀软件开发方法
 http://product.dangdang.com/product.aspx?product_id=20001190
+
 ----
 44，程序员修炼之道——从小工到专家
 http://product.dangdang.com/product.aspx?product_id=21006215
 41.10(75折)
+
+
 ===============================================
-原理，算法
+原理，算法，数学
+
 ----
-146，具体数学:计算机科学基础(第2版) [平装]
-~ Ronald L. Graham (作者), Donald E. Knuth (作者), Oren Patashnik (作者), 张明尧 (译者), 张凡 (译者) 
-74.20(75折)，48.50(49折)，想买
-----
-10，汇编语言（第2版）
-http://product.dangdang.com/product.aspx?product_id=20196660
-24.80，不买
-----
-42，编译原理（第2版）——计算机科学丛书
-http://product.dangdang.com/product.aspx?product_id=20427584
-66.80(75折)，43.60(49折)，暂缓
-----
-43，算法导论（原书第2版）
-http://product.dangdang.com/product.aspx?product_id=9211884#catalog
-60.40(71折)
-----
-21，程序设计语言原理（原书第8版）
-56.20(75折)，观望
-----
-23，算法之道
-http://product.dangdang.com/product.aspx?product_id=20784900
-29.20(75折)
-----
-32，计算机程序设计艺术（第1卷）基本算法（英文版·第3版）
-87.90(93折)，等待中文版
-----
-33，算法分析与设计
-http://product.dangdang.com/product.aspx?product_id=9206018
-----
-34，计算机算法设计与分析（第3版）
-http://product.dangdang.com/product.aspx?product_id=9320416
-22.10(75折)
-----
-35，算法设计——世界著名计算机教材精选
-http://product.dangdang.com/product.aspx?product_id=9272815
-56.20(75折)
------
-36，并行性：状态模型与Java程序 Concurrency: State Models and Java Programs
-http://product.dangdang.com/product.aspx?product_id=20029732
-466.10，379.40
-----
-40，Java 实时编程
-36.80(75折)
-----
-46，虚拟机系统与进程的通用平台
-http://product.dangdang.com/product.aspx?product_id=20518616
-58.50(75折)
-----
-51，数据库系统实现
-44.20 (75折)
-=======================================================
-工具实践
-----
-161，多核应用编程实战
-39.50 (5折)，较底层，暂不考虑
-----
-139，Clojure程序设计
-2013年3月20日
-Programming Clojure, Second Edition，The Pragmatic Programmers，2012年4月17日
-36.80 (7.5折)，24.00(49折)，不买
-----
-25，黑客大曝光:Web应用程序安全(原书第3版)(Web安全技术人员必备参考)
-46.20(67折)，31.80(49折)，想买
-----
-92，Git权威指南
-53.40(60折)
-----
-24，深入理解Java虚拟机:JVM高级特性与最佳实践
-46.20(67折)
-----
-47，深入Java虚拟机（原书第2版）附光盘---SUN公司核心技术丛书
-47.00，2003年
-----
-49，java深度历险
-23.00，2002年台湾
-----
-26，Java语言程序设计 进阶篇（原书第6版）
-46.20(68折)
-----
-27，计算机图形学 应用Java 2D和3D
-http://product.dangdang.com/product.aspx?product_id=20192214
-41.20(75折)
-----
-94，PostgreSQL 数据库内核分析
-59.20 (75折)，38.70(49折)，观望
-----
-148，高性能MySQL(第3版)
-施瓦茨、扎伊采夫、特卡琴科、 宁海元 电子工业出版社 (2013-05出版)
-96.00(7.5折)，62.70(49折)
-----
-129，Oracle性能优化求生指南
-http://www.ituring.com.cn/book/772?q=Oracle
-74.20(7.5折)，48.50(49折)，观望
-----
-128，Oracle Database 11g完全参考手册
-罗尼(Kevin Loney) (作者), 刘伟琴 (译者), 张格仙 (译者) 
-118.50(7.5折)，77.40(49折)，
-----
-134，Oracle PL/SQL最佳实践
-Steven Feuerstein (作者), 龚波 (译者), 张平 (译者), 潘显俊 (译者) 
-36.00(7.5折)，33.60(49折)，
-----
-135，Oracle Database 11g SQL开发指南
-皮拉斯 (Price.J.) (作者), 史新元 (译者), 北英 (译者) 
-61.40(7.9折)，38.20(49折)，观望
-----
-136，Oracle PL/SQL程序设计(第5版)(套装上下册)
-弗伊尔斯坦(Steven Feuerstein) (作者), 普瑞拜尔(Bill Pribyl) (作者), 张晓明 (译者) 
-111.80(7.5折)，73.00(49折)，对翻译评价较差
-----
-131，Oracle索引技术
-http://www.ituring.com.cn/book/951?q=Oracle
-----
-132，DBA的思想天空：感悟Oracle数据库本质
-http://www.ituring.com.cn/book/972?q=Oracle
-http://www.amazon.cn/DBA的思想天空-感悟Oracle数据库本质-白鳝/dp/B009PIQ99E
-44.50(5折)，43.60(49折)，
-----
-144，SQL应用重构
-38.90(7.9折)，24.00(49折)，观望
-----
-158，SQL解惑(第2版)
-Joe Celko (作者)米全喜 (译者)
-缺货
+164，推荐系统
+Dietmar Jannach ， Markus Zanker ， Alexander Felfernig ， Gerhard Friedrich (作者) 　 蒋凡 (译者)
+http://www.ituring.com.cn/book/1078
+
 ----
 145，R和Ruby数据分析之旅
+
 ----
 160，统计思维：程序员数学之概率统计
-=============================================================
-NoSql,云计算,大数据
-----
-133，深入NoSQL
-http://www.ituring.com.cn/book/845?q=%E6%B7%B1%E5%85%A5NoSQL
-----
-52，Hadoop实战
-40.70 (69折)
-----
-54，深入学习MongoDB
-24.00 (75折)，观望
-----
-55，MongoDB 权威指南
-29.20 (75折)
-----
-56，Cassandra实战
-44.20 (75折)
-----
-58，Cassandra权威指南
-44.20 (75折)
+
 ----
 125，数据挖掘：概念与技术（原书第3版）
 http://product.dangdang.com/product.aspx?product_id=22846300
 60.40(76折)
+
 ----
 126，社交网站的数据挖掘与分析
 http://product.dangdang.com/product.aspx?product_id=22606834
 2011年Jolt生产效率大奖获奖图书
 44.30(75折)，观望
+
+----
+146，具体数学:计算机科学基础(第2版) [平装]
+~ Ronald L. Graham (作者), Donald E. Knuth (作者), Oren Patashnik (作者), 张明尧 (译者), 张凡 (译者) 
+74.20(75折)，48.50(49折)，想买
+
+----
+32，计算机程序设计艺术（第1卷）基本算法（英文版·第3版）
+87.90(93折)，等待中文版
+
+----
+10，汇编语言（第2版）
+http://product.dangdang.com/product.aspx?product_id=20196660
+24.80，不买
+
+----
+42，编译原理（第2版）——计算机科学丛书
+http://product.dangdang.com/product.aspx?product_id=20427584
+66.80(75折)，43.60(49折)，暂缓
+
+----
+21，程序设计语言原理（原书第8版）
+56.20(75折)，观望
+
+----
+43，算法导论（原书第2版）
+http://product.dangdang.com/product.aspx?product_id=9211884#catalog
+60.40(71折)
+
+----
+23，算法之道
+http://product.dangdang.com/product.aspx?product_id=20784900
+29.20(75折)
+
+----
+33，算法分析与设计
+http://product.dangdang.com/product.aspx?product_id=9206018
+
+----
+34，计算机算法设计与分析（第3版）
+http://product.dangdang.com/product.aspx?product_id=9320416
+22.10(75折)
+
+----
+35，算法设计——世界著名计算机教材精选
+http://product.dangdang.com/product.aspx?product_id=9272815
+56.20(75折)
+
+-----
+36，并行性：状态模型与Java程序 Concurrency: State Models and Java Programs
+http://product.dangdang.com/product.aspx?product_id=20029732
+466.10，379.40
+
+----
+40，Java 实时编程
+36.80(75折)
+
+----
+46，虚拟机系统与进程的通用平台
+http://product.dangdang.com/product.aspx?product_id=20518616
+58.50(75折)
+
+----
+24，深入理解Java虚拟机:JVM高级特性与最佳实践
+46.20(67折)
+
+----
+47，深入Java虚拟机（原书第2版）附光盘---SUN公司核心技术丛书
+47.00，2003年
+
+----
+49，java深度历险
+23.00，2002年台湾
+
+----
+51，数据库系统实现
+44.20 (75折)
+
+
+=======================================================
+工具实践
+
+----
+163，云端代码：Google App Engine编程指南
+Mark C. Chu-Carroll (作者), 刘姝 (译者), 管雪涛 (译者)
+22.50(5折)，
+
+----
+165，GAE编程指南
+桑德森(Dan Sanderson) (作者), 唐学韬 (译者), 何继业 (译者), 等 (译者)
+32.50 (5折)
+
+----
+166，Python基础教程(第2版)
+赫特兰(Magnus Lie Hetland) (作者), 司维 (译者), 曾军崴 (译者), 谭颖华 (译者)
+34.50 (5折)，有中文电子版
+
+----
+161，多核应用编程实战
+39.50 (5折)，较底层，暂不考虑
+
+----
+139，Clojure程序设计
+2013年3月20日
+Programming Clojure, Second Edition，The Pragmatic Programmers，2012年4月17日
+36.80 (7.5折)，24.00(49折)，不买
+
+----
+25，黑客大曝光:Web应用程序安全(原书第3版)(Web安全技术人员必备参考)
+46.20(67折)，31.80(49折)，想买
+
+----
+92，Git权威指南
+53.40(60折)
+
+----
+26，Java语言程序设计 进阶篇（原书第6版）
+46.20(68折)
+
+----
+27，计算机图形学 应用Java 2D和3D
+http://product.dangdang.com/product.aspx?product_id=20192214
+41.20(75折)
+
+
+==================
+工具实践-数据库
+
+----
+144，SQL应用重构
+38.90(7.9折)，24.00(49折)，观望
+
+----
+158，SQL解惑(第2版)
+Joe Celko (作者)米全喜 (译者)
+缺货
+
+----
+94，PostgreSQL 数据库内核分析
+59.20 (75折)，38.70(49折)，观望
+
+----
+148，高性能MySQL(第3版)
+施瓦茨、扎伊采夫、特卡琴科、 宁海元 电子工业出版社 (2013-05出版)
+96.00(7.5折)，62.70(49折)
+
+
+----
+129，Oracle性能优化求生指南
+http://www.ituring.com.cn/book/772?q=Oracle
+74.20(7.5折)，48.50(49折)，观望
+
+----
+128，Oracle Database 11g完全参考手册
+罗尼(Kevin Loney) (作者), 刘伟琴 (译者), 张格仙 (译者) 
+118.50(7.5折)，77.40(49折)，
+
+----
+134，Oracle PL/SQL最佳实践
+Steven Feuerstein (作者), 龚波 (译者), 张平 (译者), 潘显俊 (译者) 
+36.00(7.5折)，33.60(49折)，
+
+----
+135，Oracle Database 11g SQL开发指南
+皮拉斯 (Price.J.) (作者), 史新元 (译者), 北英 (译者) 
+61.40(7.9折)，38.20(49折)，观望
+
+----
+136，Oracle PL/SQL程序设计(第5版)(套装上下册)
+弗伊尔斯坦(Steven Feuerstein) (作者), 普瑞拜尔(Bill Pribyl) (作者), 张晓明 (译者) 
+111.80(7.5折)，73.00(49折)，对翻译评价较差
+
+----
+131，Oracle索引技术
+http://www.ituring.com.cn/book/951?q=Oracle
+
+----
+132，DBA的思想天空：感悟Oracle数据库本质
+http://www.ituring.com.cn/book/972?q=Oracle
+http://www.amazon.cn/DBA的思想天空-感悟Oracle数据库本质-白鳝/dp/B009PIQ99E
+44.50(5折)，43.60(49折)，
+
+
+=============================================================
+NoSql,云计算,大数据
+
+----
+133，深入NoSQL
+http://www.ituring.com.cn/book/845?q=%E6%B7%B1%E5%85%A5NoSQL
+
+----
+52，Hadoop实战
+40.70 (69折)
+
+----
+54，深入学习MongoDB
+24.00 (75折)，观望
+
+----
+55，MongoDB 权威指南
+29.20 (75折)
+
+----
+56，Cassandra实战
+44.20 (75折)
+
+----
+58，Cassandra权威指南
+44.20 (75折)
+
 ----
 143，HBase权威指南(影印版)(英文版)
 53.60(74折)，英文不买
+
+
 ===============================================================
 css,html5
+
 ----
 68，Eric Meyer谈CSS(卷2)
 http://product.dangdang.com/product.aspx?product_id=20176096
 36.80 (75折)，有中文电子版，不买
+
 ----
 89，Pro CSS for High Traffic Websites
 高流量网站CSS开发技术
 http://www.ituring.com.cn/book/979
+
 ----
 149，CDN技术详解
 51.80(7.5折)
+
+
 ==============================================================
 javascript
+
 ----
 73，ppk谈JavaScript
 不买
+
 ----
 28，JavaScript语言精粹
 31.90(91折)，有英文电子版，不买
+
 ----
 67，高性能JavaScript
 36.80(75折)
+
 ----
 74，JavaScript高级程序设计(第3版)
 http://www.ituring.com.cn/book/946
 48.50(49折)，不买
+
 ----
 83，JavaScript设计模式
 http://www.ituring.com.cn/book/388
 http://product.dangdang.com/product.aspx?product_id=20511558
 有英文电子版，不买
+
 ----
 65，JavaScript DOM编程艺术(第2版)
 36.80，有第1版中文（2006,2007），不买
+
 ----
 72，JavaScript DOM高级程序设计
 AdvancED DOM Scripting: Dynamic Web Design Techniques
 有英文电子版（，2008），观望
+
 ----
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20，17.20(49折)
+
 ----
-163，
+168，
