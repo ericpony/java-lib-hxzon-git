@@ -291,3 +291,7 @@ Analysis Patterns : Reusable Object Models
 162，Java虚拟机并发编程
 《Programming Concurrency on the JVM》，有英文打印版，必看，观望
 
+----
+168，七周七数据库
+Eric Redmond (作者), Jim R.Wilson (作者), 王海鹏 (译者), 田思源 (译者), 王晨 (译者) 
+44.20(7.5折)，想买
