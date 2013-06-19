@@ -1,0 +1,232 @@
+﻿Implementing Domain-Driven Design
+
+作者: Vernon Vaughn 
+出版年: 2013-2
+页数: 656
+定价: 426.00元
+ISBN: 9780321834577
+
+=============
+"For software developers of all experience levels looking to improve their results, and design and implement domain-driven enterprise applications consistently with the best current state of professional practice, Implementing Domain-Driven Design will impart a treasure trove of knowledge hard won within the DDD and enterprise application architecture communities over the last couple decades." -Randy Stafford, Architect At-Large, Oracle Coherence Product Development "This book is a must-read for anybody looking to put DDD into practice." -Udi Dahan, Founder of NServiceBus Implementing Domain-Driven Design presents a top-down approach to understanding domain-driven design (DDD) in a way that fluently connects strategic patterns to fundamental tactical programming tools. Vaughn Vernon couples guided approaches to implementation with modern architectures, highlighting the importance and value of focusing on the business domain while balancing technical considerations. Building on Eric Evans' seminal book, Domain-Driven Design, the author presents practical DDD techniques through examples from familiar domains. Each principle is backed up by realistic Java examples-all applicable to C# developers-and all content is tied together by a single case study: the delivery of a large-scale Scrum-based SaaS system for a multitenant environment. The author takes you far beyond "DDD-lite" approaches that embrace DDD solely as a technical toolset, and shows you how to fully leverage DDD's "strategic design patterns" using Bounded Context, Context Maps, and the Ubiquitous Language. Using these techniques and examples, you can reduce time to market and improve quality, as you build software that is more flexible, more scalable, and more tightly aligned to business goals. Coverage includes * Getting started the right way with DDD, so you can rapidly gain value from it* Using DDD within diverse architectures, including Hexagonal, SOA, REST, CQRS, Event-Driven, and Fabric/Grid-Based* Appropriately designing and applying Entities-and learning when to use Value Objects instead* Mastering DDD's powerful new Domain Events technique* Designing Repositories for ORM, NoSQL, and other databases
+
+================
+目录
+
+Foreword xvii
+Preface xix
+Acknowledgments xxix
+About the Author xxxiii
+Guide to This Book xxxv
+
+Chapter 1: Getting Started with DDD 1 开始领域驱动设计
+
+Chapter 2: Domains, Subdomains, and Bounded Contexts 43 领域，子领域，限界上下文
+
+Chapter 3: Context Maps 87 上下文图
+
+Chapter 4: Architecture 113 架构
+
+Chapter 5: Entities 171 实体
+
+Chapter 6: Value Objects 219 值对象
+
+Chapter 7: Services 265 服务
+
+Chapter 8: Domain Events 285 领域事件
+
+Chapter 9: Modules 333 模块
+
+Chapter 10: Aggregates 347 聚合
+
+Chapter 11: Factories 389 工厂
+
+Chapter 12: Repositories 401 资源库
+
+Chapter 13: Integrating Bounded Contexts 449 集成限界上下文
+
+Chapter 14: Application 509 应用程序
+
+Appendix A: Aggregates and Event Sourcing: A+ES 539
+
+Bibliography 585
+
+Index 589
+
+=========
+目录
+
+Foreword xvii
+Preface xix
+Acknowledgments xxix
+About the Author xxxiii
+Guide to This Book xxxv
+
+
+Chapter 1: Getting Started with DDD 1
+
+Can I DDD? 2
+Why You Should Do DDD 6
+How to Do DDD 20
+The Business Value of Using DDD 25
+The Challenges of Applying DDD 29
+Fiction, with Bucketfuls of Reality 38
+Wrap-Up 41
+
+
+Chapter 2: Domains, Subdomains, and Bounded Contexts 43
+
+Big Picture 43
+Why Strategic Design Is So Incredibly Essential 53
+Real-World Domains and Subdomains 56
+Making Sense of Bounded Contexts 62
+Sample Contexts 72
+Wrap-Up 84
+
+
+Chapter 3: Context Maps 87
+
+Why Context Maps Are So Essential 87
+Wrap-Up 111
+
+
+Chapter 4: Architecture 113
+
+Interviewing the Successful CIO 114
+Layers 119
+Hexagonal or Ports and Adapters 125
+Service-Oriented 130
+Representational State Transfer–REST 133
+Command-Query Responsibility Segregation, or CQRS 138
+Event-Driven Architecture 147
+Data Fabric and Grid-Based Distributed Computing 163
+Wrap-Up 168
+
+
+Chapter 5: Entities 171
+
+Why We Use Entities 171
+Unique Identity 173
+Discovering Entities and Their Intrinsic Characteristics 191
+Wrap-Up 217
+
+
+Chapter 6: Value Objects 219
+
+Value Characteristics 221
+Integrate with Minimalism 232
+Standard Types Expressed as Values 234
+Testing Value Objects 239
+Implementation 243
+Persisting Value Objects 248
+Wrap-Up 263
+
+
+Chapter 7: Services 265
+
+What a Domain Service Is (but First, What It Is Not) 267
+Make Sure You Need a Service 268
+Modeling a Service in the Domain 272
+Testing Services 281
+Wrap-Up 284
+
+
+Chapter 8: Domain Events 285
+
+The When and Why of Domain Events 285
+Modeling Events 288
+Publishing Events from the Domain Model 296
+Spreading the News to Remote Bounded Contexts 303
+Event Store 307
+Architectural Styles for Forwarding Stored Events 312
+Implementation 318
+Wrap-Up 331
+
+
+Chapter 9: Modules 333
+
+Designing with Modules 333
+Basic Module Naming Conventions 336
+Module Naming Conventions for the Model 337
+Modules of the Agile Project Management Context 340
+Modules in Other Layers 343
+Module before Bounded Context 344
+Wrap-Up 345
+
+
+Chapter 10: Aggregates 347
+
+Using Aggregates in the Scrum Core Domain 348
+Rule: Model True Invariants in Consistency Boundaries 353
+Rule: Design Small Aggregates 355
+Rule: Reference Other Aggregates by Identity 359
+Rule: Use Eventual Consistency Outside the Boundary 364
+Reasons to Break the Rules 367
+Gaining Insight through Discovery 370
+Implementation 380
+Wrap-Up 388
+
+
+Chapter 11: Factories 389
+
+Factories in the Domain Model 389
+Factory Method on Aggregate Root 391
+Factory on Service 397
+Wrap-Up 400
+
+
+Chapter 12: Repositories 401
+
+Collection-Oriented Repositories 402
+Persistence-Oriented Repositories 418
+Additional Behavior 430
+Managing Transactions 432
+Type Hierarchies 437
+Repository versus Data Access Object 440
+Testing Repositories 441
+Wrap-Up 448
+
+
+Chapter 13: Integrating Bounded Contexts 449
+
+Integration Basics 450
+Integration Using RESTful Resources 458
+Integration Using Messaging 469
+Wrap-Up 508
+
+
+Chapter 14: Application 509
+
+User Interface 512
+Application Services 521
+Composing Multiple Bounded Contexts 531
+Infrastructure 532
+Enterprise Component Containers 534
+Wrap-Up 537
+
+
+Appendix A: Aggregates and Event Sourcing: A+ES 539
+
+Inside an Application Service 541
+Command Handlers 549
+Lambda Syntax 553
+Concurrency Control 554
+Structural Freedom with A+ES 558
+Performance 558
+Implementing an Event Store 561
+Relational Persistence 565
+BLOB Persistence 568
+Focused Aggregates 569
+Read Model Projections 570
+Use with Aggregate Design 573
+Events Enrichment 573
+Supporting Tools and Patterns 576
+Contract Generation 580
+Unit Testing and Specifications 582
+Event Sourcing in Functional Languages 583
+
+
+Bibliography 585
+
+
+Index 589
+
