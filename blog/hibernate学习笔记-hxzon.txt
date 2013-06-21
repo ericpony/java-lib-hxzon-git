@@ -1,0 +1,19 @@
+﻿hibernate学习笔记-hxzon
+
+by hxzon
+
+1，
+
+from User u
+where u.username like :username
+and exists
+(select 1 from u.roles ur where :roleId in ur)
+
+查找属于特定角色的账户。
+
+
+2，多对多关联时，会创建中间表，这个中间表只有两个实体的id字段，如何定制这个中间表，例如创建一个“创建时间”字段？
+
+反思：因为这个中间表并没有对应一个类，“创建时间”字段在应用程序中如何使用？
+
+3，
