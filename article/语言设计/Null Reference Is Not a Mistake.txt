@@ -1,0 +1,97 @@
+﻿Null Reference Is Not a Mistake
+
+学中注释。
+
+http://yinwang0.wordpress.com/2013/06/03/null/
+
+ JUNE 3, 2013 BY YIN WANG
+
+http://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare
+
+
+The null pointer is considered to be a “billion-dollar mistake” by Tony Hoare, but was he really saying that null pointer should never be used? After years of using languages both with null pointers (e.g. Java) and without them (e.g. Haskell), I found that null pointers are much easier and more natural to use than its counterparts (e.g. Haskell’s Maybe type). I have been wondering why there is such a notion of “billion-dollar mistake” until I saw the original video where Tony Hoare claims it to be his mistake. In fact, he didn’t really say that null pointer should not be used, so I realized that I made a mistake by taking the words “billion-dollar mistake” literally.
+
+Tony Hoare 认为空指针是一个“十亿美元的错误”，但他是不是真的在说永远不要使用空指针？
+在使用了多年的语言，包括带有空指针的java，和不含空指针的Haskell，我觉得使用空指针是非常容易和自然的。（比Haskell的Maybe类型好用。）
+直到我看了Tony Hoare的视频之前，我一直好奇为什么空指针是一个“十亿美元的错误”。
+事实上，他不是真的说不要用空指针，我犯了个错误，从字面上来理解。
+
+
+From this video, you can see that introducing null reference is not really a mistake. On the contrary, null references are helpful and sometimes indispensable (consider how much trouble if you may or may not return a string in C++). The mistake really is not in the existence of the null pointers, but in how the type system handles them. Unfortunately most languages (C++, Java) don’t handle them correctly.
+
+视频里说的，空指针并非真的是一个错误。相反，空指针是非常有用，有时甚至不可或缺。（想象一下，你想在C++中返回一个字符串有多麻烦。）
+错误的关键不是空指针的存在，而是类型系统如何处理它们。
+不幸的正是大部分语言，例如C++和java都没有正确处理它们。
+
+
+Every class type A of Java is in fact a union type {A, null}, because you can use null anywhere an object of class A is expected. This is equivalent to the Maybe type of Haskell (where null in Java corresponds to Nothing of Haskell). So the trouble really is that an annotation like {String, null} should be distinguished from String, so that it will be clear what can possibly end up in the value. Unfortunately most languages don’t provide a convenient union type that you can put String and null together (Typed Racket is an exception). If Java is to have union types, we can say something like:
+
+在java中，每一个类实际上应该是一个联合类型，即{A, null}，因为你可以在期待A的每个地方使用null。
+这和Haskell的Maybe类型相同（java的空指针等价于Haskell的Nothing）。
+所以问题实际上是必须区分{String, null}和String，使得？？清晰。
+不幸的是，大部分语言都没有提供联合类型，让你能够把String和null放在一起。
+如果java有联合类型，我们可以这样写代码：
+
+
+
+{String, null} findName1() {
+  if (...) {
+    return "okay";
+  } else {
+    return null;
+  }
+}
+
+
+This is saying: findName may return a name which is a String, or it may return nothing. In comparison, we can say something slightly different:
+
+这表示说，这个函数会返回一个字符串，或者空指针。
+作为比较，
+
+String findName2() {
+    ...
+    return "okay";
+}
+
+
+By distinguishing the return types of findName1() and fineName2(), the type system knows that you should check for null when you have called findName1(), but you don’t need to check for null if you call findName2(). So you have to write something like:
+
+对比两个函数，类型系统知道你必须检查findName1()的返回值是否为空指针，而findName2()你则不必检查。
+所以你可以像下面这样写代码：
+
+String s = findName1();  
+if (s != null) {
+  x = s.length();      // use s as a String only after null check
+}
+
+
+But you may write:
+
+
+String s = findName2();
+x = s.length();
+
+
+For the latter, you don’t have to check whether s is null because we know definitely that findName2() will return a String which is not null.
+
+我们必须检查s是否是空指针，因为findName2()的返回值不会是空指针。
+
+
+In fact this approach is hinted by Tony Hoare in the above video at 00:24.00. He said that null should be a class. Indeed, the union type {String, null} certainly thinks of null to be at the same status of String – it is a class.
+
+在视频24分钟处，Tony Hoare 也表明这一点。
+他指出null必须是一个类。
+联合类型{String, null}把null视为和string的地位是一样的，都是一个类。
+
+
+But we soon realize that it doesn’t really matter whether null is a class or not since the class Null will have only one value — null. So any language with null references should work equally well given a correct type system.
+
+null是一个类或者不是一个类其实不重要，因为它只有一个值，null。
+所以每个有空指针的语言都能很好的相同的工作，如果它们有正确的类型系统。
+
+Static analysis tools such Coverity can already help alleviate this issue by essentially inferring the union types like {String, null} even when the programmers write String instead, although a type annotation system which allows the programmers to specify union types directly certainly makes type checking easier and also makes programs easier to read.
+
+（alleviate缓和）
+静态分析工具如Coverity，能够缓和这个问题，通过推断能识别出联合类型，即便程序员只是使用String。
+当然，允许程序员指明联合类型会让类型检查更容易，也更可读。
+
