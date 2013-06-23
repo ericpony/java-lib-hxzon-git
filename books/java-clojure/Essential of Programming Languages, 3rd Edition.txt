@@ -1,0 +1,33 @@
+﻿Essential of Programming Languages, 3rd Edition
+
+作者是王垠的老师。《编程语言的本质》
+
+
+作者: Daniel P. Friedman / Mitchell Wand 
+出版社: The MIT Press
+出版年: 2008-04-30
+页数: 416
+定价: USD 65.00
+装帧: Hardcover
+ISBN: 9780262062794
+
+http://book.douban.com/subject/3136252/
+http://mitpress.mit.edu/books/essentials-programming-languages
+============
+This textbook offers a deep understanding of the essential concepts of programming languages. The approach is analytic and hands-on. The text uses interpreters, written in Scheme, to express the semantics of many essential language elements in a way that is both clear and directly executable. It also examines some important program analyses. Extensive exercises explore many design and implementation alternatives.
+
+
+
+This book provides students with a deep, working understanding of the essential concepts of programming languages. Most of these essentials relate to the semantics, or meaning, of program elements, and the text uses interpreters (short programs that directly analyze an abstract representation of the program text) to express the semantics of many essential language elements in a way that is both clear and executable. The approach is both analytical and hands-on. The book provides views of programming languages using widely varying levels of abstraction, maintaining a clear connection between the high-level and low-level views. Exercises are a vital part of the text and are scattered throughout; the text explains the key concepts, and the exercises explore alternative designs and other issues. The complete Scheme code for all the interpreters and analyzers in the book can be found online through The MIT Press Web site. For this new edition, each chapter has been revised and many new exercises have been added. Significant additions have been made to the text, including completely new chapters on modules and continuation-passing style. Essentials of Programming Languages can be used for both graduate and undergraduate courses, and for continuing education courses for programmers.Daniel P. Friedman is Professor of Computer Science at Indiana University and is the author of many books published by The MIT Press, including The Little Schemer (fourth edition, 1995), The Seasoned Schemer (1995), A Little Java, A Few Patterns (1997), each of these coauthored with Matthias Felleisen, and The Reasoned Schemer (2005), coauthored with William E. Byrd and Oleg Kiselyov. Mitchell Wand is Professor of Computer Science at Northeastern University.
+
+==========
+媒体推荐
+
+"I've found the interpreters-based approach for teaching programming languages to be both compelling and rewarding for my students. Exposing students to the revelation that an interpreter for a programming language is itself just another program opens up a world of possibilities for problem-solving. The third edition of Essentials of Programming Languages makes this approach of writing interpreters more accessible than ever."--Marc L. Smith, Department of Computer Science, Vassar College "Having taught from EOPL for several years, I appreciate the way it producesstudents who understand the terminology and concepts of programminglanguages in a deep way, not just from reading about the concepts, but fromprogramming them and experimenting with them. This new edition has anincreased emphasis on types as contracts for defining procedure interfaces,which is quite important for many students. This new emphasis meshes wellwith the way the domains and operations of the interpreters are described."--Gary T. Leavens, School of Electrical Engineering and Computer Science,University of Central Florida -- Gary Leavens "With lucid prose and elegant code, this book provides the most concrete introduction to the few building blocks that give rise to a wide variety of programming languages. I recommend it to my students and look forward to using it in my courses."--Chung-chieh Shan, Department of Computer Science, Rutgers University -- Chung-Chieh Shan "Having taught from EOPL for several years, I appreciate the way it produces students who understand the terminology and concepts of programming languages in a deep way, not just from reading about the concepts, but from programming them and experimenting with them. This new edition has an increased emphasis on types as contracts for defining procedure interfaces, which is quite important for many students." Gary T. Leavens , School of Electrical Engineering and Computer Science, University of Central Florida "With lucid prose and elegant code, this book provides the most concrete introduction to the few building blocks that give rise to a wide variety of programming languages. I recommend it to my students and look forward to using it in my courses." Chung-chieh Shan , Department of Computer Science, Rutgers University
+
+
+作者简介
+
+Daniel P. Friedman is Professor of Computer Science at Indiana University and is the author of many books published by the MIT Press, including The Little Schemer (fourth edition, 1995), The Seasoned Schemer (1995), A Little Java, A Few Patterns (1997), each of these coauthored with Matthias Felleisen, and The Reasoned Schemer (2005), coauthored with William E. Byrd and Oleg Kiselyov. Mitchell Wand is Professor of Computer Science at Northeastern University.
+
+
