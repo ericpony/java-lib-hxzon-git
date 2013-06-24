@@ -1,0 +1,351 @@
+﻿hibernate学习笔记-dev-Chapter 11. HQL and JPQL（11.5至11.10）
+
+by hxzon
+
+http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html/ch11.html
+
+
+=======
+11.5. The SELECT clause
+
+The SELECT clause identifies which objects and values to return as the query results. The expressions discussed in Section 11.4, “Expressions” are all valid select expressions, except where otherwise noted. See the section Section 11.10, “Query API” for information on handling the results depending on the types of values specified in the SELECT clause.
+
+There is a particular expression type that is only valid in the select clause. Hibernate calls this “dynamic instantiation”. JPQL supports some of that feature and calls it a “constructor expression”
+
+Example 11.27. Dynamic instantiation example - constructor
+
+select new Family( mother, mate, offspr )
+from DomesticCat as mother
+    join mother.mate as mate
+    left join mother.kittens as offspr
+
+So rather than dealing with the Object[] (again, see Section 11.10, “Query API”) here we are wrapping the values in a type-safe java object that will be returned as the results of the query. The class reference must be fully qualified and it must have a matching constructor.
+
+The class here need not be mapped. If it does represent an entity, the resulting instances are returned in the NEW state (not managed!).
+
+That is the part JPQL supports as well. HQL supports additional “dynamic instantiation” features. First, the query can specify to return a List rather than an Object[] for scalar results:
+
+Example 11.28. Dynamic instantiation example - list
+
+select new list(mother, offspr, mate.name)
+from DomesticCat as mother
+    inner join mother.mate as mate
+    left outer join mother.kittens as offspr
+
+The results from this query will be a List<List> as opposed to a List<Object[]>
+
+HQL also supports wrapping the scalar results in a Map.
+
+Example 11.29. Dynamic instantiation example - map
+
+select new map( mother as mother, offspr as offspr, mate as mate )
+from DomesticCat as mother
+    inner join mother.mate as mate
+    left outer join mother.kittens as offspr
+
+select new map( max(c.bodyWeight) as max, min(c.bodyWeight) as min, count(*) as n )
+from Cat c
+
+The results from this query will be a List<Map<String,Object>> as opposed to a List<Object[]>. The keys of the map are defined by the aliases given to the select expressions.
+
+11.6. Predicates
+
+Predicates form the basis of the where clause, the having clause and searched case expressions. They are expressions which resolve to a truth value, generally TRUE or FALSE, although boolean comparisons involving NULLs generally resolve to UNKNOWN.
+
+11.6.1. Relational comparisons
+
+Comparisons involve one of the comparison operators - =, >, >=, <, <=, <>]>. HQL also defines <![CDATA[!= as a comparison operator synonymous with <>. The operands should be of the same type.
+
+Example 11.30. Relational comparison examples
+
+// numeric comparison
+select c
+from Customer c
+where c.chiefExecutive.age < 30
+
+// string comparison
+select c
+from Customer c
+where c.name = 'Acme'
+
+// datetime comparison
+select c
+from Customer c
+where c.inceptionDate < {d '2000-01-01'}
+
+// enum comparison
+select c
+from Customer c
+where c.chiefExecutive.gender = com.acme.Gender.MALE
+
+// boolean comparison
+select c
+from Customer c
+where c.sendEmail = true
+
+// entity type comparison
+select p
+from Payment p
+where type(p) = WireTransferPayment
+
+// entity value comparison
+select c
+from Customer c
+where c.chiefExecutive = c.chiefTechnologist
+
+Comparisons can also involve subquery qualifiers - ALL, ANY, SOME. SOME and ANY are synonymous.
+
+The ALL qualifier resolves to true if the comparison is true for all of the values in the result of the subquery. It resolves to false if the subquery result is empty.
+
+Example 11.31. ALL subquery comparison qualifier example
+
+// select all players that scored at least 3 points
+// in every game.
+select p
+from Player p
+where 3 > all (
+    select spg.points
+    from StatsPerGame spg
+    where spg.player = p
+)
+
+The ANY/SOME qualifier resolves to true if the comparison is true for some of (at least one of) the values in the result of the subquery. It resolves to false if the subquery result is empty.
+
+11.6.2. Nullness predicate
+
+Check a value for nullness. Can be applied to basic attribute references, entity references and parameters. HQL additionally allows it to be applied to component/embeddable types.
+
+Example 11.32. Nullness checking examples
+
+// select everyone with an associated address
+select p
+from Person p
+where p.address is not null
+
+// select everyone without an associated address
+select p
+from Person p
+where p.address is null
+
+11.6.3. Like predicate
+
+Performs a like comparison on string values. The syntax is:
+
+like_expression ::=
+        string_expression
+        [NOT] LIKE pattern_value
+        [ESCAPE escape_character]
+The semantics follow that of the SQL like expression. The pattern_value is the pattern to attempt to match in the string_expression. Just like SQL, pattern_value can use “_” and “%” as wildcards. The meanings are the same. “_” matches any single character. “%” matches any number of characters.
+
+The optional escape_character is used to specify an escape character used to escape the special meaning of “_” and “%” in the pattern_value. THis is useful when needing to search on patterns including either “_” or “%”
+
+Example 11.33. Like predicate examples
+
+select p
+from Person p
+where p.name like '%Schmidt'
+
+select p
+from Person p
+where p.name not like 'Jingleheimmer%'
+
+// find any with name starting with "sp_"
+select sp
+from StoredProcedureMetadata sp
+where sp.name like 'sp|_%' escape '|'
+
+
+11.6.4. Between predicate
+
+Analogous to the SQL between expression. Perform a evaluation that a value is within the range of 2 other values. All the operands should have comparable types.
+
+Example 11.34. Between predicate examples
+
+select p
+from Customer c
+    join c.paymentHistory p
+where c.id = 123
+  and index(p) between 0 and 9
+
+select c
+from Customer c
+where c.president.dateOfBirth
+        between {d '1945-01-01'}
+            and {d '1965-01-01'}
+
+select o
+from Order o
+where o.total between 500 and 5000
+
+select p
+from Person p
+where p.name between 'A' and 'E' 
+
+11.6.5. In predicate
+
+IN predicates performs a check that a particular value is in a list of values. Its syntax is:
+
+in_expression ::= single_valued_expression
+            [NOT] IN single_valued_list
+
+single_valued_list ::= constructor_expression |
+            (subquery) |
+            collection_valued_input_parameter
+
+constructor_expression ::= (expression[, expression]*)
+The types of the single_valued_expression and the individual values in the single_valued_list must be consistent. JPQL limits the valid types here to string, numeric, date, time, timestamp, and enum types. In JPQL, single_valued_expression can only refer to:
+
+“state fields”, which is its term for simple attributes. Specifically this excludes association and component/embedded attributes.
+entity type expressions. See Section 11.4.10, “Entity type”
+In HQL, single_valued_expression can refer to a far more broad set of expression types. Single-valued association are allowed. So are component/embedded attributes, although that feature depends on the level of support for tuple or “row value constructor syntax” in the underlying database. Additionally, HQL does not limit the value type in any way, though application developers should be aware that different types may incur limited support based on the underlying database vendor. This is largely the reason for the JPQL limitations.
+
+The list of values can come from a number of different sources. In the constructor_expression and collection_valued_input_parameter, the list of values must not be empty; it must contain at least one value.
+
+Example 11.35. In predicate examples
+
+select p
+from Payment p
+where type(p) in (CreditCardPayment, WireTransferPayment)
+
+select c
+from Customer c
+where c.hqAddress.state in ('TX', 'OK', 'LA', 'NM')
+
+select c
+from Customer c
+where c.hqAddress.state in ?
+
+select c
+from Customer c
+where c.hqAddress.state in (
+    select dm.state
+    from DeliveryMetadata dm
+    where dm.salesTax is not null
+)
+
+// Not JPQL compliant!
+select c
+from Customer c
+where c.name in (
+    ('John','Doe'),
+    ('Jane','Doe')
+)
+
+// Not JPQL compliant!
+select c
+from Customer c
+where c.chiefExecutive in (
+    select p
+    from Person p
+    where ...
+)
+
+11.6.6. Exists predicate
+
+Exists expressions test the existence of results from a subquery. The affirmative form returns true if the subquery result contains values. The negated form returns true if the subquery result is empty.
+
+11.6.7. Empty collection predicate
+
+The IS [NOT] EMPTY expression applies to collection-valued path expressions. It checks whether the particular collection has any associated values.
+
+Example 11.36. Empty collection expression examples
+
+select o
+from Order o
+where o.lineItems is empty
+
+select c
+from Customer c
+where c.pastDueBills is not empty
+
+11.6.8. Member-of collection predicate
+
+The [NOT] MEMBER [OF] expression applies to collection-valued path expressions. It checks whether a value is a member of the specified collection.
+
+Example 11.37. Member-of collection expression examples
+
+select p
+from Person p
+where 'John' member of p.nickNames
+
+select p
+from Person p
+where p.name.first = 'Joseph'
+  and 'Joey' not member of p.nickNames
+
+11.6.9. NOT predicate operator
+
+The NOT operator is used to negate the predicate that follows it. If that following predicate is true, the NOT resolves to false. If the predicate is true, NOT resolves to false. If the predicate is unknown, the NOT resolves to unknown as well.
+
+11.6.10. AND predicate operator
+
+The AND operator is used to combine 2 predicate expressions. The result of the AND expression is true if and only if both predicates resolve to true. If either predicate resolves to unknown, the AND expression resolves to unknown as well. Otherwise, the result is false.
+
+11.6.11. OR predicate operator
+
+The OR operator is used to combine 2 predicate expressions. The result of the OR expression is true if either predicate resolves to true. If both predicates resolve to unknown, the OR expression resolves to unknown. Otherwise, the result is false.
+
+11.7. The WHERE clause
+
+The WHERE clause of a query is made up of predicates which assert whether values in each potential row match the predicated checks. Thus, the where clause restricts the results returned from a select query and limits the scope of update and delete queries.
+
+11.8. Grouping
+
+The GROUP BY clause allows building aggregated results for various value groups. As an example, consider the following queries:
+
+Example 11.38. Group-by illustration
+
+// retrieve the total for all orders
+select sum( o.total )
+from Order o
+
+// retrieve the total of all orders
+// *grouped by* customer
+select c.id, sum( o.total )
+from Order o
+    inner join o.customer c
+group by c.id
+
+The first query retrieves the complete total of all orders. The second retrieves the total for each customer; grouped by each customer.
+
+In a grouped query, the where clause applies to the non aggregated values (essentially it determines whether rows will make it into the aggregation). The HAVING clause also restricts results, but it operates on the aggregated values. In the Example 11.38, “Group-by illustration” example, we retrieved order totals for all customers. If that ended up being too much data to deal with, we might want to restrict the results to focus only on customers with a summed order total of more than $10,000.00:
+
+Example 11.39. Having illustration
+
+select c.id, sum( o.total )
+from Order o
+    inner join o.customer c
+group by c.id
+having sum( o.total ) > 10000.00
+
+The HAVING clause follows the same rules as the WHERE clause and is also made up of predicates. HAVING is applied after the groupings and aggregations have been done; WHERE is applied before.
+
+11.9. Ordering
+
+The results of the query can also be ordered. The ORDER BY clause is used to specify the selected values to be used to order the result. The types of expressions considered valid as part of the order-by clause include:
+
+state fields
+component/embeddable attributes
+scalar expressions such as arithmetic operations, functions, etc.
+identification variable declared in the select clause for any of the previous expression types
+Additionally, JPQL says that all values referenced in the order-by clause must be named in the select clause. HQL does not mandate that restriction, but applications desiring database portability should be aware that not all databases support referencing values in the order-by clause that are not referenced in the select clause.
+
+Individual expressions in the order-by can be qualified with either ASC (ascending) or DESC (descending) to indicated the desired ordering direction.
+
+Example 11.40. Order-by examples
+
+// legal because p.name is implicitly part of p
+select p
+from Person p
+order by p.name
+
+select c.id, sum( o.total ) as t
+from Order o
+    inner join o.customer c
+group by c.id
+order by t
+
+11.10. Query API
+
+
+

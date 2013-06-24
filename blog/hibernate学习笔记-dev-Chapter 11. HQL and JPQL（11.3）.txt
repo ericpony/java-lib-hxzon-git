@@ -1,0 +1,257 @@
+﻿hibernate学习笔记-dev-Chapter 11. HQL and JPQL（11.3）
+
+by hxzon
+
+http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html/ch11.html
+
+==============
+
+11.3. The FROM clause
+
+The FROM clause is responsible defining the scope of object model types available to the rest of the query. It also is responsible for defining all the “identification variables” available to the rest of the query.
+
+11.3.1. Identification variables
+
+Identification variables are often referred to as aliases. References to object model classes in the FROM clause can be associated with an identification variable that can then be used to refer to that type thoughout the rest of the query.
+
+In most cases declaring an identification variable is optional, though it is usually good practice to declare them.
+
+An identification variable must follow the rules for Java identifier validity.
+
+According to JPQL, identification variables must be treated as case insensitive. Good practice says you should use the same case throughout a query to refer to a given identification variable. In other words, JPQL says they can be case insensitive and so Hibernate must be able to treat them as such, but this does not make it good practice.
+
+11.3.2. Root entity references
+
+A root entity reference, or what JPA calls a range variable declaration, is specifically a reference to a mapped entity type from the application. It cannot name component/ embeddable types. And associations, including collections, are handled in a different manner discussed later.
+
+The BNF for a root entity reference is:
+
+root_entity_reference ::= entity_name [AS] identification_variable
+Example 11.3. Simple query example
+
+select c from com.acme.Cat c
+
+We see that the query is defining a root entity reference to the com.acme.Cat object model type. Additionally, it declares an alias of c to that com.acme.Cat reference; this is the identification variable.
+
+Usually the root entity reference just names the entity name rather than the entity class FQN. By default the entity name is the unqualified entity class name, here Cat
+
+Example 11.4. Simple query using entity name for root entity reference
+
+select c from Cat c
+
+Multiple root entity references can also be specified. Even naming the same entity!
+
+Example 11.5. Simple query using multiple root entity references
+
+// build a product between customers and active mailing campaigns so we can spam!
+select distinct cust, camp
+from Customer cust, Campaign camp
+where camp.type = 'mail'
+  and current_timestamp() between camp.activeRange.start and camp.activeRange.end
+// retrieve all customers with headquarters in the same state as Acme's headquarters
+select distinct c1
+from Customer c1, Customer c2
+where c1.address.state = c2.address.state
+  and c2.name = 'Acme'
+
+11.3.3. Explicit joins
+
+The FROM clause can also contain explicit relationship joins using the join keyword. These joins can be either inner or left outer style joins.
+
+Example 11.6. Explicit inner join examples
+
+select c
+from Customer c
+    join c.chiefExecutive ceo
+where ceo.age < 25
+
+// same query but specifying join type as 'inner' explicitly
+select c
+from Customer c
+    inner join c.chiefExecutive ceo
+where ceo.age < 25
+
+Example 11.7. Explicit left (outer) join examples
+
+// get customers who have orders worth more than $5000
+// or who are in "preferred" status
+select distinct c
+from Customer c
+    left join c.orders o
+where o.value > 5000.00
+  or c.status = 'preferred'
+
+// functionally the same query but using the
+// 'left outer' phrase
+select distinct c
+from Customer c
+    left outer join c.orders o
+where o.value > 5000.00
+  or c.status = 'preferred'
+
+An important use case for explicit joins is to define FETCH JOINS which override the laziness of the joined association. As an example, given an entity named Customer with a collection-valued association named orders
+
+Example 11.8. Fetch join example
+
+select c
+from Customer c
+    left join fetch c.orders o
+
+As you can see from the example, a fetch join is specified by injecting the keyword fetch after the keyword join. In the example, we used a left outer join because we want to return customers who have no orders also. Inner joins can also be fetched. But inner joins still filter. In the example, using an inner join instead would have resulted in customers without any orders being filtered out of the result.
+
+Important
+Fetch joins are not valid in sub-queries.
+Care should be taken when fetch joining a collection-valued association which is in any way further restricted; the fetched collection will be restricted too! For this reason it is usually considered best practice to not assign an identification variable to fetched joins except for the purpose of specifying nested fetch joins.
+Fetch joins should not be used in paged queries (aka, setFirstResult/ setMaxResults). Nor should they be used with the HQL scroll or iterate features.
+HQL also defines a WITH clause to qualify the join conditions. Again, this is specific to HQL; JPQL does not define this feature.
+
+Example 11.9. with-clause join example
+
+select distinct c
+from Customer c
+    left join c.orders o
+        with o.value > 5000.00
+
+The important distinction is that in the generated SQL the conditions of the with clause are made part of the on clause in the generated SQL as opposed to the other queries in this section where the HQL/JPQL conditions are made part of the where clause in the generated SQL. The distinction in this specific example is probably not that significant. The with clause is sometimes necessary in more complicated queries.
+
+Explicit joins may reference association or component/embedded attributes. For further information about collection-valued association references, see Section 11.3.5, “Collection member references”. In the case of component/embedded attributes, the join is simply logical and does not correlate to a physical (SQL) join.
+
+11.3.4. Implicit joins (path expressions)
+
+Another means of adding to the scope of object model types available to the query is through the use of implicit joins, or path expressions.
+
+Example 11.10. Simple implicit join example
+
+select c
+from Customer c
+where c.chiefExecutive.age < 25
+
+// same as
+select c
+from Customer c
+    inner join c.chiefExecutive ceo
+where ceo.age < 25
+
+An implicit join always starts from an identification variable, followed by the navigation operator (.), followed by an attribute for the object model type referenced by the initial identification variable. In the example, the initial identification variable is c which refers to the Customer entity. The c.chiefExecutive reference then refers to the chiefExecutive attribute of the Customer entity. chiefExecutive is an association type so we further navigate to its age attribute.
+
+Important
+If the attribute represents an entity association (non-collection) or a component/embedded, that reference can be further navigated. Basic values and collection-valued associations cannot be further navigated.
+As shown in the example, implicit joins can appear outside the FROM clause. However, they affect the FROM clause. Implicit joins are always treated as inner joins. Multiple references to the same implicit join always refer to the same logical and physical (SQL) join.
+
+Example 11.11. Reused implicit join
+
+select c
+from Customer c
+where c.chiefExecutive.age < 25
+   and c.chiefExecutive.address.state = 'TX'
+
+// same as
+select c
+from Customer c
+    inner join c.chiefExecutive ceo
+where ceo.age < 25
+  and ceo.address.state = 'TX'
+
+// same as
+select c
+from Customer c
+    inner join c.chiefExecutive ceo
+    inner join ceo.address a
+where ceo.age < 25
+  and a.state = 'TX'
+
+Just as with explicit joins, implicit joins may reference association or component/embedded attributes. For further information about collection-valued association references, see Section 11.3.5, “Collection member references”. In the case of component/embedded attributes, the join is simply logical and does not correlate to a physical (SQL) join. Unlike explicit joins, however, implicit joins may also reference basic state fields as long as the path expression ends there.
+
+11.3.5. Collection member references
+
+References to collection-valued associations actually refer to the values of that collection.
+
+Example 11.12. Collection references example
+
+select c
+from Customer c
+    join c.orders o
+    join o.lineItems l
+    join l.product p
+where o.status = 'pending'
+  and p.status = 'backorder'
+
+// alternate syntax
+select c
+from Customer c,
+    in(c.orders) o,
+    in(o.lineItems) l
+    join l.product p
+where o.status = 'pending'
+  and p.status = 'backorder'
+
+In the example, the identification variable o actually refers to the object model type Order which is the type of the elements of the Customer#orders association.
+
+The example also shows the alternate syntax for specifying collection association joins using the IN syntax. Both forms are equivalent. Which form an application chooses to use is simply a matter of taste.
+
+11.3.5.1. Special case - qualified path expressions
+
+We said earlier that collection-valued associations actually refer to the values of that collection. Based on the type of collection, there are also available a set of explicit qualification expressions.
+
+Example 11.13. Qualified collection references example
+
+// Product.images is a Map<String,String> : key = a name, value = file path
+
+// select all the image file paths (the map value) for Product#123
+select i
+from Product p
+    join p.images i
+where p.id = 123
+
+// same as above
+select value(i)
+from Product p
+    join p.images i
+where p.id = 123
+
+// select all the image names (the map key) for Product#123
+select key(i)
+from Product p
+    join p.images i
+where p.id = 123
+
+// select all the image names and file paths (the 'Map.Entry') for Product#123
+select entry(i)
+from Product p
+    join p.images i
+where p.id = 123
+
+// total the value of the initial line items for all orders for a customer
+select sum( li.amount )
+from Customer c
+        join c.orders o
+        join o.lineItems li
+where c.id = 123
+  and index(li) = 1
+
+VALUE
+Refers to the collection value. Same as not specifying a qualifier. Useful to explicitly show intent. Valid for any type of collection-valued reference.
+
+INDEX
+According to HQL rules, this is valid for both Maps and Lists which specify a javax.persistence.OrderColumn annotation to refer to the Map key or the List position (aka the OrderColumn value). JPQL however, reserves this for use in the List case and adds KEY for the MAP case. Applications interested in JPA provider portability should be aware of this distinction.
+
+KEY
+Valid only for Maps. Refers to the map's key. If the key is itself an entity, can be further navigated.
+
+ENTRY
+Only valid only for Maps. Refers to the Map's logical java.util.Map.Entry tuple (the combination of its key and value). ENTRY is only valid as a terminal path and only valid in the select clause.
+
+See Section 11.4.9, “Collection-related expressions” for additional details on collection related expressions.
+
+11.3.6. Polymorphism
+
+HQL and JPQL queries are inherently polymorphic.
+
+select p from Payment p
+This query names the Payment entity explicitly. However, all subclasses of Payment are also available to the query. So if the CreditCardPayment entity and WireTransferPayment entity each extend from Payment all three types would be available to the query. And the query would return instances of all three.
+
+The logical extreme
+The HQL query from java.lang.Object is totally valid! It returns every object of every type defined in your application.
+This can be altered by using either the org.hibernate.annotations.Polymorphism annotation (global, and Hibernate-specific) or limiting them using in the query itself using an entity type expression.
+
+
