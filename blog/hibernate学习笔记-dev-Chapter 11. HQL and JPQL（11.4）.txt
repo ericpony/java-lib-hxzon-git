@@ -7,22 +7,31 @@ http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html/ch11.html
 
 ============
 11.4. Expressions
+表达式。
 
 Essentially expressions are references that resolve to basic or tuple values.
 
 11.4.1. Identification variable
+唯一标识变量。
 
 See Section 11.3, “The FROM clause”.
+参看from子句。
 
 11.4.2. Path expressions
+路径表达式。
 
 Again, see Section 11.3, “The FROM clause”.
+参考from子句。
 
 11.4.3. Literals
+子面量。
 
 String literals are enclosed in single-quotes. To escape a single-quote within a string literal, use double single-quotes.
 
+字符串字面量使用单引号。在字符串字面量中，使用双引号转义单引号。
+
 Example 11.14. String literal examples
+示例：
 
 select c
 from Customer c
@@ -35,7 +44,10 @@ where c.name = 'Acme''s Pretzel Logic'
 
 Numeric literals are allowed in a few different forms.
 
+数字字面量有几种不同的形式。
+
 Example 11.15. Numeric literal examples
+示例：
 
 // simple integer literal
 select o
@@ -47,47 +59,86 @@ select o
 from Order o
 where o.referenceNumber = 123L
 
+（long类型的数字。）
+
 // decimal notation
 select o
 from Order o
 where o.total > 5000.00
+
 
 // decimal notation, typed as a float
 select o
 from Order o
 where o.total > 5000.00F
 
+（float类型的数字。）
+
 // scientific notation
 select o
 from Order o
 where o.total > 5e+3
+
+（使用科学记数法。）
 
 // scientific notation, typed as a float
 select o
 from Order o
 where o.total > 5e+3F
 
+（float类型的科学记数法。）
+
 In the scientific notation form, the E is case insensitive.
 
-Specific typing can be achieved through the use of the same suffix approach specified by Java. So, L denotes a long; D denotes a double; F denotes a float. The actual suffix is case insensitive.
+（使用科学记数法，E不区分大小写。）
+
+Specific typing can be achieved through the use of the same suffix approach specified by Java. 
+So, L denotes a long; D denotes a double; F denotes a float. The actual suffix is case insensitive.
+
+（L，D，F，这些都是不区分大小写的。）
 
 The boolean literals are TRUE and FALSE, again case-insensitive.
 
-Enums can even be referenced as literals. The fully-qualified enum class name must be used. HQL can also handle constants in the same manner, though JPQL does not define that as supported.
+布尔字面量true和false都是大小写无关的。
+
+Enums can even be referenced as literals. 
+The fully-qualified enum class name must be used. 
+HQL can also handle constants in the same manner, though JPQL does not define that as supported.
+
+枚举类型可以作为字面量，但必须使用完整名称。
 
 Entity names can also be used as literal. See Section 11.4.10, “Entity type”.
 
-Date/time literals can be specified using the JDBC escape syntax: {d 'yyyy-mm-dd'} for dates, {t 'hh:mm:ss'} for times and {ts 'yyyy-mm-dd hh:mm:ss[.millis]'} (millis optional) for timestamps. These literals only work if you JDBC drivers supports them.
+实体名也可以作为字面量，参见11.4.10节“实体类型”。
+
+Date/time literals can be specified using the JDBC escape syntax:
+ {d 'yyyy-mm-dd'} for dates, {t 'hh:mm:ss'} for times and {ts 'yyyy-mm-dd hh:mm:ss[.millis]'} (millis optional) for timestamps. 
+ These literals only work if you JDBC drivers supports them.
+
+时间字面量。
+这些字母量必须底层的jdbc驱动支持。
+
+
 
 11.4.4. Parameters
+参数。
 
-HQL supports all 3 of the following forms. JPQL does not support the HQL-specific positional parameters notion. It is good practice to not mix forms in a given query.
+HQL supports all 3 of the following forms. 
+JPQL does not support the HQL-specific positional parameters notion. 
+It is good practice to not mix forms in a given query.
+
+hql支持所有三种形式。
 
 11.4.4.1. Named parameters
+命名参数。
 
-Named parameters are declared using a colon followed by an identifier - :aNamedParameter. The same named parameter can appear multiple times in a query.
+Named parameters are declared using a colon followed by an identifier - :aNamedParameter. 
+The same named parameter can appear multiple times in a query.
+
+在一个查询语句中，命名参数可出现多次。
 
 Example 11.16. Named parameter examples
+示例：
 
 String queryString =
         "select c " +
@@ -106,10 +157,16 @@ List<Customer> customers = entityManager.createQuery( queryString, Customer.clas
         .getResultList();
 
 11.4.4.2. Positional (JPQL) parameters
+jpql风格的位置参数。
 
-JPQL-style positional parameters are declared using a question mark followed by an ordinal - ?1, ?2. The ordinals start with 1. Just like with named parameters, positional parameters can also appear multiple times in a query.
+JPQL-style positional parameters are declared using a question mark followed by an ordinal - ?1, ?2. 
+The ordinals start with 1. 
+Just like with named parameters, positional parameters can also appear multiple times in a query.
+
+在一个查询语句中，位置参数可以出现多次。
 
 Example 11.17. Positional (JPQL) parameter examples
+示例：
 
 String queryString =
         "select c " +
@@ -129,42 +186,82 @@ List<Customer> customers = entityManager.createQuery( queryString, Customer.clas
         .getResultList();
 
 11.4.4.3. Positional (HQL) parameters
+hql风格的位置参数。
 
-HQL-style positional parameters follow JDBC positional parameter syntax. They are declared using ? without a following ordinal. There is no way to relate two such positional parameters as being "the same" aside from binding the same value to each.
+HQL-style positional parameters follow JDBC positional parameter syntax. 
+They are declared using ? without a following ordinal. 
+There is no way to relate two such positional parameters as being "the same" aside from binding the same value to each.
 
 This form should be considered deprecated and may be removed in the near future.
 
+注意，这种位置参数是不推荐使用的，有可能在未来会移除这种方式。
+
+
+
 11.4.5. Arithmetic
+算术。
 
 Arithmetic operations also represent valid expressions.
 
 Example 11.18. Numeric arithmetic examples
+示例：
 
+--
 select year( current_date() ) - year( c.dateOfBirth )
 from Customer c
 
+--
 select c
 from Customer c
 where year( current_date() ) - year( c.dateOfBirth ) < 30
 
+--
 select o.customer, o.total + ( o.total * :salesTax )
 from Order o
 
+--
 The following rules apply to the result of arithmetic operations:
 
 If either of the operands is Double/double, the result is a Double;
+
+只要有一个操作数是double，结果为double。
+
 else, if either of the operands is Float/float, the result is a Float;
+
+只要有一个操作数为float，结果为float。
+
 else, if either operand is BigDecimal, the result is BigDecimal;
+
+只要有一个操作数为BigDecimal，结果为BigDecimal。
+
 else, if either operand is BigInteger, the result is BigInteger (except for division, in which case the result type is not further defined);
+
+只要有一个操作数为BigInteger，结果为BigInteger。（除了除法，在这种情况下，运算结果是未知的。）
+
 else, if either operand is Long/long, the result is Long (except for division, in which case the result type is not further defined);
+
+只要有一个操作数为long，结果为long。（除了除法，在这种情况下，运算结果是未知的。）
+
 else, (the assumption being that both operands are of integral type) the result is Integer (except for division, in which case the result type is not further defined);
-Date arithmetic is also supported, albeit in a more limited fashion. This is due partially to differences in database support and partially to the lack of support for INTERVAL definition in the query language itself.
+
+
+
+Date arithmetic is also supported, albeit in a more limited fashion. 
+This is due partially to differences in database support and partially to the lack of support for INTERVAL definition in the query language itself.
+
+
 
 11.4.6. Concatenation (operation)
+字符串拼接。
 
-HQL defines a concatenation operator in addition to supporting the concatenation (CONCAT) function. This is not defined by JPQL, so portable applications should avoid it use. The concatenation operator is taken from the SQL concatenation operator - ||.
+HQL defines a concatenation operator in addition to supporting the concatenation (CONCAT) function. 
+This is not defined by JPQL, so portable applications should avoid it use. 
+The concatenation operator is taken from the SQL concatenation operator - ||.
+
+jpql不支持，如果考虑可移植性，需避免使用它。
 
 Example 11.19. Concatenation operation example
+示例：
 
 select 'Mr. ' || c.name.first || ' ' || c.name.last
 from Customer c
@@ -172,16 +269,30 @@ where c.gender = Gender.MALE
 
 See Section 11.4.8, “Scalar functions” for details on the concat() function
 
-11.4.7. Aggregate functions
+参见11.4.8节，“标量值函数”。
 
-Aggregate functions are also valid expressions in HQL and JPQL. The semantic is the same as their SQL counterpart. The supported aggregate functions are:
+
+11.4.7. Aggregate functions
+聚集函数。
+
+Aggregate functions are also valid expressions in HQL and JPQL. 
+The semantic is the same as their SQL counterpart. 
+The supported aggregate functions are:
+
+hql和jpql支持以下聚集函数：
 
 COUNT (including distinct/all qualifiers) - The result type is always Long.
 AVG - The result type is always Double.
 MIN - The result type is the same as the argument type.
 MAX - The result type is the same as the argument type.
-SUM - The result type of the avg() function depends on the type of the values being averaged. For integral values (other than BigInteger), the result type is Long. For floating point values (other than BigDecimal) the result type is Double. For BigInteger values, the result type is BigInteger. For BigDecimal values, the result type is BigDecimal.
+SUM - The result type of the avg() function depends on the type of the values being averaged. 
+For integral values (other than BigInteger), the result type is Long. 
+For floating point values (other than BigDecimal) the result type is Double. 
+For BigInteger values, the result type is BigInteger. 
+For BigDecimal values, the result type is BigDecimal.
+
 Example 11.20. Aggregate function examples
+示例：
 
 select count(*), sum( o.total ), avg( o.total ), min( o.total ), max( o.total )
 from Order o
@@ -194,18 +305,28 @@ from Customer c
     left join c.orders o
 group by c.id, c.name
 
+
 Aggregations often appear with grouping. For information on grouping see Section 11.8, “Grouping”
 
-11.4.8. Scalar functions
+聚集函数经常出现在分组语句中。参见11.8“分组”。
 
-Both HQL and JPQL define some standard functions that are available regardless of the underlying database in use. HQL can also understand additional functions defined by the Dialect as well as the application.
+
+11.4.8. Scalar functions
+标量值函数。
+
+Both HQL and JPQL define some standard functions that are available regardless of the underlying database in use. 
+HQL can also understand additional functions defined by the Dialect as well as the application.
+
 
 11.4.8.1. Standardized functions - JPQL
 
-Here are the list of functions defined as supported by JPQL. Applications interested in remaining portable between JPA providers should stick to these functions.
+Here are the list of functions defined as supported by JPQL. 
+Applications interested in remaining portable between JPA providers should stick to these functions.
 
 CONCAT
 String concatenation function. Variable argument length of 2 or more string values to be concatenated together.
+
+字符串拼接。
 
 SUBSTRING
 Extracts a portion of a string value.
@@ -213,8 +334,12 @@ Extracts a portion of a string value.
 substring( string_expression, numeric_expression [, numeric_expression] )
 The second argument denotes the starting position. The third (optional) argument denotes the length.
 
+截取字符串。
+
 UPPER
 Upper cases the specified string
+
+字符串转大写。
 
 LOWER
 Lower cases the specified string
@@ -225,11 +350,14 @@ Follows the semantics of the SQL trim function.
 LENGTH
 Returns the length of a string.
 
+--
 LOCATE
 Locates a string within another string.
 
 locate( string_expression, string_expression[, numeric_expression] )
 The third argument (optional) is used to denote a position from which to start looking.
+
+定位字符串。
 
 ABS
 Calculates the mathematical absolute value of a numeric value.
@@ -248,6 +376,8 @@ Returns the database current time.
 
 CURRENT_TIMESTAMP
 Returns the database current timestamp.
+
+
 
 11.4.8.2. Standardized functions - HQL
 
@@ -283,13 +413,22 @@ Abbreviated extract form for extracting the year.
 STR
 Abbreviated form for casting a value as character data.
 
+
+
 11.4.8.3. Non-standardized functions
 
-Hibernate Dialects can register additional functions known to be available for that particular database product. These functions are also available in HQL (and JPQL, though only when using Hibernate as the JPA provider obviously). However, they would only be available when using that database/Dialect. Applications that aim for database portability should avoid using functions in this category.
+Hibernate Dialects can register additional functions known to be available for that particular database product. 
+These functions are also available in HQL (and JPQL, though only when using Hibernate as the JPA provider obviously). 
+However, they would only be available when using that database/Dialect. 
+Applications that aim for database portability should avoid using functions in this category.
 
-Application developers can also supply their own set of functions. This would usually represent either custom SQL functions or aliases for snippets of SQL. Such function declarations are made by using the addSqlFunction method of org.hibernate.cfg.Configuration
+Application developers can also supply their own set of functions. 
+This would usually represent either custom SQL functions or aliases for snippets of SQL. 
+Such function declarations are made by using the addSqlFunction method of org.hibernate.cfg.Configuration
+
 
 11.4.9. Collection-related expressions
+集合相关的表达式
 
 There are a few specialized expressions for working with collection-valued associations. Generally these are just abbreviated forms or other expressions for the sake of conciseness.
 
@@ -315,6 +454,7 @@ INDICES
 Similar to elements except that indices refers to the collections indices (keys/positions) as a whole.
 
 Example 11.21. Collection-related expressions examples
+示例：
 
 select cal
 from Calendar cal
@@ -356,6 +496,7 @@ where 'fizard' in indices(show.acts)
 Elements of indexed collections (arrays, lists, and maps) can be referred to by index operator.
 
 Example 11.22. Index operator examples
+示例：
 
 select o
 from Order o
@@ -382,11 +523,19 @@ where o.items[ size(o.items) - 1 ] = i
 
 See also Section 11.3.5.1, “Special case - qualified path expressions” as there is a good deal of overlap.
 
-11.4.10. Entity type
 
-We can also refer to the type of an entity as an expression. This is mainly useful when dealing with entity inheritance hierarchies. The type can expressed using a TYPE function used to refer to the type of an identification variable representing an entity. The name of the entity also serves as a way to refer to an entity type. Additionally the entity type can be parametrized, in which case the entity's Java Class reference would be bound as the parameter value.
+
+11.4.10. Entity type
+实体类型。
+
+We can also refer to the type of an entity as an expression. 
+This is mainly useful when dealing with entity inheritance hierarchies. 
+The type can expressed using a TYPE function used to refer to the type of an identification variable representing an entity. 
+The name of the entity also serves as a way to refer to an entity type. 
+Additionally the entity type can be parametrized, in which case the entity's Java Class reference would be bound as the parameter value.
 
 Example 11.23. Entity type expression examples
+示例：
 
 select p
 from Payment p
@@ -397,11 +546,16 @@ from Payment p
 where type(p) = :aType
 
 
-HQL also has a legacy form of referring to an entity type, though that legacy form is considered deprecated in favor of TYPE. The legacy form would have used p.class in the examples rather than type(p). It is mentioned only for completeness.
+HQL also has a legacy form of referring to an entity type, though that legacy form is considered deprecated in favor of TYPE. 
+The legacy form would have used p.class in the examples rather than type(p). 
+It is mentioned only for completeness.
+
 
 11.4.11. CASE expressions
 
+
 Both the simple and searched forms are supported, as well as the 2 SQL defined abbreviated forms (NULLIF and COALESCE)
+
 
 11.4.11.1. Simple CASE expressions
 
