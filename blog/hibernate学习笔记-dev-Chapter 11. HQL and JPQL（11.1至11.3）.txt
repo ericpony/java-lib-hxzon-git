@@ -4,22 +4,26 @@ by hxzon
 
 http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html/ch11.html
 
+=============
 Table of Contents
 
-11.1. Case Sensitivity
-11.2. Statement types
+11.1. Case Sensitivity（区分大小写。）
+
+11.2. Statement types（语句类型。）
 11.2.1. Select statements
 11.2.2. Update statements
 11.2.3. Delete statements
 11.2.4. Insert statements
-11.3. The FROM clause
+
+11.3. The FROM clause（form子句。）
 11.3.1. Identification variables
 11.3.2. Root entity references
 11.3.3. Explicit joins
 11.3.4. Implicit joins (path expressions)
 11.3.5. Collection member references
 11.3.6. Polymorphism
-11.4. Expressions
+
+11.4. Expressions（表达式。）
 11.4.1. Identification variable
 11.4.2. Path expressions
 11.4.3. Literals
@@ -31,8 +35,10 @@ Table of Contents
 11.4.9. Collection-related expressions
 11.4.10. Entity type
 11.4.11. CASE expressions
-11.5. The SELECT clause
-11.6. Predicates
+
+11.5. The SELECT clause（select子句。）
+
+11.6. Predicates（谓词。）
 11.6.1. Relational comparisons
 11.6.2. Nullness predicate
 11.6.3. Like predicate
@@ -44,31 +50,53 @@ Table of Contents
 11.6.9. NOT predicate operator
 11.6.10. AND predicate operator
 11.6.11. OR predicate operator
-11.7. The WHERE clause
-11.8. Grouping
-11.9. Ordering
+
+11.7. The WHERE clause（where子句。）
+11.8. Grouping（分组。）
+11.9. Ordering（排序。）
 11.10. Query API
 
 
 ==========
-The Hibernate Query Language (HQL) and Java Persistence Query Language (JPQL) are both object model focused query languages similar in nature to SQL. JPQL is a heavily-inspired-by subset of HQL. A JPQL query is always a valid HQL query, the reverse is not true however.
+The Hibernate Query Language (HQL) and Java Persistence Query Language (JPQL) 
+are both object model focused query languages similar in nature to SQL. 
+JPQL is a heavily-inspired-by subset of HQL. 
+A JPQL query is always a valid HQL query, the reverse is not true however.
 
-Both HQL and JPQL are non-type-safe ways to perform query operations. Criteria queries offer a type-safe approach to querying. See ??? for more information.
+一个jpql查询总是有效的hql查询，但hql查询则不一定是有效的jpql查询。
 
+Both HQL and JPQL are non-type-safe ways to perform query operations. 
+Criteria queries offer a type-safe approach to querying. See ??? for more information.
+
+============
 11.1. Case Sensitivity
 
-With the exception of names of Java classes and properties, queries are case-insensitive. So SeLeCT is the same as sELEct is the same as SELECT, but org.hibernate.eg.FOO and org.hibernate.eg.Foo are different, as are foo.barSet and foo.BARSET.
+With the exception of names of Java classes and properties, queries are case-insensitive. 
+So SeLeCT is the same as sELEct is the same as SELECT, 
+but org.hibernate.eg.FOO and org.hibernate.eg.Foo are different, 
+as are foo.barSet and foo.BARSET.
 
 Note
+
 This documentation uses lowercase keywords as convention in examples.
+
+=============
 11.2. Statement types
 
-Both HQL and JPQL allow SELECT, UPDATE and DELETE statements to be performed. HQL additionally allows INSERT statements, in a form similar to a SQL INSERT-SELECT.
+Both HQL and JPQL allow SELECT, UPDATE and DELETE statements to be performed. 
+HQL additionally allows INSERT statements, in a form similar to a SQL INSERT-SELECT.
 
 Important
+
 Care should be taken as to when a UPDATE or DELETE statement is executed.
- 	 Caution should be used when executing bulk update or delete operations because they may result in inconsistencies between the database and the entities in the active persistence context. In general, bulk update and delete operations should only be performed within a transaction in a new persistence con- text or before fetching or accessing entities whose state might be affected by such operations.	 
+ 	 Caution should be used when executing bulk update or delete operations 
+ 	 because they may result in inconsistencies between the database and the entities in the active persistence context. 
+ 	 In general, bulk update and delete operations should only be performed within a transaction in a new persistence con- text 
+ 	 or before fetching or accessing entities whose state might be affected by such operations.	 
+ 	
  	--Section 4.10 of the JPA 2.0 Specification
+
+
 11.2.1. Select statements
 
 The BNF for SELECT statements in HQL is:
@@ -80,10 +108,22 @@ select_statement :: =
         [groupby_clause]
         [having_clause]
         [orderby_clause]
+
 The simplest possible HQL SELECT statement is of the form:
 
 from com.acme.Cat
-The select statement in JPQL is exactly the same as for HQL except that JPQL requires a select_clause, whereas HQL does not. Even though HQL does not require the presence of a select_clause, it is generally good practice to include one. For simple queries the intent is clear and so the intended result of the select_clause is east to infer. But on more complex queries that is not always the case. It is usually better to explicitly specify intent. Hibernate does not actually enforce that a select_clause be present even when parsing JPQL queries, however applications interested in JPA portability should take heed of this.
+
+The select statement in JPQL is exactly the same as for HQL except that JPQL requires a select_clause, 
+whereas HQL does not. 
+
+Even though HQL does not require the presence of a select_clause, 
+it is generally good practice to include one. 
+For simple queries the intent is clear and so the intended result of the select_clause is east to infer. 
+But on more complex queries that is not always the case. 
+It is usually better to explicitly specify intent. 
+Hibernate does not actually enforce that a select_clause be present even when parsing JPQL queries, 
+however applications interested in JPA portability should take heed of this.
+
 
 11.2.2. Update statements
 
@@ -100,9 +140,22 @@ update_item ::= [identification_variable.]{state_field | single_valued_object_fi
 new_value ::= scalar_expression |
                 simple_entity_expression |
                 NULL
-UPDATE statements, by default, do not effect the version or the timestamp attribute values for the affected entities. However, you can force Hibernate to set the version or timestamp attribute values through the use of a versioned update. This is achieved by adding the VERSIONED keyword after the UPDATE keyword. Note, however, that this is a Hibernate specific feature and will not work in a portable manner. Custom version types, org.hibernate.usertype.UserVersionType, are not allowed in conjunction with a update versioned statement.
+
+
+UPDATE statements, by default, do not effect the version or the timestamp attribute values for the affected entities. 
+
+默认情况下，update语句不影响实体的版本号和时间戳。
+
+However, you can force Hibernate to set the version or timestamp attribute values through the use of a versioned update.
+This is achieved by adding the VERSIONED keyword after the UPDATE keyword. 
+
+但通过使用versioned关键字，你可以让hibernate强制更新实体的版本号和时间戳。
+ 
+Note, however, that this is a Hibernate specific feature and will not work in a portable manner. 
+Custom version types, org.hibernate.usertype.UserVersionType, are not allowed in conjunction with a update versioned statement.
 
 An UPDATE statement is executed using the executeUpdate of either org.hibernate.Query or javax.persistence.Query. The method is named for those familiar with the JDBC executeUpdate on java.sql.PreparedStatement. The int value returned by the executeUpdate() method indicates the number of entities effected by the operation. This may or may not correlate to the number of rows effected in the database. An HQL bulk operation might result in multiple actual SQL statements being executed (for joined-subclass, for example). The returned number indicates the number of actual entities affected by the statement. Using a JOINED inheritance hierarchy, a delete against one of the subclasses may actually result in deletes against not just the table to which that subclass is mapped, but also the "root" table and tables “in between”
+
 
 Example 11.1. Example UPDATE query statements
 
@@ -131,33 +184,68 @@ int updatedEntities = s.createQuery( hqlUpdate )
         .setString( "oldName", oldName )
         .executeUpdate();
 
+
 Important
-Neither UPDATE nor DELETE statements are allowed to result in what is called an implicit join. Their form already disallows explicit joins.
+
+Neither UPDATE nor DELETE statements are allowed to result in what is called an implicit join. 
+Their form already disallows explicit joins.
+
+
 11.2.3. Delete statements
+
 
 The BNF for DELETE statements is the same in HQL and JPQL:
 
 delete_statement ::= delete_clause [where_clause]
 
 delete_clause ::= DELETE FROM entity_name [[AS] identification_variable]
+
 A DELETE statement is also executed using the executeUpdate method of either org.hibernate.Query or javax.persistence.Query.
+
 
 11.2.4. Insert statements
 
-HQL adds the ability to define INSERT statements as well. There is no JPQL equivalent to this. The BNF for an HQL INSERT statement is:
+
+HQL adds the ability to define INSERT statements as well. 
+There is no JPQL equivalent to this. 
+The BNF for an HQL INSERT statement is:
 
 insert_statement ::= insert_clause select_statement
 
 insert_clause ::= INSERT INTO entity_name (attribute_list)
 
 attribute_list ::= state_field[, state_field ]*
-The attribute_list is analogous to the column specification in the SQL INSERT statement. For entities involved in mapped inheritance, only attributes directly defined on the named entity can be used in the attribute_list. Superclass properties are not allowed and subclass properties do not make sense. In other words, INSERT statements are inherently non-polymorphic.
 
-select_statement can be any valid HQL select query, with the caveat that the return types must match the types expected by the insert. Currently, this is checked during query compilation rather than allowing the check to relegate to the database. This may cause problems between Hibernate Types which are equivalent as opposed to equal. For example, this might cause lead to issues with mismatches between an attribute mapped as a org.hibernate.type.DateType and an attribute defined as a org.hibernate.type.TimestampType, even though the database might not make a distinction or might be able to handle the conversion.
 
-For the id attribute, the insert statement gives you two options. You can either explicitly specify the id property in the attribute_list, in which case its value is taken from the corresponding select expression, or omit it from the attribute_list in which case a generated value is used. This latter option is only available when using id generators that operate “in the database”; attempting to use this option with any “in memory” type generators will cause an exception during parsing.
+The attribute_list is analogous to the column specification in the SQL INSERT statement. 
 
-For optimistic locking attributes, the insert statement again gives you two options. You can either specify the attribute in the attribute_list in which case its value is taken from the corresponding select expressions, or omit it from the attribute_list in which case the seed value defined by the corresponding org.hibernate.type.VersionType is used.
+For entities involved in mapped inheritance, only attributes directly defined on the named entity can be used in the attribute_list. 
+
+Superclass properties are not allowed and subclass properties do not make sense. 
+
+In other words, INSERT statements are inherently non-polymorphic.
+
+select_statement can be any valid HQL select query, 
+with the caveat that the return types must match the types expected by the insert. 
+
+Currently, this is checked during query compilation rather than allowing the check to relegate to the database. 
+This may cause problems between Hibernate Types which are equivalent as opposed to equal. 
+For example, this might cause lead to issues with mismatches 
+between an attribute mapped as a org.hibernate.type.DateType 
+and an attribute defined as a org.hibernate.type.TimestampType, 
+even though the database might not make a distinction or might be able to handle the conversion.
+
+For the id attribute, the insert statement gives you two options. 
+You can either explicitly specify the id property in the attribute_list, 
+in which case its value is taken from the corresponding select expression, 
+or omit it from the attribute_list in which case a generated value is used. 
+This latter option is only available when using id generators that operate “in the database”; 
+attempting to use this option with any “in memory” type generators will cause an exception during parsing.
+
+For optimistic locking attributes, the insert statement again gives you two options. 
+You can either specify the attribute in the attribute_list in which case its value is taken from the corresponding select expressions, 
+or omit it from the attribute_list in which case the seed value defined by the corresponding org.hibernate.type.VersionType is used.
+
 
 Example 11.2. Example INSERT query statements
 

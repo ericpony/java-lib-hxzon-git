@@ -23,6 +23,8 @@ See Section 11.3, “The FROM clause”.
 Again, see Section 11.3, “The FROM clause”.
 参考from子句。
 
+
+====================
 11.4.3. Literals
 子面量。
 
@@ -120,6 +122,7 @@ Date/time literals can be specified using the JDBC escape syntax:
 
 
 
+===================
 11.4.4. Parameters
 参数。
 
@@ -197,7 +200,7 @@ This form should be considered deprecated and may be removed in the near future.
 注意，这种位置参数是不推荐使用的，有可能在未来会移除这种方式。
 
 
-
+====================
 11.4.5. Arithmetic
 算术。
 
@@ -250,7 +253,7 @@ Date arithmetic is also supported, albeit in a more limited fashion.
 This is due partially to differences in database support and partially to the lack of support for INTERVAL definition in the query language itself.
 
 
-
+==============
 11.4.6. Concatenation (operation)
 字符串拼接。
 
@@ -272,6 +275,7 @@ See Section 11.4.8, “Scalar functions” for details on the concat() function
 参见11.4.8节，“标量值函数”。
 
 
+===================
 11.4.7. Aggregate functions
 聚集函数。
 
@@ -311,6 +315,7 @@ Aggregations often appear with grouping. For information on grouping see Section
 聚集函数经常出现在分组语句中。参见11.8“分组”。
 
 
+===============
 11.4.8. Scalar functions
 标量值函数。
 
@@ -387,10 +392,12 @@ BIT_LENGTH
 Returns the length of binary data.
 
 CAST
-Performs a SQL cast. The cast target should name the Hibernate mapping type to use. See the chapter on data types for more information.
+Performs a SQL cast. The cast target should name the Hibernate mapping type to use. 
+See the chapter on data types for more information.
 
 EXTRACT
-Performs a SQL extraction on datetime values. An extraction extracts parts of the datetime (the year, for example). See the abbreviated forms below.
+Performs a SQL extraction on datetime values. 
+An extraction extracts parts of the datetime (the year, for example). See the abbreviated forms below.
 
 SECOND
 Abbreviated extract form for extracting the second.
@@ -416,42 +423,62 @@ Abbreviated form for casting a value as character data.
 
 
 11.4.8.3. Non-standardized functions
+非标准函数。
 
-Hibernate Dialects can register additional functions known to be available for that particular database product. 
+Hibernate Dialects can register additional functions known to be available for that particular database product.
 These functions are also available in HQL (and JPQL, though only when using Hibernate as the JPA provider obviously). 
 However, they would only be available when using that database/Dialect. 
 Applications that aim for database portability should avoid using functions in this category.
+
+hibernate数据库方言可以注册属于自己独有的函数。
 
 Application developers can also supply their own set of functions. 
 This would usually represent either custom SQL functions or aliases for snippets of SQL. 
 Such function declarations are made by using the addSqlFunction method of org.hibernate.cfg.Configuration
 
 
+==================
 11.4.9. Collection-related expressions
-集合相关的表达式
+集合相关的表达式。
 
-There are a few specialized expressions for working with collection-valued associations. Generally these are just abbreviated forms or other expressions for the sake of conciseness.
+There are a few specialized expressions for working with collection-valued associations. 
+Generally these are just abbreviated forms or other expressions for the sake of conciseness.
 
 SIZE
 Calculate the size of a collection. Equates to a subquery!
 
+计算集合的大小。相当于子查询。（Equates相当于。）
+
 MAXELEMENT
-Available for use on collections of basic type. Refers to the maximum value as determined by applying the max SQL aggregation.
+Available for use on collections of basic type. 
+Refers to the maximum value as determined by applying the max SQL aggregation.
+
+用于基本类型的集合。取得集合中的最大值。
 
 MAXINDEX
-Available for use on indexed collections. Refers to the maximum index (key/position) as determined by applying the max SQL aggregation.
+Available for use on indexed collections. 
+Refers to the maximum index (key/position) as determined by applying the max SQL aggregation.
+
+用于可索引的集合。取得集合最大的索引。
 
 MINELEMENT
-Available for use on collections of basic type. Refers to the minimum value as determined by applying the min SQL aggregation.
+Available for use on collections of basic type. 
+Refers to the minimum value as determined by applying the min SQL aggregation.
 
 MININDEX
-Available for use on indexed collections. Refers to the minimum index (key/position) as determined by applying the min SQL aggregation.
+Available for use on indexed collections. 
+Refers to the minimum index (key/position) as determined by applying the min SQL aggregation.
 
 ELEMENTS
-Used to refer to the elements of a collection as a whole. Only allowed in the where clause. Often used in conjunction with ALL, ANY or SOME restrictions.
+Used to refer to the elements of a collection as a whole. 
+Only allowed in the where clause. Often used in conjunction with ALL, ANY or SOME restrictions.
+
+集合的元素集合。
 
 INDICES
 Similar to elements except that indices refers to the collections indices (keys/positions) as a whole.
+
+集合的索引集合。
 
 Example 11.21. Collection-related expressions examples
 示例：
@@ -493,7 +520,10 @@ select show
 from Show show
 where 'fizard' in indices(show.acts)
 
+----
 Elements of indexed collections (arrays, lists, and maps) can be referred to by index operator.
+
+可索引的集合，如数组、列表，映射，可以使用[]操作符。
 
 Example 11.22. Index operator examples
 示例：
@@ -521,10 +551,13 @@ select i
 from Item i, Order o
 where o.items[ size(o.items) - 1 ] = i
 
+
 See also Section 11.3.5.1, “Special case - qualified path expressions” as there is a good deal of overlap.
 
+参见11.3.5.1节。
 
 
+================
 11.4.10. Entity type
 实体类型。
 
@@ -532,7 +565,9 @@ We can also refer to the type of an entity as an expression.
 This is mainly useful when dealing with entity inheritance hierarchies. 
 The type can expressed using a TYPE function used to refer to the type of an identification variable representing an entity. 
 The name of the entity also serves as a way to refer to an entity type. 
-Additionally the entity type can be parametrized, in which case the entity's Java Class reference would be bound as the parameter value.
+Additionally the entity type can be parametrized, 
+in which case the entity's Java Class reference would be bound as the parameter value.
+
 
 Example 11.23. Entity type expression examples
 示例：
@@ -551,69 +586,109 @@ The legacy form would have used p.class in the examples rather than type(p).
 It is mentioned only for completeness.
 
 
+===============
 11.4.11. CASE expressions
-
+条件表达式。
 
 Both the simple and searched forms are supported, as well as the 2 SQL defined abbreviated forms (NULLIF and COALESCE)
 
 
 11.4.11.1. Simple CASE expressions
+简单条件表达式。
 
 The simple form has the following syntax:
+语法：
 
 CASE {operand} WHEN {test_value} THEN {match_result} ELSE {miss_result} END
+
+
 Example 11.24. Simple case expression example
+示例：
 
 select case c.nickName when null then '<no nick name>' else c.nickName end
 from Customer c
+
+（当c.nickName为空时，返回'<no nick name>'。）
+
 
 // This NULL checking is such a common case that most dbs
 // define an abbreviated CASE form.  For example:
 select nvl( c.nickName, '<no nick name>' )
 from Customer c
 
+（同上，推荐。）
+
 // or:
 select isnull( c.nickName, '<no nick name>' )
 from Customer c
+
+（同上，推荐。）
 
 // the standard coalesce abbreviated form can be used
 // to achieve the same result:
 select coalesce( c.nickName, '<no nick name>' )
 from Customer c
 
+（同上，推荐。）
+
+
+----
 11.4.11.2. Searched CASE expressions
 
+
 The searched form has the following syntax:
+语法：
 
 CASE [ WHEN {test_conditional} THEN {match_result} ]* ELSE {miss_result} END
+
+
 Example 11.25. Searched case expression example
+示例：
+
 
 select case when c.name.first is not null then c.name.first
             when c.nickName is not null then c.nickName
             else '<no first name>' end
 from Customer c
 
+（优先返回c.name.first，否则返回c.nickName。）
+
 // Again, the abbreviated form coalesce can handle this a
 // little more succinctly
 select coalesce( c.name.first, c.nickName, '<no first name>' )
 from Customer c
 
+（同上，推荐。）
+
+
+----
 11.4.11.3. NULLIF expressions
 
 NULLIF is an abbreviated CASE expression that returns NULL if its operands are considered equal.
 
+当两个参数值相同时返回null，否则返回第一个参数值。
+
+
 Example 11.26. NULLIF example
+示例：
 
 // return customers who have changed their last name
 select nullif( c.previousName.last, c.name.last )
 from Customer c
+
+（返回那些修改了姓的客户。返回修改前的姓，或者null。）
 
 // equivalent CASE expression
 select case when c.previousName.last = c.name.last then null
             else c.previousName.last end
 from Customer c
 
+
+----
 11.4.11.4. COALESCE expressions
 
-COALESCE is an abbreviated CASE expression that returns the first non-null operand. We have seen a number of COALESCE examples above.
+COALESCE is an abbreviated CASE expression that returns the first non-null operand. 
+We have seen a number of COALESCE examples above.
+
+返回参数表中第一个非空的值。示例见以上各节。
 
