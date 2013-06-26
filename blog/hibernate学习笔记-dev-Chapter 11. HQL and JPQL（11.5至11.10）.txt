@@ -4,6 +4,27 @@ by hxzon
 
 http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html/ch11.html
 
+=======
+11.5. The SELECT clause（select子句。）
+
+11.6. Predicates（谓词。）
+11.6.1. Relational comparisons
+11.6.2. Nullness predicate
+11.6.3. Like predicate
+11.6.4. Between predicate
+11.6.5. In predicate
+11.6.6. Exists predicate
+11.6.7. Empty collection predicate
+11.6.8. Member-of collection predicate
+11.6.9. NOT predicate operator
+11.6.10. AND predicate operator
+11.6.11. OR predicate operator
+
+11.7. The WHERE clause（where子句。）
+11.8. Grouping（分组。）
+11.9. Ordering（排序。）
+11.10. Query API
+
 
 =======
 11.5. The SELECT clause
@@ -20,6 +41,7 @@ Hibernate calls this “dynamic instantiation”.
 JPQL supports some of that feature and calls it a “constructor expression”
 
 “构造函数表达式”。
+（hxzon：注意，使用构造函数可能会出错，例如在oracle中使用分页，会产生一个额外的rownum列，导致构造函数调用失败。不推荐使用。）
 
 Example 11.27. Dynamic instantiation example - constructor
 示例，使用构造函数：

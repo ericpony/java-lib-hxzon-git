@@ -4,6 +4,20 @@ by hxzon
 
 http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html/ch11.html
 
+============
+11.4. Expressions（表达式。）
+
+11.4.1. Identification variable
+11.4.2. Path expressions
+11.4.3. Literals
+11.4.4. Parameters
+11.4.5. Arithmetic
+11.4.6. Concatenation (operation)
+11.4.7. Aggregate functions
+11.4.8. Scalar functions
+11.4.9. Collection-related expressions
+11.4.10. Entity type
+11.4.11. CASE expressions
 
 ============
 11.4. Expressions
@@ -328,11 +342,13 @@ HQL can also understand additional functions defined by the Dialect as well as t
 Here are the list of functions defined as supported by JPQL. 
 Applications interested in remaining portable between JPA providers should stick to these functions.
 
+----
 CONCAT
 String concatenation function. Variable argument length of 2 or more string values to be concatenated together.
 
 字符串拼接。
 
+----
 SUBSTRING
 Extracts a portion of a string value.
 
@@ -341,21 +357,25 @@ The second argument denotes the starting position. The third (optional) argument
 
 截取字符串。
 
+----
 UPPER
 Upper cases the specified string
 
 字符串转大写。
 
+----
 LOWER
 Lower cases the specified string
 
+----
 TRIM
 Follows the semantics of the SQL trim function.
 
+----
 LENGTH
 Returns the length of a string.
 
---
+----
 LOCATE
 Locates a string within another string.
 
@@ -364,21 +384,27 @@ The third argument (optional) is used to denote a position from which to start l
 
 定位字符串。
 
+----
 ABS
 Calculates the mathematical absolute value of a numeric value.
 
+----
 MOD
 Calculates the remainder of dividing the first argument by the second.
 
+----
 SQRT
 Calculates the mathematical square root of a numeric value.
 
+----
 CURRENT_DATE
 Returns the database current date.
 
+----
 CURRENT_TIME
 Returns the database current time.
 
+----
 CURRENT_TIMESTAMP
 Returns the database current timestamp.
 
@@ -388,35 +414,45 @@ Returns the database current timestamp.
 
 Beyond the JPQL standardized functions, HQL makes some additional functions available regardless of the underlying database in use.
 
+----
 BIT_LENGTH
 Returns the length of binary data.
 
+----
 CAST
 Performs a SQL cast. The cast target should name the Hibernate mapping type to use. 
 See the chapter on data types for more information.
 
+----
 EXTRACT
 Performs a SQL extraction on datetime values. 
 An extraction extracts parts of the datetime (the year, for example). See the abbreviated forms below.
 
+----
 SECOND
 Abbreviated extract form for extracting the second.
 
+----
 MINUTE
 Abbreviated extract form for extracting the minute.
 
+----
 HOUR
 Abbreviated extract form for extracting the hour.
 
+----
 DAY
 Abbreviated extract form for extracting the day.
 
+----
 MONTH
 Abbreviated extract form for extracting the month.
 
+----
 YEAR
 Abbreviated extract form for extracting the year.
 
+----
 STR
 Abbreviated form for casting a value as character data.
 
@@ -444,37 +480,44 @@ Such function declarations are made by using the addSqlFunction method of org.hi
 There are a few specialized expressions for working with collection-valued associations. 
 Generally these are just abbreviated forms or other expressions for the sake of conciseness.
 
+----
 SIZE
 Calculate the size of a collection. Equates to a subquery!
 
 计算集合的大小。相当于子查询。（Equates相当于。）
 
+----
 MAXELEMENT
 Available for use on collections of basic type. 
 Refers to the maximum value as determined by applying the max SQL aggregation.
 
 用于基本类型的集合。取得集合中的最大值。
 
+----
 MAXINDEX
 Available for use on indexed collections. 
 Refers to the maximum index (key/position) as determined by applying the max SQL aggregation.
 
 用于可索引的集合。取得集合最大的索引。
 
+----
 MINELEMENT
 Available for use on collections of basic type. 
 Refers to the minimum value as determined by applying the min SQL aggregation.
 
+----
 MININDEX
 Available for use on indexed collections. 
 Refers to the minimum index (key/position) as determined by applying the min SQL aggregation.
 
+----
 ELEMENTS
 Used to refer to the elements of a collection as a whole. 
 Only allowed in the where clause. Often used in conjunction with ALL, ANY or SOME restrictions.
 
 集合的元素集合。
 
+----
 INDICES
 Similar to elements except that indices refers to the collections indices (keys/positions) as a whole.
 
@@ -641,6 +684,7 @@ The searched form has the following syntax:
 
 CASE [ WHEN {test_conditional} THEN {match_result} ]* ELSE {miss_result} END
 
+(hxzon：没有oracle的decode()函数简便。)
 
 Example 11.25. Searched case expression example
 示例：

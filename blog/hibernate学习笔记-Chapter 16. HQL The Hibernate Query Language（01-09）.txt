@@ -1,4 +1,4 @@
-﻿hibernate学习笔记-Chapter 16. HQL The Hibernate Query Language
+﻿hibernate学习笔记-Chapter 16. HQL The Hibernate Query Language（01-09）
 
 by hxzon
 
@@ -19,7 +19,7 @@ from子句
 16.4. Forms of join syntax
 不同形式的join
 16.5. Referring to identifier property
-ID字段
+引用唯一标识字段
 16.6. The select clause
 select子句
 16.7. Aggregate functions
@@ -95,7 +95,7 @@ from Cat cat
 
 Multiple classes can appear, resulting in a cartesian product or "cross" join.
 
-笛卡尔积。
+（cartesian product笛卡尔积。）
 
 from Formula, Parameter
 
@@ -364,6 +364,7 @@ from DomesticCat as mother
 Or - assuming that the class Family has an appropriate constructor - as an actual typesafe Java object:
 
 也可以使用一个构造函数来封装成对象。
+（hxzon：注意，使用构造函数可能会出错，例如在oracle中使用分页，会产生一个额外的rownum列，导致构造函数调用失败。不推荐使用。）
 
 select new Family(mother, mate, offspr)
 from DomesticCat as mother

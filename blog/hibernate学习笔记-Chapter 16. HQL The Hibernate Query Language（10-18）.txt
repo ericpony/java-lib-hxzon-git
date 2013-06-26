@@ -1,4 +1,4 @@
-﻿hibernate学习笔记-Chapter 16. HQL The Hibernate Query Language(10-18)
+﻿hibernate学习笔记-Chapter 16. HQL The Hibernate Query Language（10-18）
 
 by hxzon
 
@@ -19,7 +19,7 @@ from子句
 16.4. Forms of join syntax
 不同形式的join
 16.5. Referring to identifier property
-ID字段
+引用唯一标识字段
 16.6. The select clause
 select子句
 16.7. Aggregate functions

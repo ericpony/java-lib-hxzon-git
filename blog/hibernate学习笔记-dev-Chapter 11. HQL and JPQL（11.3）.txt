@@ -4,6 +4,18 @@ by hxzon
 
 http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html/ch11.html
 
+
+==============
+11.3. The FROM clause（form子句。）
+
+11.3.1. Identification variables（名字和别名。）
+11.3.2. Root entity references
+11.3.3. Explicit joins（显示join。）
+11.3.4. Implicit joins (path expressions)（隐式join，路径表达式。）
+11.3.5. Collection member references（引用集合成员。）
+11.3.6. Polymorphism（多态。）
+
+
 ==============
 
 11.3. The FROM clause

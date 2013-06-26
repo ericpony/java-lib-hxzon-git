@@ -68,6 +68,7 @@ A JPQL query is always a valid HQL query, the reverse is not true however.
 Both HQL and JPQL are non-type-safe ways to perform query operations. 
 Criteria queries offer a type-safe approach to querying. See ??? for more information.
 
+
 ============
 11.1. Case Sensitivity
 
@@ -80,23 +81,29 @@ Note
 
 This documentation uses lowercase keywords as convention in examples.
 
+
 =============
 11.2. Statement types
 
 Both HQL and JPQL allow SELECT, UPDATE and DELETE statements to be performed. 
 HQL additionally allows INSERT statements, in a form similar to a SQL INSERT-SELECT.
 
+hql和jpql都支持select，update，delete语句。
+此外，hql还支持insert语句。
+
 Important
+注意：
 
 Care should be taken as to when a UPDATE or DELETE statement is executed.
  	 Caution should be used when executing bulk update or delete operations 
  	 because they may result in inconsistencies between the database and the entities in the active persistence context. 
- 	 In general, bulk update and delete operations should only be performed within a transaction in a new persistence con- text 
+ 	 In general, bulk update and delete operations should only be performed within a transaction in a new persistence context 
  	 or before fetching or accessing entities whose state might be affected by such operations.	 
  	
  	--Section 4.10 of the JPA 2.0 Specification
 
 
+----
 11.2.1. Select statements
 
 The BNF for SELECT statements in HQL is:
@@ -125,6 +132,7 @@ Hibernate does not actually enforce that a select_clause be present even when pa
 however applications interested in JPA portability should take heed of this.
 
 
+----
 11.2.2. Update statements
 
 The BNF for UPDATE statements is the same in HQL and JPQL:
@@ -158,6 +166,7 @@ An UPDATE statement is executed using the executeUpdate of either org.hibernate.
 
 
 Example 11.1. Example UPDATE query statements
+示例：
 
 String hqlUpdate =
 		"update Customer c " +
@@ -186,11 +195,13 @@ int updatedEntities = s.createQuery( hqlUpdate )
 
 
 Important
+注意：
 
 Neither UPDATE nor DELETE statements are allowed to result in what is called an implicit join. 
 Their form already disallows explicit joins.
 
 
+----
 11.2.3. Delete statements
 
 
@@ -203,12 +214,15 @@ delete_clause ::= DELETE FROM entity_name [[AS] identification_variable]
 A DELETE statement is also executed using the executeUpdate method of either org.hibernate.Query or javax.persistence.Query.
 
 
+----
 11.2.4. Insert statements
 
 
 HQL adds the ability to define INSERT statements as well. 
 There is no JPQL equivalent to this. 
+
 The BNF for an HQL INSERT statement is:
+语法：
 
 insert_statement ::= insert_clause select_statement
 
@@ -248,6 +262,7 @@ or omit it from the attribute_list in which case the seed value defined by the c
 
 
 Example 11.2. Example INSERT query statements
+示例：
 
 String hqlInsert = "insert into DelinquentAccount (id, name) select c.id, c.name from Customer c where ...";
 int createdEntities = s.createQuery( hqlInsert ).executeUpdate();
