@@ -1,0 +1,250 @@
+﻿hibernate学习笔记-Chapter 9. Component Mapping
+
+by hxzon
+
+http://docs.jboss.org/hibernate/orm/4.1/manual/en-US/html/index
+
+http://docs.jboss.org/hibernate/orm/4.1/manual/en-US/html/ch09.html
+
+==============
+Table of Contents
+
+9.1. Dependent objects
+9.2. Collections of dependent objects
+9.3. Components as Map indices
+9.4. Components as composite identifiers
+9.5. Dynamic components
+
+
+The notion of a component is re-used in several different contexts and purposes throughout Hibernate.
+
+
+=================
+9.1. Dependent objects
+
+A component is a contained object that is persisted as a value type and not an entity reference. The term "component" refers to the object-oriented notion of composition and not to architecture-level components. For example, you can model a person like this:
+
+public class Person {
+    private java.util.Date birthday;
+    private Name name;
+    private String key;
+    public String getKey() {
+        return key;
+    }
+    private void setKey(String key) {
+        this.key=key;
+    }
+    public java.util.Date getBirthday() {
+        return birthday;
+    }
+    public void setBirthday(java.util.Date birthday) {
+        this.birthday = birthday;
+    }
+    public Name getName() {
+        return name;
+    }
+    public void setName(Name name) {
+        this.name = name;
+    }
+    ......
+    ......
+}
+public class Name {
+    char initial;
+    String first;
+    String last;
+    public String getFirst() {
+        return first;
+    }
+    void setFirst(String first) {
+        this.first = first;
+    }
+    public String getLast() {
+        return last;
+    }
+    void setLast(String last) {
+        this.last = last;
+    }
+    public char getInitial() {
+        return initial;
+    }
+    void setInitial(char initial) {
+        this.initial = initial;
+    }
+}
+Now Name can be persisted as a component of Person. Name defines getter and setter methods for its persistent properties, but it does not need to declare any interfaces or identifier properties.
+
+Our Hibernate mapping would look like this:
+
+<class name="eg.Person" table="person">
+    <id name="Key" column="pid" type="string">
+        <generator class="uuid"/>
+    </id>
+    <property name="birthday" type="date"/>
+    <component name="Name" class="eg.Name"> <!-- class attribute optional -->
+        <property name="initial"/>
+        <property name="first"/>
+        <property name="last"/>
+    </component>
+</class>
+The person table would have the columns pid, birthday, initial, first and last.
+
+Like value types, components do not support shared references. In other words, two persons could have the same name, but the two person objects would contain two independent name objects that were only "the same" by value. The null value semantics of a component are ad hoc. When reloading the containing object, Hibernate will assume that if all component columns are null, then the entire component is null. This is suitable for most purposes.
+
+The properties of a component can be of any Hibernate type (collections, many-to-one associations, other components, etc). Nested components should not be considered an exotic usage. Hibernate is intended to support a fine-grained object model.
+
+The <component> element allows a <parent> subelement that maps a property of the component class as a reference back to the containing entity.
+
+<class name="eg.Person" table="person">
+    <id name="Key" column="pid" type="string">
+        <generator class="uuid"/>
+    </id>
+    <property name="birthday" type="date"/>
+    <component name="Name" class="eg.Name" unique="true">
+        <parent name="namedPerson"/> <!-- reference back to the Person -->
+        <property name="initial"/>
+        <property name="first"/>
+        <property name="last"/>
+    </component>
+</class>
+9.2. Collections of dependent objects
+
+Collections of components are supported (e.g. an array of type Name). Declare your component collection by replacing the <element> tag with a <composite-element> tag:
+
+<set name="someNames" table="some_names" lazy="true">
+    <key column="id"/>
+    <composite-element class="eg.Name"> <!-- class attribute required -->
+        <property name="initial"/>
+        <property name="first"/>
+        <property name="last"/>
+    </composite-element>
+</set>
+Important
+If you define a Set of composite elements, it is important to implement equals() and hashCode() correctly.
+Composite elements can contain components but not collections. If your composite element contains components, use the <nested-composite-element> tag. This case is a collection of components which themselves have components. You may want to consider if a one-to-many association is more appropriate. Remodel the composite element as an entity, but be aware that even though the Java model is the same, the relational model and persistence semantics are still slightly different.
+
+A composite element mapping does not support null-able properties if you are using a <set>. There is no separate primary key column in the composite element table. Hibernate uses each column's value to identify a record when deleting objects, which is not possible with null values. You have to either use only not-null properties in a composite-element or choose a <list>, <map>, <bag> or <idbag>.
+
+A special case of a composite element is a composite element with a nested <many-to-one> element. This mapping allows you to map extra columns of a many-to-many association table to the composite element class. The following is a many-to-many association from Order to Item, where purchaseDate, price and quantity are properties of the association:
+
+<class name="eg.Order" .... >
+    ....
+    <set name="purchasedItems" table="purchase_items" lazy="true">
+        <key column="order_id">
+        <composite-element class="eg.Purchase">
+            <property name="purchaseDate"/>
+            <property name="price"/>
+            <property name="quantity"/>
+            <many-to-one name="item" class="eg.Item"/> <!-- class attribute is optional -->
+        </composite-element>
+    </set>
+</class>
+There cannot be a reference to the purchase on the other side for bidirectional association navigation. Components are value types and do not allow shared references. A single Purchase can be in the set of an Order, but it cannot be referenced by the Item at the same time.
+
+Even ternary (or quaternary, etc) associations are possible:
+
+<class name="eg.Order" .... >
+    ....
+    <set name="purchasedItems" table="purchase_items" lazy="true">
+        <key column="order_id">
+        <composite-element class="eg.OrderLine">
+            <many-to-one name="purchaseDetails class="eg.Purchase"/>
+            <many-to-one name="item" class="eg.Item"/>
+        </composite-element>
+    </set>
+</class>
+Composite elements can appear in queries using the same syntax as associations to other entities.
+
+9.3. Components as Map indices
+
+The <composite-map-key> element allows you to map a component class as the key of a Map. Ensure that you override hashCode() and equals() correctly on the component class.
+
+9.4. Components as composite identifiers
+
+You can use a component as an identifier of an entity class. Your component class must satisfy certain requirements:
+
+It must implement java.io.Serializable.
+It must re-implement equals() and hashCode() consistently with the database's notion of composite key equality.
+Note
+In Hibernate3, although the second requirement is not an absolutely hard requirement of Hibernate, it is recommended.
+You cannot use an IdentifierGenerator to generate composite keys. Instead the application must assign its own identifiers.
+
+Use the <composite-id> tag, with nested <key-property> elements, in place of the usual <id> declaration. For example, the OrderLine class has a primary key that depends upon the (composite) primary key of Order.
+
+<class name="OrderLine">
+
+    <composite-id name="id" class="OrderLineId">
+        <key-property name="lineId"/>
+        <key-property name="orderId"/>
+        <key-property name="customerId"/>
+    </composite-id>
+
+    <property name="name"/>
+
+    <many-to-one name="order" class="Order"
+            insert="false" update="false">
+        <column name="orderId"/>
+        <column name="customerId"/>
+    </many-to-one>
+    ....
+
+</class>
+Any foreign keys referencing the OrderLine table are now composite. Declare this in your mappings for other classes. An association to OrderLine is mapped like this:
+
+<many-to-one name="orderLine" class="OrderLine">
+<!-- the "class" attribute is optional, as usual -->
+    <column name="lineId"/>
+    <column name="orderId"/>
+    <column name="customerId"/>
+</many-to-one>
+Tip
+The column element is an alternative to the column attribute everywhere. Using the column element just gives more declaration options, which are mostly useful when utilizing hbm2ddl
+A many-to-many association to OrderLine also uses the composite foreign key:
+
+<set name="undeliveredOrderLines">
+    <key column name="warehouseId"/>
+    <many-to-many class="OrderLine">
+        <column name="lineId"/>
+        <column name="orderId"/>
+        <column name="customerId"/>
+    </many-to-many>
+</set>
+The collection of OrderLines in Order would use:
+
+<set name="orderLines" inverse="true">
+    <key>
+        <column name="orderId"/>
+        <column name="customerId"/>
+    </key>
+    <one-to-many class="OrderLine"/>
+</set>
+The <one-to-many> element declares no columns.
+
+If OrderLine itself owns a collection, it also has a composite foreign key.
+
+<class name="OrderLine">
+    ....
+    ....
+    <list name="deliveryAttempts">
+        <key>   <!-- a collection inherits the composite key type -->
+            <column name="lineId"/>
+            <column name="orderId"/>
+            <column name="customerId"/>
+        </key>
+        <list-index column="attemptId" base="1"/>
+        <composite-element class="DeliveryAttempt">
+            ...
+        </composite-element>
+    </set>
+</class>
+9.5. Dynamic components
+
+You can also map a property of type Map:
+
+<dynamic-component name="userAttributes">
+    <property name="foo" column="FOO" type="string"/>
+    <property name="bar" column="BAR" type="integer"/>
+    <many-to-one name="baz" class="Baz" column="BAZ_ID"/>
+</dynamic-component>
+The semantics of a <dynamic-component> mapping are identical to <component>. The advantage of this kind of mapping is the ability to determine the actual properties of the bean at deployment time just by editing the mapping document. Runtime manipulation of the mapping document is also possible, using a DOM parser. You can also access, and change, Hibernate's configuration-time metamodel via the Configuration object.
+

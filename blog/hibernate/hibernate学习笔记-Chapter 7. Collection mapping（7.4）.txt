@@ -1,0 +1,296 @@
+﻿hibernate学习笔记-Chapter 7. Collection mapping（7.3至7.4）
+
+by hxzon
+
+http://docs.jboss.org/hibernate/orm/4.1/manual/en-US/html/index
+
+http://docs.jboss.org/hibernate/orm/4.1/manual/en-US/html/ch07.html
+
+==============
+Table of Contents
+
+7.1. Persistent collections
+
+7.2. How to map collections
+7.2.1. Collection foreign keys
+7.2.2. Indexed collections
+7.2.3. Collections of basic types and embeddable objects
+
+7.3. Advanced collection mappings
+7.3.1. Sorted collections
+7.3.2. Bidirectional associations
+7.3.3. Bidirectional associations with indexed collections
+7.3.4. Ternary associations
+7.3.5. Using an <idbag>
+
+7.4. Collection examples
+
+=====================
+7.4. Collection examples
+
+This section covers collection examples.
+
+The following class has a collection of Child instances:
+
+Example 7.32. Example classes Parent and Child
+
+public class Parent {
+    private long id;
+    private Set<Child> children;
+
+    // getter/setter
+    ...
+}
+
+
+public class Child {
+   private long id;
+   private String name
+
+   
+   // getter/setter
+   ...
+}
+
+If each child has, at most, one parent, the most natural mapping is a one-to-many association:
+
+Example 7.33. One to many unidirectional Parent-Child relationship using annotations
+
+public class Parent {
+    @Id
+    @GeneratedValue
+    private long id;
+
+    @OneToMany
+    private Set<Child> children;
+
+    // getter/setter
+    ...
+}
+
+
+public class Child {
+   @Id
+   @GeneratedValue
+   private long id;
+   private String name;
+
+   
+   // getter/setter
+   ...
+}
+
+Example 7.34. One to many unidirectional Parent-Child relationship using mapping files
+
+<hibernate-mapping>
+
+    <class name="Parent">
+        <id name="id">
+            <generator class="sequence"/>
+        </id>
+        <set name="children">
+            <key column="parent_id"/>
+            <one-to-many class="Child"/>
+        </set>
+    </class>
+
+    <class name="Child">
+        <id name="id">
+            <generator class="sequence"/>
+        </id>
+        <property name="name"/>
+    </class>
+
+</hibernate-mapping>
+
+This maps to the following table definitions:
+
+Example 7.35. Table definitions for unidirectional Parent-Child relationship
+
+create table parent ( id bigint not null primary key )
+create table child ( id bigint not null primary key, name varchar(255), parent_id bigint )
+alter table child add constraint childfk0 (parent_id) references parent
+
+If the parent is required, use a bidirectional one-to-many association:
+
+Example 7.36. One to many bidirectional Parent-Child relationship using annotations
+
+public class Parent {
+    @Id
+    @GeneratedValue
+    private long id;
+
+    @OneToMany(mappedBy="parent")
+    private Set<Child> children;
+
+    // getter/setter
+    ...
+}
+
+
+public class Child {
+   @Id
+   @GeneratedValue
+   private long id;
+
+   private String name;
+ 
+   @ManyToOne
+   private Parent parent;
+
+   
+   // getter/setter
+   ...
+}
+
+Example 7.37. One to many bidirectional Parent-Child relationship using mapping files
+
+<hibernate-mapping>
+
+    <class name="Parent">
+        <id name="id">
+            <generator class="sequence"/>
+        </id>
+        <set name="children" inverse="true">
+            <key column="parent_id"/>
+            <one-to-many class="Child"/>
+        </set>
+    </class>
+
+    <class name="Child">
+        <id name="id">
+            <generator class="sequence"/>
+        </id>
+        <property name="name"/>
+        <many-to-one name="parent" class="Parent" column="parent_id" not-null="true"/>
+    </class>
+
+</hibernate-mapping>
+
+Notice the NOT NULL constraint:
+
+Example 7.38. Table definitions for bidirectional Parent-Child relationship
+
+create table parent ( id bigint not null primary key )
+create table child ( id bigint not null
+                     primary key,
+                     name varchar(255),
+                     parent_id bigint not null )
+alter table child add constraint childfk0 (parent_id) references parent
+
+Alternatively, if this association must be unidirectional you can enforce the NOT NULL constraint.
+
+Example 7.39. Enforcing NOT NULL constraint in unidirectional relation using annotations
+
+public class Parent {
+    @Id
+    @GeneratedValue
+    private long id;
+
+    @OneToMany(optional=false)
+    private Set<Child> children;
+
+    // getter/setter
+    ...
+}
+
+
+public class Child {
+   @Id
+   @GeneratedValue
+   private long id;
+   private String name;
+
+   
+   // getter/setter
+   ...
+}
+
+Example 7.40. Enforcing NOT NULL constraint in unidirectional relation using mapping files
+
+<hibernate-mapping>
+
+    <class name="Parent">
+        <id name="id">
+            <generator class="sequence"/>
+        </id>
+        <set name="children">
+            <key column="parent_id" not-null="true"/>
+            <one-to-many class="Child"/>
+        </set>
+    </class>
+
+    <class name="Child">
+        <id name="id">
+            <generator class="sequence"/>
+        </id>
+        <property name="name"/>
+    </class>
+
+</hibernate-mapping>
+
+On the other hand, if a child has multiple parents, a many-to-many association is appropriate.
+
+Example 7.41. Many to many Parent-Child relationship using annotations
+
+public class Parent {
+    @Id
+    @GeneratedValue
+    private long id;
+
+    @ManyToMany
+    private Set<Child> children;
+
+    // getter/setter
+    ...
+}
+
+
+public class Child {
+   @Id
+   @GeneratedValue
+   private long id;
+
+   private String name;
+
+   
+   // getter/setter
+   ...
+}
+
+Example 7.42. Many to many Parent-Child relationship using mapping files
+
+<hibernate-mapping>
+
+    <class name="Parent">
+        <id name="id">
+            <generator class="sequence"/>
+        </id>
+        <set name="children" table="childset">
+            <key column="parent_id"/>
+            <many-to-many class="Child" column="child_id"/>
+        </set>
+    </class>
+
+    <class name="Child">
+        <id name="id">
+            <generator class="sequence"/>
+        </id>
+        <property name="name"/>
+    </class>
+
+</hibernate-mapping>
+
+Table definitions:
+
+Example 7.43. Table definitions for many to many releationship
+
+create table parent ( id bigint not null primary key )
+create table child ( id bigint not null primary key, name varchar(255) )
+create table childset ( parent_id bigint not null,
+                        child_id bigint not null,
+                        primary key ( parent_id, child_id ) )
+alter table childset add constraint childsetfk0 (parent_id) references parent
+alter table childset add constraint childsetfk1 (child_id) references child
+
+For more examples and a complete explanation of a parent/child relationship mapping, see Chapter 23, Example: Parent/Child for more information. Even more complex association mappings are covered in the next chapter.

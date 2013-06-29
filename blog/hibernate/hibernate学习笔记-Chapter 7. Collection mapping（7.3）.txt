@@ -1,0 +1,379 @@
+﻿hibernate学习笔记-Chapter 7. Collection mapping（7.3）
+
+by hxzon
+
+http://docs.jboss.org/hibernate/orm/4.1/manual/en-US/html/index
+
+http://docs.jboss.org/hibernate/orm/4.1/manual/en-US/html/ch07.html
+
+==============
+Table of Contents
+
+7.1. Persistent collections
+
+7.2. How to map collections
+7.2.1. Collection foreign keys
+7.2.2. Indexed collections
+7.2.3. Collections of basic types and embeddable objects
+
+7.3. Advanced collection mappings
+7.3.1. Sorted collections
+7.3.2. Bidirectional associations
+7.3.3. Bidirectional associations with indexed collections
+7.3.4. Ternary associations
+7.3.5. Using an <idbag>
+
+7.4. Collection examples
+
+=====================
+7.3. Advanced collection mappings
+
+7.3.1. Sorted collections
+
+Hibernate supports collections implementing java.util.SortedMap and java.util.SortedSet. With annotations you declare a sort comparator using @Sort. You chose between the comparator types unsorted, natural or custom. If you want to use your own comparator implementation, you'll also have to specify the implementation class using the comparator attribute. Note that you need to use either a SortedSet or a SortedMap interface.
+
+Example 7.17. Sorted collection with @Sort
+
+@OneToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+@JoinColumn(name="CUST_ID")
+@Sort(type = SortType.COMPARATOR, comparator = TicketComparator.class)
+public SortedSet<Ticket> getTickets() {
+    return tickets;
+}
+
+Using Hibernate mapping files you specify a comparator in the mapping file with <sort>:
+
+Example 7.18. Sorted collection using xml mapping
+
+<set name="aliases"
+            table="person_aliases" 
+            sort="natural">
+    <key column="person"/>
+    <element column="name" type="string"/>
+</set>
+
+<map name="holidays" sort="my.custom.HolidayComparator">
+    <key column="year_id"/>
+    <map-key column="hol_name" type="string"/>
+    <element column="hol_date" type="date"/>
+</map>
+
+Allowed values of the sort attribute are unsorted, natural and the name of a class implementing java.util.Comparator.
+
+Tip
+Sorted collections actually behave like java.util.TreeSet or java.util.TreeMap.
+If you want the database itself to order the collection elements, use the order-by attribute of set, bag or map mappings. This solution is implemented using LinkedHashSet or LinkedHashMap and performs the ordering in the SQL query and not in the memory.
+
+Example 7.19. Sorting in database using order-by
+
+<set name="aliases" table="person_aliases" order-by="lower(name) asc">
+    <key column="person"/>
+    <element column="name" type="string"/>
+</set>
+
+<map name="holidays" order-by="hol_date, hol_name">
+    <key column="year_id"/>
+    <map-key column="hol_name" type="string"/>
+    <element column="hol_date type="date"/>
+</map>
+
+Note
+The value of the order-by attribute is an SQL ordering, not an HQL ordering.
+Associations can even be sorted by arbitrary criteria at runtime using a collection filter():
+
+Example 7.20. Sorting via a query filter
+
+sortedUsers = s.createFilter( group.getUsers(), "order by this.name" ).list();
+
+7.3.2. Bidirectional associations
+
+A bidirectional association allows navigation from both "ends" of the association. Two kinds of bidirectional association are supported:
+
+one-to-many
+set or bag valued at one end and single-valued at the other
+
+many-to-many
+set or bag valued at both ends
+
+Often there exists a many to one association which is the owner side of a bidirectional relationship. The corresponding one to many association is in this case annotated by @OneToMany(mappedBy=...)
+
+Example 7.21. Bidirectional one to many with many to one side as association owner
+
+@Entity
+public class Troop {
+    @OneToMany(mappedBy="troop")
+    public Set<Soldier> getSoldiers() {
+    ...
+}
+
+@Entity
+public class Soldier {
+    @ManyToOne
+    @JoinColumn(name="troop_fk")
+    public Troop getTroop() {
+    ...
+}           
+
+Troop has a bidirectional one to many relationship with Soldier through the troop property. You don't have to (must not) define any physical mapping in the mappedBy side.
+
+To map a bidirectional one to many, with the one-to-many side as the owning side, you have to remove the mappedBy element and set the many to one @JoinColumn as insertable and updatable to false. This solution is not optimized and will produce additional UPDATE statements.
+
+Example 7.22. Bidirectional association with one to many side as owner
+
+@Entity
+public class Troop {
+    @OneToMany
+    @JoinColumn(name="troop_fk") //we need to duplicate the physical information
+    public Set<Soldier> getSoldiers() {
+    ...
+}
+
+@Entity
+public class Soldier {
+    @ManyToOne
+    @JoinColumn(name="troop_fk", insertable=false, updatable=false)
+    public Troop getTroop() {
+    ...
+}
+
+How does the mappping of a bidirectional mapping look like in Hibernate mapping xml? There you define a bidirectional one-to-many association by mapping a one-to-many association to the same table column(s) as a many-to-one association and declaring the many-valued end inverse="true".
+
+Example 7.23. Bidirectional one to many via Hibernate mapping files
+
+<class name="Parent">
+    <id name="id" column="parent_id"/>
+    ....
+    <set name="children" inverse="true">
+        <key column="parent_id"/>
+        <one-to-many class="Child"/>
+    </set>
+</class>
+
+<class name="Child">
+    <id name="id" column="child_id"/>
+    ....
+    <many-to-one name="parent" 
+        class="Parent" 
+        column="parent_id"
+        not-null="true"/>
+</class>
+
+Mapping one end of an association with inverse="true" does not affect the operation of cascades as these are orthogonal concepts.
+
+A many-to-many association is defined logically using the @ManyToMany annotation. You also have to describe the association table and the join conditions using the @JoinTable annotation. If the association is bidirectional, one side has to be the owner and one side has to be the inverse end (ie. it will be ignored when updating the relationship values in the association table):
+
+Example 7.24. Many to many association via @ManyToMany
+
+@Entity
+public class Employer implements Serializable {
+    @ManyToMany(
+        targetEntity=org.hibernate.test.metadata.manytomany.Employee.class,
+        cascade={CascadeType.PERSIST, CascadeType.MERGE}
+    )
+    @JoinTable(
+        name="EMPLOYER_EMPLOYEE",
+        joinColumns=@JoinColumn(name="EMPER_ID"),
+        inverseJoinColumns=@JoinColumn(name="EMPEE_ID")
+    )
+    public Collection getEmployees() {
+        return employees;
+    }
+    ...
+}              
+@Entity
+public class Employee implements Serializable {
+    @ManyToMany(
+        cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+        mappedBy = "employees",
+        targetEntity = Employer.class
+    )
+    public Collection getEmployers() {
+        return employers;
+    }
+}                
+
+In this example @JoinTable defines a name, an array of join columns, and an array of inverse join columns. The latter ones are the columns of the association table which refer to the Employee primary key (the "other side"). As seen previously, the other side don't have to (must not) describe the physical mapping: a simple mappedBy argument containing the owner side property name bind the two.
+
+As any other annotations, most values are guessed in a many to many relationship. Without describing any physical mapping in a unidirectional many to many the following rules applied. The table name is the concatenation of the owner table name, _ and the other side table name. The foreign key name(s) referencing the owner table is the concatenation of the owner table name, _ and the owner primary key column(s). The foreign key name(s) referencing the other side is the concatenation of the owner property name, _, and the other side primary key column(s). These are the same rules used for a unidirectional one to many relationship.
+
+Example 7.25. Default values for @ManyToMany (uni-directional)
+
+@Entity
+public class Store {
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    public Set<City> getImplantedIn() {
+        ...
+    }
+}
+
+@Entity
+public class City {
+    ... //no bidirectional relationship
+}             
+
+A Store_City is used as the join table. The Store_id column is a foreign key to the Store table. The implantedIn_id column is a foreign key to the City table.
+
+Without describing any physical mapping in a bidirectional many to many the following rules applied. The table name is the concatenation of the owner table name, _ and the other side table name. The foreign key name(s) referencing the owner table is the concatenation of the other side property name, _, and the owner primary key column(s). The foreign key name(s) referencing the other side is the concatenation of the owner property name, _, and the other side primary key column(s). These are the same rules used for a unidirectional one to many relationship.
+
+Example 7.26. Default values for @ManyToMany (bi-directional)
+
+@Entity
+public class Store {
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    public Set<Customer> getCustomers() {
+        ...
+    }
+}
+
+@Entity
+public class Customer {
+    @ManyToMany(mappedBy="customers")
+    public Set<Store> getStores() {
+        ...
+    }
+}             
+
+A Store_Customer is used as the join table. The stores_id column is a foreign key to the Store table. The customers_id column is a foreign key to the Customer table.
+
+Using Hibernate mapping files you can map a bidirectional many-to-many association by mapping two many-to-many associations to the same database table and declaring one end as inverse.
+
+Note
+You cannot select an indexed collection.
+Example 7.27, “Many to many association using Hibernate mapping files” shows a bidirectional many-to-many association that illustrates how each category can have many items and each item can be in many categories:
+
+Example 7.27. Many to many association using Hibernate mapping files
+
+<class name="Category">
+    <id name="id" column="CATEGORY_ID"/>
+    ...
+    <bag name="items" table="CATEGORY_ITEM">
+        <key column="CATEGORY_ID"/>
+        <many-to-many class="Item" column="ITEM_ID"/>
+    </bag>
+</class>
+
+<class name="Item">
+    <id name="id" column="ITEM_ID"/>
+    ...
+
+    <!-- inverse end -->
+    <bag name="categories" table="CATEGORY_ITEM" inverse="true">
+        <key column="ITEM_ID"/>
+        <many-to-many class="Category" column="CATEGORY_ID"/>
+    </bag>
+</class>
+
+Changes made only to the inverse end of the association are not persisted. This means that Hibernate has two representations in memory for every bidirectional association: one link from A to B and another link from B to A. This is easier to understand if you think about the Java object model and how a many-to-many relationship in Javais created:
+
+Example 7.28. Effect of inverse vs. non-inverse side of many to many associations
+
+category.getItems().add(item);           // The category now "knows" about the relationship
+item.getCategories().add(category);      // The item now "knows" about the relationship
+
+session.persist(item);                   // The relationship won't be saved!
+session.persist(category);               // The relationship will be saved
+
+The non-inverse side is used to save the in-memory representation to the database.
+
+7.3.3. Bidirectional associations with indexed collections
+
+There are some additional considerations for bidirectional mappings with indexed collections (where one end is represented as a <list> or <map>) when using Hibernate mapping files. If there is a property of the child class that maps to the index column you can use inverse="true" on the collection mapping:
+
+Example 7.29. Bidirectional association with indexed collection
+
+<class name="Parent">
+    <id name="id" column="parent_id"/>
+    ....
+    <map name="children" inverse="true">
+        <key column="parent_id"/>
+        <map-key column="name" 
+            type="string"/>
+        <one-to-many class="Child"/>
+    </map>
+</class>
+
+<class name="Child">
+    <id name="id" column="child_id"/>
+    ....
+    <property name="name" 
+        not-null="true"/>
+    <many-to-one name="parent" 
+        class="Parent" 
+        column="parent_id"
+        not-null="true"/>
+</class>
+
+If there is no such property on the child class, the association cannot be considered truly bidirectional. That is, there is information available at one end of the association that is not available at the other end. In this case, you cannot map the collection inverse="true". Instead, you could use the following mapping:
+
+Example 7.30. Bidirectional association with indexed collection, but no index column
+
+<class name="Parent">
+    <id name="id" column="parent_id"/>
+    ....
+    <map name="children">
+        <key column="parent_id"
+            not-null="true"/>
+        <map-key column="name" 
+            type="string"/>
+        <one-to-many class="Child"/>
+    </map>
+</class>
+
+<class name="Child">
+    <id name="id" column="child_id"/>
+    ....
+    <many-to-one name="parent" 
+        class="Parent" 
+        column="parent_id"
+        insert="false"
+        update="false"
+        not-null="true"/>
+</class>
+
+Note that in this mapping, the collection-valued end of the association is responsible for updates to the foreign key.
+
+7.3.4. Ternary associations
+
+There are three possible approaches to mapping a ternary association. One approach is to use a Map with an association as its index:
+
+Example 7.31. Ternary association mapping
+
+@Entity
+public class Company {
+   @Id 
+   int id;
+   ...
+   @OneToMany // unidirectional
+   @MapKeyJoinColumn(name="employee_id")
+   Map<Employee, Contract> contracts;
+}
+
+// or
+
+<map name="contracts">
+    <key column="employer_id" not-null="true"/>
+    <map-key-many-to-many column="employee_id" class="Employee"/>
+    <one-to-many class="Contract"/>
+</map>
+
+A second approach is to remodel the association as an entity class. This is the most common approach. A final alternative is to use composite elements, which will be discussed later.
+
+7.3.5. Using an <idbag>
+
+The majority of the many-to-many associations and collections of values shown previously all map to tables with composite keys, even though it has been suggested that entities should have synthetic identifiers (surrogate keys). A pure association table does not seem to benefit much from a surrogate key, although a collection of composite values might. For this reason Hibernate provides a feature that allows you to map many-to-many associations and collections of values to a table with a surrogate key.
+
+The <idbag> element lets you map a List (or Collection) with bag semantics. For example:
+
+<idbag name="lovers" table="LOVERS">
+    <collection-id column="ID" type="long">
+        <generator class="sequence"/>
+    </collection-id>
+    <key column="PERSON1"/>
+    <many-to-many column="PERSON2" class="Person" fetch="join"/>
+</idbag>
+An <idbag> has a synthetic id generator, just like an entity class. A different surrogate key is assigned to each collection row. Hibernate does not, however, provide any mechanism for discovering the surrogate key value of a particular row.
+
+The update performance of an <idbag> supersedes a regular <bag>. Hibernate can locate individual rows efficiently and update or delete them individually, similar to a list, map or set.
+
+In the current implementation, the native identifier generation strategy is not supported for <idbag> collection identifiers.
+
