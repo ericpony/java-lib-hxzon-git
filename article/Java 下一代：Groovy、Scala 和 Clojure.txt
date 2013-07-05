@@ -1,6 +1,11 @@
 ﻿Java 下一代：Groovy、Scala 和 Clojure
 
 ===========
+Java 下一代: Groovy、Scala 和 Clojure
+在日益壮大的多语言世界中使用 Groovy、Scala 和 Clojure
+Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
+http://www.ibm.com/developerworks/cn/java/j-jn1/index.html
+
 Java.next: The Java.next languages
 Leveraging Groovy, Scala, and Clojure in an increasingly polyglot world
 Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
@@ -28,8 +33,16 @@ http://www.ibm.com/developerworks/library/j-jn3/index.html
 
 
 ----------
+Java 下一代: Groovy、Scala 和 Clojure 中的共同点，第 3 部分
+反思异常、表达式和空
+Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
+http://www.ibm.com/developerworks/cn/java/j-jn4/index.html
+
 Java.next: Common ground in Groovy, Scala, and Clojure, Part 3
 Rethinking exceptions, expressions, and emptiness
 Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
 Date:  14 May 2013 
 http://www.ibm.com/developerworks/library/j-jn4/
+
+
+

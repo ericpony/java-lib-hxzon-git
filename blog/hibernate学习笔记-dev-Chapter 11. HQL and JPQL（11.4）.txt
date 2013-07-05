@@ -25,12 +25,16 @@ http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html/ch11.html
 
 Essentially expressions are references that resolve to basic or tuple values.
 
+
+================
 11.4.1. Identification variable
 唯一标识变量。
 
 See Section 11.3, “The FROM clause”.
 参看from子句。
 
+
+================
 11.4.2. Path expressions
 路径表达式。
 
@@ -40,7 +44,7 @@ Again, see Section 11.3, “The FROM clause”.
 
 ====================
 11.4.3. Literals
-子面量。
+字面量。
 
 String literals are enclosed in single-quotes. To escape a single-quote within a string literal, use double single-quotes.
 
@@ -132,7 +136,7 @@ Date/time literals can be specified using the JDBC escape syntax:
  These literals only work if you JDBC drivers supports them.
 
 时间字面量。
-这些字母量必须底层的jdbc驱动支持。
+这些字面量必须底层的jdbc驱动支持。
 
 
 
@@ -146,6 +150,7 @@ It is good practice to not mix forms in a given query.
 
 hql支持所有三种形式。
 
+--------
 11.4.4.1. Named parameters
 命名参数。
 
@@ -173,6 +178,7 @@ List<Customer> customers = entityManager.createQuery( queryString, Customer.clas
         .setParameter( "name", theNameOfInterest )
         .getResultList();
 
+--------
 11.4.4.2. Positional (JPQL) parameters
 jpql风格的位置参数。
 
@@ -202,6 +208,7 @@ List<Customer> customers = entityManager.createQuery( queryString, Customer.clas
         .setParameter( 1, theNameOfInterest )
         .getResultList();
 
+-------
 11.4.4.3. Positional (HQL) parameters
 hql风格的位置参数。
 
@@ -336,7 +343,7 @@ Aggregations often appear with grouping. For information on grouping see Section
 Both HQL and JPQL define some standard functions that are available regardless of the underlying database in use. 
 HQL can also understand additional functions defined by the Dialect as well as the application.
 
-
+---------
 11.4.8.1. Standardized functions - JPQL
 
 Here are the list of functions defined as supported by JPQL. 
@@ -409,7 +416,7 @@ CURRENT_TIMESTAMP
 Returns the database current timestamp.
 
 
-
+--------------
 11.4.8.2. Standardized functions - HQL
 
 Beyond the JPQL standardized functions, HQL makes some additional functions available regardless of the underlying database in use.
@@ -457,7 +464,7 @@ STR
 Abbreviated form for casting a value as character data.
 
 
-
+--------------
 11.4.8.3. Non-standardized functions
 非标准函数。
 
@@ -635,7 +642,7 @@ It is mentioned only for completeness.
 
 Both the simple and searched forms are supported, as well as the 2 SQL defined abbreviated forms (NULLIF and COALESCE)
 
-
+--------------
 11.4.11.1. Simple CASE expressions
 简单条件表达式。
 
@@ -675,7 +682,7 @@ from Customer c
 （同上，推荐。）
 
 
-----
+------------
 11.4.11.2. Searched CASE expressions
 
 
@@ -705,7 +712,7 @@ from Customer c
 （同上，推荐。）
 
 
-----
+-----------
 11.4.11.3. NULLIF expressions
 
 NULLIF is an abbreviated CASE expression that returns NULL if its operands are considered equal.
@@ -728,7 +735,7 @@ select case when c.previousName.last = c.name.last then null
 from Customer c
 
 
-----
+------------
 11.4.11.4. COALESCE expressions
 
 COALESCE is an abbreviated CASE expression that returns the first non-null operand. 

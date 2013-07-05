@@ -24,7 +24,7 @@ from子句。
 The FROM clause is responsible defining the scope of object model types available to the rest of the query. 
 It also is responsible for defining all the “identification variables” available to the rest of the query.
 
-----
+==============
 11.3.1. Identification variables
 
 Identification variables are often referred to as aliases. 
@@ -41,7 +41,7 @@ In other words, JPQL says they can be case insensitive and so Hibernate must be 
 but this does not make it good practice.
 
 
-----
+==============
 11.3.2. Root entity references
 
 A root entity reference, or what JPA calls a range variable declaration, 
@@ -94,7 +94,7 @@ where c1.address.state = c2.address.state
   and c2.name = 'Acme'
 
 
-----
+==============
 11.3.3. Explicit joins
 显式join。
 
@@ -189,7 +189,7 @@ see Section 11.3.5, “Collection member references”.
 In the case of component/embedded attributes, the join is simply logical and does not correlate to a physical (SQL) join.
 
 
-----
+==============
 11.3.4. Implicit joins (path expressions)
 隐式join（路径表达式）。
 
@@ -262,7 +262,7 @@ In the case of component/embedded attributes, the join is simply logical and doe
 Unlike explicit joins, however, implicit joins may also reference basic state fields as long as the path expression ends there.
 
 
-----
+==============
 11.3.5. Collection member references
 引用集合成员。
 
@@ -300,7 +300,7 @@ Which form an application chooses to use is simply a matter of taste.
 上面的例子也演示了in的语法，两种形式是等价的。
 
 
-----
+------------
 11.3.5.1. Special case - qualified path expressions
 
 
@@ -376,7 +376,7 @@ ENTRY is only valid as a terminal path and only valid in the select clause.
 See Section 11.4.9, “Collection-related expressions” for additional details on collection related expressions.
 
 
-----
+==============
 11.3.6. Polymorphism
 多态。
 

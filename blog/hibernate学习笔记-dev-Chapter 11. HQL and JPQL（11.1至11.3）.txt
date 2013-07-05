@@ -103,7 +103,7 @@ Care should be taken as to when a UPDATE or DELETE statement is executed.
  	--Section 4.10 of the JPA 2.0 Specification
 
 
-----
+-----------
 11.2.1. Select statements
 
 The BNF for SELECT statements in HQL is:
@@ -132,7 +132,7 @@ Hibernate does not actually enforce that a select_clause be present even when pa
 however applications interested in JPA portability should take heed of this.
 
 
-----
+-----------
 11.2.2. Update statements
 
 The BNF for UPDATE statements is the same in HQL and JPQL:
@@ -201,7 +201,7 @@ Neither UPDATE nor DELETE statements are allowed to result in what is called an 
 Their form already disallows explicit joins.
 
 
-----
+-----------
 11.2.3. Delete statements
 
 
@@ -214,7 +214,7 @@ delete_clause ::= DELETE FROM entity_name [[AS] identification_variable]
 A DELETE statement is also executed using the executeUpdate method of either org.hibernate.Query or javax.persistence.Query.
 
 
-----
+-----------
 11.2.4. Insert statements
 
 

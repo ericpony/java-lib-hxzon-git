@@ -104,7 +104,7 @@ Predicates form the basis of the where clause, the having clause and searched ca
 They are expressions which resolve to a truth value, generally TRUE or FALSE, 
 although boolean comparisons involving NULLs generally resolve to UNKNOWN.
 
-----
+-----------
 11.6.1. Relational comparisons
 关系比较。
 
@@ -181,7 +181,7 @@ It resolves to false if the subquery result is empty.
 注意，如果子查询结果为空集合，则始终返回false。
 
 
-----
+-----------
 11.6.2. Nullness predicate
 空值谓词。
 
@@ -206,7 +206,7 @@ from Person p
 where p.address is null
 
 
-----
+-----------
 11.6.3. Like predicate
 相似谓词。
 
@@ -246,7 +246,7 @@ from StoredProcedureMetadata sp
 where sp.name like 'sp|_%' escape '|'
 
 
-----
+-----------
 11.6.4. Between predicate
 
 Analogous to the SQL between expression. 
@@ -278,7 +278,7 @@ from Person p
 where p.name between 'A' and 'E' 
 
 
-----
+-----------
 11.6.5. In predicate
 
 
@@ -363,7 +363,7 @@ where c.chiefExecutive in (
 )
 
 
-----
+-----------
 11.6.6. Exists predicate
 
 Exists expressions test the existence of results from a subquery. 
@@ -371,7 +371,7 @@ The affirmative form returns true if the subquery result contains values.
 The negated form returns true if the subquery result is empty.
 
 
-----
+-----------
 11.6.7. Empty collection predicate
 “集合是否为空”谓词。
 
@@ -392,7 +392,7 @@ from Customer c
 where c.pastDueBills is not empty
 
 
-----
+-----------
 11.6.8. Member-of collection predicate
 
 The [NOT] MEMBER [OF] expression applies to collection-valued path expressions. 
@@ -413,7 +413,7 @@ where p.name.first = 'Joseph'
   and 'Joey' not member of p.nickNames
 
 
-----
+-----------
 11.6.9. NOT predicate operator
 
 The NOT operator is used to negate the predicate that follows it. 
@@ -421,7 +421,8 @@ If that following predicate is true, the NOT resolves to false.
 If the predicate is true, NOT resolves to false. 
 If the predicate is unknown, the NOT resolves to unknown as well.
 
-----
+
+-----------
 11.6.10. AND predicate operator
 
 The AND operator is used to combine 2 predicate expressions. 
@@ -429,7 +430,8 @@ The result of the AND expression is true if and only if both predicates resolve 
 If either predicate resolves to unknown, the AND expression resolves to unknown as well. 
 Otherwise, the result is false.
 
-----
+
+-----------
 11.6.11. OR predicate operator
 
 The OR operator is used to combine 2 predicate expressions. 
@@ -437,12 +439,14 @@ The result of the OR expression is true if either predicate resolves to true.
 If both predicates resolve to unknown, the OR expression resolves to unknown. 
 Otherwise, the result is false.
 
+
 ===========
 11.7. The WHERE clause
 where子句。
 
 The WHERE clause of a query is made up of predicates which assert whether values in each potential row match the predicated checks. 
 Thus, the where clause restricts the results returned from a select query and limits the scope of update and delete queries.
+
 
 ===========
 11.8. Grouping

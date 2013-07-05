@@ -27,4 +27,9 @@ The Reasoned Schemer
 
 
 ----
-4，
+4，Practical Artificial Intelligence Programming with Java
+https://github.com/mark-watson/Java-AI-Book-Code
+
+----
+5，
+
