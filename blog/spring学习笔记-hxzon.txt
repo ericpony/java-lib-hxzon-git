@@ -1,0 +1,19 @@
+﻿spring学习笔记-hxzon
+
+
+1，事务管理中，一个方法如果标记为“只读的”，里面的查删改操作不会提交到数据库。
+
+
+2，使用@Async可将一个方法变成异步的，该方法必须是public的。
+
+见文档《27. Task Execution and Scheduling》。
+
+
+3，使用@Scheduled可将一个方法变成定时执行的，该方法必须是public的。
+
+见文档《27. Task Execution and Scheduling》。
+
+hxzon：如何在运行时修改定时方法的时间间隔？
+
+
+4，
