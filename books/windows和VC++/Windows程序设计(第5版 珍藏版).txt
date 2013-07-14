@@ -54,7 +54,7 @@ Charles Petzold，从1984年起，Charles Petzold就一直在从事个人计算�
 第1部分 基础知识
 
 第1章 起步
-第2章Unicode简介
+第2章 Unicode简介
 第3章 窗口与消息
 第4章 文本输出
 第5章 绘图基础
@@ -96,7 +96,7 @@ Charles Petzold，从1984年起，Charles Petzold就一直在从事个人计算�
 1.3.6 编译、链接及运行
 
 
-第2章Unicode简介
+第2章 Unicode简介
 
 2.1 字符集简史
 2.1.1 美国标准

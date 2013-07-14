@@ -1,0 +1,365 @@
+﻿深入解析Windows操作系统(卷2)(英文版第6版)
+
+ 拉希诺维奇 (Mark Russinovich) (作者), 所罗门 (David Solomon) (作者), 艾欧内斯库 (Alex Ionescu) (作者) 
+
+http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E6%8B%89%E5%B8%8C%E8%AF%BA%E7%BB%B4%E5%A5%87/dp/B00B20LZTM
+http://www.ituring.com.cn/book/1083
+
+
+75.70(7.6折)
+====================
+出版社: 人民邮电出版社; 第1版 (2013年2月1日)
+外文书名: Windows Internals, Part 2
+丛书名: 图灵程序设计丛书
+平装: 641页
+语种： 简体中文, 英语
+开本: 16
+ISBN: 9787115304506
+条形码: 9787115304506
+
+原书书名	 Windows Internals, Part 2
+原书书号	9780735665873
+原书国家	美国
+原书出版社	Microsoft Press
+原书页数	688
+
+=============
+编辑推荐
+《深入解析Windows操作系统(卷2)(英文版第6版)》
+
+自20年前的第一版出版以来，《深入解析Windows操作系统(卷2)(英文版?第6版)》就成为了Windows系统管理员和开发人员探究Windows核心部件运作机理和各种技术细节的权威著作。
+书中深入透彻地阐述了Windows底层的方方面面，包括系统架构，各种系统机制和管理机制，进程、线程和作业，安全，I/O系统，存储管理、内存管理和缓存管理，文件系统，联网，启动与停机，崩溃转储分析等内容，Windows的内幕在微软技术专家的笔下被解析得一目了然。
+
+《深入解析Windows操作系统(卷2)(英文版第6版)》内容丰富，信息全面，适合众多Windows平台开发人员、系统管理员阅读。
+
+
+名人推荐
+
+“在微软，我们一直用本书培训新员工……本书是深入理解Windows的绝佳入门书” 
+——Windows之父jim Allchin 
+
+“每一位操作系统开发人员都应该拥有本书” 
+——微软技术院士、Windows NT首席设计师David Cutler 
+
+"我想不还有哪一本书比本书更具权威性。” 
+——微软公司副总裁Ben Fathi
+
+作者简介
+
+作者：（美国）拉希诺维奇（Mark Russinovich） （美国）所罗门（David Solomon） （加拿大）艾欧内斯库（Alex Ionescu）
+
+==============
+目录
+
+Introduction
+
+--
+Chapter 8 I/O System
+
+I/O System Components
+The I/O Manager
+Typical I/O Processing　
+Device Drivers
+Types of Device Drivers
+Structure of a Driver
+Driver Objects and Device Objects
+Opening Devices
+I/O Processing
+Types of I/O
+I/O Request to a Single-Layered Driver
+I/O Requests to Layered Drivers
+I/O Cancellation
+I/O Completion Ports
+I/O Prioritization
+Container Notifications
+Driver Verifier
+Kernel-Mode Driver Framework (KMDF)
+Structure and Operation of a KMDF Driver
+KMDF Data Model
+KMDF I/O Model
+User-Mode Driver Framework (UMDF)
+The Plug and Play (PnP) Manager
+Level of Plug and Play Support
+Driver Support for Plug and Play　
+Driver Loading, Initialization, and Installation
+Driver Installation
+The Power Manager
+Power Manager Operation
+Driver Power Operation
+Driver and Application Control of Device Power
+Power Availability Requests
+Processor Power Management (PPM)
+Conclusion
+
+
+--
+Chapter 9 Storage Management
+
+Storage Terminology　
+Disk Devices
+Rotating Magnetic Disks
+Solid State Disks
+Disk Drivers
+Winload
+Disk Class, Port, and Miniport Drivers　
+Disk Device Objects
+Partition Manager
+Volume Management
+Basic Disks　
+Dynamic Disks　
+Multipartition Volume Management
+The Volume Namespace
+Volume I/O Operations
+Virtual Disk Service
+Virtual Hard Disk Support
+Attaching VHDs
+Nested File Systems
+BitLocker Drive Encryption
+Encryption Keys
+Trusted Platform Module (TPM)
+BitLocker Boot Process
+BitLocker Key Recovery　
+Full-Volume Encryption Driver
+BitLocker Management　
+BitLocker To Go
+Volume Shadow Copy Service
+Shadow Copies
+VSS Architecture
+VSS Operation
+Uses in Windows
+Conclusion
+
+
+--
+Chapter 10 Memory Management
+Introduction to the Memory Manager
+Memory Manager Components
+Internal Synchronization
+Examining Memory Usage
+Services Provided by the Memory Manager
+Large and Small Pages　
+Reserving and Committing Pages　
+Commit Limit　
+Locking Memory
+Allocation Granularity
+Shared Memory and Mapped Files
+Protecting Memory　
+No Execute Page Protection
+Copy-on-Write
+Address Windowing Extensions
+Kernel-Mode Heaps (System Memory Pools)
+Pool Sizes　
+Monitoring Pool Usage
+Look-Aside Lists　
+Heap Manager
+Types of Heaps
+Heap Manager Structure
+Heap Synchronization　
+The Low Fragmentation Heap
+Heap Security Features　
+Heap Debugging Features　
+Pageheap　
+Fault Tolerant Heap　
+Virtual Address Space Layouts
+x86 Address Space Layouts
+x86 System Address Space Layout
+x86 Session Space
+System Page Table Entries
+64-Bit Address Space Layouts
+x64 Virtual Addressing Limitations
+Dynamic System Virtual Address Space Management
+System Virtual Address Space Quotas
+User Address Space Layout
+Address Translation　
+x86 Virtual Address Translation
+Translation Look-Aside Buffer
+Physical Address Extension (PAE)
+x64 Virtual Address Translation
+IA64 Virtual Address Translation
+Page Fault Handling
+Invalid PTEs　
+Prototype PTEs　
+In-Paging I/O　
+Collided Page Faults
+Clustered Page Faults
+Page Files　
+Commit Charge and the System Commit Limit
+Commit Charge and Page File Size　
+Stacks
+User Stacks
+Kernel Stacks
+DPC Stack
+Virtual Address Descriptors
+Process VADs
+Rotate VADs
+NUMA
+Section Objects
+Driver Verifier
+Page Frame Number Database
+Page List Dynamics
+Page Priority　
+Modified Page Writer
+PFN Data Structures
+Physical Memory Limits
+Windows Client Memory Limits　
+Working Sets
+Demand Paging
+Logical Prefetcher
+Placement Policy
+Working Set Management
+Balance Set Manager and Swapper
+System Working Sets　
+Memory Notification Events
+Proactive Memory Management (Superfetch)　
+Components
+Tracing and Logging
+Scenarios
+Page Priority and Rebalancing
+Robust Performance
+ReadyBoost
+ReadyDrive　
+Unified Caching
+Process Reflection
+Conclusion　
+
+
+--
+Chapter 11 Cache Manager
+
+Key Features of the Cache Manager
+Single, Centralized System Cache
+The Memory Manager　
+Cache Coherency
+Virtual Block Caching
+Stream-Based Caching
+Recoverable File System Support
+Cache Virtual Memory Management
+Cache Size
+Cache Virtual Size
+Cache Working Set Size
+Cache Physical Size　
+Cache Data Structures
+Systemwide Cache Data Structures
+Per-File Cache Data Structures　
+File System Interfaces
+Copying to and from the Cache
+Caching with the Mapping and Pinning Interfaces　
+Caching with the Direct Memory Access Interfaces
+Fast I/O
+Read-Ahead and Write-Behind
+Intelligent Read-Ahead
+Write-Back Caching and Lazy Writing
+Write Throttling　
+System Threads
+Conclusion
+
+
+--
+Chapter 12 File Systems
+
+Windows File System Formats
+CDFS
+UDF
+FAT12, FAT16, and FAT32
+exFAT
+NTFS
+File System Driver Architecture
+Local FSDs
+Remote FSDs
+File System Operation　
+File System Filter Drivers　
+Troubleshooting File System Problems
+Process Monitor Basic vs Advanced Modes
+Process Monitor Troubleshooting Techniques
+Common Log File System　
+NTFS Design Goals and Features
+High-End File System Requirements
+Advanced Features of NTFS
+NTFS File System Driver
+NTFS On-Disk Structure
+Volumes
+Clusters
+Master File Table
+File Record Numbers
+File Records
+File Names
+Resident and Nonresident Attributes
+Data Compression and Sparse Files
+The Change Journal File
+Indexing　
+Object IDs
+Quota Tracking
+Consolidated Security
+Reparse Points
+Transaction Support
+NTFS Recovery Support
+Design
+Metadata Logging
+Recovery
+NTFS Bad-Cluster Recovery
+Self-Healing
+Encrypting File System Security
+Encrypting a File for the First Time
+The Decryption Process
+Backing Up Encrypted Files
+Copying Encrypted Files
+Conclusion
+
+
+--
+Chapter 13 Startup and Shutdown　
+
+Boot Process
+BIOS Preboot
+The BIOS Boot Sector and Bootmgr
+The UEFI Boot Process
+Booting from iSCSI
+Initializing the Kernel and Executive Subsystems
+Smss, Csrss, and Wininit
+ReadyBoot
+Images That Start Automatically
+Troubleshooting Boot and Startup Problems
+Last Known Good
+Safe Mode
+Windows Recovery Environment (WinRE)
+Solving Common Boot Problems
+Shutdown　
+Conclusion
+
+
+--　
+Chapter 14 Crash Dump Analysis
+
+Why Does Windows Crash?
+The Blue Screen
+Causes of Windows Crashes　
+Troubleshooting Crashes　
+Crash Dump Files
+Crash Dump Generation
+Windows Error Reporting
+Online Crash Analysis
+Basic Crash Dump Analysis
+Notmyfault
+Basic Crash Dump Analysis
+Verbose Analysis
+Using Crash Troubleshooting Tools
+Buffer Overruns, Memory Corruption, and Special Pool
+Code Overwrite and System Code Write Protection
+Advanced Crash Dump Analysis
+Stack Trashes
+Hung or Unresponsive Systems
+When There Is No Crash Dump　
+Analysis of Common Stop Codes
+0xD1 - DRIVER_IRQL_NOT_LESS_OR_EQUAL
+0x8E - KERNEL_MODE_EXCEPTION_NOT_HANDLED
+0x7F - UNEXPECTED_KERNEL_MODE_TRAP
+0xC5 - DRIVER_CORRUPTED_EXPOOL
+Hardware Malfunctions
+Conclusion
+
+
+Appendix: Contents of Windows Internals, Sixth Edition, Part 1	
+
+Index
+
+
