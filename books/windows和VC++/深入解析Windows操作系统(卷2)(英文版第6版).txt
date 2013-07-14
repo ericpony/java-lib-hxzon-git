@@ -132,6 +132,7 @@ Conclusion
 
 --
 Chapter 10 Memory Management
+
 Introduction to the Memory Manager
 Memory Manager Components
 Internal Synchronization

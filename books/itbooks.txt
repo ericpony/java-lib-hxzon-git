@@ -83,10 +83,10 @@ http://www.amazon.cn/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6
 
 
 ==============================================
-windows
+windows，系统核心优先
 
 ======
-MFC
+MFC，暂缓
 
 ----
 112，Windows程序设计(第5版.珍藏版)
@@ -111,7 +111,7 @@ http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAMFC-%E4%BE%AF%E4%BF%8A%
 
 
 ======
-系统核心
+系统核心，优先
 
 ----
 115，Windows核心编程(第5版)
@@ -121,7 +121,7 @@ http://www.amazon.cn/Windows-via-C-C-Jeffrey-M-Richter/dp/0735624240/ref=sr_1_2?
 《Windows via C/C++》，2007.12
 《Windows via C/C++,Fifth Edition》，2011.9.22
 http://www.amazon.com/Windows-via-C-softcover/dp/0735663777/ref=sr_1_1?s=books&ie=UTF8&qid=1347515954&sr=1-1&keywords=Windows+via+C%2FC%2B%2B
-74.00(7.5折)，49.50，中文版2008.9，优先
+74.00(7.5折)，49.50，中文版2008.9，不买
 
 ----
 117，深入解析:Windows操作系统(第4版)
@@ -135,8 +135,8 @@ http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%
 117.50(7.4折)，
 
 --
-深入解析Windows操作系统，卷1（英文版 第6版），49.50 (5折)，75.70(76折)
-深入解析Windows操作系统，卷2（英文版 第6版），49.50 (5折)，77.40(78折)
+深入解析Windows操作系统，卷1（英文版 第6版），49.50 (5折)，75.70(76折)，优先
+深入解析Windows操作系统，卷2（英文版 第6版），49.50 (5折)，77.40(78折)，优先
 《Windows Internals, Part 2》
 http://www.ituring.com.cn/book/1083
 
@@ -164,15 +164,17 @@ VC++
 Visual C++2010入门经典(第5版)
 http://www.amazon.cn/Visual-C-2010%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8-%E9%9C%8D%E9%A1%BF/dp/B004GHO45A/ref=pd_sim_b_18
 http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=0470500883
+
 《Ivor Horton's Beginning Visual C++ 2010》，2010.4.12
 http://www.amazon.com/Ivor-Hortons-Beginning-Visual-Programmer/dp/0470500883/ref=sr_1_1?s=books&ie=UTF8&qid=1347515759&sr=1-1&keywords=Visual+C%2B%2B
+
 《Ivor Horton's Beginning Visual C++ 2012》，2012.10.2
 http://www.amazon.com/Ivor-Hortons-Beginning-Visual-2012/dp/1118368088/ref=sr_1_4?s=books&ie=UTF8&qid=1347515759&sr=1-4&keywords=Visual+C%2B%2B
 89.60(7折)，62.70(49折)，中文版2010.12
 
 
 ===========================================================
-c和linux
+c和linux，服务器搭建优先
 
 ----
 167，Linux命令行与shell脚本编程大全(第2版)
@@ -182,6 +184,7 @@ c和linux
 78，Linux 系统编程（中文版）
 http://product.dangdang.com/product.aspx?product_id=20645962
 41.90 (75折)
+
 ----
 30，构建嵌入式LINUX系统
 42.40(88折)

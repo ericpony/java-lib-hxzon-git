@@ -285,11 +285,11 @@ Analysis Patterns : Reusable Object Models
 ----
 159，代码的未来
 [日]松本行弘 (作者), 周自恒 (译者)
-59.20(75折)，39.50(5折)，必看，想买
+59.20(75折)，39.50(5折)，必看，电子书优先
 
 ----
 162，Java虚拟机并发编程
-《Programming Concurrency on the JVM》，有英文打印版，必看，观望
+《Programming Concurrency on the JVM》，有英文打印版，必看，不买
 
 ----
 168，七周七数据库

@@ -1,6 +1,7 @@
 ﻿深入解析Windows操作系统(卷1)(英文版第6版)
 
- Mark Russinovich (作者), David Solomon (作者), Alex Ionescu (作者) 
+Mark Russinovich (作者), David Solomon (作者), Alex Ionescu (作者) 
+
 77.40(7.8折)
 
 http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-Mark-Russinovich/dp/B009DFCZD8
@@ -24,15 +25,22 @@ ISBN: 9787115290908
 
 =============
 编辑推荐
-《深入解析Windows操作系统(卷1)(英文版?第6版)》内容丰富，信息全面，适合众多Windows平台开发人员、系统管理员阅读。
+
+《深入解析Windows操作系统(卷1)(英文版第6版)》内容丰富，信息全面，适合众多Windows平台开发人员、系统管理员阅读。
+
 名人推荐
+
 “在微软。我们一直用本书培训新员工……本书是深入理解Windows的绝佳入门书。” 
 ——Windows之父 Jim AIlchin 
+
 “每一位操作系统开发人员都应该拥有本书。” 
 ——微软技术院士、Windows NT首席设计师 David Cutler 
+
 “我想不出还有哪一本书比本书更具权威性。” 
 ——微软公司副总裁 Ben Fathi
+
 作者简介
+
 作者：（美国）拉希诺维奇（Russinovich M.） （美国）所罗门（Solomon D.） （加拿大）艾欧内斯库（Ionescu A.）
 
 ============
@@ -558,7 +566,7 @@ Name Resolution　　655
 
 Domain Name System　　655
 
-Peer Name Resolution Protocol656
+Peer Name Resolution Protocol    656
 
 Location and Topology　　658
 
