@@ -135,8 +135,8 @@ http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%
 117.50(7.4折)，
 
 --
-深入解析Windows操作系统，卷1（英文版 第6版），49.50 (5折)，75.70(76折)，优先
-深入解析Windows操作系统，卷2（英文版 第6版），49.50 (5折)，77.40(78折)，优先
+深入解析Windows操作系统，卷1（英文版 第6版），49.50 (5折)，75.70(76折)，有电子版，优先
+深入解析Windows操作系统，卷2（英文版 第6版），49.50 (5折)，77.40(78折)，有电子版，优先
 《Windows Internals, Part 2》
 http://www.ituring.com.cn/book/1083
 
@@ -176,9 +176,27 @@ http://www.amazon.com/Ivor-Hortons-Beginning-Visual-2012/dp/1118368088/ref=sr_1_
 ===========================================================
 c和linux，服务器搭建优先
 
+
+----
+175，Linux系统架构和应用技巧
+中井 悦司 (作者) 　 李睿 (译者)
+http://www.ituring.com.cn/book/1097
+
+----
+176，Red Hat Linux指南：服务器设置与程序设计篇
+Mark G.Sobell (作者) 　 杨明军 (译者)
+http://www.ituring.com.cn/book/413
+2008-09
+
+----
+177，Red Hat Linux指南：基础与系统管理篇
+Mark G.Sobell (作者) 　 杨明军 张杰良 (译者)
+http://www.ituring.com.cn/book/411
+2008-09
+
 ----
 167，Linux命令行与shell脚本编程大全(第2版)
-49.50 (5折)
+49.50 (5折)，想买
 
 ----
 78，Linux 系统编程（中文版）
@@ -555,4 +573,4 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 26.20，17.20(49折)
 
 ----
-175，
+178，

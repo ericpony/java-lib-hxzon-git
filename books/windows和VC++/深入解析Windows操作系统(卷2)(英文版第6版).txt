@@ -1,6 +1,8 @@
 ﻿深入解析Windows操作系统(卷2)(英文版第6版)
 
- 拉希诺维奇 (Mark Russinovich) (作者), 所罗门 (David Solomon) (作者), 艾欧内斯库 (Alex Ionescu) (作者) 
+有电子版。
+
+拉希诺维奇 (Mark Russinovich) (作者), 所罗门 (David Solomon) (作者), 艾欧内斯库 (Alex Ionescu) (作者) 
 
 http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E6%8B%89%E5%B8%8C%E8%AF%BA%E7%BB%B4%E5%A5%87/dp/B00B20LZTM
 http://www.ituring.com.cn/book/1083

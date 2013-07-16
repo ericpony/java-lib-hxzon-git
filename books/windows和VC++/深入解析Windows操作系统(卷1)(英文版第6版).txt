@@ -1,5 +1,7 @@
 ﻿深入解析Windows操作系统(卷1)(英文版第6版)
 
+有电子版。
+
 Mark Russinovich (作者), David Solomon (作者), Alex Ionescu (作者) 
 
 77.40(7.8折)
