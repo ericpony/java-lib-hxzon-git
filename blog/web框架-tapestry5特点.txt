@@ -18,13 +18,19 @@ by hxzon
 
 8，组件不丰富
 
+----
 9，tapestry5组件学习：
+
 grid：加入BeforeGridInplaceUpdate事件，渲染前触发一次事件让page准备表格数据（例如分页时）
 submitNotifier：form提交时触发一次事件
 loop：
 tree：dom原始事件-》组件事件-》ajax请求-》ajax更新
 zone：
 
+----
 10，自定义组件
+
 基于js ui框架-》js ui事件触发组件事件（ajax请求）-》返回html片段或json数据-》js ui更新
 
+----
+11，

@@ -123,23 +123,6 @@ http://www.amazon.cn/Windows-via-C-C-Jeffrey-M-Richter/dp/0735624240/ref=sr_1_2?
 http://www.amazon.com/Windows-via-C-softcover/dp/0735663777/ref=sr_1_1?s=books&ie=UTF8&qid=1347515954&sr=1-1&keywords=Windows+via+C%2FC%2B%2B
 74.00(7.5折)，49.50，中文版2008.9，不买
 
-----
-117，深入解析:Windows操作系统(第4版)
-http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90-Windows%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E7%BD%97%E6%96%AF/dp/B0011F3VZY/ref=pd_sim_b_86
-http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-%E6%8B%89%E8%A5%BF%E8%AF%BA%E7%BB%B4/dp/B002PEX4Y8/ref=pd_cp_b_2
-《Microsoft Windows Internals（Fourth Edition》，覆盖Windows XP和Windows Server 2003中所做的内核变化
-74.30(7.5折)，中文版2007.4
-
---
-深入解析Windows操作系统(第5版.英文版)，2009.9，针对Windows Vista和Windows Server 2008进行了全面的更新
-117.50(7.4折)，
-
---
-深入解析Windows操作系统，卷1（英文版 第6版），49.50 (5折)，75.70(76折)，有电子版，优先
-深入解析Windows操作系统，卷2（英文版 第6版），49.50 (5折)，77.40(78折)，有电子版，优先
-《Windows Internals, Part 2》
-http://www.ituring.com.cn/book/1083
-
 
 ----
 172，Windows系统编程(原书第4版)
