@@ -1,0 +1,189 @@
+﻿Closing in on Tapestry 5.4
+
+学中注释。
+
+
+http://feedproxy.google.com/~r/TapestryCentral/~3/wNeqr7I2YKM/closing-in-on-tapestry-54.html
+
+tapestryjava.blogspot.com
+Howard Lewis Ship
+July 18th, 2013
+
+======
+
+We're getting very close to a beta release of Tapestry 5.4. 
+I've spent the last couple of weeks converting an existing client's very large application (120+ pages, tons of components, lots of client-side JavaScript) from 5.3 to the current 5.4 alpha, and it's been a lot of work ... but also a lot of reward.
+
+
+Before the switch, the application was already using jQuery, Bootstrap, and a limited amount ofBackbone; 
+under Tapestry 5.3, that means that Prototype and Scriptaculous were also in the mix ... 
+and there were quite a few conflicts between Prototype and jQuery.
+
+prototype和jquery有太多的冲突。
+
+
+
+It's not just that Prototype and jQuery both want to use window.$ as their point of entry; the conflict go deeper. 
+For example, I had a nasty time with a Boostrap modal dialog that didn't dismiss correctly. 
+After a lot of debugging, I found out that jQuery treats a method on an element as an event handler for the event with the matching name; 
+Bootstrap was triggering a hide event, and jQuery was invoking the hide() Element method added by Prototype. 
+That kind of thing has been my life under the mixed stack.
+
+我发现jquery把一个元素的方法视为一个事件处理器。
+bootstrap触发一个hide事件，jquery会调用hide方法，而这个hide方法是prototype加入的。
+
+
+Tapestry 5.4 manages this better; and with the new abstraction layer it is possible to turn off Prototype completely and use just jQuery. 
+That removes these conflicts ... and also speeds things up, but reducing the amount of JavaScript code downloaded to the client.
+
+tapestry5.4提供了一个抽象层，能彻底关闭prototype，转而只使用jquery。
+
+
+The transition from 5.3 to 5.4 was a chance to review and improve all that code. 
+Here's a few observations.
+
+（observations：观察。）
+
+The application has some very complex client-side forms; 
+well beyond the abilities of Tapestry to manage using the FormInjector and FormFragment components. 
+Instead, we use Backbone is a kind of hybrid mode, where the Backbone Model or Collection is persisted to a hidden field, 
+so that the data collected or edited is transmitted to the server as part of an over-all form submission.
+
+这个应用拥有大量复杂的表单，使用FormInjector和FormFragment组件不能胜任。
+所以，我们使用backbone，backbone的模型和集合持久化到一个隐藏域，
+采集或编辑得到的数据作为整体表单的一部分提交到服务端。
+
+
+Of course, this means creating a lot of content, including form control elements, on the fly. 
+One of the main problem was integrating Tapestry's client-side validation for the newly created fields.
+
+其中一个问题是将tapestry的客户端校验应用到新创建的这些表单域。
+
+
+Under 5.3, this required examining and often hacking (or monkey patching) the Tapestry client-side code, 
+which create FormEventManager and FieldEventManager objects for each form or form control element ... 
+and there was lots of hackery to tap into the form's submission cycle to perform validations.
+
+
+Under 5.4 it is much easier, when creating the new fields, we can specify the desired validations via attributes:
+
+而5.4版，创建新表单域时，可以通过属性data-validation来指定需要的校验。
+
+
+The data-validation attribute indicates the field participates in validation; 
+it will have events triggered on it when the enclosing form submits. 
+The t5/core/validation module supplies the code that handles fields with data-optionality="required" 
+and ensures that a value is provided, displaying the data-required-message if the field is left blank.
+
+
+
+That's the pattern throughout 5.4; 
+data- attributes are used to identify where special behavior is desired, 
+and a well documented system of events is used handle the processing of the behavior.
+
+
+Very little on the server side changed with the upgrade to 5.4; 
+but revisiting and rewriting all that JavaScript was more than enough work!
+
+
+In addition, it was an opportunity to convert all the code to CoffeeScript. 
+CoffeeScript is my preferred way of writing client-side code: 
+it is more concise and readable than JavaScript, but the compiled output is still quite readable. 
+It also has great features like the block strings (from the example code above) 
+which largely eliminates the need for a separate template engine.
+
+
+Working in CoffeeScript and Tapestry so much led to some quick evolution of the CoffeeScript support built into Tapestry 
+(in the optional tapestry-wro4j module). 
+Initially, any change to any CoffeeScript file forced all CoffeeScript files to be recompiled; 
+when using the sluggish Rhino JavaScript engine to run the CoffeeScript compiler, we could see 10 - 20 seconds per source file!
+
+
+I made some improvements, adding a special development-mode in-memory cache that would only recompile the CoffeeScript 
+if the underlying source file content had changed. 
+Since application restarts are rare in Tapestry, this was sufficient. 
+I eventually added a file-system cache so that compilation could be avoided, even over restarts of the application.
+
+
+I also started using Less instead of CSS. 
+Less is a meta-language that compiles down to CSS, much like the relationship between CoffeeScript and JavaScript ... 
+but I think even more dramatically. 
+Compilation is pretty fast, based on the Less4J library.
+
+使用Less取代了css。
+
+
+I found that the out-of-the-box support for Less4J supplied by WRO4J was insufficient: 
+it didn't do a great job with @import; 
+a change to an imported source file didn't force a recompilation. 
+I've addressed that with a custom (for Tapestry) wrapper that properly tracks dependencies.
+
+WRO4J模块提供的Less4J有不足。
+当less文件修改时，不能自动重新编译。
+
+
+So where does that leave us? 
+There's still a huge amount of work to do before Tapestry 5.4 is ready for release, 
+but it's mostly fixing bugs and other rough edges. 
+As too often happens, the reality of earning a living have made me postpone some of my ideas for a later release.
+
+
+I think that Tapestry is aging, if not gracefully, then at least comfortably, 
+into a growing age where rich, single-page applications built with Backbone, AngularJS, or something else are the norm, and not the exception. 
+I'm the first to admit that Tapestry was designed for a simpler time when Ajax was seasoning, 
+not the meat-and-potatoes of the application. 
+There's a lot of baggage in there, particularly related to forms and form controls. 
+Yet, even so, there's some amazingly useful parts to Tapestry that apply equally well to modern applications:
+
+
+----
+Asset Pipeline
+
+
+Tapestry's asset pipeline does much of the work normally associated with a command-line build step, 
+but does it at runtime, with the benefit of being live for development. 
+
+Tapestry can not only compile files from one type to another (e.g., CoffeeScript to JavaScript), 
+but can also aggregate many small files into a single combined file and pass it through a minimizer. 
+
+Further, Tapestry builds URLs that incorporate a content checksum. 
+This checksum means that we can have the browser aggressively cache the file (using both E-Tags and a far-future expires header) 
+as any change to the file with change the checksum as well, resulting in what looks to the client like an entirely new resource. 
+
+Further, Tapestry caches both the straight-up file, and the GZip compressed version of the file. 
+All of this means that Tapestry provides not just great throughput by processing requests quickly, 
+but also great performance by reducing the number of requests from clients as well.
+
+----
+Asynchronous Module Definition (AMD) Support
+
+
+Tapestry 5.4 introduces direct support for AMD via RequireJS. 
+At the minimum, this means that JavaScript can be loaded in parallel ... 
+but the real benefit is how AMD encourages you to organize your code in a manageable way. 
+
+In addition, Tapestry ensures that your modules can be JavaScript or CoffeeScript, 
+and provides a simple way on the server to override any built-in modules provided by Tapestry, should the need arise. 
+
+Better yet, Tapestry has a server-side API for invoking client-side functions exported by AMD modules; 
+these is a very clean and very useful way to knit together server-side and client-side logic.
+
+----
+Superior Feedback and Exception Reporting
+
+
+When working on other stacks, the thing I miss the most now is Tapestry's exception reporting. 
+This is cleanly integrated in Tapestry, where a server side failure will result in a detailed HTML report on the client. 
+For Ajax requests, this report is presented in a floating <iframe>. 
+
+The wealth of information available from the server side and reported directly in the client 
+makes developing complex applications with complex server-side interaction much easier.
+
+As Tapestry 5.4 transitions to beta, and to an eventual final release, I'm still targeted on the future ... 
+and I'm focused on making Tapestry be a great choice for single-page apps as well as traditional applications. 
+My head is bubbling with ideas to make this happen.
+
+
+我的关注点在，无论传统应用还是单页面应用，tapestry都是一个好选择。
+
+
