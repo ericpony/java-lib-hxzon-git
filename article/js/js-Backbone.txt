@@ -1,0 +1,35 @@
+﻿js-Backbone
+
+==============================
+Backbone JS框架指南
+
+http://blog.eood.cn/backbone
+Posted Mar.13, 2011
+
+
+----
+Make Backbone Better With Extensions
+
+Joe Zimmerman on Mar 18th 2013
+http://net.tutsplus.com/tutorials/javascript-ajax/make-backbone-better-with-extensions
+
+
+----
+开始学习 Backbone:如何将模型-视图-控制器 (MVC) 架构引入 Ajax Web 应用程序
+
+Sebastiano Armeli-Battana, 软件工程师, 自由职业者
+发布日期： 2012 年 9 月 06 日 
+http://www.ibm.com/developerworks/cn/web/wa-backbonejs/index.html
+
+
+----
+Building and Testing a Backbone App
+
+http://net.tutsplus.com/tutorials/javascript-ajax/building-and-testing-a-backbone-app
+
+Claudio Ortolina on Aug 27th 2012
+http://nettuts.s3.amazonaws.com/2108_backbone/code_final.zip
+
+
+----
+

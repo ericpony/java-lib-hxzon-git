@@ -1,0 +1,39 @@
+﻿js-Ember
+
+=======================
+Ember
+
+----
+Getting Into Ember
+http://net.tutsplus.com/tutorials/javascript-ajax/getting-into-ember-part-1
+http://net.tutsplus.com/tutorials/javascript-ajax/getting-into-ember-part-2
+http://net.tutsplus.com/tutorials/javascript-ajax/getting-into-ember-part-3
+http://net.tutsplus.com/tutorials/javascript-ajax/getting-into-ember-part-4
+
+
+----
+Ember.js - Web Applications Done Right
+Posted by Joachim Haagen Skeie on Apr 17, 2013
+http://www.infoq.com/articles/Emberjs-Web-Applications
+
+
+----
+Ember.js: Rich Web Applications Done Right
+Posted by Joachim Haagen Skeie on Mar 22, 2012
+
+http://www.infoq.com/articles/emberjs
+
+
+----
+Game On: Backbone and Ember
+http://net.tutsplus.com/tutorials/javascript-ajax/game-on-backbone-and-ember
+
+José Mota on Aug 31st 2012
+
+
+----
+点燃圣火！ Ember.js 的初学者指南
+http://www.adobe.com/cn/devnet/html5/articles/flame-on-a-beginners-guide-to-emberjs.html
+
+
+

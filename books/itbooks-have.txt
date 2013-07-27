@@ -260,7 +260,7 @@ http://book.realworldhaskell.org/read/
 157，分析模式：可复用的对象模型
 Analysis Patterns : Reusable Object Models
 福勒(Martin Fowler) (作者), 樊东平 (译者), 张路 (译者)
-27.00(5.5折)，24.00，必买
+27.00(5.5折)，24.00，有中文扫描电子版，必买
 
 ----
 156，

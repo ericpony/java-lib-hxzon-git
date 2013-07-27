@@ -1,0 +1,85 @@
+﻿js-Angularjs
+
+=========================
+AngularJS
+
+关注。用声明式节省了大量js代码。
+
+
+----
+我的web开发最强组合：Play1+angularjs+bootstrap ++ (idea + livereload)
+http://freewind.me/blog/20121226/1167.html
+
+
+----
+AngularJS入门教程
+http://www.angularjs.cn/tag/AngularJS_%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B
+
+
+----
+Getting Started with AngularJS
+
+http://www.jacopretorius.net/2013/04/getting-started-with-angularjs.html
+
+
+----
+Angularjs Controller 间通信机制
+
+2013-04-16 20:56:32
+http://whitewolfblog.blog.51cto.com/3973901/1179536
+
+
+----
+Localytics：AngularJS代替Backbone 代码减少一半
+
+http://www.csdn.net/article/2013-04-12/2814864-Localytics-AngularJS-Backbone
+
+
+----
+使用AngularJS构建大型Web应用
+
+作者 侯伯薇 发布于 2013年2月6日
+http://www.infoq.com/cn/news/2013/02/angular-web-app
+
+
+----
+3 Reasons to Choose AngularJS for Your Next Project
+
+Adam Conrad on Dec 26th 2012
+http://net.tutsplus.com/tutorials/javascript-ajax/3-reasons-to-choose-angularjs-for-your-next-project
+http://nettuts.s3.amazonaws.com/2178_angular/source.zip
+
+
+----
+Replacing JQuery With Angular
+
+Published: 03 Mar 2012
+http://paulhammant.com//2012/03/03/replacing-jquery-with-angular
+
+
+----
+如何组织AngularJS项目代码结构
+http://xvfeng.me/posts/the-right-way-of-coding-angularjs-how-to-organize-a-regular-webapp/
+
+----
+AngularJS Pain Points
+http://www.jacopretorius.net/2013/07/angularjs-pain-points.html
+
+----
+Coming to Angular from something else
+http://feedproxy.google.com/~r/paulhammant/~3/OKmcgA7sFEM/coming-to-angular-from-something-else
+
+----
+Custom Sorting in AngularJS
+http://www.jacopretorius.net/2013/05/custom-sorting-in-angularjs.html
+
+----
+Building a Web App From Scratch in AngularJS
+http://feedproxy.google.com/~r/nettuts/~3/HgWFSGgF4fA/
+
+Leon RevillJune 27th, 2013
+
+
+----
+
+

@@ -1,0 +1,8 @@
+﻿js-Spine
+
+================================
+
+10 reasons why I switched to Spine.js
+
+http://destroytoday.com/blog/reasons-for-spinejs/
+
