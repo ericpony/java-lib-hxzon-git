@@ -1,4 +1,0 @@
-antlr-runtime-3.3.jar
-commons-codec-1.5.jar
-javax.inject-1.jar
-stringtemplate-3.2.1.jar
