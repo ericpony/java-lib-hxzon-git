@@ -2,7 +2,7 @@
 
 hxzon学习笔记
 
-《Professional JavaScript? for Web Developers, Third Edition》 pdf
+《Professional JavaScript for Web Developers, Third Edition》 pdf
 
 
 

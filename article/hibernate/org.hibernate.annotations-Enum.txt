@@ -1,0 +1,99 @@
+﻿org.hibernate.annotations-Enum
+
+by hxzon
+
+http://docs.jboss.org/hibernate/orm/4.3/javadocs/org/hibernate/annotations/package-summary.html
+
+=========
+CacheConcurrencyStrategy
+	
+Cache concurrency strategy.
+
+--
+CacheModeType
+	
+Enumeration for the different interaction modes between the session and the Level 2 Cache.
+
+--
+CascadeType
+	
+Cascade types (can override default JPA cascades).
+
+--
+FetchMode
+	
+Fetch options on associations.
+
+--
+FlushModeType
+	
+Enumeration extending javax.persistence flush modes.
+
+--
+GenerationTime
+	
+At what time(s) will the generation occur?
+
+自动生成的列何时生成（插入时，插入或更新时，从不）。
+
+--
+LazyCollectionOption
+	
+Lazy options available for a collection.
+
+--
+LazyToOneOption
+	
+Lazy options available for a ToOne association.
+
+立即加载关联对象，请求时加载对象，请求时返回代理。
+
+--
+NotFoundAction
+	
+Possible actions when an associated entity is not found in the database.
+
+--
+OnDeleteAction
+	
+Possible actions for on-delete.
+
+删除时的动作（级联删除，不级联删除）。
+
+--
+OptimisticLockType	
+
+Possible optimistic locking strategies.
+
+--
+PolymorphismType	
+
+Type of available polymorphism for a particular entity.
+
+--
+ResultCheckStyle
+	
+Possible styles of checking return codes on SQL INSERT, UPDATE and DELETE queries.
+
+--
+SortType
+
+Deprecated
+Since Sort is deprecated.
+
+弃用。
+--
+SourceType
+	
+Where should Hibernate retrieve the value from? From the database, or from the current JVM?
+
+
+
+==========
+Class
+
+--
+QueryHints
+
+Consolidation of hints available to Hibernate JPA queries.
+Mainly used to define features available on Hibernate queries that have no corollary in JPA queries.
