@@ -1,0 +1,128 @@
+﻿jee7-javax.persistence-Enum
+
+by hxzon
+
+http://docs.oracle.com/javaee/7/api/javax/persistence/package-summary.html
+
+==========
+AccessType
+
+Used with the Access annotation to specify an access type to be applied to an entity class, mapped superclass, 
+or embeddable class, or to a specific attribute of such a class.
+
+配合@Access描述一个实体类及属性的访问类型（字段或属性）。
+
+--
+CacheRetrieveMode
+	
+Used as the value of the javax.persistence.cache.retrieveMode property 
+to specify the behavior when data is retrieved by the find methods and by queries.
+
+数据获取时的缓存模式。？
+
+--
+CacheStoreMode
+
+Used as the value of the javax.persistence.cache.storeMode property 
+to specify the behavior when data is read from the database and when data is committed into the database.
+
+--
+CascadeType
+	
+Defines the set of cascadable operations that are propagated to the associated entity.
+
+定义关联实体的级联类型（）。
+
+--
+ConstraintMode
+
+Used to control the application of a constraint.
+
+--
+DiscriminatorType
+	
+Defines supported types of the discriminator column.
+
+--
+EnumType	
+
+Defines mapping for enumerated types.
+
+--
+FetchType
+	
+Defines strategies for fetching data from the database.
+
+定义从数据库获取数据的策略（立即加载，延迟加载）。
+
+--
+FlushModeType
+
+Flush mode setting.
+
+--
+GenerationType
+	
+Defines the types of primary key generation strategies.
+
+定义主键生成策略。
+
+--
+InheritanceType
+	
+Defines inheritance strategy options.
+
+定义继承（映射的）策略（单表，每个具体类一个表，每个类一个表）。
+
+--
+LockModeType
+	
+Lock modes can be specified by means of passing a LockModeType argument 
+to one of the EntityManager methods that take locks (lock, find, or refresh) 
+or to the Query.setLockMode() or TypedQuery.setLockMode() method.
+
+--
+ParameterMode
+	
+Specifies the mode of a parameter of a stored procedure query.
+
+存储过程的参数类型（出参数，入参数，出和入参数，游标）。
+
+--
+PersistenceContextType
+	
+Specifies whether a transaction-scoped or extended persistence context is to be used in PersistenceContext.
+
+持久化上下文类型。
+
+--
+PessimisticLockScope
+	
+Defines the values of the javax.persistence.lock.scope property for pessimistic locking.
+
+--
+SharedCacheMode	
+
+Specifies how the provider must use a second-level cache for the persistence unit.
+
+--
+SynchronizationType	
+
+Specifies whether the persistence context is always automatically synchronized with the current transaction 
+or whether the persistence context must be explicitly joined to the current transaction 
+by means of the EntityManager.joinTransaction() method.
+
+--
+TemporalType
+	
+Type used to indicate a specific mapping of java.util.Date or java.util.Calendar.
+
+时间类型（java.sql.Date，java.sql.Time，java.sql.Timestamp）。
+
+--
+ValidationMode
+	
+The validation mode to be used by the provider for the persistence unit.
+
+是否执行lifecycle event validation。
+
