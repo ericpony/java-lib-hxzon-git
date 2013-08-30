@@ -45,4 +45,7 @@ http://study.163.com/course/introduction.htm?courseId=212004#/courseDetail
 https://github.com/ecomfe/knowledge/blob/master/docs/intro.md
 
 12,
+鸟哥的linux私房菜
+http://vbird.dic.ksu.edu.tw/
+http://linux.vbird.org/
 
