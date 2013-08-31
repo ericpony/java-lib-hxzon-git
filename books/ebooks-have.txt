@@ -95,6 +95,25 @@ java-groovy
 http://product.dangdang.com/product.aspx?product_id=21049598
 33.80(69折)，电子版，已读，受益匪浅
 
+
+==========================
+178，
+鸟哥的Linux私房菜:基础学习篇(第3版) 
+- 王世江 (2010年7月1日) 
+59.50(6.8折)
+
+--
+鸟哥的Linux私房菜:服务器架设篇(第3版) 
+- 鸟哥 (2012年7月2日) 
+81.40(7.5折)
+
+http://vbird.dic.ksu.edu.tw/linux_basic/linux_basic.php
+http://linux.vbird.org/
+
+简体中文电子版。收益匪浅
+
+
+
 ==========================
 windows和VC++
 

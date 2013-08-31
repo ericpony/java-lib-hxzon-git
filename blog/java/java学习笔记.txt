@@ -1,0 +1,25 @@
+﻿java学习笔记
+
+by hxzon
+
+=========
+1，ArrayList,LinkedList,Vector的区别？
+
+LinkedList使用链表实现。非同步。属于java集合框架。它返回的迭代器是快速失败的。
+
+Vector属于java集合框架。它返回的迭代器是快速失败的，而返回的枚举器而不是快速失败的。同步的。
+
+
+
+========
+2，HashMap,LinkedHashMap,HashTable的区别？
+
+HashMap非同步。属于java集合框架。它返回的迭代器是快速失败的。
+
+HashTable，键和值都必须是非null的。同步的。属于java集合框架。它返回的迭代器是快速失败的。
+
+LinkedHashMap使用双向链表来保持有序（插入顺序）。非同步的。属于java集合框架。它返回的迭代器是快速失败的。
+
+=======
+3，常用的java启动参数。
+
