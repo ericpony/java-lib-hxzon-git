@@ -1,0 +1,74 @@
+﻿linux学习笔记-磁盘常用命令
+
+by hxzon
+
+===========
+1，列出文件系统的整体磁盘使用量：
+
+df [-ahikHTm] [目录或文件名]
+
+选项与参数：
+-a  ：列出所有的文件系统，包括系统特有的 /proc 等文件系统；
+-h  ：以人们较易阅读的 GBytes, MBytes, KBytes 等格式自行显示；
+-T  ：连同该 partition 的 filesystem 名称 (例如 ext3) 也列出；
+-i  ：不用硬盘容量，而以 inode 的数量来显示
+
+-k  ：以 KBytes 的容量显示各文件系统；
+-m  ：以 MBytes 的容量显示各文件系统；
+-H  ：以 M=1000K 取代 M=1024K 的进位方式；
+
+==========
+2，磁盘分区信息
+
+fdisk -l
+
+-------
+3，磁盘分割
+
+fdisk /dev/sdb
+
+m 显示菜单
+q 取消退出
+w 确认执行
+
+p 分区信息
+n 新建分区
+d 删除分区
+
+-------
+新增一个 Primary  的分割槽，且指定为 4 号。
+
+Command (m for help): n
+Command action            <==因为是全新磁盘，因此只会问extended/primary而已
+   e   extended
+   p   primary partition (1-4)
+p                         <==选择 Primary 分割槽
+Partition number (1-4): 4 <==配置为 4 号！
+First cylinder (1-5005, default 1): <==直接按下[enter]按键决定！
+Using default value 1               <==启始磁柱就选用默认值！
+Last cylinder or +size or +sizeM or +sizeK (1-5005, default 5005): +512M
+
+# 我们知道 partition 是由 n1 到 n2 的磁柱号码 (cylinder)，
+# 但磁柱的大小每颗磁盘都不相同，这个时候可以填入 +512M 来让系统自动帮我们找出
+# 『最接近 512M 的那个 cylinder 号码』！
+# 如上所示：这个地方输入的方式有两种：
+# 1) 直接输入磁柱的号码，你得要自己计算磁柱/分割槽的大小才行；
+# 2) 用 +XXM 来输入分割槽的大小，让系统自己捉磁柱的号码。
+#    +与M是必须要有的，XX为数字
+
+---------
+4，磁盘格式化
+
+mkfs -t ext3 /dev/hdc6
+
+---------
+5，磁盘挂载与卸除
+
+单一文件系统不应该被重复挂载在不同的挂载点(目录)中；
+单一目录不应该重复挂载多个文件系统；
+要作为挂载点的目录，理论上应该都是空目录才是。
+
+显示当前挂载信息：mount
+新建目录：mkdir /mnt/hdc6
+挂载： mount /dev/hdc6 /mnt/hdc6
+

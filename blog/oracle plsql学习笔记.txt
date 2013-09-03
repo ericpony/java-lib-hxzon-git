@@ -8,16 +8,15 @@ by hxzon
 
 create or replace procedure pms2_updateNsrSwjg is begin
 begin
---根据税务机关代码，回填税务机关ID和税务机关名称
   update pms2_nsr nsr set (swjgId,swjgName) = 
-(select swjg.swjgId,swjg.swjgname 
-from pms2_swjg swjg
-where nsr.swjgCode=swjg.swjgCode)
-where exists(
-select 1
-from pms2_swjg swjg
-where nsr.swjgCode=swjg.swjgCode
-); -- and rownum=1
+  (select swjg.swjgId,swjg.swjgname 
+  from pms2_swjg swjg
+  where nsr.swjgCode=swjg.swjgCode)
+  where exists(
+    select 1
+    from pms2_swjg swjg
+    where nsr.swjgCode=swjg.swjgCode
+  ); -- and rownum=1
 end;
 end pms2_updateNsrSwjg;
 
@@ -26,6 +25,34 @@ end pms2_updateNsrSwjg;
 begin
   pms2_updateNsrSwjg;
 end;
+
+存储过程参数和局部变量的定义和使用：
+
+create or replace procedure pms2_insertBroken
+  (p_newUkeySn varchar,p_oldUkeySn varchar) is begin --定义存储过程参数，只能定义类型，不能带长度
+  declare
+    v_ukeyoperidRevoke number(19); -- 定义局部变量
+    v_ukeyidRevoke number(19);
+    v_ukeyoperidInUse number(19);
+  begin
+    --
+    select ukeyoperid,ukeyid into v_ukeyoperidRevoke,v_ukeyidRevoke --局部变量赋值
+    from pms2_ukeyoper
+    where ukeysn=p_oldUkeySn -- 使用存储过程参数
+    and ishistory=0;
+    --
+    select ukeyoperid into v_ukeyoperidInUse
+    from pms2_ukeyoper
+    where ukeysn=p_newUkeySn
+    and ishistory=0;
+    --
+    update pms2_ukeyoper
+    set ishistory=1
+    where ukeyoperid=v_ukeyoperidRevoke; --使用局部变量
+    --
+  end;
+end pms2_insertBroken;
+
 
 =============
 2，
@@ -90,5 +117,9 @@ where (o1.opertype!=110 and o1.opertype!=210 and o1.opertype!=141 and o1.opertyp
 
 ================
 5，
-oracle的字符串比较区分大小写，考虑的索引的使用等问题，如果不区分大小写，则应统一为大写或小写。
+oracle的字符串比较区分大小写，考虑到索引的使用等问题，如果不区分大小写，则应统一为大写或小写。
+
+================
+6，
+merge语句
 
