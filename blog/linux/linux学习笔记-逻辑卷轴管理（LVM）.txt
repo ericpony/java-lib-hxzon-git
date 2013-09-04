@@ -36,6 +36,30 @@ Ext3 透过 resize2fs 命令，可以弹性的调整文件系统的大小。
 查看LV：ll /dev/vg1/lv1
 格式化并加载：mkfs -t ext3 /dev/vg1/lv1
 
+5，lvm常用命令
+
+pvcreate ：将实体 partition 创建成为 PV ；
+pvscan ：搜寻目前系统里面任何具有 PV 的磁碟；
+pvdisplay ：显示出目前系统上面的 PV 状态；
+pvremove ：将 PV 属性移除，让该 partition 不具有 PV 属性。
+
+vgcreate ：创建 VG ；
+vgscan ：搜寻系统上面是否有 VG 存在；
+vgdisplay ：显示目前系统上面的 VG 状态；
+vgextend ：在 VG 内添加额外的 PV ；
+vgreduce ：在 VG 内移除 PV；
+vgchange ：配置 VG 是否启动 (active)；
+vgremove ：删除一个 VG 。
+
+lvcreate ：创建 LV ；
+lvscan ：查询系统上面的 LV ；
+lvdisplay ：显示系统上面的 LV 状态；
+lvextend ：在 LV 里面添加容量；
+lvreduce ：在 LV 里面减少容量；
+lvremove ：删除一个 LV ；
+lvresize ：对 LV 进行容量大小的调整。
+
+
 ==============
 ==============
 3，逻辑卷轴管理员 (Logical Volume Manager)
