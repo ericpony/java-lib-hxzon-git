@@ -1,0 +1,69 @@
+﻿linux学习笔记-系统信息
+
+by hxzon
+
+==============
+1，查看目前有谁在线
+who
+
+2，网络联机状态
+netstat -a
+
+3，查看进程
+ps -aux
+
+4，
+查看计算机名称：hostname
+设置计算机名称 hostname xxx
+
+5，
+查看操作系统版本：
+
+uname -a
+
+也可：
+less /proc/version
+cat /etc/*release
+cat /etc/redhat-release-
+
+6，
+设置环境变量：
+export xxx=xxx
+查看环境变量：
+echo $xxx
+
+永久设置环境变量：
+vi /home/xxx/.bash_profile
+使修改立即生效：
+source /home/xxx/.bash_profile
+
+7，
+查看ip地址：
+ifconfig
+设置ip地址：
+ifconfig eth0 192.168.0.100 
+
+主机文件：
+vi /etc/hosts
+
+8，
+查看防火墙状态：
+service iptables status
+
+停用防火墙：
+service iptables stop
+
+设置防火墙：
+setup
+（进入图形设置界面）
+
+9，
+查看软件是否安装：
+rpm -qa xxx
+
+安装软件：
+rpm -ivh xxx.rpm
+自动下载安装（及解决依赖）：
+yum install xx
+
+10，
