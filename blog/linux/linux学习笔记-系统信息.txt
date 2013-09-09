@@ -15,6 +15,8 @@ pwd
 whereis xx
 查看命令的版本：
 which xx
+查看连接文件的实际位置：
+ls -l xxx
 
 修改密码：
 passwd
@@ -26,6 +28,13 @@ date
 2，
 网络联机状态：
 netstat -a
+
+查看端口号：
+lsof -i :8080
+netstat -apn
+
+
+
 
 3，查看进程：
 ps -aux
@@ -54,6 +63,19 @@ echo $xxx
 vi /home/xxx/.bash_profile
 使修改立即生效：
 source /home/xxx/.bash_profile
+
+/etc/profile
+所有用户，应用于所有的Shell。（hxzon：未起作用。）
+/etc/bash_bashrc
+所有用户，应用于Bash Shell。
+/etc/bashrc
+
+
+~/.profile
+应用于所有的Shell。
+~/.bashrc
+应用于Bash Sell。
+
 
 7，
 查看ip地址：

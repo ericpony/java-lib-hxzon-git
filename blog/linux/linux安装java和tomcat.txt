@@ -1,0 +1,41 @@
+﻿linux安装java和tomcat
+
+by hxzon
+
+=======
+1，安装java
+
+rpm -ivh jdk-7u25-linux-i586.rpm
+
+安装后，java默认位置为/usr/java/jdk1.7.0_25
+
+2，设置环境变量
+
+编辑/etc/profile
+
+export JAVA_HOME=
+export CLASSPATH=$CLASSPATH:$JAVA_HOME/lib:$JAVA_HOME/jre/lib
+export PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH:$HOME/bin
+
+=======
+3，安装tomcat
+
+# tar zxvf apache-tomcat-6.0.16.tar.gz
+
+4，启动tomcat
+
+运行
+bin/startup.sh
+
+查看tomcat启动日志
+logs/catalina.xxx-xx-xx.log
+
+修改jvm参数
+
+vi bin/catalina.sh
+
+JAVA_OPTS="$JAVA_OPTS -server -Xms512m -Xmx512m -XX:MaxNewSize=256m"
+
+
+注意写在引号内。
+

@@ -1,0 +1,69 @@
+﻿linux开启ftp服务
+
+by hxzon
+========
+
+1，查看是否安装
+rpm -qa vsftpd
+
+2，安装
+
+yum install vsftpd
+
+3，启动
+
+# service vsftpd start 
+# service vsftpd stop 
+# service vsftpd restart 
+
+开机自动启动
+
+# chkconfig vsftpd on
+
+4，配置文件
+
+cd /etc/vsftpd/vsftpd.conf
+
+老版本有可能直接在/etc目录下：
+
+vi /etc/vsftpd.conf
+
+5，端口被防火墙限制
+
+关闭防火墙
+
+service iptables stop
+
+永久关闭防火墙
+
+chkconfig iptables off 
+
+6，账户被限制
+
+USER root  
+530 Permission denied.  
+
+编辑/etc/vsftpd/ftpusers
+编辑/etc/vsftpd/user_list
+
+7，被SELinux限制
+
+500 OOPS: cannot change directory:/root
+
+查看 SELinux 的状态： sestatus -b | grep ftp
+
+在出现的结果中可以看到 ftp_home_dir off
+ 
+tftpd_disable_trans off
+ 
+之类。我们现在只要把其中之一设置为on就可以啦。
+
+setsebool -P ftpd_disable_trans on 
+或者 
+setsebool -P ftp_home_dir on
+
+-----------
+上传失败
+
+setsebool -P allow_ftpd_full_access on
+
