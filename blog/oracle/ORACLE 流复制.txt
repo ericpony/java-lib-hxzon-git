@@ -1,0 +1,558 @@
+﻿ORACLE 流复制
+
+http://ema100.blog.sohu.com/256119457.html
+2013-02-28 13:06
+
+Stream 是Oracle 的消息队列(也叫Oracle Advanced Queue)技术的一种扩展应用。 Oracle 的消息队列是通过发布/订阅的方式来解决事件管理。
+流复制(Stream replication)只是基于它的一个数据共享技术，也可以被用作一个可灵活定制的高可用性方案。 
+它可以实现两个数据库之间数据库级，schema级，Table级的数据同步，并且这种同步可以是双向的。 
+Oracle Stream也是通过数据冗余来提高可用性，这一点和Data Guard 类似。 
+
+Oracle 高级复制(Oracle advanced Replication) 和流复制(Stream Replication) 是从名称和功能上都相似的两种技术。 
+但前者是基于触发器的，后者是基于日志挖掘(Logminer)技术。 
+
+
+1. Stream 的工作原理 
+
+Stream 是Oracle Advanced Queue技术的一种扩展应用， 这种技术最基本的原理就是收集事件，把时间保存在队列中，然后把这些事件发布给不同的订阅者。 
+从DBA的角度来说， 就是把捕获Oracle数据库产生的Redo日志，然后把这些日志通过网络传播到多个数据库，其他数据库通过应用这些日志，达到复制变化的作用。 
+在Stream 环境下， 复制的起点数据库叫作Source Database， 复制的终点数据库叫作Target Database。 
+在这两个数据库上都要创建一个队列，其中的Source Database上的是发送队列，而Target Database上的是接收队列。 
+
+数据库的所有操作都会被记录在日志中。 
+配好Stream环境后， 在Source Database上会有一个捕获进程(Capture Process), 该进程利用Logminer技术从日志中提取DDL,DML语句，
+这些语句用一种特殊的格式表达，叫作逻辑变更记录(Logical Change Record, LCR). 
+一个LCR对应一个原子的行变更，因此源数据库上的一个DML语句，可能对应若干个LCR记录。 
+这些LCR会保存到Sourece Database的本地发送队列中。然后传播进程(Propagation Process)把这些记录通过网络发送到Target Database的接收队列。 
+在Target Database上会有一个应用进程(Apply Process)， 这个进程从本地的接收队列中取出LCR记录，然后在本地应用，实现数据同步 
+
+
+2. Data Guard 和Stream 区别 
+
+Date Guard有两种类型：physical standby 和 logical standby。 
+这两中standby 都有3个功能模块： 日志传送；日志接收，日志恢复。
+两种standby在前两个模块中是一样的，都是通过LGWR或者ARCn进程发送日志，通过RFS进程接受日志。 区别在第三个模块： 
+
+Physical Standby 使用的是Media Recovery技术直接在数据块级别进行恢复， 因此Physical Standby 能够做到两个数据库的完全同步， 没有数据类型限制。 
+
+Logical Standby实际是通过Logminer技术，把日志中的记录还原成SQL语句，然后通过Apply Engine 执行这些语句实现数据同步， 因此Logical Standby不能保证数据的完全一致。
+
+比如Logical Standby 不支持某些数据类型，这一点在选择Logical Standby时必须要考虑. 
+Logical Standby 不支持的数据类型可以从DBA_LOGSTDBY_UNSUPPORTED视图里查看. 
+
+SQL>SELECT * FROM DBA_LOGSTDBY_UNSUPPORTED; 
+
+Stream 使用的是Logical Standby 第三个模块，也就是在Source Database一端，Capture 进程利用Logminer 技术把日志内容还原成LCR， 
+然后发送到Target Database， 而在Target database 一端， 也是通过Apply Engine 执行这些LCR。 
+因此Stream在使用上也有些限制条件。
+这些可以从视图ALL/DBA_STREAMS_NEWLY_SUPPORTED, ALL/DBA_STREAMS_UNSUPPORTED 查看stream复制不支持的数据类型。 
+
+SQL>SELECT table_name, reason FROM ALL_STREAMS_NEWLY_SUPPORTED; 
+SQL>SELECT table_name, reason FROM DBA_STREAMS_NEWLY_SUPPORTED; 
+SQL>SELECT table_name, reason FROM DBA_STREAMS_UNSUPPORTED; 
+SQL>SELECT table_name, reason FROM ALL_STREAMS_UNSUPPORTED; 
+
+下面以图表的形式列举他们的区别： 
+Streams 
+Data Guard 
+
+主要目的是数据共享 
+主要目的是灾难恢复和高可用性 
+
+可以多方向同步 
+只能是单向，从Primary--> Standby 
+
+数据粒度可以是数据库，Schema，Table三个级别 
+只有数据库级别 
+
+支持异种平台的同步(Heterogeneous Platforms) 
+必须同种平台 (Homogeneous Platforms) 
+
+参与复制的每个数据库可以读写 
+只有Primary可以读写，Standby 只读 
+
+支持Oracle 和非Oracle 数据库间的同步 
+只能是Oracle数据库间 
+
+
+3. 前期规划的几点： 
+
+1). 确定复制集：如是数据库级还是表级 
+2). 决定复制站点 
+3). 决定LCR是本地捕获还是下游捕获 
+本地捕获： 在源数据库进行，从联机日志和归档日志获得LCR 
+下游捕获：在目标数据库进行，从归档日志获得LCR. 
+本地捕获可以保护更多的数据，但是会占用源数据库的资源。 
+4). 决定复制拓扑结构：这时要决定复制数据库的用途，是只用于预防灾难，还是平时保持空闲，或允许用户使用。 
+
+
+4. Streams Replication 实例 
+
+4.1 准备工作： 
+DBA是源数据库， DBA2是目标数据库 
+
+4.1.1 源数据库和目标数据库必须是归档的 
+SQL> startup mount; 
+SQL> alter database archivelog; 
+SQL> alter database open; 
+SQL> archive log list 
+
+归档与非归档的切换请参考： 
+http://blog.csdn.net/tianlesoftware/archive/2009/1 0/18/4693470.aspx 
+或者 
+http://user.qzone.qq.com/251097186/blog/1236924069 
+
+--
+4.1.2. 源数据库和目的数据库均需要设置的参数： 
+
+alter system set global_names=true scope = both; 
+默认为false, Database Link 使用的是数据库的global_name。
+
+alter system set aq_tm_processes=2 scope=both; 
+
+以下参数都是10G的默认值， 检查下就可以了. 无需设置 
+如：Show parameter job_queue_processes 
+alter system set job_queue_processes = 10 scope=both; 
+alter system set sga_target = 300m scope=spfile; 
+alter system set open_links=4 scope=spfile; 
+alter system set statistics_level='TYPICAL' scope=both; 
+10g 默认为Typical， 性能统计模式 
+alter system set logmnr_max_persistent_sessions=1 scope=spfile; 
+10g 默认为1，持久的日志挖掘会话数。 
+alter system set "_job_queue_interval"=1 scope=spfile; 
+alter system set aq_tm_processes=1; 
+alter system set streams_pool_size=200m scope=both; 
+
+注意streams_pool_size一定要够大，因为如果启用了SGA_TARGET，ORACLE可能分配很少内存给stream导致大量信息被 spill到磁盘导致查询DBA_APPLY,DBA_CAPTURE,DBA_PROPGATION全部状态ENABLED但就是没有数据被同步。 
+同时设置_job_queue_interval也是为了提高队列检查时间，防止apply出问题。 
+注意：与复制有关的2个参数： 如果等了足够长的时间发现数据没有复制过来，仔细检查了capture/propagation/apply各进程的状态都是正常的， 并检查参数. 
+alter system set "_job_queue_interval"=1 scope=spfile; 
+并且将aq_tm_processes参数改为1（我原来这是为10） 
+alter system set aq_tm_processes=1; 
+改完后重启，发现数据就可以去了。这个隐含参数只是控制对job队列的检查频率，默认5秒。 
+
+--
+4.1.3 . 在源数据库上启用追加日志 
+
+可以基于Database级别或Table级别，启用追加日志（Supplemental Log）。
+在建立根据Schema粒度进行复制的Oracle Stream环境中，如果确认Schema下所有Table都有合理的主键(Primary Key)，则不再需要启用追加日志。 
+
+#启用Database 追加日志 
+alter database add supplemental log data; 
+#启用Table追加日志 
+alter table add supplement log group log_group_name(table_column_name) always; 
+
+--
+4.1.4 . 源数据库和目的数据库创建相同表空间和用户并赋权 
+
+创建表空间： 
+CREATE TABLESPACE streams_tbs DATAFILE 'D:\ORACLE\ORADATA\DBA\streams_tbs.dbf' SIZE 100M REUSE AUTOEXTEND ON MAXSIZE UNLIMITED; 
+CREATE TABLESPACE streams_tbs DATAFILE 'D:\ORACLE\ORADATA\DBA2\streams_tbs.dbf' SIZE 100M REUSE AUTOEXTEND ON MAXSIZE UNLIMITED; 
+
+创建用户： 
+CREATE USER strmadmin IDENTIFIED BY strmadmin DEFAULT TABLESPACE streams_tbs 
+QUOTA UNLIMITED ON streams_tbs; 
+
+赋权： 
+GRANT DBA to strmadmin; 
+exec DBMS_STREAMS_AUTH.GRANT_ADMIN_PRIVILEGE('strmadmin '); 
+
+--
+4.1.5 配置listener.ora和tnsnames.Ora 
+
+DBA2 = 
+(DESCRIPTION = 
+(ADDRESS = (PROTOCOL = TCP)(HOST = 10.85.10.80)(PORT = 1521)) 
+(CONNECT_DATA = http://blog.soso.com/qz.q/ 
+(SERVER = DEDICATED) 
+(SERVICE_NAME = DBA2.anqingren.org) 
+) 
+) 
+
+--
+4.1.6 创建DBLink 
+
+先用strmadmin登陆，在创建dblink 
+
+4.1.6.1在源端建到目库的db link 
+
+SQL> conn strmadmin/strmadmin; 
+已连接。 
+
+SQL> create database link DBA2 connect to strmadmin identified by strmadmin using 'dba2'; 
+数据库链接已创建。 
+
+测试： 
+SQL> select * from global_name@dba2; 
+GLOBAL_NAME 
+------------------- 
+DBA2.ANQINGREN.ORG 
+
+4.1.6.2 在目端建到源库的db link 
+
+SQL> conn strmadmin/strmadmin; 
+已连接。 
+
+SQL> create database link dba connect to strmadmin identified by strmadmin using 'dba'; 
+数据库链接已创建。 
+
+--
+4.2 用户级的复制(不支持sys和system用户) 
+
+4.2.1 最初的用户复制 
+
+分别在源库和目标数据库上创建测试用户 
+SQL>create user dave identified by dave; 
+SQL>grant dba to dave; 
+
+4.2.1 在源数据库上创建Source 队列 
+connect strmadmin/strmadmin@dba; 
+BEGIN 
+DBMS_STREAMS_ADM.SET_UP_QUEUE( 
+queue_table => 'SOURCE_QUEUE_TABLE', --队列表 
+queue_name => 'SOURCE_QUEUE', --队列 
+queue_user => 'strmadmin'); --队列用户 
+END; / 或者: SQL> EXEC DBMS_STREAMS_ADM.SET_UP_QUEUE(); PL/SQL procedure successfully completed. 该命令会创建一个队列缺省名：streams_queue，队列表缺省是：STREAMS_QUEUE_TABLE
+
+队列存储的object类型是anaydata 
+
+移除队列： 
+exec dbms_streams_adm.remove_queue( 
+queue_name => 'streams_queue', 
+cascade => true, 
+drop_unused_queue_table => true);. 
+
+可以用查询dba_queues,dba_queue_tables来检查： 
+SQL> select owner,queue_table,name from dba_queues where owner='STRMADMIN'; 
+OWNER QUEUE_TABLE NAME 
+----------------- ------------------------- ------------------ 
+STRMADMIN SOURCES_QUEUE_TABLE SOURCES_QUEUE 
+STRMADMIN SOURCES_QUEUE_TABLE AQ$_SOURCES_QUEUE_TABLE_E 
+SQL>select owner,queue_table,object_type from dba_queue_tables where owner='STRMADMIN'; 
+OWNER QUEUE_TABLE OBJECT_TYPE 
+-------------- --------------------- ------------------ 
+STRMADMIN SOURCES_QUEUE_TABLE SYS.ANYDATA 
+
+
+4.2.2 在目标数据库DBA2上创建接收队列 
+
+connect strmadmin/strmadmin@dba2; 
+BEGIN 
+DBMS_STREAMS_ADM.SET_UP_QUEUE( 
+queue_table => 'TARGET_QUEUE_TABLE', --队列表 
+queue_name => 'TARGET_QUEUE', --队列 
+queue_user => 'strmadmin'); --队列用户 
+END; 
+/ 
+
+可以用查询dba_queues,dba_queue_tables来检查： 
+SQL> select owner,queue_table,name from dba_queues where owner='STRMADMIN'; 
+OWNER QUEUE_TABLE NAME 
+------------------ --------------------- ---------------- 
+STRMADMIN TARGET_QUEUE_TABLE TARGET_QUEUE 
+STRMADMIN TARGET_QUEUE_TABLE AQ$_TARGET_QUEUE_TABLE_E 
+
+
+4.2.3 在源数据库上创建capture 进程 
+
+SQL>conn strmadmin/strmadmin@DBA; 
+SQL> BEGIN 
+DBMS_STREAMS_ADM.ADD_SCHEMA_RULES( 
+schema_name => 'dave', -- 用户名,如dave， 非sys或者system 
+streams_type => 'capture', 
+streams_name => 'capture_stream', 
+queue_name => 'strmadmin.SOURCE_QUEUE', 
+include_dml => true, 
+include_ddl => true, 
+source_database => 'DBA', 
+include_tagged_lcr => false, 
+inclusion_rule => true); 
+END; 
+/ 
+PL/SQL procedure successfully completed. 
+可以通过dba_capture查看： 
+SQL> select CAPTURE_NAME,QUEUE_NAME,START_SCN,STATUS,CAPTURE_T YPE from dba_capture; 
+CAPTURE_NAME QUEUE_NAME START_SCN STATUS CAPTURE_TY 
+------------------------- ---------------------------- ---------- -------------- ---------------- 
+CAPTURE_STREAM1 SOURCES_QUEUE 1294052 DISABLED LOCAL 
+SQL> select * from ALL_CAPTURE_PREPARED_SCHEMAS; 
+SCHEMA_NAME TIMESTAMP SUPPLEME SUPPLEME SUPPLEME SUPPLEME 
+-------------------- -------------- -------- -------- -------- -------- 
+SYSTEM 20-10月-09 IMPLICIT IMPLICIT IMPLICIT NO 4.2.4 在源数据库上创建传播进程 
+SQL>conn strmadmin/strmadmin@DBA; 
+SQL> BEGIN 
+DBMS_STREAMS_ADM.ADD_SCHEMA_PROPAGATION_RULES( 
+schema_name => 'dave', 
+streams_name => 'source_to_target', 
+source_queue_name => 'strmadmin.SOURCE_QUEUE', 
+destination_queue_name => 'strmadmin.TARGET_QUEUE@DBA2', --此队列待创建 
+include_dml => true, 
+include_ddl => true, 
+source_database => 'DBA', 
+inclusion_rule => true, 
+queue_to_queue => true); 
+END; 
+/ 
+PL/SQL procedure successfully completed. 
+重新启动propagation process 
+--dbms_propagation_adm.start_propagation (propagation_name) 
+--其中propagation_name可以从表all_propagation中取得 
+select * from all_propagation; 
+SQL> exec dbms_propagation_adm.start_propagation('source_to_ target'); 
+exec dbms_propagation_adm.stop_propagation('source_to_t arget');
+
+PL/SQL procedure successfully completed. 
+select * from all_propagation; 
+可以通过dba_propagations查看结果： 
+SQL> select PROPAGATION_NAME,SOURCE_QUEUE_NAME,DESTINATION_QUE UE_NAME,DESTINATION_DBLINK,STATUS from dba_propagation; 
+PROPAGATION_NAME SOURCE_QUEUE_NA DESTINATION_QUE DESTINATION_DBLINK STATUS 
+------------------ --------------- --------------- ------------------ -------- 
+STREAM1_TO_STREAM2 SOURCES_QUEUE TARGET_QUEUE DBA2.ANQINGREN.ORG ENABLED 
+#修改propagation休眠时间为0，表示实时传播LCR。 
+begin 
+dbms_aqadm.alter_propagation_schedule( 
+queue_name => 'SOURCE_QUEUE', 
+destination => 'DBA2', 
+latency => 0); 
+end; 
+/ 
+
+
+4.2.5 在目标数据库DBA2上创建Apply进程 
+
+SQL> BEGIN 
+DBMS_STREAMS_ADM.ADD_SCHEMA_RULES( 
+schema_name => 'SYSTEM', 
+streams_type => 'apply', 
+streams_name => 'target_apply_stream', 
+queue_name => 'strmadmin.TARGET_QUEUE', 
+include_dml => true, 
+include_ddl => true, 
+include_tagged_lcr => false, 
+source_database => 'DBA', 
+inclusion_rule => true); 
+END; 
+/ 
+可以通过： 
+dba_apply 
+v$streams_apply_reader 
+v$streams_apply_coordinator 
+v$streams_apply_server 
+查看状态 
+SQL> select apply_name,queue_name,status from dba_apply; 
+APPLY_NAME QUEUE_NAME STATUS 
+------------------------------ ------------------------------ -------- 
+TARGET_APPLY_STREAM TARGET_QUEUE DISABLED 
+
+
+4.2.6 实例化复制数据库 
+
+4.2.6.1 用exp/imp 完成实例化 
+
+带数据完成源端exp和目端的import： 
+
+Exp USERID=SYSTEM/ADMIN@DBA OWNER=SYSTEM FILE=D:\STRM.dmp LOG=STRM.log OBJECT_CONSISTENT=Y STATISTICS = NONE imp USERID=SYSTEM/ADMIN@DBA2 FULL=Y CONSTRAINTS=Y FILE=D:\STRM.dmp IGNORE=Y COMMIT=Y LOG=D:\import.log STREAMS_INSTANTIATION=Y 或仅作实例化(不带数据)： 
+exp USERID=SYSTEM/ADMIN@DBA OWNER=SYSTEM FILE=D:\STRM.dmp LOG=D:\export.log OBJECT_CONSISTENT=Y STATISTICS = NONE ROWS=NO 
+imp USERID=SYSTEM/ADMIN@DBA2 FULL=Y CONSTRAINTS=Y FILE=D:\STRM.dmp COMMIT=Y LOG=D:\import.log STREAMS_INSTANTIATION=Y IGNORE=Y 
+
+4.2.6.2 直接设置SCN的方式进行实例化： 
+
+---获取源库互置用户的SCN 
+connect strmadmin/strmadmin@DBA 
+set serveroutput on 
+DECLARE 
+iscn NUMBER; -- Variable to hold instantiation SCN value 
+BEGIN 
+iscn := DBMS_FLASHBACK.GET_SYSTEM_CHANGE_NUMBER(); 
+DBMS_OUTPUT.PUT_LINE ('Instantiation SCN is: ' || iscn); 
+END; 
+/ 
+---设置为目标库互置用户的SCN 
+connect strmadmin/strmadmin@DBA2 
+BEGIN 
+DBMS_APPLY_ADM.SET_SCHEMA_INSTANTIATION_SCN( 
+source_schema_name => 'SYSTEM', 
+source_database_name => 'DBA', 
+instantiation_scn => &iscn); 
+END; 
+/ 
+
+
+4.2.7. 在目标数据库上启动Apply进程 
+
+connect strmadmin/strmadmin@DBA2 
+SQL> BEGIN 
+DBMS_APPLY_ADM.SET_PARAMETER(apply_name => 'target_apply_stream', parameter 
+=> 'disable_on_error', VALUE =http://blog.soso.com/qz.q/>'n'); 
+END; 
+/ 
+SQL> BEGIN 
+DBMS_APPLY_ADM.START_APPLY( 
+apply_name => 'target_apply_stream'); 
+END; 
+/ 
+#停止Apply进程 
+begin 
+dbms_apply_adm.stop_apply( 
+apply_name => 'target_apply_stream'); 
+end; 
+/ 
+查看状态 
+SQL> select apply_name,queue_name,status from dba_apply;
+
+APPLY_NAME QUEUE_NAME STATUS 
+------------------------------ ------------------------------ -------- 
+TARGET_APPLY_STREAM TARGET_QUEUE ENABLED 
+
+
+4.2.8 在源数据库上启动capture 
+
+connect strmadmin/strmadmin@DBA 
+SQL> BEGIN 
+DBMS_CAPTURE_ADM.START_CAPTURE( 
+capture_name => 'capture_stream'); 
+END; 
+/ 
+#停止Capture进程 
+begin 
+dbms_capture_adm.stop_capture( 
+capture_name => 'capture_stream'); 
+end; 
+/ 查看状态： 
+SQL> select capture_name,status from dba_capture; 
+CAPTURE_NAME STATUS 
+--------------- -------- 
+CAPTURE_STREAM ENABLED 
+
+
+4.3 表级的复制 
+
+maintain_tts 表空间复制 
+maintain_schemas 用户复制 
+maintain_tables 表复制的 
+
+与dbms_streams_adm的maintain_global、maintain_tts、maintain_schemas等过程相比，maintain_tables过程使用则更灵活，可以为某些特殊的表拿出来单独配置，maintain_tables也象其它的过程一样，提供了一蓝子解决方案，如果要添加新的表到复制中，只需要再次执行maintain_tables过程即可。 
+
+
+4.3.1 在stream进行配置前，需要做些准备工作 
+
+A 源库与目标库初始化参数的设置 
+alter system set aq_tm_processes=1 scope=spfile; 
+alter system set job_queue_processes=2 scope=spfile; 
+alter system set global_names=true scope=spfile; 
+alter system set streams_pool_size=20m scope=spfile; 
+说明streams_pool_size在生产环境中最好>200m 
+
+B 源库与目标库tnsnames.ora配置 
+见4.1 
+
+C 源库与目标库复制管理员的创建 
+见4.1 
+
+D 在源库与目标库创建DBLINK 
+见4.1 
+
+E 源库与目标库必须处于归档模式 
+见4.1 
+
+F 源库与目标库必须创建directory 
+connect strmadmin/strmadmin@DBA; 
+create directory DIR_DBA as 'D:\Stream\DBA'; 
+connect strmadmin/strmadmin@DBA2; 
+create directory DIR_DBA2 as 'D:\Stream\DBA2'; 
+说明:在复制表空间时,创建directory需要指定该表空间所在的目录 
+
+G 创建测试用的表空间及表 
+CREATE TABLESPACE DAVE DATAFILE 'D:\ORACLE\ORADATA\DBA\DAVE.dbf' SIZE 100M; 
+create user tianle identified by tianle default tablespace DAVE; 
+grant dba to tianle; 
+conn TIANLE/TIANLE 
+create table test(id int,name varchar2(20)); 
+create table test2(id int,name varchar2(20)); 
+insert into test values(1,'dave'); 
+insert into test values(2,'bl'); 
+不能使用默认的表空间. 
+
+
+4.3.2 在源库执行MAINTAIN_TTS过程 
+
+SQL>connect strmadmin/strmadminpw@DBA; 
+declare 
+v_tables dbms_utility.uncl_array; 
+begin 
+v_tables(1) := 'tianle.test; 
+v_tables(2) := 'tianle.test2'; 
+dbms_streams_adm.maintain_tables( 
+table_names => v_tables, 
+source_directory_object => null, 
+destination_directory_object => null, 
+source_database => 'DBA', 
+destination_database => 'DBA2', 
+perform_actions => true, 
+bi_directional => false, 
+include_ddl => true, 
+instantiation => dbms_streams_adm.instantiation_table_network); 
+end; 
+/ 
+说明:在源库执行maintain_tables时,目标库几乎什么都不用做,stream环境已经配置好啦, 
+如果想复制其它的表,只用再执行maintain_tables过程即可 
+
+
+4.3.3 如果在执行2的过程时失败,需要清除脚本 
+
+--select script_id from dba_recoverable_script; 
+--exec dbms_streams_adm.RECOVER_OPERATION('&1','PURGE'); 
+declare 
+v_script_id varchar2(32); 
+begin 
+select script_id into v_script_id from dba_recoverable_script; 
+dbms_streams_adm.RECOVER_OPERATION(v_script_id,'PU RGE'); 
+exception 
+when no_data_found then 
+DBMS_OUTPUT.PUT_LINe('no data found') ; 
+when others then 
+
+
+
+4.5 全库级复制 
+以上主要为大家介绍了pre_instantiation_setup/post_instantiation_setup过程在配置全库复制的方法，
+以下介绍dbms_streams_adm的maintain_global过程如何配置stream全库复制方法，适用于10gR2及以后版本。 
+不支持sys/ system 用户的变更。 
+
+1.在stream进行配置前，需要做些准备工作 
+
+a 源库与目标库初始化参数的设置 
+alter system set aq_tm_processes=4 scope=spfile; 
+alter system set job_queue_processes=5 scope=spfile; 
+alter system set global_names=true scope=spfile;
+
+alter system set streams_pool_size=51m scope=spfile; 
+说明streams_pool_size在生产环境中最好>200m 
+
+b 源库与目标库tnsnames.ora配置 
+见4.1 
+c 源库与目标库复制管理员的创建 
+见4.1 
+d 源库与目标库创建互连的DBLINK 
+见4.1 
+e 源库与目标库必须处于归档模式 
+见4.1 
+f 源库与目标库必须创建directory 
+create directory dir_DBA as 'D:\Stream\DBA'; 
+create directory dir_DBA2 as 'D:\Stream\DBA2'; 
+
+
+2.在源库执行MAINTAIN_GLOBAL过程 
+begin 
+dbms_streams_adm.maintain_global( 
+source_directory_object =>'dir_DBA', 
+destination_directory_object =>'dir_DBA2', 
+source_database=>'DBA', 
+destination_database =>'DBA2', 
+perform_actions=>true, 
+include_ddl=>true, 
+instantiation=>DBMS_STREAMS_ADM.INSTANTIATION_FULL_ NETWORK 
+); 
+end; 
+说明:在执行maintain_global时,源库与目标库必须创建directory,然后在源库执行, 目标库几乎什么都不用做,stream环境已经配置完毕 
+

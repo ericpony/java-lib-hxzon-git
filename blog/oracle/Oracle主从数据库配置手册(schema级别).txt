@@ -1,0 +1,389 @@
+﻿Oracle主从数据库配置手册(schema级别)
+
+http://wenku.baidu.com/view/06c7ef1afad6195f312ba63d.html
+
+
+SOURCE机，笔记本一，10.10.1.109 sid:source
+DEST机，笔记本二，10.10.1.110 sid:dest
+=====================================================================
+第一步：进行Stream前的参数配置，双机一致  (说明 E:/oracledata/oraclearchive/arch 或 E:/oracledata/oraclearchive/data 是指对应的目录下要有对应文件夹)
+
+  SQL> conn  sys/longtop as sysdba;
+  已连接。
+  SQL> alter  system set aq_tm_processes=2 scope=both;
+  系统已更改。
+  SQL> alter  system set global_names=true scope=both;
+  系统已更改。
+  SQL> alter  system set job_queue_processes=20 scope=both;
+  系统已更改。
+  SQL> alter  system set parallel_max_servers=20 scope=both;
+  系统已更改。
+  SQL> alter  system set undo_retention=3600 scope=both; 
+  系统已更改。
+  SQL> alter  system set nls_date_format='YYYY-MM-DD HH24:MI:SS' scope=spfile;
+  系统已更改。
+  SQL> alter  system set streams_pool_size=25M scope=spfile;
+  系统已更改。
+  SQL> alter  system set utl_file_dir='*' scope=spfile;
+  系统已更改。
+  SQL> alter  system set open_links=4 scope=spfile;
+  系统已更改。
+  SQL> alter  system set log_archive_dest='E:/oracledata/oraclearchive/arch' scope=spfile;
+  系统已更改。
+  SQL> alter  system set log_archive_start=TRUE scope=spfile;
+  系统已更改。
+  SQL> alter  system set log_archive_format='arch%t_%s_%r.arc' scope=spfile;
+  系统已更改。 
+
+=========================================================================
+第二步：查看系统归档状态（双机一致）
+
+  SQL> shutdown  immediate
+  数据库已经关闭。
+  已经卸载数据库。
+  ORACLE 例程已经关闭。
+  SQL> startup  mount
+  ORA-32004:  obsolete and/or deprecated parameter(s) specified
+  ORACLE 例程已经启动。
+  Total System  Global Area
+167772160 bytes
+  Fixed Size
+1247900 bytes
+  Variable  Size
+92276068 bytes
+  Database  Buffers
+71303168 bytes
+  Redo  Buffers
+2945024 bytes
+  数据库装载完毕。
+  SQL> alter  database archivelog;
+  数据库已更改。
+  SQL> alter  database open;
+  数据库已更改。
+  SQL> archive log file;
+  SP2-0718: 非法的         ARCHIVE LOG 选项
+  SQL> archive log list;
+  数据库日志模式  存档模式
+  自动存档  启用
+  存档终点  USE_DB_RECOVERY_FILE_DEST
+  最早的联机日志序列 1
+  下一个存档日志序列 2
+  当前日志序列 2
+  SQL> 
+=========================================================================
+
+第三步：创建Stream用户和表空间（双机一致）
+
+  #创建主环境的Stream专用表空间
+  SQL> create  tablespace tbs_stream datafile 'E:/oracledata/oraclearchive/data/tbs_stream01.dbf' size 100m autoextend on next 100m maxsize 1000m segment space  management auto;
+  表空间已创建。
+  #将logminer 的数据字典从system表空间转移到新建的表空间，防止撑满system表空间
+  SQL> execute  dbms_logmnr_d.set_tablespace('tbs_stream');
+  PL/SQL 过程已成功完成。
+  #创建Stream管理用户
+  SQL> create  user strmadmin identified by strmadmin default tablespace tbs_stream temporary tablespace temp;
+  用户已创建。
+  #授权Stream管理用户
+  SQL> grant  connect,resource,dba,aq_administrator_role to strmadmin;
+  授权成功。
+  SQL> begin 
+dbms_streams_auth.grant_admin_privilege( 
+grantee => 'strmadmin', 
+grant_privileges => true); 
+end; 
+/
+  PL/SQL 过程已成功完成。
+=========================================================================
+ 第四步：配置各自双方的数据库连接
+
+在source机器上添加dest数据源，名称为DEST 
+。。。。。。。
+  DEST =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = 10.10.1.110)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME =dest)
+    )
+  )
+。。。。。。
+
+在dest机器上添加source数据源，名称为SOURCE  
+。。。。。。
+  SOURCE =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = 10.10.1.109)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = source)
+    )
+  )
+。。。。。。
+=========================================================================
+
+第五步：启用追加日志 (双机一致)
+
+  #启用Database 追加日志
+  SQL> alter  database add supplemental log data;
+  数据库已更改。
+  #启用Table追加日志
+  SQL> ALTER  DATABASE ADD SUPPLEMENTAL LOG DATA (PRIMARY KEY, UNIQUE, FOREIGN KEY) COLUMNS;
+ 
+=========================================================================
+第六步：创建主数据库数据库链，以连接到从数据库 
+
+  SQL> select *  from global_name;
+  GLOBAL_NAME
+  --------------------------------------------------------------------------------
+  SOURCE.REGRESS.RDBMS.DEV.US.ORACLE.COM
+  SQL>conn  strmadmin/strmadmin; 
+  SQL> create  database link dest connect to strmadmin identified by strmadmin using 'dest';
+  数据库链接已创建。
+  SQL> select *  from tab@dest;
+  未选定行 
+
+
+====================================================================================
+第七步：创建从数据库数据库链，以连接到主数据库
+
+  SQL> select *  from global_name;
+  GLOBAL_NAME
+  --------------------------------------------------------------------------------
+  DEST.REGRESS.RDBMS.DEV.US.ORACLE.COM
+  SQL>conn  strmadmin/strmadmin
+  SQL> create  database link source connect to strmadmin identified by strmadmin using  'source';
+  数据库链接已创建。
+  SQL> select *  from tab@source;
+  未选定行 
+
+====================================================================================
+ 第八步：创建Master 流队列
+
+  SQL> connect  strmadmin/strmadmin
+  已连接。
+  SQL> begin
+dbms_streams_adm.set_up_queue(
+queue_table => 'source_queue_table',
+queue_name => 'source_queue');
+end;
+/
+  PL/SQL 过程已成功完成。
+ 
+====================================================================================
+第九步：创建Backup 流队列
+
+SQL> connect  strmadmin/strmadmin
+  已连接。
+  SQL> begin
+dbms_streams_adm.set_up_queue(
+queue_table => 'dest_queue_table',
+queue_name => 'dest_queue');
+end;
+/
+  PL/SQL 过程已成功完成。
+===================================================================================
+增加用户步骤，双机一致
+
+ 
+
+创建临时表空间
+CREATE TEMPORARY TABLESPACE cispac_temp TEMPFILE 'E:/oracledata/oraclearchive/user/cispac_temp01.dbf' SIZE 32M AUTOEXTEND ON NEXT 32M MAXSIZE 2048M EXTENT MANAGEMENT LOCAL;
+ 
+
+创建用户表空间
+CREATE TABLESPACE cispac LOGGING DATAFILE 'E:/oracledata/oraclearchive/user/cispac_data01.dbf' SIZE 32M AUTOEXTEND ON NEXT 32M MAXSIZE 2048M EXTENT MANAGEMENT LOCAL;
+ 
+
+创建用户并指定表空间
+CREATE USER ci IDENTIFIED BY longtop DEFAULT TABLESPACE cispac TEMPORARY TABLESPACE cispac_temp;
+ 
+
+给用户授予权限
+GRANT 
+　　CREATE SESSION, CREATE ANY TABLE, CREATE ANY VIEW ,CREATE ANY INDEX, CREATE ANY PROCEDURE,
+　　ALTER ANY TABLE, ALTER ANY PROCEDURE,
+　　DROP ANY TABLE, DROP ANY VIEW, DROP ANY INDEX, DROP ANY PROCEDURE,
+　　SELECT ANY TABLE, INSERT ANY TABLE, UPDATE ANY TABLE, DELETE ANY TABLE
+　　TO ci;
+ 授予role
+
+GRANT CONNECT,RESOURCE TO ci;
+
+=================================================================================================
+
+
+
+主数据库导出，从数据库导入 （初始化同步主库从库）
+exp ci/longtop@source file=e:\init.dmp object_consistent=y rows=y
+
+
+imp ci/longtop@dest fromuser=ci touser=ci ignore=y commit=y file=F:\init.dmp streams_instantiation=y
+
+======================================================================================================
+ 
+第十步：在master 创建捕获进程 schema_name必须是用户名。
+
+  SQL> connect  strmadmin/strmadmin
+  已连接。 
+  SQL> begin
+dbms_streams_adm.add_schema_rules(
+schema_name => 'ci',
+streams_type => 'capture',
+streams_name => 'capture_source',
+queue_name => 'strmadmin.source_queue',
+include_dml => true,
+include_ddl => true,
+include_tagged_lcr => false,
+source_database => null,
+inclusion_rule => true);
+end;
+/
+  PL/SQL 过程已成功完成。
+ 
+====================================================================================
+ 第十一步：在master 创建传播进程 (@dest 为 从库dblink的名字)
+
+  SQL> connect  strmadmin/strmadmin
+  已连接。
+  SQL> begin
+dbms_streams_adm.add_schema_propagation_rules(
+schema_name => 'ci',
+streams_name => 'source_to_dest',
+source_queue_name => 'strmadmin.source_queue',
+destination_queue_name => 'strmadmin.dest_queue@dest',
+include_dml => true,
+include_ddl => true,
+include_tagged_lcr => false,
+source_database => 'source',
+inclusion_rule => true);
+end;
+/
+  PL/SQL 过程已成功完成。
+
+### (destination => 'dest' 为 从库dblink的名字)
+ 
+SQL> begin
+dbms_aqadm.alter_propagation_schedule(
+queue_name => 'source_queue',
+destination => 'dest',
+latency => 0);
+end;
+/
+  PL/SQL 过程已成功完成。 
+
+====================================================================================
+第十二步：在Backup 创建应用进程 （source_database => 'source' 为主库dblink的名字）
+
+  SQL> connect  strmadmin/strmadmin
+  已连接。
+  SQL> begin
+dbms_streams_adm.add_schema_rules(
+schema_name => 'ci',
+streams_type => 'apply',
+streams_name => 'apply_dest',
+queue_name => 'strmadmin.dest_queue',
+include_dml => true,
+include_ddl => true,
+include_tagged_lcr => false,
+source_database => 'source',
+inclusion_rule => true);
+end;
+/
+  PL/SQL 过程已成功完成。 
+
+====================================================================================
+第十三步：在Backup 启动Apply进程
+
+  SQL> connect  strmadmin/strmadmin
+  已连接。
+  SQL> begin
+dbms_apply_adm.start_apply(
+apply_name => 'apply_dest');
+end;
+/
+  PL/SQL 过程已成功完成。
+  
+
+====================================================================================
+第十四步：在Master 启动Capture进程
+
+  SQL> connect  strmadmin/strmadmin
+  已连接。
+  SQL> begin
+dbms_capture_adm.start_capture(
+capture_name => 'capture_source');
+end;
+/
+  PL/SQL 过程已成功完成。
+
+===================================================================================
+
+
+以上十四步为配置并启动streams 以下位停止streams
+
+===================================================================================
+
+第十五步：关闭 主从数据库 方式
+
+
+在主库 以strmadmin 身份登录
+
+停止 capture 进程
+
+SQL> connect  strmadmin/strmadmin
+
+SQL> begin
+dbms_capture_adm.stop_capture(
+capture_name => 'capture_source');
+end;
+/
+  PL/SQL 过程已成功完成。
+
+
+
+在从库 以strmadmin 身份登录
+
+停止 Apply 进程
+
+SQL> connect  strmadmin/strmadmin
+
+SQL> begin
+dbms_apply_adm.stop_apply(
+apply_name => 'apply_dest');
+end;
+/
+  PL/SQL 过程已成功完成。
+
+
+=========================================================
+
+
+
+删除 stream 配置 删除前先停止stream 配置
+
+以strmadmin 身份登录到主库
+
+SQL> connect  strmadmin/strmadmin
+
+SQL> exec DBMS_STREAMS_ADM.remove_streams_configuration();
+
+
+以strmadmin 身份登录到从库
+
+SQL> connect  strmadmin/strmadmin
+
+SQL> exec DBMS_STREAMS_ADM.remove_streams_configuration();
+
+=== 查询状态是判读是否配置成功===========================
+
+
+主库
+select capture_name,queue_name,rule_set_name,negative_rule_set_name,status from dba_capture;
+
+
+select capture_name,queue_name,status,captured_scn,applied_scn from dba_capture;
+
+
+从库
+
+SELECT APPLY_NAME,APPLY_CAPTURED,STATUS FROM DBA_APPLY;

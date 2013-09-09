@@ -1,0 +1,84 @@
+﻿oracle浏览对象信息
+
+by hxzon
+==========
+dba_objects 所有对象
+
+dba_synonyms 数据库同义词
+dba_triggers 触发器
+dba_sequences 序列
+dba_db_links 数据库链接
+
+
+dba_tables 所有关系表
+
+dba_external_tables 外部表
+dba_tab_partitions 表分区
+dba_part_tables 分区模式的类型信息和分区及子分区的其它存储参数
+
+dba_tab_modifications 最后一次收集一个表的统计数据之后，该表所有的dml变更
+dba_tab_columns 数据表列
+dba_views 视图
+dba_mviews 实体化视图
+
+dba_indexes 索引（仅当使用dbms_stats程序包收集了索引的统计数据之后才被填充）
+dba_ind_columns 列的索引信息
+index_stats 查看一个索引使用其空间的效率
+
+dba_constraints 表约束
+dba_cons_columns 约束的列的名字和位置
+
+v$sysaux_occupants 显示sysaux表空间中每个占有物使用空间的详细信息
+
+
+dba_tablespaces
+user_tablespaces
+v$tablespace
+dba_free_space
+
+dba_segments 段
+
+dba_data_files
+v$datafile
+v$tempfile 临时表空间
+v$filestat 文件读写统计的详细数据
+
+获得磁盘IO信息：
+
+select d.name,t.name,f.phyrds,f.phywrts,f.readtim,f.writetim
+from v$datafile d,
+v$filestat f,
+v$tablespace t
+where f.file# = d.file#
+and d.ts# = ts.ts#;
+
+
+dba_tablespace_groups 表空间组
+
+select group_name,tablespace_name from dba_tablespace_groups
+
+dba_users
+
+select username,temporary_tablespace from dba_users
+
+===========
+select tablespace_name ,table_name ,num_rows
+from dba_tables
+where owner='xx';
+
+select column_name ,data_type, nullable
+from dba_tab_columns
+where owner='xx'
+and table_name = 'yy';
+
+describe xxtable
+------------
+v$object_usage
+
+select * 
+from v$object_usage
+where index_name = 'xx';
+
+----------
+select distinct constraint_type from dba_constraints;
+
