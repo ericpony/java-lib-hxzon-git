@@ -1,4 +1,4 @@
-﻿linux学习笔记-文件系统的简单操作（df和du）
+﻿linux学习笔记-磁盘与目录的容量（df和du）
 
 《鸟哥的linux私房菜：基础篇：第八章、Linux 磁盘与文件系统管理》
 http://vbird.dic.ksu.edu.tw/linux_basic/0230filesystem.php
