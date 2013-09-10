@@ -1,7 +1,24 @@
 ﻿linux学习笔记-linux常见目录
 
 http://vbird.dic.ksu.edu.tw/linux_basic/0210filepermission_3.php
+http://vbird.dic.ksu.edu.tw/linux_basic/0210filepermission_3.php
+
 《鸟哥的linux私房菜：第六章、Linux 的文件权限与目录配置》
+
+3. Linux目录配置
+　　3.1 Linux目录配置的依据--FHS：/, /usr, /var
+　　3.2 目录树(directory tree)
+　　3.3 绝对路径与相对路径
+　　3.4 CentOS 的观察： lsb_release
+
+===========
+hxzon学习笔记：
+
+1，根据FHS的官方文件指出， 他们的主要目的是希望让使用者可以了解到已安装软件通常放置于那个目录下。
+FHS订定出来的四种目录特色为：shareable, unshareable, static, variable等四类；
+FHS所定义的三层主目录为：/, /var, /usr三层而已；
+
+2，有五个目录不可与根目录放在不同的partition，分别为/etc, /bin, /lib, /dev, /sbin五个。
 
 ===========
 1，linux目录配置的依据-FHS（Filesystem Hierarchy Standard ）

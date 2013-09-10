@@ -24,6 +24,9 @@ passwd
 当前时间和日期：
 date
 
+修改系统语系：
+vi /etc/sysconfig/i18n
+LANG=en_US.UTF-8
 
 2，
 网络联机状态：
