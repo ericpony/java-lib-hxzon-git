@@ -1,0 +1,241 @@
+﻿Tapestry Linkedin
+
+http://tawus.wordpress.com/2011/10/14/tapestry-linkedin/
+
+Continuing from the Tweeting post and Facebook post, lets us extend the OAuth Service to enable us to update status on Linkedin. We start by creating LinkedinService
+
+So here is the Linkedin service
+
+//interface
+public interface LinkedinService extends BaseOAuthService {
+    
+}
+
+//implementation
+public class LinkedinServiceImpl extends BaseOAuthServiceImpl implements LinkedinService {
+
+    private ApplicationStateManager stateManager;
+
+    public LinkedinServiceImpl(OAuthConfiguration configuration, String apiPrefix,
+        ApplicationStateManager stateManager) {
+        super(configuration, LinkedInApi.class, apiPrefix);
+
+        this.stateManager = stateManager;
+    }
+
+    @Override
+    public String getAuthorizationURL() {
+        Token requestToken = newRequestToken();
+
+        stateManager.set(Token.class, requestToken);
+
+        return getOAuthService().getAuthorizationUrl(requestToken);
+    }
+
+    @Override
+    public Token requestAccessToken(String oauthToken, String verifier) {
+        Token requestToken = stateManager.getIfExists(Token.class);
+        return getOAuthService().getAccessToken(requestToken, new Verifier(verifier));
+    }
+}
+
+Linkedin uses the request token for getting access token. This requires us to save the request token in the user’s session using ApplicationStateManager. Next is the OAuthResource for Linkedin Status Update.
+
+public class LinkedinStatusUpdate extends AbstractOAuthResource {
+    private String text;
+    private String title;
+    private String link;
+    private String imageLink;
+
+    public LinkedinStatusUpdate(Token accessToken, 
+        String text, String title, String link, String imageLink) {
+        super(accessToken, Verb.POST, "people/~/shares");
+        this.text = text;
+        this.title = title;
+        this.link = link;
+        this.imageLink = imageLink;
+    }
+
+    @Override
+    public void process(Response response) {
+
+    }
+
+    @Override
+    public void initialize(OAuthRequest request) {
+        Document doc = new Document();
+
+        Element share = doc.newRootElement("share");
+
+        if(text != null) {
+            share.element("comment").text(text);
+        }
+        Element content = share.element("content");
+
+        if(title != null) {
+            content.element("title").text(title);
+        }
+
+        if(link != null) {
+            content.element("submitted-url").text(link);
+        }
+
+        if(imageLink != null) {
+            content.element("submitted-image-url").text(imageLink);
+        }
+
+        share.element("visibility").element("code").text("anyone");
+
+        String requestXML = "<?xml version="1.0" encoding="UTF-8" standalone="yes"?>" +
+            doc.toString();
+
+        request.addHeader("Content-Length", Integer.toString(requestXML.length()));
+        request.addHeader("Content-Type", "text/xml");
+        request.addPayload(requestXML);
+    }
+}
+
+This update is all about sending an xml with the status related information as a POST request to people/~/shares. e.g.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<share>
+  <comment>83% of employers will use social media to hire: 78% LinkedIn, 55% Facebook, 45% Twitter [SF Biz Times] http://bit.ly/cCpeOD</comment>
+  <content>
+	 <title>Survey: Social networks top hiring tool - San Francisco Business Times</title>
+	 <submitted-url>http://sanfrancisco.bizjournals.com/sanfrancisco/stories/2010/06/28/daily34.html</submitted-url>
+	 <submitted-image-url>http://images.bizjournals.com/travel/cityscapes/thumbs/sm_sanfrancisco.jpg</submitted-image-url>
+  </content>
+  <visibility>
+	 <code>anyone</code>
+  </visibility>
+</share>
+This example is from the linkedin Share page. We are using Tapestry’s own DOM classes to create the xml.
+
+Finally the component
+
+@Events( {OAuthConstants.CONNECTION_ESTABLISHED, OAuthConstants.CONNECTION_FAILED})
+public class LinkedinConnect implements ClientElement {
+    @Parameter(value = "prop:componentResources.id", defaultPrefix = BindingConstants.LITERAL, allowNull = false)
+    private String clientId;
+
+    private String assignedClientId;
+
+    @Inject
+    private JavaScriptSupport javaScriptSupport;
+
+    @Inject
+    private ComponentResources resources;
+
+    @Inject
+    private LinkedinService linkedinService;
+
+    @AfterRender
+    void addJavaScript() {
+        assignedClientId = javaScriptSupport.allocateClientId(clientId);
+    }
+
+    @OnEvent("connectToLinkedin")
+    URL getAuthorizationURL() throws MalformedURLException {
+        return new URL(linkedinService.getAuthorizationURL());
+    }
+
+    Object onAuthorize(
+        @RequestParameter(value = "oauth_verifier", allowBlank = true) final String verifier,
+        @RequestParameter(value = "oauth_token", allowBlank = true) String oAuthToken,
+        @RequestParameter(value = "denied", allowBlank = true) String denied) {
+
+        if(verifier != null) {
+            return accessGranted(oAuthToken, verifier);
+        } else {
+            return accessDenied(denied);
+        }
+    }
+
+    private Object accessGranted(String oAuthToken, String verifier) {
+        Token accessToken = linkedinService.requestAccessToken(oAuthToken, verifier);
+
+        CaptureResultCallback<Object> callback = new CaptureResultCallback<Object>();
+
+        boolean handled = resources.triggerEvent(OAuthConstants.CONNECTION_ESTABLISHED, new Object[] {
+            accessToken}, callback);
+
+        if(handled) {
+            return callback.getResult();
+        }
+
+        return null;
+    }
+
+    private Object accessDenied(String denied) {
+        CaptureResultCallback<Object> callback = new CaptureResultCallback<Object>();
+
+        boolean handled = resources.triggerEvent(OAuthConstants.CONNECTION_FAILED,
+            new Object[] {denied}, callback);
+
+        if(handled) {
+            return callback.getResult();
+        }
+
+        return null;
+    }
+
+
+    @Override
+    public String getClientId() {
+        return assignedClientId;
+    }
+}
+
+<t:container xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+
+    <a href='#' t:type='eventLink' t:event='connectToLinkedin'>
+        <t:body/>
+    </a>
+
+</t:container>
+It is almost a copy of the TwitterConnect. When the link is clicked, the event handler returns the authorization URL which redirects the browser to Linkedin authorization. After Linkedin has authorized, it redirects the browser to the callback URL(which is specified in the configuration) which is our onAuthorize() event handler. The event handler, based on the request parameters, decides which callback to call.
+
+Finally the module contribution
+
+public LinkedinService buildLinkedinService(ApplicationStateManager stateManager){
+        OAuthConfiguration configurer = new OAuthConfiguration("app_id",
+                 "secret",
+                 "http://localhost:9090/linkedin.linkedinconnect:authorize", null);
+
+        return new LinkedinServiceImpl(configurer, OAuthConstants.DEFAULT_LINKEDIN_API_PREFIX, stateManager);
+    }
+Using the component in a page is very similar to the previous one
+
+public class Linkedin {
+
+    @Inject
+    private LinkedinService linkedinService;
+
+    @SuppressWarnings("unused")
+    @Property
+    @Persist(PersistenceConstants.FLASH)
+    private String message;
+
+    @OnEvent(value = OAuthConstants.CONNECTION_ESTABLISHED)
+    void changeStatus(Token accessToken) {
+        linkedinService.send(new LinkedinStatusUpdate(accessToken, "Google", "Google", "http://www.google.com",
+            "http://www.google.co.in/intl/en_ALL/images/logos/images_logo_lg.gif"));
+        message = "Status Updated";
+    }
+
+    void onConnectionFailed(String denied) {
+        message = "Failed";
+    }
+
+}
+
+
+<html xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+    <body>
+
+        ${message}<br/>
+        <a t:id='linkedinConnect' t:type='linkedinConnect'>Connect to Linkedin</a>
+    
+    </body>
+
+</html>

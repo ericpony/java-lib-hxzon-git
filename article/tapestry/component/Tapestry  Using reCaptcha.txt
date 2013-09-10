@@ -1,0 +1,165 @@
+﻿Tapestry : Using reCaptcha
+
+http://tawus.wordpress.com/2011/10/14/tapestry-using-recaptcha/
+
+There is already Captcha support build-in for Tapestry5 but doing something from scratch is always fun in Tapestry. So in this post we are going to use reCaptcha with Tapestry5. There are two ways of integrating reCaptcha in your website. One way is to add it statically and other using Ajax. We are going to use the former case.
+
+Please go through the instructions here before proceeding.
+
+We first put the required static content in the form of a component
+
+<t:container xmlns:t='http://tapestry.apache.org/schema/tapestry_5_1_0.xsd'>
+    <script type="text/javascript"
+            src="http://www.google.com/recaptcha/api/challenge?k=${publicKey}">
+    </script>
+    <noscript>
+        <iframe src="http://www.google.com/recaptcha/api/noscript?k=${publicKey}"
+                height="300" width="500" frameborder="0"></iframe>
+        <br/>
+        <textarea name="recaptcha_challenge_field" rows="3" cols="40"></textarea>
+        <input type="hidden" name="recaptcha_response_field"
+               value="manual_challenge"/>
+    </noscript>
+</t:container>
+
+
+public class ReCaptcha {
+    @Parameter(defaultPrefix = BindingConstants.LITERAL, allowNull = false, required = true)
+    private String privateKey;
+
+    @Parameter(defaultPrefix = BindingConstants.LITERAL, allowNull = false, required = true)
+    @Property
+    private String publicKey;
+
+    @Parameter
+    private boolean valid;
+
+    @Parameter
+    private String error;
+
+    @Inject
+    private FormSupport formSupport;
+
+    @Inject
+    private ComponentResources resources;
+
+    @Inject
+    private Request request;
+
+    @Inject
+    private HttpServletRequest servletRequest;
+
+    private static final ComponentAction<ReCaptcha> PROCESS_SUBMISSION_ACTION = new
+        ProcessSubmissionAction();
+
+    private static final String RECAPTCHA_RESPONSE_FIELD = "recaptcha_response_field";
+
+    private static final String RECAPTCHA_CHALLENGE_FIELD = "recaptcha_challenge_field";
+
+    private static final String VERIFY_URL = "http://www.google.com/recaptcha/api/verify";
+
+    @SetupRender
+    void addProcessSubmissionAction() {
+        if(formSupport == null){
+           throw new RuntimeException(String.format(
+                 "Component %s must be enclosed by a Form component.",
+                    resources.getCompleteId()));
+        }
+
+        formSupport.store(this, PROCESS_SUBMISSION_ACTION);
+    }
+
+    private static class ProcessSubmissionAction implements ComponentAction<ReCaptcha> {
+        @Override
+        public void execute(ReCaptcha component) {
+            component.processSubmission();
+        }
+    }
+
+    private void processSubmission() {
+        String response = request.getParameter(RECAPTCHA_RESPONSE_FIELD);
+        String challenge = request.getParameter(RECAPTCHA_CHALLENGE_FIELD);
+
+        valid = verifyResponse(challenge, response, servletRequest.getRemoteAddr());
+    }
+
+    private boolean verifyResponse(String challenge, String response, String ip) {
+        Map<String, String> parameters = new HashMap<String, String>();
+
+        parameters.put("privatekey", privateKey);
+        parameters.put("challenge", challenge);
+        parameters.put("response", response);
+        parameters.put("remoteip", ip);
+        error = post(parameters);
+
+        return error == null;
+    }
+
+    public String post(Map<String, String> parameters) {
+        try {
+            HttpURLConnection connection = 
+                (HttpURLConnection) new URL(VERIFY_URL).openConnection();
+            String data = "";
+
+            for(String key : parameters.keySet()) {
+                data += key + "=" + parameters.get(key) + "&";
+            }
+
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+
+            PrintWriter writer = new PrintWriter(connection.getOutputStream());
+
+            writer.write(data);
+            writer.flush();
+
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(connection.getInputStream()));
+
+            String status = reader.readLine();
+            String error = null;
+
+            if("false".equalsIgnoreCase(status)) {
+                error = reader.readLine();
+            }
+            connection.disconnect();
+            
+            return error;
+
+
+        } catch(Exception ex) {
+            throw new RuntimeException("Could not post to : " + VERIFY_URL, ex);
+        }
+
+    }
+}
+
+The important thing here to notice is that we need to process the submitted values. For that we inject FormSupport and store a ComponentAction into it. This action is executed on submission. Our action(ProcessionSubmissionAction) just executesprocessSubmission() method which in turn gets the submitted values and sends them as a POST request to the verification url.
+
+The verification url returns first line as “true” or “false” depending upon whether the match was found or not. The second line is an error in case there is a mismatch.
+
+The private key and public key are passed as arguments. Alternatively these can be set as Factory Defaults.
+
+Usage is simple. Include it in your template inside a form.
+
+<form t:type='form' t:id='myForm'>
+   ....   
+
+   <div t:type='recaptcha' publickey='my_public_key' 
+        privatekey='my_private_key' valid='captchaValid'></div>
+
+   ....
+</form>
+
+and then validate in your class.
+
+@Property
+private boolean captchaValid;
+
+OnEvent(value = "validate", component = "myForm")
+void validate(){
+   if(!captchaValid){
+      throw ValidationException("Captcha did not match");
+   }
+}

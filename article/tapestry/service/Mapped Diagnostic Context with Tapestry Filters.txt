@@ -1,0 +1,206 @@
+﻿Mapped Diagnostic Context with Tapestry Filters
+学中注释。
+使用applicationStateManager和组件请求过滤器，来将用户信息放入日志上下文中。
+
+Posted on Dienstag, 29th Dezember, 2009
+
+http://blog.tapestry5.de/index.php/2009/12/29/mapped-diagnostic-context-with-tapestry-filters/
+
+
+In this 《post（http://tapestryjava.blogspot.com/2009/12/securing-tapestry-pages-with.html）》 Howard describes how you can handle security in your Tapestry app. The approach is based on Tapestry’s request processing mechanism that allows you to extend the framework by your own contributions. In his post Howard contributes a filter for the ComponentRequestHandler pipeline to prevent any access to particular pages unless the user is logged in. For more details read Howard’s post.
+
+
+
+Based on Howard’s post I would like to show you how to differentiate the logging output of one client from another. In web applications multiple clients request the same pages, components and services simultaneously. This fact leads to tons of logging output that is unusable because you can’t see which logging output belongs to which user. A simple technique called Mapped Diagnostic Contexts (MDC) can help you to stamp each logging output. The idea is to put contextual information into your logger and is described here.
+
+你无法分辨哪个日志属于哪个用户。MDC技术能帮你
+
+Mapped Diagnostic Context is a map which is managed on a per thread basis. In log4j or slf4j you can put key-value pairs into the context. These pairs will be used by the logging framework when the logging output is generated. Let’s have a look at a simple log4j configuration. The most interesting part is %X{username}. The %X conversion specifier tells log4j that the contextual information username should be put into the logging output. When generating output the logger will look for a value the context under this key. If available the value will apear in the output.
+
+MDC是一个映射。在log4j或slf4j，你能添加一个键值对到上下文中。让我们看一个简单的log4j配置文件，最关键部分是%X{username}。
+
+01
+<?xml version="1.0" encoding="UTF-8" ?>
+02
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+03
+ 
+04
+<log4j:configuration>
+05
+   <appender name="console">
+06
+      <param name="Threshold" value="INFO"/>
+07
+      <layout>
+08
+         <param name="ConversionPattern"
+09
+            value="%d{dd.MM.yyyy HH:mm:ss,SSS} [%X{username}] # %-5p # %c # [%C{1}.%M] # %m%n"/>
+10
+      </layout>
+11
+   </appender>
+12
+ 
+13
+   <root>
+14
+      <appender-ref ref="console"/>
+15
+   </root>
+16
+ 
+17
+</log4j:configuration>
+
+
+Now let’s put the name of the logged in user into the MDC. A ComponentRequestFilter is a part of the Tapestry’s request processing mechanism and that’s why a good place to provide the contextual information.  The following filter along with a bunch of other filters is responsible for handling the page requests or component events. Every time a page is rendered or a component event is triggered our MDCFilter will put the name of the logged in user into the context before delegating to the next handler in the pipeline. After the invocation of the next handler is finished the name of the user is removed from the context.
+
+组件请求过滤器是我们放入上下文信息的好地方。在页面渲染或组件事件发生时，我们会将登陆的用户放到上下文中，然后进入管道中的下一个处理器，当下一个处理器完成工作后，我们将用户信息移除。
+
+01
+public class MDCFilter implements ComponentRequestFilter {
+02
+ 
+03
+    static final String MDC_KEY = "username";
+04
+    private final ApplicationStateManager applicationStateManager;
+05
+ 
+06
+    public MDCFilter(final ApplicationStateManager manager) {
+07
+        this.applicationStateManager = manager;
+08
+    }
+09
+ 
+10
+    public void handleComponentEvent(
+11
+        ComponentEventRequestParameters parameters,
+12
+        ComponentRequestHandler handler) throws IOException {
+13
+        put();
+14
+ 
+15
+        try {
+16
+            handler.handleComponentEvent(parameters);
+17
+        } finally {
+18
+            remove();
+19
+        }
+20
+    }
+21
+ 
+22
+    public void handlePageRender(
+23
+        PageRenderRequestParameters parameters,
+24
+        ComponentRequestHandler handler) throws IOException {
+25
+        put();
+26
+ 
+27
+        try {
+28
+            handler.handlePageRender(parameters);
+29
+        } finally {
+30
+            remove();
+31
+        }
+32
+ 
+33
+    }
+34
+ 
+35
+    private void put() {
+36
+        User user = this.applicationStateManager
+37
+                            .getIfExists(User.class);
+38
+ 
+39
+        if (user != null) {
+40
+            MDC.put(MDC_KEY, user.getUsername());
+41
+        }
+42
+    }
+43
+ 
+44
+    private void remove() {
+45
+        MDC.remove(MDC_KEY);
+46
+    }
+47
+ 
+48
+}
+
+
+The last part of this is to plugin into the request processing mechanism of Tapestry. This is done by a contribution to the ComponentRequestHandler service’s configuration.
+
+注册我们的组件请求处理器。
+
+1
+public class AppModule {
+2
+   public static void contributeComponentRequestHandler(
+3
+         OrderedConfiguration configuration) {
+4
+      configuration.addInstance("MDC", MDCFilter.class);
+5
+   }
+6
+}
+
+If you are using Howard’s ComponentRequestFilter to check if the user is logged in you should place the MDCFilter after the RequiresLoginFilter. For this purpose we pass the order constraint after:RequiresLogin into the third parameter of the addInstance() method. This constraint is used to order the object relative to other contributed objects. This way MDCFilter will be executed after the RequiresLoginFilter.
+
+
+
+1
+public class AppModule {
+2
+   public static void contributeComponentRequestHandler(
+3
+         OrderedConfiguration configuration) {
+4
+      configuration.addInstance(
+5
+            "MDC", MDCFilter.class, "after:RequiresLogin"");
+6
+   }
+7
+}
+
+
+That’s it. When a user is logged in you will see logging output like the following one. If the user is not there you will see just [] instead of [bart.simpson].
+
+
+1
+28.12.2009 22:55:41,066 [bart.simpson] # INFO  # foo.bar.pages.MyPage # [MyPage.onSuccess] # Bla bla bla
+
+
+It is worth to mention that ComponentRequestHandler pipeline is not the only one place to plug into the request processing mechanism. You can also contribute a RequestFilter to the RequestHandler pipeline. Check out this diagramm for more details.
+
+你也可以使用请求过滤器来完成相同的任务。

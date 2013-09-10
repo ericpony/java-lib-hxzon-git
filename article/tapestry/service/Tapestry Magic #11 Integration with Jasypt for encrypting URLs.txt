@@ -1,0 +1,252 @@
+﻿Tapestry Magic #11: Integration with Jasypt for encrypting URLs
+
+http://tawus.wordpress.com/2011/05/06/tapestry-magic-11-integration-with-jasypt-for-encrypting-urls/
+
+Jasypt is an Java encryption library which can be used for encrypting text, passwords, numbers, binaries etc. We, in this post, will use this library for encrypting Tapestry URLs. Now, why would you want to hide those beautiful tapestry URLs. Imagine a banking website where sensitive information like account numbers are passed as parameters to pages. Won’t it be dangerous to show this information in the browser’s address bar. By encrypting URLs you can hide this information and make your website more secure.
+
+It appeared to be very easy till I actually started implementing it and realized that Tapestry does not directly support it but with a bit of tweaking here and there it works like a charm.
+
+We start with our encryption service
+
+public interface URLEncryptionService {
+   String encrypt(String url);
+   String decrypt(String url);
+}
+and its implementation
+
+public class JasyptURLEncryptionService implements URLEncryptionService {
+   private StandardPBEStringEncryptor encryptor;
+   private String prefix;
+
+   public JasyptURLEncryptionService(
+         List<JasyptURLEncryptionConfigurator> configuration, 
+         @Symbol(URLEncryptionConstants.PREFIX)String prefix) {
+      encryptor = new StandardPBEStringEncryptor();
+      for (JasyptURLEncryptionConfigurator configurator : configuration) {
+         configurator.configure(encryptor);
+      }
+      this.prefix = prefix;
+   }
+
+   public String decrypt(String url) {
+      if(url == null || url.trim().equals("/") || !url.startsWith(prefix)){
+         return url;
+      }
+      
+      try {
+         return new String(encryptor.decrypt(url.substring(prefix.length())));
+      } catch (Exception  e) {
+         throw new RuntimeException(e);
+      }
+   }
+
+   public String encrypt(String url) {      
+      if(url == null || url.trim().equals("/")){
+         return url;
+      }
+
+      try {
+         return prefix + new String(encryptor.encrypt(url));
+      } catch (Exception e) {
+         throw new RuntimeException(e);
+      }
+   }
+}
+
+The encrypt() method ignores the welcome page request and for rest of the requests, encrypts the URL and then prepends a configurable prefix to it. Thedecrypt() method again ignores the welcome page request or any request not starting with the prefix and for rest of the requests decrypts the URL. The service is configured using JasyptURLEncryptionConfigurator.
+
+public interface JasyptURLEncryptionConfigurator {
+   void configure(StandardPBEStringEncryptor encryptor);
+}
+Now comes the real magic. The standard way of URL-rewriting is by usingLinkTransformer API. LinkTransformer is used to decorateComponentEventLinkEncoder using LinkTransformerInterceptor.LinkTransformer further calls two services, PageRenderLinkTransformer andComponentEventLinkTransformer depending on the type of request, page or component-event. Both of these services are based on Chain-Of-Responsibility pattern. So, all we have to do is implement the corresponding interfaces and contribute them to the services. The interfaces are
+
+public interface PageRenderLinkTransformer {
+    Link transformPageRenderLink(Link defaultLink, PageRenderRequestParameters parameters);
+    PageRenderRequestParameters decodePageRenderRequest(Request request);
+}
+
+public interface ComponentEventLinkTransformer {
+    Link transformComponentEventLink(Link defaultLink, ComponentEventRequestParameters parameters);
+    ComponentEventRequestParameters decodeComponentEventRequest(Request request);
+}
+
+Both interfaces are similar with one method for converting request parameters to a URL and another for converting URLs back to request parameters. The trick is to find a way to intercept these methods with our encryption/decryption methods. We will delegate the conversion to ComponentEventLinkEncoder. Remember this service is advised by LinkTransformer, so if we call it directly we will get an advised service which will be calling us back and hence a recursion. In order to avoid that, we will askObjectLocator to create it for us using autobuild() method. This method resolves the dependencies and provides us with the un-advised version of the service. (Had a question regarding this in the mailing list today).
+
+Now, to encrypt, we will get a link from ComponentEventLinkEncoder and then usecopyWithBaseURL() to encrypt and generate the new URL. For decrypting we create a simple wrapper over Request service and delegate all calls to it except forgetPath() which we use to decrypt the URL.
+
+public class EncryptionLinkTransformer implements PageRenderLinkTransformer,
+      ComponentEventLinkTransformer {
+
+   private ComponentEventLinkEncoder componentEventLinkEncoder;
+   private URLEncryptionService encryptionService;
+
+   public EncryptionLinkTransformer(
+         ObjectLocator locator,
+         URLEncryptionService encryptionService,
+         @Symbol(SymbolConstants.ENCODE_LOCALE_INTO_PATH) boolean encodeLocaleIntoPath) {
+      componentEventLinkEncoder = locator.autobuild(ComponentEventLinkEncoderImpl.class);
+      this.encryptionService = encryptionService;
+   }
+
+   public PageRenderRequestParameters decodePageRenderRequest(Request request) {
+      return componentEventLinkEncoder
+            .decodePageRenderRequest(new EncryptedRequest(request,
+                  encryptionService));
+   }
+
+   public Link transformPageRenderLink(Link defaultLink,
+         PageRenderRequestParameters parameters) {
+      Link link = componentEventLinkEncoder.createPageRenderLink(parameters);
+      Link newLink = link.copyWithBasePath(encryptionService.encrypt(link
+            .getBasePath()));
+      return newLink;
+   }
+
+   public ComponentEventRequestParameters decodeComponentEventRequest(
+         Request request) {
+      return componentEventLinkEncoder
+            .decodeComponentEventRequest(new EncryptedRequest(request,
+                  encryptionService));
+   }
+
+   public Link transformComponentEventLink(Link defaultLink,
+         ComponentEventRequestParameters parameters) {
+      Link link = componentEventLinkEncoder.createComponentEventLink(
+            parameters, false);
+      Link newLink = link.copyWithBasePath(encryptionService.encrypt(link
+            .getBasePath()));
+      return newLink;
+   }
+
+}
+
+The EncrpytedRequest is
+
+public class EncryptedRequest implements Request {
+   
+   private Request delegate;
+   private URLEncryptionService encryptionService;
+
+   public EncryptedRequest(Request delegate, URLEncryptionService encryptionService){
+      this.delegate = delegate;
+      this.encryptionService = encryptionService;
+   }
+
+   public Object getAttribute(String name) {
+      return delegate.getAttribute(name);
+   }
+
+   public String getContextPath() {
+      return delegate.getContextPath();
+   }
+
+   public long getDateHeader(String name) {
+      return delegate.getDateHeader(name);
+   }
+
+   public String getHeader(String name) {
+      return delegate.getHeader(name);
+   }
+
+   public List<String> getHeaderNames() {
+      return delegate.getHeaderNames();
+   }
+
+   public int getLocalPort() {
+      return delegate.getLocalPort();
+   }
+
+   public Locale getLocale() {
+      return delegate.getLocale();
+   }
+
+   public String getMethod() {
+      return delegate.getMethod();
+   }
+
+   public String getParameter(String name) {
+      return delegate.getParameter(name);
+   }
+
+   public List<String> getParameterNames() {
+      return delegate.getParameterNames();
+   }
+
+   public String[] getParameters(String name) {
+      return delegate.getParameters(name);
+   }
+
+   public String getPath() {
+      return encryptionService.decrypt(delegate.getPath());
+   }
+
+   public String getServerName() {
+      return delegate.getServerName();
+   }
+
+   public int getServerPort() {
+      return delegate.getServerPort();
+   }
+
+   public Session getSession(boolean create) {
+      return delegate.getSession(create);
+   }
+
+   public boolean isRequestedSessionIdValid() {
+      return delegate.isRequestedSessionIdValid();
+   }
+
+   public boolean isSecure() {
+      return delegate.isSecure();
+   }
+
+   public boolean isXHR() {
+      return delegate.isXHR();
+   }
+
+   public void setAttribute(String name, Object value) {
+     delegate.setAttribute(name, value);
+   }
+
+}
+And finally the contributions
+
+     
+   public static void bind(ServiceBinder binder){
+      binder.bind(URLEncryptionService.class, JasyptURLEncryptionService.class);
+   }
+
+   public void contributeURLEncryptionService(
+         OrderedConfiguration<JasyptURLEncryptionConfigurator> configurators) {
+      configurators.add("default", new JasyptURLEncryptionConfigurator() {
+
+         public void configure(StandardPBEStringEncryptor encryptor) {
+            encryptor.setAlgorithm("PBEWithMD5AndDES");
+            encryptor.setPassword("jasypt");
+            FixedStringSaltGenerator generator = new FixedStringSaltGenerator();
+            generator.setSalt("tapestry5");
+            encryptor.setSaltGenerator(generator);
+            encryptor.setStringOutputType("hexadecimal");
+         }
+      });
+   }
+      
+   @Contribute(PageRenderLinkTransformer.class)
+   public void contributePageRenderLinkTransformer(
+         OrderedConfiguration<PageRenderLinkTransformer> contribution) {
+      contribution.addInstance("jasyptURLLinkTransformer",
+            EncryptionLinkTransformer.class);
+   }
+   
+   @Contribute(ComponentEventLinkTransformer.class)
+   public void contributeComponentEventLinkTransformer(
+         OrderedConfiguration<PageRenderLinkTransformer> contribution) {
+      contribution.addInstance("jasyptURLLinkTransformer",
+            EncryptionLinkTransformer.class);
+   }
+   
+   public void contributeFactoryDefaults(MappedConfiguration<String, String> configuration) {
+      configuration.add(URLEncryptionConstants.PREFIX, "/secure/");
+   }
+
+That is it!!. I learned to integrate it before I could spell it (Jaypt.. Japyt.. Jasypt!)

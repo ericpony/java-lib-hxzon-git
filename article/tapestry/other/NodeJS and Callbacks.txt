@@ -1,0 +1,43 @@
+﻿NodeJS and Callbacks
+学中注释。
+
+
+作者：Howard Lewis Ship | 来自：Tapestry Central
+
+http://feedproxy.google.com/~r/TapestryCentral/~3/3uVLfmvsxlg/nodejs-and-callbacks.html
+
+One of the fears people have with Node is the callback model. Node operates as a single thread: you must never do any work, especially and I/O, that blocks because it will block the entire process. Instead, everything is organized around callbacks: you ask an API to do some work, and it invokes a callback function you provide when it is done, at some later time. There are some significant tradeoffs here ... on the one hand, the traditional Java Servlet API approach involves multiple threads and mutable state in those threads, and often those threads are in a blocked state while I/O (typically, communicating with a database) is in progress. However, multiple threads and mutable data means locks, deadlocks, and all the other unwanted complexity that comes with it.
+
+所有的东西都是回调。
+但是，多线程和可变数据意味着锁，死锁，这些带来了复杂性。
+
+By contrast, Node is a single thread, and as long as you play by the rules, all the complexity of dealing with mutable data goes away. You don't, for example, save data to your database, wait for it to complete, then return a status message over the wire: you save data to your database, passing a callback. Some time later, when the data is actually saved, your callback is invoked, and which point you can return your status message. It's certainly a trade-off: some of the local code is more complicated and bit harder to grasp, but the overall architecture can be lightening fast, stable, and scalable ... as long as everyone plays by the rules.
+
+Node是单线程的，所以维护可变数据的复杂性不存在了。
+这是一个典型的交易。
+
+Still the callback approach makes people nervous, because deeply nested callbacks can be hard to follow. I've seen this when teaching Ajax as part of my Tapestry Workshop.
+
+但是嵌套很深的回调很难理解它的执行流程。
+
+I'm just getting started with Node, but I'm building an application that is very client-centered; the Node server mostly exposes a stateless, restful API. In that model, the Node server doesn't do anything too complicated that requires nested callbacks, and that's nice. You basically figure out a single operation based on the URL and query parameters, execute some logic, and have the callback send a response.
+
+There's still a few places where you might need an extra level of callbacks. For example, I have a (temporary) API for creating a bunch of test data, at the URL /api/create-test-data. I want to create 100 new Quiz objects in the database, then once they are all created, return a list of all the Quiz objects in the database. Here's the code:
+
+（缺代码？）
+
+It should be pretty easy to pick out the logic for creating test data at the end. This is normal Node JavaScript but if it looks a little odd, it's because it's actually decompiled CoffeeScript. For me, the first rule of coding Node is always code in CoffeeScript! In its original form, the nesting of the callbacks is a bit more palatable（爽口）:
+
+What you have there is a count, remaining, and a single callback that is invoked for each Quiz object that is saved. When that count hits zero (we only expect each callback to be invoked once), it is safe to query the database and, in the callback from that query, send a final response. Notice the slightly odd structure, where we tend to define the final step (doing the final query and sending the response) first, then layer on top of that the code that does the work of adding Quiz objects, with the callback that figures out when all the objects have been created.
+
+The CoffeeScript makes this a bit easier to follow, but between the ordering of the code, and the three levels of callbacks, it is far from perfect, so I thought I'd come up with a simple solution for managing things more sensibly. Note that I'm 100% certain that this issue has been tackled by any number of developers previously ... I'm using the excuse of getting comfortable with Node and CoffeeScript as an excuse to embrace some Not Invented Here syndrome. Here's my first pass:
+
+The Flow object is a kind of factory for callback wrappers; you pass it a callback and it returns a new callback that you can pass to the other APIs. Once all callbacks that have been added have been invoked, the join callbacks are invoked after each of the other callbacks have been invoked. In other words, the callbacks are invoked in parallel (well, at least, in no particular order), and the join callback is invoked only after all the other callbacks have been invoked.
+
+一个Flow对象是一种回调包装器的工厂。你输入一个回调函数，它返回一个新的回调函数，可以让你传递给其它api。一旦你加入的所有函数都被调用，在其它回调函数被调用时，join回调函数会被调用。也就是说，回调函数会被并行调用（至少不会按特定顺序），而join回调函数会在其它所有回调函数执行后才执行。
+
+In practice, this simplifies the code quite a bit:
+
+So instead of quiz.save (err) -> ... it becomes quiz.save flow.add (err) -> ..., or in straight JavaScript:quiz.save(flow.add(function(err) { ... })).
+
+So things are fun; I'm actually enjoying Node and CoffeeScript at least as much as I enjoy Clojure; which is nice because it's been years (if ever) since I've enjoyed the actual coding in Java (though I've liked the results of my coding, of course).

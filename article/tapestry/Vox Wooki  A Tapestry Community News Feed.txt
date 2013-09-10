@@ -1,0 +1,53 @@
+﻿Vox Wooki : A Tapestry Community News Feed
+
+
+作者：Christophe Cordenier | 来自：spread the source
+
+http://spreadthesource.com/2010/06/vox-wooki-a-tapestry-community-news-feed/
+
+Tapestry community has been quite active recently with many announcements. Here is a focus on what’s new since the last three months:
+
+Contributions
+
+Tynamo guys are very actives, they provided new releases for two of their contributions :
+
+tapestry-resteasy 0.2.0 offers a convenient way to use JBoss Resteasy inside a Tapestry application
+(http://tynamo.org/tapestry-resteasy+guide)
+
+tapestry-model 0.0.2 for CRUD application development
+… and a brand new module to send alerts via email ‘if something happens to your parent process’
+(http://tynamo.org/tapestry-model+guide)
+
+tapestry-watchdog-0.0.1 (http://tynamo.org/tapestry-watchdog+guide)
+
+Two testing frameworks announced in new version :
+
+Spock Team has released a version 0.4 of Spock Java/Groovy testing framework (http://spockframework.org/) with support for Tapestry Injection annotations
+
+Tapestry Testify (http://tapestry.formos.com/projects/tapestry-testify/)  is now available in version 1.0.2 and the related Tapestry XPath project is now available in v1.0.1
+
+The complete and so useful Tapestry JumpStart (http://jumpstart.doublenegative.com.au/home.html)  is now available in version 4.9
+
+From our side, GOT5 a.k.a. “Gang Of Tapestry 5″ , a new group of Tapestry developers where we (Christophe and Robin) belong too. In fact this group is the hat we are going to wear when we will publish Open Source content from work made for our employer. Anyway we released under GOT5 hat something really awesome:
+
+tapestry5-jquery (http://github.com/got5/tapestry5-jquery)  allows to get completely rid of prototype API and use jQuery instead, this project has started to be used by the community and we already have some feedback on it to improve and complete it
+
+Also, as you may have noticed, wooki has been completely refactored during the last two months. One main objective of this was to extract most of the reusable pieces of wooki into third-party contributions under spreadthesource account. Here is the list of libraries that has been extracted from wooki’s experience.
+
+This two contributions are used for a while now on wooki and have been confirmed to be really useful with the experience.
+
+tapestry5-rome  (http://github.com/spreadthesource/tapestry5-rome )
+
+tapestry5-googleanalytics (http://github.com/spreadthesource/tapestry5-googleanalytics)  
+One of the most important but still in progress is a tool that will allow to easily maintain your application database schema accross version of your application. It will provide a full API built on top of Hibernate tools to create/update your database schema, insert/delete datas…
+
+tapestry5-db-migration  (http://github.com/spreadthesource/tapestry5-db-migrations) 
+Finally we have a two-phase tapestry launcher and a contribution that allows tapestry-hibernate to work with Spring Hibernate Transaction Manager.
+
+tapestry5-installer (http://github.com/spreadthesource/tapestry5-installer)
+
+
+tapestry5-spring-tx (http://github.com/spreadthesource/tapestry5-spring-tx) 
+We expect to provide stable releases for all of these with the next wooki’s version.
+
+Thanks for reading.

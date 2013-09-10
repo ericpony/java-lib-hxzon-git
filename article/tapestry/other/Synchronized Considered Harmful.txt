@@ -1,0 +1,36 @@
+﻿Synchronized Considered Harmful
+
+作者：Howard Lewis Ship | 来自：Tapestry Central
+http://feedproxy.google.com/~r/TapestryCentral/~3/1P5p4cIAfgk/synchronized-considered-harmful.html
+
+New flash: concurrency is hard. Any time you have mutable data and multiple threads, you are just asking for abuse, and synchronized is simply not going to cut it.
+
+I was recently contacted by a client who was load testing their Tapestry 5.3.3 application; they were using Tomcat 6.0.32 with 500 worker threads, on a pretty beefy machine: Intel Xeon X7460 @ 2.66Ghz, OpenJDK 64-Bit Server VM (14.0-b16, mixed mode). That's a machine with six cores, and 16 MB of L2 cache.
+
+For all that power, they were tapping out at 450 requests per second. That's not very good when you have 500 worker threads ... it means that you've purchased memory and processing power just to see all those worker threads block, and you get to see your CPU utilization stay low. When synchronization is done properly, increasing the load on the server should push CPU utilization to 100%, and response time should be close to linear with load (that is to say, all the threads should be equally sharing the available processing resources) until the hard limit is reached.
+
+Fortunately, these people approached me not with a vague performance complaint, but with a detailed listing of thread contention hotspots.
+
+The goal with Tapestry has always been to build the code right initially, and optimize the code later if needed. I've gone through several cycles of this over the past couple of years, optimizing page construction time, or memory usage, or throughput performance (as here). In general, I follow Brian Goetz's advice: write simple, clean, code and let the compiler and Hotspot figure out the rest.
+
+Another piece of advice from Brian is that "uncontested synchronized calls are very cheap". Many of the hotspots located by my client were, in fact, simple synchronized methods that did some lazy initialization. Here's an example:
+
+In this example, getting the messages can be relatively time consuming and expensive, and is often not necessary at all. That is, in most instances of the class, the getMessages() method is never invoked. There were a bunch of similar examples of optional things that are often not needed ... but can be heavily used in the cases where they are used.
+
+It turns out that "uncontested" really means virtually no thread contention whatsoever. I chatted with Brian at the Hacker Bed & Breakfast about this, and he explained that you can quickly go from "extremely cheap" to "asymptotically expensive" when there's any potential for contention. The synchronized keyword is very limited in one area: when exiting a synchronized block, all threads that are waiting for that lock must be unblocked, but only one of those threads gets to take the lock; all the others see that the lock is taken and go back to the blocked state. That's not just a lot of wasted processing cycles: often the context switch to unblock a thread also involves paging memory off the disk, and that's very, very, expensive.
+
+Enter ReentrantReadWriteLock: this is an alternative that allows any number of readers to share a lock, but only a single writer. When a thread attempts to acquire the write lock, the thread blocks until all reader threads have released the read lock. The cost of managing the ReentrantReadWriteLock's state is somewhat higher than synchronized, but has the huge advantage of letting multiple reader threads operate simultaneously. That means much, much higher throughput.
+
+In practice, this means you must acquire the shared read lock to look at a field, and acquire the write lock in order to change the field.
+
+ReentrantReadWriteLock is smart about only waking the right thread or threads when either the read lock or the write lock is released. You don't see the same thrash you would with synchronized: if a thread is waiting for the write lock, and another thread releases it, ReentrantReadWriteLock will (likely) just unblock the one waiting thread.
+
+Using synchronized is easy; with an explicit ReentrantReadWriteLock there's a lot more code to manage:
+
+I like to avoid nested try ... finally blocks, so I broke it out into seperate methods.
+
+Notice the "lock dance": it is not possible to acquire the write lock if any thread, even the current thread, has the read lock. This opens up a tiny window where some other thread might pop in, grab the write lock and initialize the messages field. That's why it is desirable to double check, once the write lock has been acquired, that the work has not already been done.
+
+Also notice that things aren't quite symmetrical: with ReentrantReadWriteLock it is allowable for the current thread to acquire the read lock before releasing the write lock. This helps to minimize context switches when the write lock is released, though it isn't expressly necessary.
+
+Is the conversion effort worth it? Well, so far, simply by converting synchronized to ReentrantReadWriteLock, and adding a couple of additional caches (also using ReentrantReadWriteLock), we've seen some significant improvements; from 450 req/sec to 2000 req/sec ... and there's still a few minor hotspots to address. I think that's been worth a few hours of work!

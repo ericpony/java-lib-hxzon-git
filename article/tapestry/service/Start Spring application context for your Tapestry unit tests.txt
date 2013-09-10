@@ -1,0 +1,60 @@
+﻿Start Spring application context for your Tapestry unit tests
+学中注释。
+
+作者：Christophe Cordenier | 来自：spread the source
+2010/08/02 01:55
+http://spreadthesource.com/2010/08/start-spring-application-context-for-your-tapestry-unit-tests/
+
+
+
+Tapestry has a powerful tool to unit test your pages and services, but how to deal with it when your pages and services use Spring beans ?
+
+Tapestry PageTester can be extended like the TapestryFilter to provide your own ServiceModuleDef classes. The tapestry-spring contribution already provides the one needed to load a Spring application context. Then, loading Spring for your unit tests will be as simple as extended the existing PageTester and provide the Tapestry Spring Module Definition class.
+
+tapestry的页面测试类能被继承，提供自己的服务模块定义。tapestry-spring已经提供了加载spring应用上下文的功能。
+
+Also, because this module definition uses the servlet application context to get the configuration files location, we will have to mock it. Let’s use Spring MockServletContext for this.
+
+Update your maven dependencies to add spring web mock objects
+
+  <dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-test</artifactId>
+    <version>${spring-version}</version>
+  </dependency>
+  
+Extend Tapestry PageTester, adapt the code below to your needs if you want to provide mock versions of your spring beans or make it more configurable
+
+继承PageTester
+
+public class WookiPageTester extends PageTester
+{
+
+ private MockServletContext servletContext;
+
+ public WookiPageTester(String appPackage, String appName, String contextPath,
+ Class... moduleClasses)
+ {
+   super(appPackage, appName, contextPath, moduleClasses);
+   Registry registry = this.getRegistry();
+   // Set Tapestry registry in mock servlet context
+   servletContext.setAttribute(TapestryFilter.REGISTRY_CONTEXT_NAME, registry);
+ }
+
+ public WookiPageTester(String appPackage, String appName)
+ {
+   super(appPackage, appName);
+ }
+
+ @Override
+ protected ModuleDef[] provideExtraModuleDefs()
+ {
+   // Set spring configuration files location
+   servletContext = new MockServletContext();
+   servletContext.addInitParameter("contextConfigLocation", "classpath*:mock-applicationContext.xml");
+   return new ModuleDef[] { new SpringModuleDef(servletContext) };
+ }
+
+}
+
+Thanks for reading !

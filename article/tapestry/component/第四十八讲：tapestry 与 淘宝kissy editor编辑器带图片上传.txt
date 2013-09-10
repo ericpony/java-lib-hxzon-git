@@ -1,0 +1,471 @@
+﻿第四十八讲：tapestry 与 淘宝kissy editor编辑器带图片上传
+作者：flywind   发布时间：2012-03-02 16:15:36
+http://flywind.org/technologydetail/105
+
+tapestry没有富文本编辑器组件，就是官方推荐的easyfck也是鸡肋，上传图片经常出错，浏览器兼容性也不好！最让人难受的是版本兼容性太差！！
+ 
+因公司与淘宝大学有合作，在做淘宝大学平台的时候，了解了下kissy editor个人感觉挺不错的，花了点时间把它整合到tapestry中，并做了图片上传功能。点击下载kissy editor压缩版(http://flywind.org/uploadImages/other/build.zip).
+
+下载之后解压，把build放到webapp/assets/目录下面。之后就看下面源码吧!
+ 
+最后效果如图：
+
+http://flywind.org/uploadImages/technology/20120302172419_1330680259500535.jpg
+
+代码如下：
+
+KissyEditor.java
+
+ /**
+ * 项目名称：TapestryStart
+ * 开发模式：Maven+Tapestry5.x+Tapestry-hibernate+Mysql
+ * 网址：http://www.flywind.org
+ * 版本：1.0
+ * 编写：飞风
+ * 时间：2012-02-29
+ */
+package com.tapestry.app.pages;
+ 
+import org.apache.tapestry5.annotations.Import;
+import org.apache.tapestry5.annotations.PageActivationContext;
+import org.apache.tapestry5.annotations.Persist;
+import org.apache.tapestry5.annotations.Property;
+import org.apache.tapestry5.ioc.annotations.Inject;
+import org.apache.tapestry5.services.javascript.JavaScriptSupport;
+ 
+@Import(library = { "context:assets/build/kissy-min.js",
+"context:assets/build/uibase/uibase-pkg-min.js",
+"context:assets/build/dd/dd-pkg-min.js",
+"context:assets/build/overlay/overlay-pkg-min.js",
+"context:assets/build/editor-all-pkg-min.js",
+"context:assets/build/biz/ext/editor-plugin-pkg-min.js",
+"context:assets/build/TEstart.js"})
+public class KissyEditor {
+ 
+@Inject
+private JavaScriptSupport javaScriptSupport;
+ 
+@Property
+@Persist
+private String content;
+ 
+/*这个eid是传给上传请求页面的，当多个文本编辑器同时使用一个上传请求时
+*通过这个值的设置可以区别他们是那个文本编辑器的请求
+*这里让它上传图片到work目录下
+**/ 
+@PageActivationContext
+private static String eid = "work";
+ 
+void afterRender() {
+javaScriptSupport.addScript("start('" + eid + "');");
+}
+ 
+void onSuccess(){
+ 
+}
+}
+ 
+ 
+KissyEditor.tml
+
+<html t:type="layout" title="tapestryStart Index"  t:sidebarTitle="Framework Version" 
+xmlns:t="http://tapestry.apache.org/schema/tapestry_5_3.xsd" xmlns:p="tapestry:parameter">
+
+<link href="${context:assets/build/theme/base-min.css}" rel="stylesheet"/>
+<link href="${context:assets/build/theme/cool/editor-pkg-sprite-min.css}" id="cssLink" rel="stylesheet"/>
+
+<t:form>
+	<t:textarea t:id="editor" tabindex="0" value="content" style="height:260px; width:100%"></t:textarea>
+	<input type="submit" value="提交"/>
+</t:form>
+
+<t:OutputRaw value="content"></t:OutputRaw>
+</html>
+
+
+
+KissyEditorUploadHander.java
+
+/**
+ * 项目名称：TapestryStart
+ * 开发模式：Maven+Tapestry5.x+Tapestry-hibernate+Mysql
+ * 网址：http://www.flywind.org
+ * 版本：1.0
+ * 编写：飞风
+ * 时间：2012-02-29
+ */
+package com.tapestry.app.pages;
+ 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+ 
+import javax.servlet.http.HttpServletRequest;
+ 
+import org.apache.tapestry5.annotations.Property;
+import org.apache.tapestry5.ioc.annotations.Inject;
+import org.apache.tapestry5.json.JSONObject;
+import org.apache.tapestry5.services.ApplicationGlobals;
+import org.apache.tapestry5.services.Context;
+import org.apache.tapestry5.services.RequestGlobals;
+import org.apache.tapestry5.upload.services.MultipartDecoder;
+import org.apache.tapestry5.upload.services.UploadedFile;
+ 
+import com.tapestry.app.util.UiUtils;
+ 
+ 
+public class KissyEditorUploadHander {
+
+@SuppressWarnings("unused")
+@Inject
+private Context context;
+ 
+private String outUrl; 
+ 
+@Inject
+private ApplicationGlobals applicationGlobals;
+ 
+@Inject
+private RequestGlobals requestGlobals;
+ 
+@SuppressWarnings("unused")
+@Property
+private UploadedFile file;
+ 
+@Inject
+private MultipartDecoder decoder;
+ 
+void onActivate(String eid) throws Exception {
+ 
+	UploadedFile file = decoder.getFileUpload("Filedata");
+ 
+	// 文件保存目录路径
+	String savePath = applicationGlobals.getServletContext().getRealPath("/uploadImages/")+ "\\";
+ 
+	// 文件保存目录UR
+	String saveUrl = getRequest().getContextPath() + "/uploadImages/";
+ 
+	//最大文件大小
+	long maxSize = 1048576;//1M
+ 
+	// 检查目录
+	File uploadDir = new File(savePath);
+ 
+	if (!uploadDir.exists()) {
+		uploadDir.mkdirs();
+	}
+ 
+	// 检查目录写权限
+	if (!uploadDir.canWrite()) {
+		System.out.println(getError("上传目录没有写权限。"));
+		return;
+	}
+ 
+	String dirName = eid;
+	// 创建文件夹
+	savePath += dirName + "/";
+	saveUrl += dirName + "/";
+	File saveDirFile = new File(savePath);
+	if (!saveDirFile.exists()) {
+		saveDirFile.mkdirs();
+	}
+ 
+	String fileName = file.getFileName();
+ 
+	SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+	String newFileName = df.format(new Date()) + "_" + UiUtils.createFileName(fileName);
+ 
+	File copied = new File(savePath + newFileName);
+ 
+	long fileSize = file.getSize();
+ 
+	if(fileSize > maxSize){
+		System.out.println(getError("上传文件大小超过限制。"));
+		return;
+	}
+ 
+	file.write(copied);
+ 
+ 
+ 
+	System.out.println(saveUrl);
+ 
+	try {
+		String url = saveUrl +  newFileName;
+		setOutUrl("{\"status\":\"0\" , \"imgUrl\" :\"" + url + "\"}");
+	} catch (Exception e) {
+		setOutUrl("{\"status\":\"1\" , \"error\" :\" error \"}");
+	}
+ 
+}
+ 
+private String getError(String message) {
+	JSONObject obj = new JSONObject();
+	obj.put("error", 1);
+	obj.put("message", message);
+	return obj.toString();
+}
+ 
+protected final HttpServletRequest getRequest() {
+	return requestGlobals.getHTTPServletRequest();
+}
+ 
+public String getOutUrl() {
+	return outUrl;
+}
+ 
+public void setOutUrl(String outUrl) {
+	this.outUrl = outUrl;
+}
+
+}
+ 
+ 
+ 
+KissyEditorUploadHander.tml
+
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_3.xsd">
+<t:OutputRaw value="outUrl"></t:OutputRaw>
+</html>
+
+
+
+UiUtils.java
+
+package com.tapestry.app.util;
+ 
+import java.util.Date;
+import java.util.Random;
+ 
+public class UiUtils {
+	public static String splitString(String str, String split) {
+		int index = str.lastIndexOf(split);
+		return str.substring(index + 1);
+	}
+ 
+	public static String splitStringPath(String str) {
+		str = str.replace("/", "\\");
+		int index = str.lastIndexOf("\\");
+		return str.substring(index + 1);
+	}
+ 
+	public static String createFileName(String name) {
+        Long randomNum = new Random().nextLong();
+        String radomStr = randomNum.toString().substring(2, 5);
+        String accessoryAutoName = new Date().getTime() + radomStr;
+        String extendedName = splitString(name, ".");
+        String fileName = accessoryAutoName;
+        if (extendedName != null) {
+            fileName = accessoryAutoName + "." + extendedName;
+        }
+        return fileName;
+    }
+}
+ 
+ 
+ 
+TEstart.js
+
+function userAgent() {
+	var ua = navigator.userAgent;
+	ua = ua.toLowerCase();
+	var match = /(webkit)[ \/]([\w.]+)/.exec(ua)
+		|| /(opera)(?:.*version)?[ \/]([\w.]+)/.exec(ua)
+		|| /(msie) ([\w.]+)/.exec(ua) || !/compatible/.test(ua)
+		&& /(mozilla)(?:.*? rv:([\w.]+))?/.exec(ua) || [];
+	// 如果需要获取浏览器版本号：match[2]
+	switch (match[1]) {
+		case "msie" : // ie
+			if (parseInt(match[2]) > 8) // ie6
+			{
+				$('cssLink').href = "${context:assets/build/theme/cool/editor-pkg-min-datauri.css}";
+			}
+			break;
+		case "webkit" : // safari or chrome
+			break;
+		case "opera" : // opera
+			break;
+		case "mozilla" : // Firefox
+			break;
+		default :
+			break;
+	}
+}
+
+function start(id) {
+	userAgent();
+	KISSY.ready(function(S) {
+	S.use('editor', function() {
+ 
+	var KE = KISSY.Editor;
+	var cfg = {
+	attachForm : true,
+	baseZIndex : 10000,
+	// 自定义样式
+	// customStyle:"p{color:purple;}",
+	// 自定义外部样式
+	// customLink:["http://localhost/customLink.css","http://xx.com/y2.css"],
+	// 是否一开始自动聚焦
+	// focus:true,
+	pluginConfig : {
+		"image" : {
+			upload : {
+ 
+			serverUrl : "/tapestryStart/KissyEditorUploadHander/" + id,
+			serverParams : {
+ 
+				cookie : document.cookie,
+				waterMark : function() {
+					return S.one("#ke_img_up_watermark_1")[0].checked;
+				}
+			},
+			surfix : "png,jpg,jpeg,gif",
+			fileInput : "Filedata",
+			sizeLimit : 1024,// k
+			extraHtml : "<p style='margin-top:10px;display:none;'><input type='checkbox' id='ke_img_up_watermark_1' checked='checked'> 图片加水印，防止别人盗用</p>"
+			}
+		},
+		"flash" : {
+			defaultWidth : "300",
+			defaultHeight : "300"
+		},
+		"templates" : [{
+			demo : "模板1效果演示html",
+			html : "<div style='border:1px solid red'>模板1效果演示html</div><p></p>"
+		}, {
+			demo : "模板2效果演示html",
+			html : "<div style='border:1px solid red'>模板2效果演示html</div>"
+		}],
+// "font-size":false,
+// "font-family":false,
+// "font-bold":false,
+// "font-italic":false,
+// "font-underline":false,
+ 
+// "font-strikeThrough":{
+// style:{
+// element : 'strike',
+// overrides : [
+// {element : 'span',
+// attributes : { style:'text-decoration: line-through;' }},
+// { element : 's' },
+// { element : 'del' }
+// ]
+// }
+// },
+		"multi-upload" : {
+			serverUrl : "/code/upload/upload.jsp",
+			serverParams : {
+				waterMark : function() {
+					return S.one("#ke_img_up_watermark_2")[0].checked;
+				}
+			},
+		// previewSuffix:"_60x60",
+		previewWidth : "80px",
+		sizeLimit : 1000// k,
+		,
+		numberLimit : 15,
+		extraHtml : "<p style='margin-top:10px;'>"
+			+ "<input type='checkbox' "
+			+ "style='vertical-align:middle;margin:0 5px;' "
+			+ "id='ke_img_up_watermark_2'>"
+			+ "<span style='vertical-align:middle;'>图片加水印，防止别人盗用</span></p>"
+		},
+		"video" : {
+			urlCfg : [{
+				reg : /tudou\.com/i,
+				url : "http://bangpai.taobao.com/json/getTudouVideo.htm?"
+					+ "url=@url@&callback=@callback@"// "&rand=@rand@"
+			}],
+			urlTip : "请输入优酷网、土豆网、酷7网的视频播放页链接...",
+			providers : [{
+				reg : /youku\.com/i,
+				width : 480,
+				height : 400,
+				detect : function(url) {
+					var m = url.match(/id_([^.]+)\.html$/);
+						if (m) {
+							return "http://player.youku.com/player.php/sid/" + m[1] + "/v.swf";
+						}
+					m = url.match(/v_playlist\/([^.]+)\.html$/);
+					if (m) {
+						return;
+						// return
+						// "http://player.youku.com/player.php/sid/"
+						// + m[1] + "/v.swf";
+					}
+					return url;
+				}
+			}, {
+				reg : /tudou\.com/i,
+				width : 480,
+				height : 400,
+				detect : function(url) {
+					return url;
+				}
+			}, {
+		reg : /ku6\.com/i,
+		width : 480,
+		height : 400,
+		detect : function(url) {
+			var m = url.match(/show[^\/]*\/([^.]+)\.html$/);
+			if (m) {
+				return "http://player.ku6.com/refer/" + m[1] + "/v.swf";
+			}
+			return url;
+		}
+	}
+	/*
+	* , { reg:/taobaocdn\.com/i, width:480, height:400,
+	* detect:function(url) { return url; } }
+	*/
+	]
+	},
+	music : {
+		// 必须和网址url同域而不是类库同域
+		musicPlayer : KE.Config.base + "music/niftyplayer.swf"
+	},
+	"draft" : {
+		interval : 5,
+		limit : 10,
+		helpHtml : "<div "
+			+ "style='width:200px;'>"
+			+ "<div style='padding:5px;'>草稿箱能够自动保存您最新编辑的内容，"
+			+ "如果发现内容丢失，" + "请选择恢复编辑历史</div></div>"
+	},
+	"resize" : {
+		direction : ["y"]
+	},
+ 
+	dragupload : {
+		surfix : "png,jpg,jpeg,gif",
+		fileInput : "Filedata",
+		sizeLimit : 1000,
+		serverUrl : "/code/upload/web/upload.jsp",
+		serverParams : {
+			waterMark : function() {
+			return true;
+			}
+		}
+	}
+}
+};
+ 
+// if(1>2)
+function test() {
+	window.editor2 = KE("#editor", S.clone(cfg))
+	.use("elementpaths," + "sourcearea,preview,"
+		+ "checkbox-sourcearea,"
+		+ "templates,separator," + "undo,separator,"
+		+ "removeformat,font,format,color,separator,"
+		+ "list,indent," + "justify,separator,link,"
+		+ "image,flash," + "video," + "music,"
+		+ "smiley,separator,table,resize," + "draft,"
+		+ "pagebreak,separator,maximize,dragupload");
+ 
+}
+ 
+test();
+});
+});
+}
