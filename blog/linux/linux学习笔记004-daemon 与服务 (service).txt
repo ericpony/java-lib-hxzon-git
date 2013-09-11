@@ -1,4 +1,4 @@
-﻿linux学习笔记-daemon 与服务 (service)
+﻿linux学习笔记004-daemon 与服务 (service)
 
 
 《鸟哥的linux私房菜-第十八章、认识系统服务 (daemons)》

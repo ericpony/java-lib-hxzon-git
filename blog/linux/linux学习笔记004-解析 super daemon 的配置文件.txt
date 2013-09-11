@@ -1,4 +1,4 @@
-﻿linux学习笔记-解析 super daemon 的配置文件
+﻿linux学习笔记004-解析 super daemon 的配置文件
 
 《鸟哥的linux私房菜-第十八章、认识系统服务 (daemons)》
 最近升级日期：2009/09/14

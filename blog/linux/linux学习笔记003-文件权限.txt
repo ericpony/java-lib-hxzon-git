@@ -1,4 +1,4 @@
-﻿linux学习笔记-文件权限
+﻿linux学习笔记003-文件权限
 
 =======
 http://vbird.dic.ksu.edu.tw/linux_basic/0210filepermission_1.php

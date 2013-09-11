@@ -1,4 +1,4 @@
-﻿linux学习笔记-使用者身份切换
+﻿linux学习笔记003-使用者身份切换
 
 《鸟哥的linux私房菜-第十四章、Linux 账号管理与 ACL 权限配置》
 http://vbird.dic.ksu.edu.tw/linux_basic/0410accountmanager_4.php
