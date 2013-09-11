@@ -1,4 +1,4 @@
-﻿linux学习笔记-磁盘的分割、格式化、检验与挂载
+﻿linux学习笔记001-磁盘的分割、格式化、检验与挂载
 
 《鸟哥的linux私房菜：第八章、Linux 磁盘与文件系统管理》
 http://vbird.dic.ksu.edu.tw/linux_basic/0230filesystem.php#disk

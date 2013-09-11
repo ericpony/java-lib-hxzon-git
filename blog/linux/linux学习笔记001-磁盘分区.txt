@@ -1,4 +1,4 @@
-﻿linux学习笔记-磁盘分区
+﻿linux学习笔记001-磁盘分区
 
 http://vbird.dic.ksu.edu.tw/linux_basic/0130designlinux_2.php
 

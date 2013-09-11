@@ -1,4 +1,4 @@
-﻿linux学习笔记-逻辑卷轴管理（LVM）
+﻿linux学习笔记001-逻辑卷轴管理（LVM）
 
 
 第十五章、磁碟配额(Quota)与进阶文件系统管理-3. 逻辑卷轴管理员 (Logical Volume Manager)
