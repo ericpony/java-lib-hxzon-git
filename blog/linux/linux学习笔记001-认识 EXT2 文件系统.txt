@@ -1,4 +1,4 @@
-﻿linux学习笔记-认识 EXT2 文件系统
+﻿linux学习笔记001-认识 EXT2 文件系统
 
 《鸟哥的linux私房菜：基础篇：第八章、Linux 磁盘与文件系统管理》
 http://vbird.dic.ksu.edu.tw/linux_basic/0230filesystem.php

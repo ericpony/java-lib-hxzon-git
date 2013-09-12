@@ -1,4 +1,4 @@
-﻿linux学习笔记-linux常见目录
+﻿linux学习笔记002-linux常见目录
 
 http://vbird.dic.ksu.edu.tw/linux_basic/0210filepermission_3.php
 http://vbird.dic.ksu.edu.tw/linux_basic/0210filepermission_3.php

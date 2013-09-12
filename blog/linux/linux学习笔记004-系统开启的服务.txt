@@ -1,4 +1,4 @@
-﻿linux学习笔记-系统开启的服务
+﻿linux学习笔记004-系统开启的服务
 
 《鸟哥的linux私房菜-第十八章、认识系统服务 (daemons)》
 http://vbird.dic.ksu.edu.tw/linux_basic/0560daemons_4.php

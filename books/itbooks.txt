@@ -220,6 +220,12 @@ http://product.dangdang.com/product.aspx?product_id=8766529
 ====================================
 软件工程，IT视野
 
+
+----
+180，恰如其分的软件架构 [平装]
+~ George Fairbanks (作者), 张逸 (译者), 倪健 (译者), 高翌翔 (译者) 
+61.60(7折)
+
 ----
 15，软件框架设计的艺术
 56.20，48.40，36.80(49折)，观望
@@ -426,6 +432,10 @@ Joe Celko (作者)米全喜 (译者)
 
 
 
+
+----
+181，Oracle DBA实战攻略:运维管理、诊断优化、高可用与最佳实践
+
 ----
 129，Oracle性能优化求生指南
 http://www.ituring.com.cn/book/772?q=Oracle
@@ -551,5 +561,6 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20，17.20(49折)
 
+
 ----
-180，
+182，
