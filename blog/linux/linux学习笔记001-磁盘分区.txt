@@ -1,16 +1,18 @@
 ﻿linux学习笔记001-磁盘分区
 
-http://vbird.dic.ksu.edu.tw/linux_basic/0130designlinux_2.php
 
 第三章、主机规划与磁盘分区
 最近更新日期：2009/08/06
+http://vbird.dic.ksu.edu.tw/linux_basic/0130designlinux_2.php
 
+==========
 2. 磁盘分区
 　　2.1 磁碟连接的方式与装置档名的关系
 　　2.2 磁碟的组成复习
 　　2.3 磁盘分区表(partition table)
 　　2.4 启动流程与主要启动记录区(MBR)
 　　2.5 Linux安装模式下，磁盘分区的选择(极重要)
+
 ==========
 hxzon学习笔记：
 
