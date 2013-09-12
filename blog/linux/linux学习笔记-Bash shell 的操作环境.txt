@@ -11,6 +11,39 @@ http://vbird.dic.ksu.edu.tw/linux_basic/0320bash_4.php
 　　4.5 通配符与特殊符号
 
 =======
+1，系统合法的 shell 均写在 /etc/shells 文件中；
+用户默认登陆取得的 shell 记录于 /etc/passwd 的最后一个字段；
+
+bash 的功能主要有：命令编修能力；命令与文件补全功能；命令别名配置功能；工作控制、前景背景控制；程序化脚本；通配符。
+
+type 可以用来找到运行命令为何种类型，亦可用于与 which 相同的功能；
+
+2，变量就是以一组文字或符号等，来取代一些配置或者是一串保留的数据。
+变量主要有环境变量与自定义变量，或称为全局变量与局部变量。
+
+使用 env 与 export 可观察环境变量，其中 export 可以将自定义变量转成环境变量；
+set 可以观察目前 bash 环境下的所有变量；
+
+$? 亦为变量，是前一个命令运行完毕后的回传值。在 Linux 回传值为 0 代表运行成功；
+
+locale 可用于观察语系数据；
+
+可用 read 让用户由键盘输入变量的值。
+ulimit 可用以限制用户使用系统的资源情况。
+
+3，bash 的配置文件主要分为 login shell 与 non-login shell。
+login shell 主要读取 /etc/profile 与 ~/.bash_profile， non-login shell 则仅读取 ~/.bashrc
+
+4，通配符主要有： *, ?, [] 等等。
+数据流重导向透过 >, 2>, < 之类的符号将输出的信息转到其他文件或装置去；
+连续命令的下达可透过 ; && || 等符号来处理。
+
+管线命令的重点是：『管线命令仅会处理 standard output，对于 standard error output 会予以忽略』 ，
+『管线命令必须要能够接受来自前一个命令的数据成为 standard input 继续处理才行。』
+
+本章介绍的管线命令主要有：cut, grep, sort, wc, uniq, tee, tr, col, join, paste, expand, split, xargs 等。
+
+===============
 Bash Shell 的操作环境：
 
 是否记得我们登陆主机的时候，屏幕上头会有一些说明文字，告知我们的 Linux 版本啊什么的， 还有，登陆的时候我们还可以给予用户一些信息或者欢迎文字呢。
