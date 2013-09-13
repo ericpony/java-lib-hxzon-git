@@ -1,0 +1,102 @@
+centos6下安装MariaDB
+
+by hxzon
+
+=========
+1，配置yum源
+
+在/etc/yum.repos.d/下新建文件MariaDB.repo。
+
+编辑/etc/yum.repos.d/MariaDB.repo文件内容：
+
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/5.5/centos5-x86
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+
+2，下载安装
+
+服务器：
+
+yum install MariaDB-server MariaDB-client
+
+或集群：
+yum install MariaDB-Galera-server MariaDB-client galera
+（缺失的依赖MariaDB-common，openssl098e，perl-DBI）
+
+问题1：可能会和已有的mysql包冲突
+查看是否有mysql相关的包已安装：
+rpm -qa mysql*
+显示安装了mysql-libs。
+移除mysql-libs：
+yum remove mysql-libs
+有很多包依赖于mysql-libs，这些也会被移除。
+另一种卸载方式：
+rpm -e --nodeps mysql-libs-5.1.*
+注意，一定要加：--nodeps，否则也会将crontab等依赖卸掉，这样就不是我们的初衷了。
+
+3，开启一个新集群（启动数据库）
+
+mysqld --wsrep_cluster_address=gcomm://
+
+Restarting the server with the same setting will cause it to create new history UUID again, 
+it won't reconnect to the old cluster. 
+See next section about how to reconnect to an existing cluster.
+
+Only use an empty gcomm:// address when you want create a new cluster. 
+Never use it when you want to reconnect to an existing one.
+
+--------
+添加另一个集群节点：
+
+mysqld --wsrep_cluster_address=gcomm://192.168.0.1
+
+
+--------
+查看集群状态：
+show status like 'wsrep_%';
+
+
+4，连接数据库（另一个终端）
+
+mysql
+
+连接成功后，
+查看数据库：show databases;
+进入数据库：use mysql;
+查看表：show tables;
+
+------
+配置远程访问，MariaDB为了安全起见，默认情况下绑定ip（ 127.0.0.1）。
+
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY ‘passwd’ WITH GRANT OPTION;
+
+flush privileges;
+
+第一句中"%"表示任何主机都可以远程登录到该服务器上访问。如果要限制只有某台机器可以访问，将其换成相应的IP即可，如：
+
+GRANT ALL PRIVILEGES ON *.* TO root@"172.168.193.25" IDENTIFIED BY "root";
+
+第二句表示从mysql数据库的grant表中重新加载权限数据。
+因为MySQL把权限都放在了cache中，所以在做完更改后需要重新加载。
+
+============
+其它备用
+
+/etc/init.d/mysql start
+
+service mysql start 
+
+1，修改Root的密码
+
+[azureuser@mono yum.repos.d]$ mysqladmin -u root password ‘passwd’
+
+2，如果系统的防火墙开着(or behind a hardware firewall or NAT)你必须放开mysql使用的TCP端口，通常都是3306。
+
+3，大小写敏感
+
+用root帐号登录后，在/etc/my.cnf 中的[mysqld]后添加添加lower_case_table_names=1，重启MYSQL服务，这时已设置成功：不区分表名的大小写;
+lower_case_table_names参数详解：
+lower_case_table_names = 0 
+其中 0：区分大小写，1：不区分大小写

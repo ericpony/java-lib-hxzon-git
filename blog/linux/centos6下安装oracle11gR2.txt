@@ -44,6 +44,8 @@ unixODBC-devel-2.2.11
 #groupadd dba                            //创建用户组dba  
 #useradd -m -g oinstall -G dba oracle    //创建用户oracle  
 
+//-m表示创建家目录，-g表示初始群组，-G表示次要群组。
+
 # id oracle                                         //查看用户oracle的属性  
 uid=512(oracle) gid=1005(oinstall) groups=1005(oinstall),1006(dba) 
 

@@ -29,7 +29,8 @@ Ext3 透过 resize2fs 命令，可以弹性的调整文件系统的大小。
 
 3，修改系统识别码请使用 t 这个 fdisk 内的命令来处理即可。
 
-4，检查有无 PV 在系统上：pvscan
+4，
+检查有无 PV 在系统上：pvscan
 创建PV：pvcreate /dev/sdb{1,2,3,4}
 创建VG：vgcreate -s 16g vg1 /dev/sdb{3,4}
 创建LV：lvcreate -L 16g -n lv1 vg1

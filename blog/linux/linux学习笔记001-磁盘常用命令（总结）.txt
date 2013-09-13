@@ -72,3 +72,13 @@ mkfs -t ext3 /dev/hdc6
 新建目录：mkdir /mnt/hdc6
 挂载： mount /dev/hdc6 /mnt/hdc6
 
+=========
+6，创建逻辑卷（LVM）
+
+检查有无 PV 在系统上：pvscan
+创建PV：pvcreate /dev/sdb{1,2,3,4}
+创建VG：vgcreate -s 16g vg1 /dev/sdb{3,4}
+创建LV：lvcreate -L 16g -n lv1 vg1
+查看LV：ll /dev/vg1/lv1
+格式化并加载：mkfs -t ext3 /dev/vg1/lv1
+
