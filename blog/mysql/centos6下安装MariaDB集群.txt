@@ -130,6 +130,13 @@ mysql -u root -p
 查看数据库：show databases;
 进入数据库：use mysql;
 查看表：show tables;
+查看数据文件位置：show variables like '%datadir%';
+use information_schema;
+select variable_name,variable_value from global_variables where variable_name like '%datadir%';
+select variable_name,variable_value from global_variables where variable_name like '%pid_file%';
+select variable_name,variable_value from global_variables where variable_name like '%wsrep%';
+select variable_name,variable_value from global_status where variable_name like '%wsrep%';
+
 
 连接上某一个节点，对其所做的操作，会同步到其它节点。
 
@@ -148,6 +155,132 @@ GRANT ALL PRIVILEGES ON *.* TO root@"172.168.193.25" IDENTIFIED BY "root";
 因为MySQL把权限都放在了cache中，所以在做完更改后需要重新加载。
 
 
+
+
+============
+参考资料：
+《MySQL的Galera Cluster配置说明》
+http://blog.sina.com.cn/s/blog_704836f40101lixp.html
+
+1，
+MySQL Galera监控
+
+    查看MySQL版本:   mysql> SHOW GLOBAL VARIABLES LIKE 'version';
+    查看wsrep版本: mysql> SHOW GLOBAL STATUS LIKE 'wsrep_provider_version';
+    查看wsrep有关的所有变量: mysql> SHOW VARIABLES LIKE 'wsrep%' \G
+    查看Galera集群状态: mysql> show status like 'wsrep%';
+ 
+监控状态参数说明:
+        集群完整性检查:
+            wsrep_cluster_state_uuid:在集群所有节点的值应该是相同的,有不同值的节点,说明其没有连接入集群.
+            wsrep_cluster_conf_id:正常情况下所有节点上该值是一样的.如果值不同,说明该节点被临时"分区"了.
+            当节点之间网络连接恢复的时候应该会恢复一样的值.
+            wsrep_cluster_size:如果这个值跟预期的节点数一致,则所有的集群节点已经连接.
+            wsrep_cluster_status:集群组成的状态.如果不为"Primary",说明出现"分区"或是"split-brain"状况.
+
+        节点状态检查:
+            wsrep_ready: 该值为ON,则说明可以接受SQL负载.如果为Off,则需要检查wsrep_connected.
+            wsrep_connected: 如果该值为Off,且wsrep_ready的值也为Off,则说明该节点没有连接到集群.
+            (可能是wsrep_cluster_address或wsrep_cluster_name等配置错造成的.具体错误需要查看错误日志)
+            wsrep_local_state_comment:如果wsrep_connected为On,但wsrep_ready为OFF,则可以从该项查看原因.
+
+        复制健康检查:
+            wsrep_flow_control_paused:表示复制停止了多长时间.即表明集群因为Slave延迟而慢的程度.
+            值为0~1,越靠近0越好,值为1表示复制完全停止.可优化wsrep_slave_threads的值来改善.
+            wsrep_cert_deps_distance:有多少事务可以并行应用处理.wsrep_slave_threads设置的值不应该高出该值太多.
+            wsrep_flow_control_sent:表示该节点已经停止复制了多少次.
+            wsrep_local_recv_queue_avg:表示slave事务队列的平均长度.slave瓶颈的预兆.
+ 
+        最慢的节点的wsrep_flow_control_sent和wsrep_local_recv_queue_avg这两个值最高.这两个值较低的话,相对更好.
+
+        检测慢网络问题:
+            wsrep_local_send_queue_avg:网络瓶颈的预兆.如果这个值比较高的话,可能存在网络瓶
+
+        冲突或死锁的数目:
+            wsrep_last_committed:最后提交的事务数目
+            wsrep_local_cert_failures和wsrep_local_bf_aborts:回滚,检测到的冲突数目
+
+2，设置MariaDB的root密码，并做安全加固
+[root@mdb-01 ~]#  /usr/bin/mysql_secure_installation
+
+3，确认本机防火墙上开放了所需TCP 3306和TCP 4567的端口
+[root@mdb-01 ~]#  iptables -A INPUT -i eth0 -p tcp --dport 3306 -j ACCEPT
+[root@mdb-01 ~]#  iptables -A INPUT -i eth0 -p tcp --dport 4567 -j ACCEPT
+
+4，确认MySQL的3306端口和wsrep的4567端口处于监听状态
+[root@mdb-01 ~]#  netstat -tulpn | grep -e 4567 -e 3306
+tcp        0      0 0.0.0.0:3306                0.0.0.0:*                   LISTEN      8977/mysqld
+tcp        0      0 0.0.0.0:4567                0.0.0.0:*                   LISTEN      8977/mysqld
+
+5，给集群加入Galera arbitrator
+
+对于只有2个节点的Galera Cluster和其他集群软件一样，需要面对极端情况下的"脑裂"状态。
+为了避免这种问题，Galera引入了"arbitrator(仲裁人)"。
+"仲裁人"节点上没有数据,它在集群中的作用就是在集群发生分裂时进行仲裁，集群中可以有多个"仲裁人"节点。
+"仲裁人"节点加入集群的方法很简单,运行如下命令即可:
+[root@arbt ~]# garbd -a gcomm://192.168.0.171:4567 -g my_wsrep_cluster -d
+ 
+参数说明:
+-d 以daemon模式运行
+-a 集群地址
+-g 集群名称
+
+6，Galera Cluster部署的前置检查
+在要转成Galera Cluster的数据库上执行如下SQL语句:
+SELECT DISTINCT
+       CONCAT(t.table_schema,'.',t.table_name) as tbl,
+       t.engine,
+       IF(ISNULL(c.constraint_name),'NOPK','') AS nopk,
+       IF(s.index_type = 'FULLTEXT','FULLTEXT','') as ftidx,
+       IF(s.index_type = 'SPATIAL','SPATIAL','') as gisidx
+  FROM information_schema.tables AS t
+  LEFT JOIN information_schema.key_column_usage AS c
+    ON (t.table_schema = c.constraint_schema AND t.table_name = c.table_name
+        AND c.constraint_name = 'PRIMARY')
+  LEFT JOIN information_schema.statistics AS s
+    ON (t.table_schema = s.table_schema AND t.table_name = s.table_name
+        AND s.index_type IN ('FULLTEXT','SPATIAL'))
+  WHERE t.table_schema NOT IN ('information_schema','performance_schema','mysql')
+    AND t.table_type = 'BASE TABLE'
+    AND (t.engine <> 'InnoDB' OR c.constraint_name IS NULL OR s.index_type IN ('FULLTEXT','SPATIAL'))
+  ORDER BY t.table_schema,t.table_name;
+ 
+上述SQL检索数据库，输出不符合使用Galera的表的信息，对应的5个字段顺序为：表，表引擎，是否无主键，是否有全文索引，是否有空间索引。
+找到不符合的原因，对应修改即可。
+
+7，参考文档:
+
+MariaDB和Galera Cluster相关文档
+http://blog.secaserver.com/2011/07/install-mysql-replication-and-cluster-using-galera/
+http://weetinyworld.blogspot.tw/2013/04/setting-up-mariadb-galera-cluster-from.html
+http://blog.wu-boy.com/2013/03/galera-cluster-for-mysql-multi-master-replication/
+http://www.sebastien-han.fr/blog/2012/08/29/setup-galera-with-sst-xtrabackup-method/
+http://blog.secaserver.com/2011/07/install-mysql-replication-and-cluster-using-galera/
+http://blog.secaserver.com/2012/02/high-availability-mysql-cluster-galera-haproxy/
+http://www.severalnines.com/resources/clustercontrol-mysql-haproxy-load-balancing-tutorial
+http://opentodo.net/2012/12/mysql-multi-master-replication-with-galera/
+http://www.planetlarg.net/open-source-cookbook/data-storage/replace-mysql-mysql-galera
+http://www.sebastien-han.fr/blog/2012/04/08/mysql-galera-cluster-with-haproxy/
+http://www.zrwm.com/?cat=130
+http://openquery.com/blog/galera-predeployment-check
+http://www.percona.com/files/presentations/percona-live/nyc-2012/PLNY12-galera-cluster-best-practices.pdf
+https://groups.google.com/forum/#!msg/codership-team/OUxATjcznPI/H8ftsjZwptAJ
+http://www.zrwm.com/?p=5844
+http://beerpla.net/2008/09/05/mysql-slave-lag-delay-explained-and-7-ways-to-battle-it/
+http://wiki.vps.net/vps-net-features/cloud-servers/template-information/galeramysql-recommended-cluster-configuration/
+http://haproxy.1wt.eu/download/1.4/doc/configuration.txt
+
+GTID和mysqlfailover相关文档
+http://scriptingmysql.wordpress.com/2012/12/06/using-the-mysql-script-mysqlfailover-for-automatic-failover-with-mysql-5-6-gtid-replication/
+http://svenmysql.blogspot.se/2012/10/failover-and-flexible-replication.html
+http://svenmysql.blogspot.tw/2012/10/advanced-use-of-global-transaction.html
+http://svenmysql.blogspot.se/2013/03/flexible-fail-over-policies-using-mysql.html
+http://www.percona.com/sites/default/files/presentations/MHA_Toronto_Presentation.pdf
+http://hickey.in/?p=78
+http://dev.mysql.com/doc/refman/5.6/en/replication-gtids-howto.html
+http://huoding.com/2011/04/05/59
+http://www.cnblogs.com/hustcat/archive/2009/12/19/1627525.html
+http://dev.mysql.com/doc/refman/5.5/en/replication-howto-masterstatus.html
 
 
 ============
