@@ -4,22 +4,16 @@
 ====================================================
 C++
 
+
 ----
-100，C++ Primer
-http://product.china-pub.com/28767
-C++Primer中文版(第4版)，2008年7月1日
-http://www.amazon.cn/C-Primer%E4%B8%AD%E6%96%87%E7%89%88-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B00114DX08/ref=pd_rhf_se_s_cp_26
-C++ Primer中文版(第4版·特别版)，2010年2月1日，附加了《C++编程规范：101条规则、准则与最佳实践》一书的全部内容
-http://www.amazon.cn/C-Primer%E4%B8%AD%E6%96%87%E7%89%88-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B0036DB1EC/ref=pd_cp_b_0
+183，Linux多线程服务端编程:使用muduo C++网络库
+陈硕 (2013-01)
+62.30
 
---
-C++ Primer (5th Edition),August 16, 2012,Stanley B. Lippman (Author), Josée Lajoie (Author), Barbara E. Moo (Author)
-http://www.amazon.com/Primer-5th-Edition-Stanley-Lippman/dp/0321714113/ref=sr_1_1?ie=UTF8&qid=1347429437&sr=8-1&keywords=C%2B%2B+Primer
-Bestselling Programming Tutorial and Reference Completely Rewritten for the New C++11 Standard
-
---
-C++ Primer (4th Edition),February 24, 2005,Stanley B. Lippman (Author), Josée Lajoie (Author), Barbara E. Moo (Author)
-http://www.amazon.com/Primer-4th-Edition-Stanley-Lippman/dp/0201721481/ref=sr_1_3?ie=UTF8&qid=1347429437&sr=8-3&keywords=C%2B%2B+Primer
+----
+184，提高C++性能的编程技术
+布尔卡(Dov Bulka)、梅休(David Mayhew)、左飞、 薛佟佟 (2011-03)
+41.00
 
 ----
 101，C++程序设计语言
@@ -139,21 +133,8 @@ http://www.amazon.com/Windows-via-C-softcover/dp/0735663777/ref=sr_1_1?s=books&i
 ======
 VC++
 
-----
-118，Visual C++ 2012入门经典(第6版)
-68.60(7折)，优先？更现代实用？
 
---
-Visual C++2010入门经典(第5版)
-http://www.amazon.cn/Visual-C-2010%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8-%E9%9C%8D%E9%A1%BF/dp/B004GHO45A/ref=pd_sim_b_18
-http://www.amazon.cn/mn/detailApp/ref=sr_1_4?asin=0470500883
 
-《Ivor Horton's Beginning Visual C++ 2010》，2010.4.12
-http://www.amazon.com/Ivor-Hortons-Beginning-Visual-Programmer/dp/0470500883/ref=sr_1_1?s=books&ie=UTF8&qid=1347515759&sr=1-1&keywords=Visual+C%2B%2B
-
-《Ivor Horton's Beginning Visual C++ 2012》，2012.10.2
-http://www.amazon.com/Ivor-Hortons-Beginning-Visual-2012/dp/1118368088/ref=sr_1_4?s=books&ie=UTF8&qid=1347515759&sr=1-4&keywords=Visual+C%2B%2B
-89.60(7折)，62.70(49折)，中文版2010.12
 
 
 ===========================================================
@@ -563,4 +544,4 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 
 
 ----
-182，
+186，

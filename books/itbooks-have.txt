@@ -23,6 +23,10 @@ http://product.dangdang.com/product.aspx?product_id=22506160
 http://product.dangdang.com/product.aspx?product_id=20836579
 28.60(82折)，27.60(79折)，已购
 
+----
+185，NoSQL精粹
+34.30(7.5折)，已购，不值
+
 
 ======================================
 交互设计，软件工程，it视野
@@ -93,6 +97,11 @@ http://product.dangdang.com/product.aspx?product_id=20170952
 
 ======================================
 数据库
+
+----
+148，高性能MySQL(第3版)
+施瓦茨、扎伊采夫、特卡琴科、 宁海元 电子工业出版社 (2013-05出版)
+96.00(7.5折)，62.70(49折)，89.60(7折)，已购
 
 ----
 6，MySQL技术内幕InnoDB存储引擎
@@ -238,25 +247,6 @@ css和html
 观望
 
 ----
-86，编程原本(STL之父Alexander Stepanov力作,裘宗燕老师倾情献译)
-http://product.dangdang.com/product.aspx?product_id=22577577
-44.30(75折)，28.90(49折)，暂缓，是否有必要？
-
-----
-141，Real World Haskell
-2008-12出版
-http://book.realworldhaskell.org/read/
---
-真实世界的Haskell(影印版) 
-沙利文(Bryan O'sullivan)、戈尔(Jobn Goerzen)、 斯图尔特(Don Stewart) 
-东南大学出版社 (2010-01出版)
-缺货，编程思想的学习，想买，英文版是否有耐心读？
-
-----
-147，HTTP权威指南
-81.80(7.5折)，70.00(64折)，观望
-
-----
 157，分析模式：可复用的对象模型
 Analysis Patterns : Reusable Object Models
 福勒(Martin Fowler) (作者), 樊东平 (译者), 张路 (译者)
@@ -282,6 +272,64 @@ Analysis Patterns : Reusable Object Models
 出版日期：2011-09，页数：284，
 59.00，28.90(49折)，已购
 
+
+----
+100，C++ Primer
+
+--
+C++ Primer中文版(第5版)，2013年9月28日
+96.00(7.5折)，实用，想买
+
+--
+C++ Primer (5th Edition),August 16, 2012,Stanley B. Lippman (Author), Josée Lajoie (Author), Barbara E. Moo (Author)
+http://www.amazon.com/Primer-5th-Edition-Stanley-Lippman/dp/0321714113/ref=sr_1_1?ie=UTF8&qid=1347429437&sr=8-1&keywords=C%2B%2B+Primer
+Bestselling Programming Tutorial and Reference Completely Rewritten for the New C++11 Standard
+62.70(5折)，101.10(7.9折)
+
+--
+http://product.china-pub.com/28767
+C++Primer中文版(第4版)，2008年7月1日
+http://www.amazon.cn/C-Primer%E4%B8%AD%E6%96%87%E7%89%88-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B00114DX08/ref=pd_rhf_se_s_cp_26
+C++ Primer中文版(第4版·特别版)，2010年2月1日，附加了《C++编程规范：101条规则、准则与最佳实践》一书的全部内容
+http://www.amazon.cn/C-Primer%E4%B8%AD%E6%96%87%E7%89%88-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B0036DB1EC/ref=pd_cp_b_0
+69.30
+
+--
+C++ Primer (4th Edition),February 24, 2005,Stanley B. Lippman (Author), Josée Lajoie (Author), Barbara E. Moo (Author)
+http://www.amazon.com/Primer-4th-Edition-Stanley-Lippman/dp/0201721481/ref=sr_1_3?ie=UTF8&qid=1347429437&sr=8-3&keywords=C%2B%2B+Primer
+
+
+
+----
+182，C++标准库:自学教程与参考手册(第2版)(英文版)(套装共2册)
+91.30(7.1折)
+
+----
+118，Visual C++ 2012入门经典(第6版)
+68.60(7折)，优先？更现代实用？
+
+----
+141，Real World Haskell
+2008-12出版
+http://book.realworldhaskell.org/read/
+--
+真实世界的Haskell(影印版) 
+沙利文(Bryan O'sullivan)、戈尔(Jobn Goerzen)、 斯图尔特(Don Stewart) 
+东南大学出版社 (2010-01出版)
+缺货，编程思想的学习，想买，英文版是否有耐心读？
+--
+Parallel and Concurrent Programming in Haskell
+
+
+----
+86，编程原本(STL之父Alexander Stepanov力作,裘宗燕老师倾情献译)
+http://product.dangdang.com/product.aspx?product_id=22577577
+44.30(75折)，28.90(49折)，暂缓，是否有必要？
+
+----
+147，HTTP权威指南
+81.80(7.5折)，70.00(64折)，观望
+
 ----
 159，代码的未来
 [日]松本行弘 (作者), 周自恒 (译者)
@@ -296,14 +344,10 @@ Analysis Patterns : Reusable Object Models
 Eric Redmond (作者), Jim R.Wilson (作者), 王海鹏 (译者), 田思源 (译者), 王晨 (译者) 
 44.20(7.5折)，想买
 
-----
-148，高性能MySQL(第3版)
-施瓦茨、扎伊采夫、特卡琴科、 宁海元 电子工业出版社 (2013-05出版)
-96.00(7.5折)，62.70(49折)，想买
 
 ----
 179，高可用MySQL：构建健壮的数据中心
 
 ~ 查理斯·贝尔 (Bell.C.) (作者), 迈茨·肯德尔 (Kindahl.M.) (作者), 拉尔斯·塞尔曼 (Thalann.L.) (作者), 
 宁青 (译者), 唐李洋 (译者), 诸云萍 (译者) 
-73.90(7.5折)，56.80(5.8折)
+73.90(7.5折)，56.80(5.8折)，47.80(4.9折)
