@@ -123,3 +123,17 @@ oracle的字符串比较区分大小写，考虑到索引的使用等问题，�
 6，
 merge语句
 
+===============
+7，层级
+
+select * from xx
+start with myId = 'rootId'
+connect by prior myId = parentId;
+
+----
+从末梢到根
+
+select * from xx
+start with myId = 'someId'
+connect by prior parentId = myId;
+
