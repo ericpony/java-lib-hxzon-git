@@ -1,5 +1,7 @@
 ﻿javascript高级定时器
 
+hxzon学习笔记
+
 ========
 ADVANCED TIMERS
 高级定时器。

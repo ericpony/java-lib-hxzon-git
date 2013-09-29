@@ -2,18 +2,22 @@
 让Apache Shiro保护你的应用
 作者 Les Hazlewood 译者 胡伟红 发布于 2011年5月11日
 http://www.infoq.com/cn/articles/apache-shiro
+
 2，
 将 Shiro 作为应用的权限基础（J-security）
 胡 伟红, 自由职业者
 发布日期： 2010 年 3 月 29 日 
 http://www.ibm.com/developerworks/cn/opensource/os-cn-shiro/
+
 3，
 ShiroSecurity
 https://github.com/springside/springside4/wiki/ShiroSecurity
+
 4，
 apache shiro与spring整合、动态filterChainDefinitions、以及认证、授权
 ----
 https://github.com/exitsoft/exit-web-framework/wiki/apache-shiro%E4%B8%8Espring%E6%95%B4%E5%90%88%E3%80%81%E5%8A%A8%E6%80%81filterChainDefinitions%E3%80%81%E4%BB%A5%E5%8F%8A%E8%AE%A4%E8%AF%81%E3%80%81%E6%8E%88%E6%9D%83
+
 5，
 An Introduction to Shiro (formerly JSecurity) – A Beginner’s Tutorial Part 1
 Posted At : April 5, 2009 12:22 PM | Posted By : Bruce Phillips
@@ -24,4 +28,5 @@ http://www.brucephillips.name/blog/index.cfm/2009/4/5/An-Introduction-to-Ki-form
 http://www.brucephillips.name/blog/index.cfm/2009/4/5/An-Introduction-to-Ki-formerly-JSecurity--A-Beginners--Tutorial-Part-3
 http://www.brucephillips.name/blog/index.cfm/2009/4/5/An-Introduction-to-Ki-formerly-JSecurity--A-Beginners--Tutorial-Part-4
 http://www.brucephillips.name/blog/index.cfm/2009/5/1/An-Introduction-to-Ki-formerly-JSecurity--A-Beginners-Tutorial-Part-5
+
 6，
