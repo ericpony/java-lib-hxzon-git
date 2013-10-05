@@ -1,0 +1,14 @@
+﻿游戏开发相关
+
+by hxzon
+
+===========
+1，Cocos2D，Cocos2D-x
+
+iOS cocos2d 2游戏开发实战(第3版)
+
+2，unity3d
+
+
+3，DirectX
+
