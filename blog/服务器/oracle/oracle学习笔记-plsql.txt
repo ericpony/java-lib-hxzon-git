@@ -36,7 +36,7 @@ create or replace procedure pms2_insertBroken
     v_ukeyoperidInUse number(19);
   begin
     --
-    select ukeyoperid,ukeyid into v_ukeyoperidRevoke,v_ukeyidRevoke --局部变量赋值
+    select ukeyoperid,ukeyid into v_ukeyoperidRevoke,v_ukeyidRevoke --select语句多个字段赋值
     from pms2_ukeyoper
     where ukeysn=p_oldUkeySn -- 使用存储过程参数
     and ishistory=0;
@@ -58,32 +58,64 @@ end pms2_insertBroken;
 2，
 使用游标：
 
-create or replace procedure pms2_updateZyhNsr is begin
-declare
---声明游标：
-cursor resultCursor is
 
-select zyh.zyhId,nsr.nsrId,nsr.nsrcode 
-from pms2_zyh zyh
-left join ukey_gl_zyhxx zyhxx on zyhxx.id=zyh.oldId
-left join ukey_gl_yhdj yhdj on yhdj.id=zyhxx.nsr_id
-left join pms2_nsr nsr on nsr.oldId=yhdj.id;
---声明记录类型：
-type rR is record(
-  zyhId number,
-  nsrId number,
-  nsrcode varchar(256 char)
-);
---
+create or replace procedure pms2_tmp_ibswjg is
 begin
-for rR in resultCursor
-loop
-  update pms2_zyh zyh set nsrId=rR.nsrId ,nsrcode=rR.nsrcode where zyhId=rR.zyhId;
-end loop;
-end;
+  declare
+    --声明游标：
+    cursor resultCursor is
+      select swjg_dm swjgcode from pms2_tmp_swjgall;
+    --声明带参数的游标：
+    cursor parentcodes(p_swjgcode varchar) is
+      select swjg_dm swjgcode
+        from (select level, swjg_dm
+                from pms2_tmp_swjgall
+               start with swjg_dm = p_swjgcode
+              connect by swjg_dm = prior sjswjg_dm)
+       order by level desc;  --这里其实是完全不必要的
+    --声明记录类型：
+    type rR is record(
+      swjgcode varchar2(32 char)); --必须带长度
 
-end pms2_updateZyhNsr;
+    type parentCode is record(
+      swjgcode varchar2(32 char));
+    --声明变量：
+    l_ibid number;
+    --
+  begin
+    for rR in resultCursor loop --使用不带参数的游标
+    
+      for parentCode in parentcodes(rR.swjgcode) loop -- 使用带参数的游标
+      
+        if l_ibid = -1 or l_ibid = -2 then --if语句
+          begin -- begin exception语句开始
+            select ibid
+              into l_ibid  --select语句赋值
+              from pms2_ibswjg
+             where swjgcode = parentCode.swjgcode;
+            --
+          exception
+            when no_data_found then
+              --dbms_output.put_line(parentCode.swjgcode);
+              l_ibid := -2;  --变量赋值
+          end;
+        end if;
+      end loop;
+      update pms2_tmp_swjgall
+         set ibid = l_ibid
+       where swjg_dm = rR.swjgcode;
+      l_ibid := -1;
+    end loop;
+  end;
+end pms2_tmp_ibswjg;
 
+-------
+异常：ORA-01788: 此查询块中要求 CONNECT BY 子句。
+通过以下语句解决：
+
+alter system set "_allow_level_without_connect_by"=true scope=both
+
+hxzon：ok。
 ===============
 3，
 时间函数：
@@ -126,14 +158,23 @@ merge语句
 ===============
 7，层级
 
-select * from xx
+select level,* from xx
 start with myId = 'rootId'
 connect by prior myId = parentId;
 
 ----
 从末梢到根
 
-select * from xx
+select level,* from xx
 start with myId = 'someId'
 connect by prior parentId = myId;
 
+8，重新设为null
+
+update tt set ff=''
+
+9，更新多个值
+
+update tt set (ff,gg) = (select ff,gg from tt2 where xxx)
+
+10，
