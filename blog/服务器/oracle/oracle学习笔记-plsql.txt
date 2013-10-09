@@ -64,15 +64,15 @@ begin
   declare
     --声明游标：
     cursor resultCursor is
-      select swjg_dm swjgcode from pms2_tmp_swjgall;
+      select swjg_dm swjgcode from pms2_tmp_swjgall order by mylevel desc;
     --声明带参数的游标：
     cursor parentcodes(p_swjgcode varchar) is
-      select swjg_dm swjgcode
-        from (select level, swjg_dm
+      select swjg_dm swjgcode 
+        from (select mylevel, swjg_dm
                 from pms2_tmp_swjgall
                start with swjg_dm = p_swjgcode
               connect by swjg_dm = prior sjswjg_dm)
-       order by level desc;  --这里其实是完全不必要的
+       order by mylevel desc;
     --声明记录类型：
     type rR is record(
       swjgcode varchar2(32 char)); --必须带长度
@@ -163,12 +163,15 @@ start with myId = 'rootId'
 connect by prior myId = parentId;
 
 ----
-从末梢到根
+从末梢到根（level都为0）
 
 select level,* from xx
 start with myId = 'someId'
 connect by prior parentId = myId;
 
+整个语句放在子查询中时，不能保证顺序。
+
+=========
 8，重新设为null
 
 update tt set ff=''
