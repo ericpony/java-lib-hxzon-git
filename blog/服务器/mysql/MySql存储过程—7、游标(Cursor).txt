@@ -1,0 +1,93 @@
+﻿MySql存储过程—7、游标(Cursor)
+
+http://blog.csdn.net/rdarda/article/details/7881648/
+======
+
+
+1、游标的作用及属性
+
+游标的作用就是用于对查询数据库所返回的记录进行遍历，以便进行相应的操作；游标有下面这些属性：
+
+    a、游标是只读的，也就是不能更新它；
+
+    b、游标是不能滚动的，也就是只能在一个方向上进行遍历，不能在记录之间随意进退，不能跳过某些记录；
+
+    c、避免在已经打开游标的表上更新数据。
+
+2、如何使用游标
+
+使用游标需要遵循下面步骤：
+
+     a、首先用DECLARE语句声明一个游标              
+
+
+DECLARE cursor_name CURSOR FOR SELECT_statement;  
+上面这条语句就对，我们执行的select语句返回的记录指定了一个游标   
+
+     b、其次需要使用OPEN语句来打开上面你定义的游标
+
+
+OPEN cursor_name;  
+
+     c、接下来你可以用FETCH语句来获得下一行数据，并且游标也将移动到对应的记录上(这个就类似java里面的那个iterator)。
+
+FETCH cursor_name INTO variable list;  
+
+     d、然后最后当我们所需要进行的操作都结束后我们要把游标释放掉。
+
+CLOSE cursor_name;  
+
+在使用游标时需要注意的是，使用定义一个针对NOT FOUND的条件处理函数(condition handler)来避免出现“no data to fetch”这样的错误，
+条件处理函数就是当某种条件产生时所执行的代码，这里但我们游标指到记录的末尾时，便达到NOT FOUND这样条件，
+这个时候我们希望继续进行后面的操作，所以我们会在下面的代码中看到一个CONTINUE。先看看我们的表格内容：
+
+
+下面的游标使用演示获取库存量小于100的产品的代码code，这个代码纯粹演示如何使用，在这里没有其他任何意义:)
+
+
+DELIMITER $$  
+  
+DROP PROCEDURE IF EXISTS `test`.`CursorProc` $$  
+CREATE PROCEDURE `test`.`CursorProc` ()  
+BEGIN  
+ DECLARE  no_more_products, quantity_in_stock INT DEFAULT 0;  
+ DECLARE  prd_code VARCHAR(255);  
+ DECLARE  cur_product CURSOR FOR   SELECT code FROM products;  /*First: Delcare a cursor,首先这里对游标进行定义*/  
+ DECLARE  CONTINUE HANDLER FOR NOT FOUND  SET  no_more_products = 1; /*when "not found" occur,just continue,这个是个条件处理,针对NOT FOUND的条件*/  
+  
+ /* for  loggging information 创建个临时表格来保持*/  
+ CREATE TEMPORARY TABLE infologs (  
+ Id int(11) NOT NULL AUTO_INCREMENT,  
+ Msg varchar(255) NOT NULL,  
+ PRIMARY KEY (Id)  
+ );  
+  
+ OPEN  cur_product; /*Second: Open the cursor 接着使用OPEN打开游标*/  
+ FETCH  cur_product INTO prd_code; /*Third: now you can Fetch the row 把第一行数据写入变量中,游标也随之指向了记录的第一行*/  
+  
+ REPEAT  
+  
+ SELECT  quantity INTO quantity_in_stock  
+ FROM  products  
+ WHERE  code = prd_code;  
+   
+ IF  quantity_in_stock < 100 THEN  
+ INSERT  INTO infologs(msg)  
+ VALUES  (prd_code);  
+ END  IF;  
+ FETCH  cur_product INTO prd_code;  
+  
+ UNTIL  no_more_products = 1  
+ END REPEAT;  
+ CLOSE  cur_product;  /*Finally: cursor need be closed 用完后记得用CLOSE把资源释放掉*/  
+ SELECT *  FROM infologs;  
+ DROP TABLE  infologs;  
+END $$  
+  
+DELIMITER ;  
+
+下面是最终的结果：
+
+http://my.csdn.net/uploads/201208/18/1345302174_3501.png
+
+

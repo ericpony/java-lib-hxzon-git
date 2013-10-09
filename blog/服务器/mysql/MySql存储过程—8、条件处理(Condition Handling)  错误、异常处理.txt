@@ -1,0 +1,129 @@
+﻿MySql存储过程—8、条件处理(Condition Handling)  错误、异常处理
+
+http://blog.csdn.net/rdarda/article/details/7884044
+=======
+
+在游标里面我们有简要的介绍了一个NOT FOUND这个条件处理（错误、异常处理）的情况，
+条件处理涉及到两个语句，一个是DECLARE...CONDITION，另一个是DECLARE....HANDLER。
+
+在游标的例子中是使用了一个DECLARE....HANDLER。先来看看DECLARE....HANDLER。
+
+-----------
+1、DECLARE....HANDLER语句
+
+这个语句用于当数据库出现某种情况的时候(condition，大部分指发生某种错误时)，来定义具体的处理办法(handler)；
+所以这里涉及到包括：a、就是个什么情况 b、如何处理它；下面是其格式
+
+
+DECLARE handler_action HANDLER  
+    FOR condition_value [, condition_value] ...  
+    statement  
+  
+handler_action:  
+    CONTINUE  
+  | EXIT  
+  | UNDO  
+  
+condition_value:  
+    mysql_error_code  
+  | SQLSTATE [VALUE] sqlstate_value  
+  | condition_name  
+  | SQLWARNING  
+  | NOT FOUND  
+  | SQLEXCEPTION  
+
+这里面需要注意几点：
+
+      a、condition_value [,condition_value]，这个的话说明可以包括多种情况(方括弧表示可选的)，
+      也就是一个handler可以定义成针对多种情况进行相应的操作；
+      另外condition_value可以包括的值有上面列出来的6种：
+
+                1、mysql_error_code，这个表示mysql的错误代码，错误代码是一个数字，完成是由mysql自己定义的，这个值可以参考mysql数据库错误代码及信息。
+
+                2、SQLSTATE [VALUE] sqlstate_value，这个同错误代码类似形成一一对应的关系，它是一个5个字符组成的字符串，
+                关键的地方是它从ANSI SQL和ODBC这些标准中引用过来的，因此更加标准化，而不像上面的error_code完全是mysql自己定义给自己用的，
+                这个和第一个类似也可以参考mysql数据库错误代码及信息。
+
+                3、condtion_name，这个是条件名称，它使用DECLARE...CONDITION语句来定义，这个后面我们会介绍如何定义自己的condition_name。
+
+                4、SQLWARNING，表示SQLTATE中的字符串以‘01’起始的那些错误，比如Error: 1311 SQLSTATE: 01000 (ER_SP_UNINIT_VAR)
+
+                5、NOT FOUND，表示SQLTATE中的字符串以‘02’起始的那些错误，比如Error: 1329 SQLSTATE: 02000 (ER_SP_FETCH_NO_DATA)，
+                其实这个错误就是用在我们介绍游标的那个问题所出现的情况，也就是没有fetch到记录，也就是我们游标到记录的尾巴了的情况。
+
+                6、SQLEXCEPTION，表示SQLSTATE中的字符串不是以'00'、'01'、'02' 起始的那些错误，
+                这里'00'起始的SQLSTATE其实表示的是成功执行而不是错误，另外两个就是上面的4和5的两种情况。
+
+上面的6种情况其实可以分为两类，
+一类就是比较明确的处理，就是对指定的错误情况进行处理，包括1、2、3这三种方式；
+另一类是对对应类型的错误的处理，就是对某一群错误的处理，包括4、5、6这三种方式。
+
+这个是介绍了condition_value。
+
+另外还要注意的一个内容是MySQL在默认情况下(也就是我们没有定义处理错误的方法-handler)自己的错误处理机制：
+
+1、对于SQLWARNING和NOT FOUND的处理方法就是无视错误继续执行，所以在游标的例子里面如果我们没有对repeat的条件判断的那个值做个no_more_products=1的handler来处理，那么循环就会一直下去。
+
+2、对于SQLEXCEPTION的话，其默认的处理方法是在出现错误的地方就终止掉了。
+
+
+      b、statement，这个比较简单就是当出现某种条件/错误时，我们要执行的语句，可以是简单的如 SET  var = value这样的简单的语句，
+      也可以是复杂的多行的语句，多行的话可以使用BEGIN  .....  END这里把语句包括在里面(这个好比delphi里面的情况，
+      注意到我们的存储过程也是多行的，所以也要BEGIN .... END)。
+
+      c、handler_action，这个表示当执行完上面的statement后，希望执行怎样的动作，这里包括CONTINUE、EXIT、UNDO，表示继续、退出、撤销(暂时不支持)。
+      这边就是两种动作，其实这两种动作在上面也说过了，CONTINUE就是一个是SQLWARNING和NOT FOUND的默认处理方法，而EXIT就是SQLEXCEPTION的默认处理方法。
+
+
+来看个简单的例子，这里创建一个对SQLSTATE的代码为'23000'的错误(重复的主键)进行处理的HANDLER，每次发生时我们对变量@x进行增加1：
+
+
+DELIMITER $$  
+  
+DROP PROCEDURE IF EXISTS `test`.`ConditionProc` $$  
+CREATE PROCEDURE `test`.`ConditionProc` ()  
+BEGIN  
+DECLARE CONTINUE HANDLER FOR SQLSTATE '23000' SET @x = @x+1;  
+INSERT INTO products values(1,default,default,default,default,default);  
+INSERT INTO products values(1,default,default,default,default,default);  
+SELECT @x;  
+END $$  
+  
+DELIMITER ;  
+
+代码比较简单，当然这里我们需要对数据库进行一点修改，把除了主键外其他的字段设置了默认值，方便测试
+
+
+测试比较简单，这里我们数据库里面本身就有记录了，然后在Qurey browser中先输入
+
+SET @x = 0;
+
+然后调用存储过程下面是结果：
+
+
+通过结果我们知道出现了两次插入的记录同原有的记录出现主键重复的情况。当然这个是由下面这个代码触发的。
+
+INSERT INTO products values(1,default,default,default,default,default);
+
+
+
+-----------
+2、DECLARE...CONDITION语句
+
+这个语句其实是为了让我们的错误条件更加的清晰明了化的，
+对于上面的情况，像SQLSTATE '23000'这种表示是一种很不直观的方法，要通过相应的文档去对应，阅读起来比较不方便。
+
+而DECLARE....CONDITION可以对条件定义相对应的名称，看个例子就清楚了：
+
+
+DECLARE duplicate_key CONDITION FOR SQLSTATE '23000';  
+DECLARE CONTINUE HANDLER FOR duplicate_key  
+  BEGIN  
+    -- body of handler  
+  END;  
+
+当然在上面的例子我们没有用到BEGIN....END，我们只有一行SET @x=@x+1；
+这里我们用duplicate_key这个条件名称来对应到SQLSTATE '23000'上面，这样查看起来更加的直观。
+
+这里duplicate_key就是我们上面介绍DECLARE....HANDLER时候的那个condition_name。
+

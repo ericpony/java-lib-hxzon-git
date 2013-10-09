@@ -1,0 +1,39 @@
+﻿将excel表格导入到mysql
+
+
+=======
+1，将excel表格导入到mysql
+
+在excel中选取要导入的数据块，另外要多出一列：
+
+将选中的数据块拷贝到一个新建的表格工作薄，然后“另存为” －》“文本文件(制表符分割)(*.txt)”，假如存到“D:\data.txt”这个位置里。
+
+连接数据库，根据要导入的数据块建立mysql数据库和表，
+
+CREATE TABLE `t` (
+  `swjgdm` varchar(32) DEFAULT NULL,
+  `swjgmc` varchar(1024) DEFAULT NULL,
+  `swjgjc` varchar(1024) DEFAULT NULL,
+  `swjgbz` varchar(32) DEFAULT NULL,
+  `swjgdmP` varchar(32) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+hxzon；注意，因为数据库使用utf8编码，所以文本文件需要使用utf8编码。
+
+然后使用命令：
+
+load data local infile 'D:\data.txt' into table tt fields terminated by '\t';
+
+
+=======
+2，将mysql导出成excel表格
+
+连接数据库，使用命令：
+
+select * into outfile 'D:\data2.txt' from tt where xxx;
+
+hxzon：导出的文件是utf8编码。
+
+打开excel，然后选择“数据”->“导入外部数据”->“导入数据”，选中“D:\data2.txt”。
+
+

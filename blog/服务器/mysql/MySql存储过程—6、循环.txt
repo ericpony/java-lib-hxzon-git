@@ -1,0 +1,86 @@
+﻿MySql存储过程—6、循环
+
+http://blog.csdn.net/rdarda/article/details/7880944
+=======
+
+在MySql的存储过程中可使用的循环有三种：WHILE、REPEAT、LOOP
+
+--------
+1、WHILE
+
+WHILE的格式是这样的：
+
+WHILE expression DO  
+   Statements  
+END WHILE  
+
+下面是个例子
+
+DELIMITER $$  
+  
+DROP PROCEDURE IF EXISTS `test`.`WhileLoopProc` $$  
+CREATE PROCEDURE `test`.`WhileLoopProc` ()  
+BEGIN  
+ DECLARE x  INT;  
+ DECLARE str  VARCHAR(255);  
+ SET x = 1;  
+ SET str =  '';  
+ WHILE x  <= 5 DO  
+     SET  str = CONCAT(str,x,',');  
+     SET  x = x + 1;  
+ END WHILE;  
+ SELECT str;  
+END $$  
+  
+DELIMITER ;  
+
+上面的例子最后输出“1,2,3,4,5,”这样的字符。
+
+--------
+2、REPEAT
+
+REPEAT的格式是这样的：
+
+
+REPEAT  
+Statements;  
+UNTIL expression  
+END REPEAT  
+
+
+REPEAT好比我们编程里面的do...while一样。这边例子就不举了，同上面的类似。
+
+--------
+3、LOOP 及 LEAVE、ITERATE
+
+这里LOOP用来标记循环；而LEAVE表示离开循环，好比编程里面的break一样；ITERATE则继续循环，类似于编程里面的continue。
+
+
+DELIMITER $$  
+  
+DROP PROCEDURE IF EXISTS `test`.`LoopProc` $$  
+CREATE PROCEDURE `test`.`LoopProc` ()  
+BEGIN  
+DECLARE x  INT;  
+DECLARE str  VARCHAR(255);  
+SET x = 1;  
+SET str =  '';  
+loop_label:  LOOP  
+  IF  x > 10 THEN  
+   LEAVE  loop_label;  
+  END  IF;  
+  SET  x = x + 1;  
+  IF  (x mod 2) THEN  
+   ITERATE  loop_label;  
+  ELSE  
+   SET  str = CONCAT(str,x,',');  
+  END  IF;  
+  
+END LOOP;  
+SELECT str;  
+END $$  
+  
+DELIMITER ;  
+
+上面代码输出10以内的偶数，用逗号分隔。这里注意到x>10的时候就LEAVE掉，如果遇到奇数则ITERATE，奇数对2取模为1，表示true
+
