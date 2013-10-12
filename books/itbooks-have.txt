@@ -279,6 +279,13 @@ Analysis Patterns : Reusable Object Models
 186，领域专用语言实战
 必买
 
+
+----
+187，D程序设计语言
+[美]Andrei Alexandrescu (作者), 张雪平 谭丽娜 (译者)
+52.40(7.6折)
+
+
 ----
 100，C++ Primer
 
