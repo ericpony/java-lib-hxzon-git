@@ -21,9 +21,36 @@ JSONObject.put(key,JSONObject.NULL)。
 
 3，
 
-JSONObject.put(key,string)时，字符会自动转换，要避免转换，可用
-JSONObject.put(key,new JSONLiteral(string))。
+JSONObject.put(key,string)时，字符会自动转换，要避免转换，
+需要自定义一个JSONString子类，如下：
 
+public class MyString implements JSONString {
+    private final String text;
+
+    public MyString(String text) {
+        this.text = text;
+    }
+
+    @Override
+    public String toString() {
+        return text;
+    }
+
+    public String toJSONString() {
+        return "\"" + text + "\"";
+    }
+
+}
+
+JSONObject.put(key,new MyString(string))。
+
+----
+另一个子类JSONLiteral，或原样输出（可用于输出js函数、变量等），如下：
+{"s1":s1}
+或
+{"s1Fun":function(){
+alert("s1");
+}}
 
 
 4，类库层次结构
