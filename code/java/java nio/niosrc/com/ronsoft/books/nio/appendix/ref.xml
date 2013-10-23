@@ -1,0 +1,829 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?xml-stylesheet type="text/css"
+href="file:/home/ron/Work/ronsoft/writing/books/javanio/code/com/ronsoft/books/nio/appendix/ref.css"
+?>
+<appendix id="appendix-quickref">
+    <title>NIO Quick Reference</title>
+
+    <desc>This appendix is a quick reference to the <acronym>NIO</acronym>
+    classes and interfaces. Packages, classes and methods are sorted
+    alphabetically to make things easier to find. The <acronym>API</acronym>
+    listings were created programmatically using the Java Reflection
+    <acronym>API</acronym> to extract information directly from the compiled
+    class files of the <acronym>JDK</acronym>. Regular expressions
+    (auto-generated from the class information) were used to retrieve
+    parameter names from the source. Descriptive text (like this) was composed
+    in <acronym>XML</acronym> then processed by an <acronym>XSL</acronym>
+    stylesheet to merge in the <acronym>API</acronym> information (by invoking
+    the Java code as an extension function) for each class.</desc>
+
+    <desc>The same convention is used here as in the main text. A missing
+    semicolon at the end of a method signature implies the method body follows
+    in the source. Abstract methods have an ending semicolon because they have
+    no concrete body. The values to which constants are initialized are not
+    listed.</desc>
+
+    <desc>This reference was generated against the <acronym>JDK</acronym>
+    1.4.0 release.</desc>
+
+    <package name="java.nio">
+        <desc>The <type>java.nio</type> package contains
+        <classname>Buffer</classname> classes which are used by classes in the
+        <type>java.nio.channels</type> and <type>java.nio.charset</type>
+        subpackages.</desc>
+
+        <class name="Buffer">
+            <desc><classname>Buffer</classname> is the base class from which
+            all other buffer classes extend. It contains generic methods
+            common to all buffer types.</desc>
+
+            <see>ByteBuffer</see>
+        </class>
+
+        <class name="ByteBuffer">
+            <desc><classname>ByteBuffer</classname> is the most complex and
+            versatile of all the buffer classes. Only byte buffers may
+            participate in <acronym>I/O</acronym> operations on channels to
+            send and receive data.</desc>
+
+            <see>Buffer</see>
+
+            <see>ByteOrder</see>
+        </class>
+
+        <class name="CharBuffer">
+            <desc><classname>CharBuffer</classname> manages data elements of
+            type <type>char</type>. <classname>CharBuffer</classname> also
+            implements the <classname>CharSequence</classname> interface which
+            allows it to participate in character-oriented operations such as
+            regular expression matching. <classname>CharBuffer</classname> is
+            also used by classes in the <type>java.nio.charset</type> package.</desc>
+
+            <see>Buffer</see>
+
+            <see>java.lang.CharSequence</see>
+
+            <see>java.util.regex.Matcher</see>
+        </class>
+
+        <class name="ByteOrder">
+            <desc><classname>ByteOrder</classname> is a type-safe enumeration
+            which cannot be instantiated directly. Two publicly accessible
+            instances of <classname>ByteOrder</classname> are visible as
+            static class fields. A class method is provided to determine the
+            native byte order of the underlying <acronym>OS</acronym>, which
+            may not be the same as the Java platform default.</desc>
+
+            <see>ByteBuffer</see>
+        </class>
+
+        <class name="DoubleBuffer">
+            <desc><classname>DoubleBuffer</classname> manages data elements of
+            type <type>double</type>. </desc>
+
+            <see>Buffer</see>
+        </class>
+
+        <class name="FloatBuffer">
+            <desc><classname>FloatBuffer</classname> manages data elements of
+            type <type>float</type>. </desc>
+
+            <see>Buffer</see>
+        </class>
+
+        <class name="IntBuffer">
+            <desc><classname>IntBuffer</classname> manages data elements of
+            type <type>int</type>.</desc>
+
+            <see>Buffer</see>
+        </class>
+
+        <class name="LongBuffer">
+            <desc><classname>LongBuffer</classname> manages data elements of
+            type <type>long</type>.</desc>
+
+            <see>Buffer</see>
+        </class>
+
+        <class name="ShortBuffer">
+            <desc><classname>ShortBuffer</classname> manages data elements of
+            type <type>short</type>.</desc>
+
+            <see>Buffer</see>
+        </class>
+
+        <class name="MappedByteBuffer">
+            <desc><classname>MappedByteBuffer</classname> is a special type of
+            <classname>ByteBuffer</classname> whose data elements are the
+            content of a disk file. <classname>MappedByteBuffer</classname>
+            objects can only be created by invoking the <function>map()</function>
+            method of a <classname>FileChannel</classname> object.</desc>
+
+            <see>Buffer</see>
+
+            <see>java.nio.channels.FileChannel</see>
+        </class>
+
+        <class name="BufferOverflowException">
+            <desc><classname>BufferOverflowException</classname> (unchecked)
+            is thrown when a simple relative <function>put()</function> is
+            attempted with a buffer&#39;s position equal to its limit, or when
+            a bulk <function>put()</function> would cause the position to
+            exceed the limit.</desc>
+
+            <see>Buffer</see>
+        </class>
+
+        <class name="BufferUnderflowException">
+            <desc><classname>BufferUnderflowException</classname> (unchecked)
+            is thrown when a simple relative <function>get()</function> is
+            attempted with a buffer&#39;s position equal to its limit, or when
+            a bulk <function>get()</function> would cause the position to
+            exceed the limit.</desc>
+
+            <see>Buffer</see>
+        </class>
+
+        <class name="InvalidMarkException">
+            <desc><classname>InvalidMarkException</classname> (unchecked) is
+            thrown when <function>reset()</function> is invoked on a buffer
+            which does not have a mark set.</desc>
+
+            <see>Buffer</see>
+        </class>
+
+        <class name="ReadOnlyBufferException">
+            <desc><classname>ReadOnlyBufferException</classname> (unchecked)
+            is thrown when a method which would modify the buffer content,
+            such as <function>put()</function> or <function>compact()</function>,
+            is invoked on a read-only buffer.</desc>
+
+            <see>Buffer</see>
+        </class>
+    </package>
+
+    <package name="java.nio.channels">
+        <desc>The <type>java.nio.channels</type> package contains the classes
+        and interfaces related to channels and selectors.</desc>
+
+        <class name="ByteChannel">
+            <desc><classname>ByteChannel</classname> is an empty aggregation
+            interface. It combines <classname>ReadableByteChannel</classname>
+            and <classname>WritableByteChannel</classname> into a single
+            interface but doesn&#39;t define any new methods.</desc>
+
+            <see>Channel</see>
+
+            <see>ReadableByteChannel</see>
+
+            <see>WritableByteChannel</see>
+        </class>
+
+        <class name="Channel">
+            <desc><classname>Channel</classname> is the super-interface of all
+            other channel interfaces. It defines the methods common to all
+            concrete channel classes.</desc>
+
+            <see>ByteChannel</see>
+
+            <see>ReadableByteChannel</see>
+
+            <see>WritableByteChannel</see>
+
+            <see>GatheringByteChannel</see>
+
+            <see>ScatteringByteChannel</see>
+        </class>
+
+        <class name="GatheringByteChannel">
+            <desc>The <classname>GatheringByteChannel</classname> interface
+            defines the methods which perform gathering writes to a channel.</desc>
+
+            <see>ByteChannel</see>
+
+            <see>ReadableByteChannel</see>
+
+            <see>WritableByteChannel</see>
+
+            <see>ScatteringByteChannel</see>
+        </class>
+
+        <class name="ScatteringByteChannel">
+            <desc>The <classname>ScatteringByteChannel</classname> interface
+            defines the methods which perform scattering reads from a channel.</desc>
+
+            <see>ByteChannel</see>
+
+            <see>ReadableByteChannel</see>
+
+            <see>WritableByteChannel</see>
+
+            <see>GatheringByteChannel</see>
+        </class>
+
+        <class name="InterruptibleChannel">
+            <desc><classname>InterruptibleChannel</classname> is a marker
+            interface which, if implemented, indicates a channel class is
+            interruptible. All selectable channels are interruptible.</desc>
+
+            <see>SelectableChannel</see>
+        </class>
+
+        <class name="ReadableByteChannel">
+            <desc>The <classname>ReadableByteChannel</classname> interface
+            defines the <function>read()</function> method which makes it
+            possible for a channel to read data from a channel into a
+            <classname>ByteBuffer</classname> object.</desc>
+
+            <see>ByteChannel</see>
+
+            <see>WritableByteChannel</see>
+
+            <see>ByteBuffer</see>
+        </class>
+
+        <class name="WritableByteChannel">
+            <desc>The <classname>WritableByteChannel</classname> interface
+            defines the <function>write()</function> method which makes it
+            possible to write data to a channel from a <classname>ByteBuffer</classname>.</desc>
+
+            <see>ByteChannel</see>
+
+            <see>ReadableByteChannel</see>
+
+            <see>ByteBuffer</see>
+        </class>
+
+        <class name="Channels">
+            <desc><classname>Channels</classname> is a utility class which
+            makes it possible for channels to inter-operate with traditional
+            byte and character streams. The factory methods return wrapper
+            objects which adapt channels to streams, or vice versa. The
+            channel objects returned may not be selectable nor interruptible.</desc>
+
+            <see>ReadableByteChannel</see>
+
+            <see>WritableByteChannel</see>
+
+            <see>java.io.InputStream</see>
+
+            <see>java.io.OutputStream</see>
+
+            <see>java.io.Reader</see>
+
+            <see>java.io.Writer</see>
+
+            <see>CharsetEncoder</see>
+
+            <see>CharsetDecoder</see>
+        </class>
+
+        <class name="DatagramChannel">
+            <desc>The <classname>DatagramChannel</classname> class provides
+            methods to send and receive datagram packets from and to
+            <classname>ByteBuffer</classname> objects, respectively.</desc>
+
+            <see>java.net.DatagramSocket</see>
+        </class>
+
+        <class name="FileChannel">
+            <desc>The <classname>FileChannel</classname> class provides a rich
+            set of file-oriented operations. <classname>FileChannel</classname>
+            objects may only be obtained by invoking the <function>getChannel()</function>
+            method on a <classname>RandomAccessFile</classname>,
+            <classname>FileInputStream</classname> or <classname>FileOutputStream</classname>
+            object.</desc>
+
+            <see>MappedByteBuffer</see>
+
+            <see>java.io.RandomAccessFile</see>
+
+            <see>java.io.FileInputStream</see>
+
+            <see>java.io.FileOutputStream</see>
+        </class>
+
+        <class name="FileLock">
+            <desc>The <classname>FileLock</classname> class encapsulates a
+            lock region associated with a <classname>FileChannel</classname>
+            object.</desc>
+
+            <see>FileChannel</see>
+        </class>
+
+        <class name="Pipe">
+            <desc><classname>Pipe</classname> is an aggregator class which
+            contains a pair of selectable channels. These channels are cross
+            connected to form a loopback. The <classname>SinkChannel</classname>
+            object is the write end of the pipe, whatever is written to it
+            becomes available for reading on the <classname>SourceChannel</classname>
+            object.</desc>
+
+            <see>Selector</see>
+
+            <see>SelectableChannel</see>
+        </class>
+
+        <class name="SelectableChannel">
+            <desc><classname>SelectableChannel</classname> is the common
+            superclass of all channels which are capable of participating in
+            selection operations under control of a <classname>Selector</classname>
+            object. <classname>SelectableChannel</classname> objects can be
+            placed in non-blocking mode and may only be registered with a
+            <classname>Selector</classname> while in non-blocking mode. All
+            classes which extend from <classname>SelectableChannel</classname>
+            also implement <classname>InterruptibleChannel</classname>.</desc>
+
+            <see>Selector</see>
+        </class>
+
+        <class name="SelectionKey">
+            <desc><classname>SelectionKey</classname> encapsulates the
+            registration of a <classname>SelectableChannel</classname> object
+            with a <classname>Selector</classname> object.</desc>
+
+            <see>Selector</see>
+
+            <see>SelectableChannel</see>
+        </class>
+
+        <class name="Selector">
+            <desc><classname>Selector</classname> is the orchestrating class
+            which performs readiness selection of registered
+            <classname>SelectableChannel</classname> objects and manages the
+            associated keys and state information.</desc>
+
+            <see>SelectionKey</see>
+
+            <see>SelectableChannel</see>
+        </class>
+
+        <class name="ServerSocketChannel">
+            <desc>The <classname>ServerSocketChannel</classname> class listens
+            for incoming socket connections and creates new
+            <classname>SocketChannel</classname> instances.</desc>
+
+            <see>SocketChannel</see>
+
+            <see>java.net.ServerSocket</see>
+
+            <see>java.net.SocketAddress</see>
+
+            <see>java.net.InetSocketAddress</see>
+        </class>
+
+        <class name="SocketChannel">
+            <desc><classname>SocketChannel</classname> objects transfer data
+            between byte buffers and network connections. </desc>
+
+            <see>ServerSocketChannel</see>
+
+            <see>java.net.Socket</see>
+
+            <see>java.net.SocketAddress</see>
+
+            <see>java.net.InetSocketAddress</see>
+        </class>
+
+        <class name="AlreadyConnectedException">
+            <desc><classname>AlreadyConnectedException</classname> (unchecked)
+            is thrown when <function>connect()</function> is invoked on a
+            <classname>SocketChannel</classname> object which is already
+            connected.</desc>
+
+            <see>SocketChannel</see>
+
+            <see>java.net.Socket</see>
+        </class>
+
+        <class name="AsynchronousCloseException">
+            <desc><classname>AsynchronousCloseException</classname> (subclass
+            of <classname>IOException</classname>) is thrown when a thread is
+            blocked on a channel operation, such as <function>read()</function>
+            or <function>write()</function>, and the channel is closed by
+            another thread.</desc>
+
+            <see>ClosedByInterruptException</see>
+        </class>
+
+        <class name="CancelledKeyException">
+            <desc><classname>CancelledKeyException</classname> (unchecked) is
+            thrown when attempting to use a <classname>SelectionKey</classname>
+            object which has been invalidated.</desc>
+
+            <see>SelectionKey</see>
+
+            <see>Selector</see>
+        </class>
+
+        <class name="ClosedByInterruptException">
+            <desc><classname>ClosedByInterruptException</classname> (subclass
+            of <classname>IOException</classname>) is thrown when a thread is
+            blocked on a channel operation, such as <function>read()</function>
+            or <function>write()</function>, and is interrupted by another
+            thread. The channel upon which the thread was sleeping will be
+            closed as a side-effect. This exception is similar to
+            <classname>AsynchronousCloseException</classname> but results when
+            the sleeping thread is directly interrupted.</desc>
+
+            <see>AsynchronousCloseException</see>
+
+            <see>java.lang.Thread</see>
+        </class>
+
+        <class name="ClosedChannelException">
+            <desc><classname>ClosedChannelException</classname> (subclass of
+            <classname>IOException</classname>) is thrown when an operation is
+            attempted on a channel which has been closed. Some channels, such
+            as <classname>SocketChannel</classname>, may be closed for some
+            operations but not others. For example, each side of a
+            <classname>SocketChannel</classname> may be shutdown independently
+            while the other continues to work normally.</desc>
+
+            <see>Channel</see>
+        </class>
+
+        <class name="ClosedSelectorException">
+            <desc><classname>ClosedSelectorException</classname> (unchecked)
+            is thrown when attempting to use a <classname>Selector</classname>
+            which has been closed.</desc>
+
+            <see>Selector</see>
+        </class>
+
+        <class name="ConnectionPendingException">
+            <desc><classname>ConnectionPendingException</classname>
+            (unchecked) is thrown when <function>connect()</function> is
+            invoked on a <classname>SocketChannel</classname> object in
+            non-blocking mode for which a concurrent connection is already in
+            progress.</desc>
+
+            <see>SocketChannel</see>
+        </class>
+
+        <class name="FileLockInterruptionException">
+            <desc><classname>FileLockInterruptionException</classname> is
+            thrown when a thread blocked waiting for a file lock to be granted
+            is interrupted by another thread. The <classname>FileChannel</classname>
+            will not have been closed, but upon catching this exception the
+            interrupt status of the interrupted thread will have been set. If
+            the thread does not take steps to clear its interrupt status (by
+            invoking <function>Thread.interrupted()</function>), it will cause
+            the next channel it touches to be closed.</desc>
+
+            <see>FileChannel</see>
+
+            <see>FileLock</see>
+
+            <see>java.lang.Thread</see>
+        </class>
+
+        <class name="IllegalBlockingModeException">
+            <desc><classname>IllegalBlockingModeException</classname>
+            (unchecked) is thrown when a channel operation is attempted which
+            applies only to a specific blocking mode and the channel is not
+            currently in the required mode.</desc>
+
+            <see>SelectableChannel</see>
+        </class>
+
+        <class name="IllegalSelectorException">
+            <desc><classname>IllegalSelectorException</classname> (unchecked)
+            is thrown when an attempt is made to register a
+            <classname>SelectableChannel</classname> with a
+            <classname>Selector</classname> from a different
+            <classname>SelectorProvider</classname> class. Selectors work only
+            with channels created by the same provider.</desc>
+
+            <see>SelectorProvider</see>
+        </class>
+
+        <class name="NoConnectionPendingException">
+            <desc><classname>NoConnectionPendingException</classname>
+            (unchecked) is thrown when <function>finishConnect()</function> is
+            invoked on a <classname>SocketChannel</classname> object in
+            non-blocking mode which has not previously invoked
+            <function>connect()</function> to begin the concurrent connection
+            process.</desc>
+
+            <see>SocketChannel</see>
+        </class>
+
+        <class name="NonReadableChannelException">
+            <desc><classname>NonReadableChannelException</classname>
+            (unchecked) is thrown when a <function>read()</function> method is
+            invoked on a channel which was not opened with read permission.</desc>
+
+            <see>ReadableByteChannel</see>
+        </class>
+
+        <class name="NonWritableChannelException">
+            <desc><classname>NonWritableChannelException</classname>
+            (unchecked) is thrown when a <function>write()</function> method
+            is invoked on a channel which was not opened with write
+            permission.</desc>
+
+            <see>WritableByteChannel</see>
+        </class>
+
+        <class name="NotYetBoundException">
+            <desc><classname>NotYetBoundException</classname> (unchecked) is
+            thrown when attempting to perform an operation, such as
+            <function>accept()</function>, on a <classname>ServerSocketChannel</classname>
+            which has not yet been bound to a port.</desc>
+
+            <see>java.net.ServerSocket</see>
+        </class>
+
+        <class name="NotYetConnectedException">
+            <desc><classname>NotYetConnectedException</classname> (unchecked)
+            is thrown when attempting to use a <classname>SocketChannel</classname>
+            object for <acronym>I/O</acronym> before <function>connect()</function>
+            has been called or before a concurrent connection has successfully
+            completed.</desc>
+
+            <see>SocketChannel</see>
+        </class>
+
+        <class name="OverlappingFileLockException">
+            <desc><classname>OverlappingFileLockException</classname>
+            (unchecked) is thrown when attempting to acquire a lock on a file
+            region already locked by the same <acronym>JVM</acronym>, or when
+            some other thread is waiting to lock an overlapping region
+            belonging to the same file.</desc>
+
+            <see>FileChannel</see>
+
+            <see>FileLock</see>
+        </class>
+
+        <class name="UnresolvedAddressException">
+            <desc><classname>UnresolvedAddressException</classname>
+            (unchecked) is thrown when attempting to use a
+            <classname>SocketAddress</classname> object which could not be
+            resolved to a real network address.</desc>
+
+            <see>java.net.SocketAddress</see>
+
+            <see>java.net.InetSocketAddress</see>
+
+            <see>SocketChannel</see>
+        </class>
+
+        <class name="UnsupportedAddressTypeException">
+            <desc><classname>UnsupportedAddressTypeException</classname>
+            (unchecked) is thrown when attempting to connect a socket with a
+            <classname>SocketAddress</classname> object which represents an
+            address type not supported by the socket implementation. </desc>
+
+            <see>java.net.SocketAddress</see>
+
+            <see>java.net.InetSocketAddress</see>
+        </class>
+    </package>
+
+    <package name="java.nio.channels.spi">
+        <desc>The <type>java.nio.channels.spi</type> package contains classes
+        used to create pluggable selectable channel implementations. Unlike
+        the other packages listed here, the classes in this package also list
+        protected methods. These classes provide common methods to be reused
+        by pluggable implementations but not all are intended for public
+        consumption.</desc>
+
+        <class name="AbstractInterruptibleChannel"
+               protected="true">
+            <desc>The <classname>AbstractInterruptibleChannel</classname>
+            class provides methods which implement interrupt semantics for
+            subclasses. </desc>
+        </class>
+
+        <class name="AbstractSelectableChannel"
+               protected="true">
+            <desc> The <classname>AbstractSelectableChannel</classname> is the
+            superclass of all channel implementations which are eligible to
+            participate in readiness selection.</desc>
+        </class>
+
+        <class name="AbstractSelectionKey"
+               protected="true">
+            <desc>The <classname>AbstractSelectionKey</classname> class
+            provides common routines used by <classname>SelectionKey</classname>
+            implementations.</desc>
+        </class>
+
+        <class name="AbstractSelector"
+               protected="true">
+            <desc>The <classname>AbstractSelector</classname> class is the
+            superclass of all <classname>Selector</classname> implementations.</desc>
+        </class>
+
+        <class name="SelectorProvider"
+               protected="true">
+            <desc>The <classname>SelectorProvider</classname> class is the
+            superclass of all concrete channel provider classes. This class is
+            only instantiated by the Service Provider Interface facility,
+            never directly. The fully qualified names of concrete subclasses
+            should be listed in a file named <filename>META-INF/services/java.nio.channels.spi.SelectorProvider</filename>
+            in the classloader&#39;s classpath.</desc>
+        </class>
+    </package>
+
+    <package name="java.nio.charset">
+        <desc>The <type>java.nio.charset</type> package contains classes
+        related to character set manipulation and transcoding.</desc>
+
+        <class name="Charset">
+            <desc>The <classname>Charset</classname> class encapsulates a
+            coded character set and associated coding schemes.</desc>
+
+            <see>CharsetEncoder</see>
+
+            <see>CharsetDecoder</see>
+        </class>
+
+        <class name="CharsetDecoder">
+            <desc>A <classname>CharsetDecoder</classname> instance transforms
+            an encoded sequence of bytes into a sequence of characters.
+            Instances of this class are stateful.</desc>
+
+            <see>Charset</see>
+
+            <see>CharsetEncoder</see>
+        </class>
+
+        <class name="CharsetEncoder">
+            <desc>A <classname>CharsetEncoder</classname> instance transforms
+            a character sequence to an encoded sequence of bytes. Instances of
+            this class are stateful.</desc>
+
+            <see>Charset</see>
+
+            <see>CharsetDecoder</see>
+        </class>
+
+        <class name="CoderResult">
+            <desc>A <classname>CoderResult</classname> object is returned by
+            <function>CharsetDecoder.decode()</function> and
+            <function>CharsetEncoder.encode()</function> to indicate the
+            result of a coding operation.</desc>
+
+            <see>CharsetDecoder</see>
+
+            <see>CharsetEncoder</see>
+
+            <see>CharacterCodingException</see>
+        </class>
+
+        <class name="CodingErrorAction">
+            <desc>The <classname>CodingErrorAction</classname> class is a
+            type-safe enumeration. The named instances are passed to
+            <classname>CharsetDecoder</classname> and <classname>CharsetEncoder</classname>
+            objects to indicate which action should be taken when coding
+            errors are encountered.</desc>
+
+            <see>CharsetDecoder</see>
+
+            <see>CharsetEncoder</see>
+
+            <see>CoderResult</see>
+        </class>
+
+        <class name="CharacterCodingException">
+            <desc><classname>CharacterCodingException</classname> is thrown to
+            indicate a character set coding error was encountered. This is the
+            parent class of the two specific coding error exceptions defined
+            in this package. The low level encoders and decoders do not throw
+            this exception, they return <classname>CoderResult</classname>
+            objects to indicate which type of error was encountered. In some
+            circumstances it&#39;s more appropriate to throw an exception to
+            higher level code. The <function>CharsetEncoder.encode()</function>
+            and <function>CharsetDecoder.decode()</function> convenience
+            methods may throw this exception, they&#39;re convenience wrappers
+            around the low-lever coder methods and make use of the
+            <function>CoderResult.throwException()</function> method.</desc>
+
+            <see>MalformedInputException</see>
+
+            <see>UnmappableCharacterException</see>
+
+            <see>CoderResult</see>
+        </class>
+
+        <class name="IllegalCharsetNameException">
+            <desc><classname>IllegalCharsetNameException</classname>
+            (unchecked) is thrown when a <classname>Charset</classname> name
+            is provided which does not comply with the charset naming rules.
+            Charset names must consist of <acronym>ASCII</acronym> letters
+            (upper or lower case), numeric digits, hyphens, colons,
+            underscores and periods only, and the first character must be a
+            letter or a digit.</desc>
+
+            <see>Charset</see>
+        </class>
+
+        <class name="MalformedInputException">
+            <desc><classname>MalformedInputException</classname> (subclass of
+            <classname>IOException</classname>) is thrown to indicate
+            malformed input was detected during a coding operation. The
+            <classname>CoderResult</classname> object provides a convenience
+            method to generate this exception when needed.</desc>
+
+            <see>CoderResult</see>
+
+            <see>UnmappableCharacterException</see>
+        </class>
+
+        <class name="UnmappableCharacterException">
+            <desc><classname>UnmappableCharacterException</classname>
+            (subclass of <classname>IOException</classname>) is thrown to
+            indicate the encoder or decoder cannot map one or more characters
+            from an otherwise valid input sequence. The
+            <classname>CoderResult</classname> object provides a convenience
+            method to generate this exception.</desc>
+
+            <see>CoderResult</see>
+
+            <see>MalformedInputException</see>
+        </class>
+
+        <class name="UnsupportedCharsetException">
+            <desc><classname>UnsupportedCharsetException</classname>
+            (unchecked) is thrown when a requested <classname>Charset</classname>
+            is not supported by the current <acronym>JVM</acronym>
+            environment.</desc>
+
+            <see>Charset</see>
+        </class>
+
+        <class name="CoderMalfunctionError">
+            <desc><classname>CoderMalfunctionError</classname> is thrown when
+            the <function>CharsetEncoder.encode()</function> or
+            <function>CharsetDecoder.decode()</function> methods catch an
+            unexpected exception from the low level <function>encodeLoop()</function>
+            or <function>decodeLoop()</function> methods.</desc>
+
+            <see>CharsetDecoder</see>
+
+            <see>CharsetEncoder</see>
+        </class>
+    </package>
+
+    <package name="java.nio.charset.spi">
+        <desc>The <type>java.nio.charset.spi</type> package contains a single
+        provider class used by the charset Service Provider Interface
+        mechanism.</desc>
+
+        <class name="CharsetProvider"
+               protected="true">
+            <desc><classname>CharsetProvider</classname> facilitates
+            installation of <classname>Charset</classname> implementations
+            into the running <acronym>JVM</acronym>. The fully qualified names
+            of concrete subclasses should be listed in a file named
+            <filename>META-INF/services/java.nio.charset.spi.CharsetProvider</filename>
+            in the classloaders&#39;s classpath to activate them via the
+            Service Provider Interface mechanism.</desc>
+
+            <see>Charset</see>
+        </class>
+    </package>
+
+    <package name="java.util.regex">
+        <desc>The <type>java.util.regex</type> package contains classes used
+        for Regular Expression processing.</desc>
+
+        <class name="Pattern">
+            <desc>The <classname>Pattern</classname> class encapsulates a
+            compiled regular expression.</desc>
+
+            <see>Matcher</see>
+
+            <see>java.lang.CharSequence</see>
+
+            <see>java.lang.String</see>
+        </class>
+
+        <class name="Matcher">
+            <desc>A <classname>Matcher</classname> object is a stateful
+            matching engine which examines an input character sequence to
+            detect regular expression matches and provide information about
+            successful matches.</desc>
+
+            <see>Pattern</see>
+
+            <see>java.lang.CharSequence</see>
+
+            <see>java.lang.String</see>
+        </class>
+
+        <class name="PatternSyntaxException">
+            <desc><classname>PatternSyntaxException</classname> (unchecked) is
+            thrown by <function>Pattern.compile()</function> (or any of the
+            convenience methods on <classname>Pattern</classname> or
+            <classname>String</classname> which take a regular expression
+            parameter) when the provided regular expression string contains
+            syntax errors.</desc>
+
+            <see>Pattern</see>
+        </class>
+    </package>
+</appendix>

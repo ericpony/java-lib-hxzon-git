@@ -1,0 +1,52 @@
+
+<project name="niocode" default="all" basedir=".">
+	<property name="workdir" value="work"/>
+	<property name="javasrc" value="."/>
+	<property name="classes" value="${workdir}"/>
+	<property name="jarname" value="nioexamples.jar"/>
+	<property name="metainf" value="META-INF"/>
+	<property name="sourcejar" value="niosrc.jar"/>
+
+	<target name="code">
+		<mkdir dir="${workdir}"/>
+		<mkdir dir="${classes}"/>
+		
+		<javac srcdir="${javasrc}" destdir="${classes}"
+			deprecation="on" debug="on">
+
+			<exclude name="boo/**"/>
+		</javac>
+	</target>
+
+	<target name="jar" depends="code">
+		<copy todir="${workdir}">
+			<fileset dir=".">
+				<include name="${metainf}/**"/>
+			</fileset>
+		</copy>
+		<jar jarfile="${jarname}" basedir="${workdir}">
+			
+		</jar>
+	</target>
+
+	<target name="all" depends="code,jar"/>
+
+	<target name="jikes">
+		<property name="build.compiler" value="jikes"/>
+		<antcall target="all"/>
+	</target>
+
+	<target name="clean">
+		<delete dir="${workdir}"/>
+	</target>
+
+	<target name="source" depends="jar">
+		<jar jarfile="${sourcejar}" basedir="${javasrc}">
+			<include name="build.xml"/>
+			<include name="com/**"/>
+			<include name="META-INF/**"/>
+			<include name="${jarname}"/>
+			<exclude name="**/apps/**"/>
+		</jar>
+	</target>
+</project>
