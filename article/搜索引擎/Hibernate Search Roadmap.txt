@@ -3,18 +3,21 @@
 创建于: 2013-5-28 下午12:16 作者 Sanne Grinovero - 最后修改:  2013-5-28 下午4:15 作者 Sanne Grinovero
 https://community.jboss.org/wiki/HibernateSearchRoadmap
 
-This is written to share our best effort intentions. Priorities might need to change, and your feedback will affect the roadmap.
+This is written to share our best effort intentions. 
+Priorities might need to change, and your feedback will affect the roadmap.
 Especially if you help in some area, we can make it happen quicker.
  
 You're welcome do discuss this on our mailing list https://lists.jboss.org/mailman/listinfo/hibernate-dev or on IRC (freenode #hibernate-dev - requires a registered account).
 
- 
+===========
 Hibernate Search 4.3
 
 Spatial features maturity
 Better integration with EAP 6.1 (Infinispan, Hibernate ORM, JGroups versions aligned)
 Improve clustering: better Infinispan and JGroups integration, ease of setup
- 
+改进集群：更好的集成Infinispan 和 JGroups，更容易搭建。
+
+===========
 Hibernate Search 4.4
 
 Metadata API
@@ -28,6 +31,7 @@ New quickstart demo / JDF
 (Google Summer of Code contributions)
 More performance regression tests
 
+===========
 Hibernate Search 5.0
 
 Migration to Apache Lucene 4.x
@@ -37,14 +41,18 @@ Define API / SPI abstraction to allow for future external backends integrations 
 Asynchronous FieldBridge (ex. improved Tika integration)
 Integration with ORM's multitenancy API
 (Google Summer of Code contributions)
+
+===========
 Hibernate Search 5.1
+
 CDI integration?
 High performance backend queues (low contention non blocking queues)
 Automated performance regression tests
 Infinispan 6.0
 New Faceting engine
 Auto suggestion and spell checking
- 
+
+===========
 Hibernate Search 5.2
 
 Pre-analysis of text in the transaction context (better remoting/clustering & scalability)
