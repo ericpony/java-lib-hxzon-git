@@ -1,0 +1,115 @@
+5本最佳的Java面向对象理论和设计模式的书籍
+
+
+http://www.importnew.com/6374.html
+
+Java程序员应该知道的10个面向对象理论
+http://javarevisited.blogspot.hk/2012/03/10-object-oriented-design-principles.html
+
+如何使用抽象类和接口
+http://javarevisited.blogspot.sg/2013/05/difference-between-abstract-class-vs-interface-java-when-prefer-over-design-oops.html
+
+为什么组合比接口要好
+http://javarevisited.blogspot.com/2013/06/why-favor-composition-over-inheritance-java-oops-design.html
+
+
+本文由 ImportNew - 唐小娟 翻译自 Javarevisited。如需转载本文，请先参见文章末尾处的转载要求。
+
+=====
+对于Java程序员来说，掌握面向对象的设计理论和一些设计模式是必备技能。
+就像我在另一篇博客Java程序员应该知道的10个面向对象理论中提到的，不学理论就开始编程，就类似于学习一种语言而不学习字母表。
+市面上有很多有关面向对象理论的、设计模式的和最佳实践的，但只有很少的书真正值得我们阅读。
+这里涉及两件事情，一个是面向对象理论，一个是设计模式。
+前者是基础，后者是在基于基础的最佳实践。
+我们应该先学习面向对象理论，再学习设计模式，来看看这些理论是如何帮助我们解决日常碰到的问题的。
+我为大家选择了以下的五本书，帮助大家学习面向对象理论和设计模式。
+这些书从浅到深。J2EE的设计模式和核心Java设计模式有一点点区别，但对Java程序员来说，核心的J2EE设计书籍也是学习的一个不错的选择。
+
+有关Java设计模式的最好的五本书
+
+以下是我学习面向对象和设计模式的书籍清单。
+设计模式是前人在解决某些相似问题时总结出的最佳实践。
+下面的五本书也适用于其他的面向对象语言。
+如果你知道其他优秀的设计模式的书籍，请推荐给我们。
+
+1. Head First Design Patterns by Elisabeth Freeman, Eric Freeman, Bert Bates, Kathy Sierra, Elisabeth Robson
+
+
+这是我读到的第一本Head First系列的书，也是第一本面向对象的书，
+在此之前，我不知道如何使用抽象类和接口，我也不知道为什么组合比接口要好。
+在最初的几年开发中，我往往根据需求来编写代码，然而在更多的改动，更多的测试之后，往往引入更多的bug。
+多亏了我的好学精神，我了发现Head First Design Pattern。
+读了第一节之后，我感到非常的愉悦。
+可以说这本书很基础，但是其实学习基础比学习高级的东西更难。
+这本书真正做到了教会我们基础。
+它是每一个Java程序员必读的设计模式书籍，包括经验丰富的资深程序员。
+我也建议学习设计模式就应该从这本书开始。
+它不仅用清晰的方法解释了概念，还给出了很多图表，练习，测试以及活生生的例子来帮助你思考和吸收。
+我是head first系列书籍的超级粉丝，就是因为Head First Java和Head First Design Pattern。Head First Design Pattern中有很多很棒的例子，
+任何想要学习面向对象基础的人（譬如接口，封装，多态，抽象等）都应该读读这本书。
+其中装饰模式(Decorator design pattern)和观察者模式(Observer design pattern)是非常好的两个章节。
+
+
+2. Design Patterns: Elements of Reusable Object-Oriented Software by Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides
+
+
+这是四人帮(GOF)的经典设计模式的书籍，它也是很多其他的面向对象设计模式书籍所借鉴的对象。
+如果关于设计模式的必读清单上没有这本书，那便是不完整的。
+出版了接近20年之后，这本书的主题依然紧贴面向对象和设计模式理论。
+这本书围绕着设计一个文档编辑器的例子，分别解释了多种设计模式，如Creational patterns, Structural and Behavioral patterns。
+个人浅见，这本书是最好的设计模式书籍。
+对于每个Java程序员来说，这本书以及Java concurrency in Practice和Effective Java都是必读书籍。
+你可以从亚马逊上购买这本书，有纸质版的，也有多媒体CD。
+
+
+3. Design Patterns Explained: A New Perspective on Object-Oriented Design (2nd Edition) by Alan Shalloway, James R. Trott
+
+
+就像多线程和并发一样，设计模式也不容易理解。
+其中最困难的部分就是理解之后应用到真实的例子中去。
+这就是为什么要多读几本Java的设计模式的书，非常值得这么做。
+因为对于某些程序员来说，某个作者的写作风格比其他作者更易读。
+但是Joshua Bloch是个例外，他的写作风格被部分程序员都适用。
+《Design Patterns Explained: A New Perspective on Object-Oriented Design》这本书是学习面相对象设计模式的另一本书。
+虽然它也没有什么新内容，也介绍了面向对象理论，UML以及装饰者模式、工厂模式、观察者模式等设计模式。
+但是它对于很多初学者来说更通俗易懂。这本书里的例子也非常棒。
+
+
+4. Software Architecture Design Patterns in Java by Partha Kuchana
+
+
+这是这个主题的又一本书，它不仅涵盖了所有的面向对象基础(类，对象，继承，多态，抽象，封装)，
+也包括了一些实用但不明显的细节，譬如私有方法，getter和setter方法，不可变对象，接口和监视器(monitor)。
+这本书还有一些更深入的面向对象的知识，如创建模式(Creational patterns), 集合模式(Collection patterns), 结构模式(Structural patterns), 
+行为模式(Behavioral patterns),和并发(Concurrency patterns)。
+对于工厂模式和单例模式的讲述也很有趣。
+我喜欢这本书的另一个原因在于，有很多实用的问题和UML图表，这样不仅能更深入的理解问题，
+也可以在实际应用方面有所帮助，实用也正是学习设计模式最重要的作用。
+最后这本书通过为网络主机公司设计软件的实例学习，来让我们将设计模式应用在真实的场景中。
+简而言之，《Software Architecture Design Patterns in Java》可以帮助你全面学习设计模式。
+
+
+5. Core J2EE Patterns: Best Practices and Design Strategies (2nd Edition) by Deepak Alur, Dan Malks, and John Crupi
+
+
+J2EE平台是Java程序语言的最流行的开发方法，它主要专注于解决网络和企业的问题，有一套自己的问题和需求。
+核心的J2EE模式描述了一些最有用的J2EE世界的设计模式，譬如拦截过滤器(Intercepting Filters)，前端控制器(Front Controller)，
+MVC模式，数据访问对象模式(Data Access Object, DAO Pattern)，
+视图协助器模式(View Helper Pattern)或视图解析器(View Resolver Pattern)，服务定位模式(Service Locator Pattern)等。
+这本书将设计模式按照功能分类，分为表示层的设计模式、逻辑层的设计模式等。
+对于每一个需要编写网络应用和企业应用的Java和J2EE程序员来说，这都是一本必读书籍。
+虽然现代的框架如Spring已经确保你在框架的层次接触到这些J2EE设计模式，
+譬如Spring MVC确保了MVC的使用，它也同时使用了前端控制器(DipatcherServlet)和视图解析器(ViewResolver)。
+同时Spring框架还在容器层保证使用依赖注入和IOC。
+总之，不管你使用Spring MVC, Structs还是其他web框架，学习J2EE模式不仅能帮助你理解前人写的代码，也能让你写出更容易维护的代码。
+
+
+除了以上的五本书，你可以看看Joshua Bloch的Effective Java第二版
+以及Head first object oriented analysis and design，
+你能知道更多面相对象的理论以及如何应用在Java编程中。
+Effective Java是Java程序员必读书籍，因为它解释了很多Java库如何设计的原理。
+
+
+
+原文链接： Javarevisited 翻译： ImportNew.com - 唐小娟
+译文链接： http://www.importnew.com/6374.html
