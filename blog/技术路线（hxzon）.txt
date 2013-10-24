@@ -55,26 +55,31 @@ scheme：抽象能力最强大？直接编译成可执行文件时比clojure更�
 clojure：对java友好。
 
 7，haskell
+
 编程思想的学习。《Real World Haskell》
 
 ---------------------
 java web框架
 
 1，tapestry5
+
 组件化，框架简洁清晰，容易自定义组件，复用性高。全局单例。
 没有富web组件。
 在用，继续深入。
 
 2，zk
+
 富web组件。关注。
 基于session，性能会有不足？
 自定义组件困难。
 
 3，spring mvc
+
 基于url（rest），关注。
 没有富web组件。
 
 4，jsf
+
 javeee标准。
 基于jsp，jsp不够灵活。
 自定义组件困难。
@@ -90,6 +95,7 @@ play1很受欢迎，但已停止开发。
 play2偏向scala，对java不友好？
 
 6，js
+
 需认真学习。
 编程思想的学习。实用。
 js mvc（angularjs），js ui（jquery，extjs，dojo）。
@@ -97,6 +103,7 @@ js mvc（angularjs），js ui（jquery，extjs，dojo）。
 7，nodejs
 
 8，vert.x——JVM上的Node.js替代者
+
 http://www.infoq.com/cn/news/2012/05/vertx
 
 
@@ -144,11 +151,13 @@ sql分散，修改字段名工作量多。（对比hibernate这是最大的缺�
 1，mysql
 简单好用。流行，开源。分支更优。
 
-2，oracle
+
+2，postgreSQL
+开源，据说比mysql强大。
+
+3，oracle
 收费。庞大。功能多，但用到的机会可能不多。
 
-3，postgreSQL
-开源，据说比mysql强大。
 
 
 -----------------
@@ -159,19 +168,25 @@ NoSql
 文本搜索。需认真学习。
 
 
-7，Elasticsearch
-关注。
+2，Elasticsearch
+关注。基于lucene，据说比solr更优。
+
+3，solr
+基于lucene。
+
+4，hibernate search
+基于lucene。
 
 
-2，hibernate search
+1，Mongodb
 
-3，Mongodb
+2，hive
 
-4，hive
+3，hbase
 
-5，hbase
+4，Cassandra
 
-6，Cassandra
+5，neo4j
 
 
 
