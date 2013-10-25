@@ -5,8 +5,28 @@ by hxzon
 1，一个选择键是否能够多种状态就绪？
 
 2，从通道读取数据时，一次read不一定完整，一次select也不一定完整。
+TCP协议，只保证你的数据可靠的顺次的被接收端接收，但是，每次接收多少，无法保证。
+
+多次数据也可能一次到达！（？）
+
+3，
 一个选择键对应一个通道，没有复用。
 
 在同一个select注册过的channel会得到同一个key实例。
 
 
+4，数据没全部读到的原因
+
+NIO的数据读写是异步操作，当操作系统的缓冲区满时，是无法成功写入的。
+socketChannel.write(ByteBuffer.wrap(buffer));
+这个方法，是有返回值的，返回写入数据的长度。
+
+hxzon：正解。正确的写法是如下循环写：
+
+int countTotalWrite = 0;
+while (bufSend.hasRemaining()) {
+	int countWrite = sc.write(bufSend);
+	countTotalWrite += countWrite;
+}
+
+5，
