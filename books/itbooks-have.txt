@@ -258,18 +258,19 @@ Analysis Patterns : Reusable Object Models
 ----
 156，
 面向模式的软件架构，卷1：模式系统
-
+2013年11月1日，页数：298页
+69.00
 --
 面向模式的软件架构，卷2：并发和联网对象模式
 
 --
 面向模式的软件架构，卷3：资源管理模式
 出版日期：2013-05，
-49.00，39.20(8折)，24.50(5折)，必买
+49.00，39.20(8折)，34.30(7折)，24.50(5折)，必买
 --
 面向模式的软件架构，卷4：分布式计算的模式语言
 出版日期：2010-06，页数：368，
-69.00，33.80(49折)，必买
+69.00，51.80(75折)，33.80(49折)，必买
 --
 面向模式的软件架构，卷5：模式与模式语言
 出版日期：2011-09，页数：284，
@@ -277,7 +278,7 @@ Analysis Patterns : Reusable Object Models
 
 ----
 186，领域专用语言实战
-必买
+64.50(9.3折)，必买
 
 
 ----
@@ -291,7 +292,7 @@ Analysis Patterns : Reusable Object Models
 
 --
 C++ Primer中文版(第5版)，2013年9月28日
-96.00(7.5折)，实用，想买
+96.00(7.5折)，89.60(7折)，实用，想买
 
 --
 C++ Primer (5th Edition),August 16, 2012,Stanley B. Lippman (Author), Josée Lajoie (Author), Barbara E. Moo (Author)
@@ -330,6 +331,7 @@ http://book.realworldhaskell.org/read/
 沙利文(Bryan O'sullivan)、戈尔(Jobn Goerzen)、 斯图尔特(Don Stewart) 
 东南大学出版社 (2010-01出版)
 缺货，编程思想的学习，想买，英文版是否有耐心读？
+中文版夭折，http://rwh.readthedocs.org/en/latest/
 --
 Parallel and Concurrent Programming in Haskell
 
@@ -350,12 +352,6 @@ http://product.dangdang.com/product.aspx?product_id=22577577
 ----
 168，七周七数据库
 Eric Redmond (作者), Jim R.Wilson (作者), 王海鹏 (译者), 田思源 (译者), 王晨 (译者) 
-44.20(7.5折)，想买，电子书优先
+44.20(7.5折)，41.30(7折)，不买，电子书优先
 
 
-----
-179，高可用MySQL：构建健壮的数据中心
-
-~ 查理斯·贝尔 (Bell.C.) (作者), 迈茨·肯德尔 (Kindahl.M.) (作者), 拉尔斯·塞尔曼 (Thalann.L.) (作者), 
-宁青 (译者), 唐李洋 (译者), 诸云萍 (译者) 
-73.90(7.5折)，56.80(5.8折)，47.80(4.9折)
