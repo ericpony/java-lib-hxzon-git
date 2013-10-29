@@ -1,0 +1,11 @@
+js-Spine
+
+================================
+使用decj简化Web前端开发（一）：声明式Javascript动态加载和浏览器事件绑定
+作者 黄文海 发布于 十月 17, 2013
+http://www.infoq.com/cn/articles/using-decj-simplify-web-front-end-development-part1
+
+使用decj简化Web前端开发（二）：声明式表单增强和页面初始化
+作者 黄文海 发布于 十月 24, 2013
+http://www.infoq.com/cn/articles/using-decj-simplify-web-front-end-development-part2
+

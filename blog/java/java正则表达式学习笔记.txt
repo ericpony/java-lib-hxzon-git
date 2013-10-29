@@ -1,0 +1,14 @@
+java正则表达式学习笔记
+
+by hxzon
+===========
+1，
+Pattern.compile(String pattern, int patternMode);
+
+跨行匹配：
+Pattern.DOTALL | Pattern.UNICODE_CASE | Pattern.MULTILINE//
+                | Pattern.UNIX_LINES | Pattern.UNICODE_CHARACTER_CLASS
+
+2，
+
+

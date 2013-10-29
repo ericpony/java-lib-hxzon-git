@@ -1,0 +1,12 @@
+搜索引擎参考文章
+
+by hxzon
+==========
+1，Next-generation search and analytics with Apache Lucene and Solr 4
+Use search engine technology to build fast, efficient, and scalable data-driven applications
+
+http://www.ibm.com/developerworks/opensource/library/j-solr-lucene/index.html
+
+2，
+
+
