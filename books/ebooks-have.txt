@@ -63,11 +63,6 @@ http://www.ituring.com.cn/book/924
 ==========================
 java-clojure
 
-----
-48，Programming Concurrency on the JVM
-英文打印版
-《Java虚拟机并发编程》，28.90(51折)
-
 
 ----
 127，Seven Languages in Seven Weeks
@@ -151,6 +146,16 @@ java
 
 ----
 java nio（中文版）
+
+----
+Java 7 Concurrency Cookbook
+http://ifeve.com/thread-synchronization-utilities-1/
+http://ifeve.com/concurrency-collection-9/
+
+----
+48，Programming Concurrency on the JVM
+英文打印版
+《Java虚拟机并发编程》，28.90(51折)
 
 ----
 151，Filthy Rich Clients,2007
