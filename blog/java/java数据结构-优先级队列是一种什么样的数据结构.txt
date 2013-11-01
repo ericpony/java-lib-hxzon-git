@@ -1,0 +1,169 @@
+java数据结构-优先级队列是一种什么样的数据结构
+
+本文由 ImportNew - 刘志军 翻译自 Javarevisited。如需转载本文，请先参见文章末尾处的转载要求。
+
+优先级队列（PriprityQueue）是一种无界队列，基于优先级堆，
+它的元素根据自然顺序或者通过实现Comparator接口的自定义排序方式进行排序。
+
+这篇文章，我们将创建一个Items的优先级队列，基于价格排序，优先级队列用来实现迪科斯彻算法（Dijkstra algorithm）非常实用。
+
+值得注意的是他的迭代器并不保证有序，如果需要按顺序遍历，最好使用Arrays.sort(pd.toArray())方法。
+
+同时它的实现不是同步的，意味着在多线程中不是线程安全的对象，可以取而代之的是PriorityBlockingQueue，它能用于多线程环境。
+
+优先级队列提供了O(log(n))时间在出队和入队的方法上，比如：offer()，poll()，add()，但是对于检索操作如：peek()，element()提供的是常量（固定）时间。
+
+如何使用PriorityQueue
+
+这里是如何使用PriorityQueue的一个例子，如上所说，你可以使用特定的顺序来组织元素，可以是自然顺序或者元素实现Comparator接口，
+这个例子中，我们把Items对象放入优先级队列中，按照价格排序，你可以注意下Item类的compareTo方法，它与equals方法是保持一致的，
+这里把Item类作为内部静态类，把item存储在优先级队列中，
+你可以一直使用poll()方法获取价格最低的那个item。
+
+
+package test;
+ 
+import java.util.PriorityQueue;
+import java.util.Queue;
+ 
+/**
+  * Java Program to show How to use PriorityQueue in Java. This example also demonstrate
+  * that PriorityQueue doesn't allow null elements and how PriorityQueue keeps elements i.e. ordering.
+  *
+  * @author
+ */
+public class PriorityQueueTest {
+ 
+    public static void main(String args[]) {
+ 
+        Queue<Item> items = new PriorityQueue<Item>();
+        items.add(new Item("IPone", 900));
+        items.add(new Item("IPad", 1200));
+        items.add(new Item("Xbox", 300));
+        items.add(new Item("Watch", 200));
+ 
+        System.out.println("Order of items in PriorityQueue");
+        System.out.println(items);
+ 
+        System.out.println("Element consumed from head of the PriorityQueue : " + items.poll());
+        System.out.println(items);
+ 
+        System.out.println("Element consumed from head of the PriorityQueue : " + items.poll());
+        System.out.println(items);
+ 
+        System.out.println("Element consumed from head of the PriorityQueue : " + items.poll());
+        System.out.println(items);
+ 
+        //items.add(null); // null elements not allowed in PriorityQueue - NullPointerException
+ 
+    }
+ 
+    private static class Item implements Comparable<Item> {
+ 
+        private String name;
+        private int price;
+ 
+        public Item(String name, int price) {
+            this.name = name;
+            this.price = price;
+        }
+ 
+        public String getName() {
+            return name;
+        }
+ 
+        public int getPrice() {
+            return price;
+        }
+ 
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Item other = (Item) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            if (this.price != other.price) {
+                return false;
+            }
+            return true;
+        }
+ 
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 97  hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 97  hash + this.price;
+            return hash;
+        }
+ 
+        @Override
+        public int compareTo(Item i) {
+            if (this.price == i.price) {
+                return this.name.compareTo(i.name);
+            }
+ 
+            return this.price - i.price;
+        }
+ 
+        @Override
+        public String toString() {
+            return String.format("%s: $%d", name, price);
+        }      
+ 
+    }
+}
+Output:
+
+
+Order of items in PriorityQueue
+ 
+[Watch: $200, Xbox: $300, IPone: $900, IPad: $1200]
+Element consumed from head of the PriorityQueue : Watch: $200
+ 
+[Xbox: $300, IPad: $1200, IPone: $900]
+Element consumed from head of the PriorityQueue : Xbox: $300
+ 
+[IPone: $900, IPad: $1200]
+Element consumed from head of the PriorityQueue : IPone: $900
+ 
+[IPad: $1200]
+
+从上面的输出结果可以很清晰的看到优先级对象始终把最小的值保存在头部，它的排序规则取决于compareTo()方法，
+尽管它不一定所有元素都是按序排列的，但是它能保证队列的头一定是最小的元素，
+这也是TreeSet和PriorityQueue的区别，
+前者能保证所有元素按序排列，而优先级队列仅仅保证列的头是有序的，
+另一个需要注意的地方是PriorityQueue并不允许null元素存在，如果尝试添加null值，那么就会抛出NullPointException异常：
+
+
+Exception in thread "main" java.lang.NullPointerException
+        at java.util.PriorityQueue.offer(PriorityQueue.java:265)
+        at java.util.PriorityQueue.add(PriorityQueue.java:251)
+        at test.PriorityQueueTest.main(PriorityQueueTest.java:36)
+Java Result: 1
+
+总结：
+
+和所有其他集合类一样，值得注意一下几点：
+
+1，优先级队列不是同步的，如果需要保证线程安全那么请使用PriorityBlockingQueue
+
+2，队列的获取操作如poll(),peek()和element()是访问的队列的头，保证获取的是最小的元素（根据指定的排序规则）
+
+3，返回的迭代器并不保证提供任何的有序性
+
+4，优先级队列不允许null元素，否则抛出NullPointException。
+
+以上所有就是有关优先级队列的全部，它是一个很特别的类，用在一些特性的情景。
+
+记住：BlockingQueue维持的是插入的顺序，
+如果想维持自定义的顺序，PriorityQueue或者PriorityBlockingQueue是正确的选择，
+TreeSet提供类似的功能，但是没有类似的检索+移除的方法：poll()
+
+原文链接： Javarevisited 翻译： ImportNew.com - 刘志军
+译文链接： http://www.importnew.com/6510.html

@@ -9,3 +9,7 @@ http://www.infoq.com/cn/articles/using-decj-simplify-web-front-end-development-p
 作者 黄文海 发布于 十月 24, 2013
 http://www.infoq.com/cn/articles/using-decj-simplify-web-front-end-development-part2
 
+使用decj简化Web前端开发（三）：声明式国际化
+作者 黄文海 发布于 十月 31, 2013
+http://www.infoq.com/cn/articles/using-decj-simplify-web-front-end-development-part3
+
