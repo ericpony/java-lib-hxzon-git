@@ -1,0 +1,37 @@
+Eclipse反编译工具Jad及插件JadClipse配置
+
+http://www.blogjava.net/landon/archive/2010/07/16/326294.html
+http://varaneckas.com/jad/
+http://sourceforge.net/projects/jadclipse/?source=dlp
+
+
+Jad是一个Java的一个反编译工具，是用命令行执行，和通常JDK自带的java，javac命令是一样的。
+不过因为是控制台运行，所以用起来不太方便。
+不过幸好有一个eclipse的插件JadClipse，二者结合可以方便的在eclipse中查看class文件的源代码。
+
+下面介绍一下配置：
+
+A.下载JadClipse，http://jadclipse.sourceforge.net/wiki/index.php/Main_Page#Download，
+注意选择与eclipse版本一致的版本，我用的是Eclipse3.4，所以选择下载版本net.sf.jadclipse_3.3.0.jar
+
+B.下载Jad，http://www.varaneckas.com/jad，下载相应版本
+
+C.将下载下来的Jadclipse，如net.sf.jadclipse_3.3.0.jar拷贝到Eclipse下的plugins目录即可。
+
+D.将Jad.exe拷贝到JDK安装目录下的bin文件下（方便，与java，javac等常用命令放在一起，可以直接在控制台使用jad命令）。
+
+F.然后，重新启动Eclipse，找到Eclipse->Window->Preferences->Java，此时你会发现会比原来多了一个JadClipse的选项，单击。
+
+在Path to decompiler中输入你刚才放置jad.exe的位置。
+当然在JadClipse下还有一些子选项，如Debug，Directives等，按照默认配置即可。
+
+G.基本配置完毕后，我们可以查看一下“class”“class without source”文件的默认打开方式，
+Eclipse->Window->Preferences->General->Editors->File Associations。
+
+我们可以看到class文件的打开方式有两个，JadClipse和Eclipse自带的Class File Viewer，而JadClipse是默认的。
+
+H.全部配置完成，下面我们可以查看源码了，选择需要查看的类，按F3即可查看源码，如查看Annotation中的Target。
+
+使用jad查看源码，大家可以看到最上面的一行：
+
+"/*jadclipse*/// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov."，说明是由jad反编译的。
