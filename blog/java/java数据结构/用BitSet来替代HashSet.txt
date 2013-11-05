@@ -1,0 +1,64 @@
+用BitSet来替代HashSet
+
+http://www.importnew.com/977.html
+
+我一直都在阅读Apache dev以及Apache Commons dev的邮件列表。你最好也去阅读一下，里面经常会有一些非常有意思的讨论。
+有时候你需要参与，有时候你只需要看看他们在讨论什么，不管怎样，最终你一定会有所收获的。
+
+几天前，我发现一个话题，它提出要把ArrayUtils里的removeElements()方法中使用的HashSet用BitSet来替换。
+下面是大致的代码：
+
+
+HashSet<Integer> toRemove = new HashSet<Integer>(); //改动之前
+for (Map.Entry<Character, MutableInt> e : occurrences.entrySet()) {
+    Character v = e.getKey();
+    int found = 0;
+    for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
+        found = indexOf(array, v.charValue(), found);
+        if (found < 0) {
+            break;
+        }
+        toRemove.add(found++); //改动之前
+    }
+}
+return (char[]) removeAll((Object)array, extractIndices(toRemove)); //改动之前
+
+上面代码的第一行创建的HashSet是用来保存要删除的元素的下标。
+第13行的代码调用了removeAll方法，并且把要删除的元素的下标传给这个方法。
+
+下面是修改后的大致代码：
+
+BitSet toRemove = new BitSet(); //这里改动
+for (Map.Entry<Character, MutableInt> e : occurrences.entrySet()) {
+    Character v = e.getKey();
+    int found = 0;
+    for (int i = 0, ct = e.getValue().intValue(); i < ct; i++) {
+        found = indexOf(array, v.charValue(), found);
+        if (found < 0) {
+            break;
+        }
+        toRemove.set(found++); //这里改动
+    }
+}
+return (char[]) removeAll(array, toRemove); //这里改动
+
+
+第一个不同点在第1行，这里用BitSet替代了HashSet。
+在第10行，原来是在HashSet里添加一个新的元素来表示要删除的内容，现在改成只用设置设置BitSet里的某一位（把指定位置的元素设为true）。
+在第13行有几个很重要的改变。
+首先removeAll方法被改变了，不再需要进行强制类型转换。
+其次，不需要对HashSet里的元素进行转换，因为对应索引的位置已经在BitSet里被设置为ture。
+因此，extractIndices方法也可以去掉。
+
+代码现在变得更加简洁了。但这并不是全部。
+在Apache软件基金会，你可以发现很多有天赋的开发者——这就是我加入了他们之后变得非常激动的原因。
+除了简化代码之外，负责这些修改的开发者（seeb）还指出了相比旧代码而言，新代码消耗更少的内存，而且运行得更快。
+对了，他还写了单元测试。
+
+ 
+
+英文原文：kinoshita，编译：ImportNew - 朱伟杰
+
+译文链接： http://www.importnew.com/977.html
+
+

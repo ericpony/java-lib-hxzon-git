@@ -3,4 +3,8 @@
 1，数据库设计-从传统方式到事实表加维表的方式1
 http://virusswb.blog.51cto.com/115214/1205589
 
-2，
+2，从头开始实现领域驱动设计
+http://www.infoq.com/cn/news/2013/11/ddd-ground-up
+
+3，
+
