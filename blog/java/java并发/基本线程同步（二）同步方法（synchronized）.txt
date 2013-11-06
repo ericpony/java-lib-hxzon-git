@@ -1,0 +1,268 @@
+基本线程同步（二）同步方法（synchronized）
+http://ifeve.com/basic-thread-synchroinzation-2/
+
+声明：本文是《 Java 7 Concurrency Cookbook 》的第二章，作者： Javier Fernández González     译者：许巧辉 校对：方腾飞
+
+=========
+同步方法
+
+在这个指南中，我们将学习在Java中如何使用一个最基本的同步方法，即使用 synchronized关键字来控制并发访问方法。
+只有一个执行线程将会访问一个对象中被synchronized关键字声明的方法。
+如果另一个线程试图访问同一个对象中任何被synchronized关键字声明的方法，它将被暂停，直到第一个线程结束方法的执行。
+
+换句话说，每个方法声明为synchronized关键字是一个临界区，Java只允许一个对象执行其中的一个临界区。
+
+静态方法有不同的行为。
+只有一个执行线程访问被synchronized关键字声明的静态方法，但另一个线程可以访问该类的一个对象中的其他非静态的方法。 你必须非常小心这一点，因为两个线程可以访问两个不同的同步方法，如果其中一个是静态的而另一个不是。
+如果这两种方法改变相同的数据,你将会有数据不一致 的错误。
+
+为了学习这个概念，我们将实现一个有两个线程访问共同对象的示例。
+我们将有一个银行帐户和两个线程：其中一个线程将钱转移到帐户而另一个线程将从账户中扣款。
+在没有同步方法，我们可能得到不正确的结果。
+同步机制保证了账户的正确。
+
+===========
+准备工作
+
+这个指南的例子使用Eclipse IDE实现。如果你使用Eclipse或其他IDE，如NetBeans，打开它并创建一个新的Java项目。
+
+如何做…
+
+按以下步骤来实现的这个例子:
+
+1.创建一个Account类来模拟我们的银行账户。它只有一个double类型的属性，名为balance。
+
+1
+public class Account {
+2
+private double balance;
+2.实现setBalance()和getBalance()方法来写和读balance属性的值。
+
+1
+public double getBalance() {
+2
+return balance;
+3
+}
+4
+public void setBalance(double balance) {
+5
+this.balance = balance;
+6
+}
+3.实现一个addAmount()方法，用来根据传入的参数增加balance的值。
+由于应该只有一个线程能改变balance的值，所以使用synchronized关键字将这个方法转换成临界区。
+
+01
+public synchronized void addAmount(double amount) {
+02
+double tmp=balance;
+03
+try {
+04
+Thread.sleep(10);
+05
+} catch (InterruptedException e) {
+06
+e.printStackTrace();
+07
+}
+08
+tmp+=amount;
+09
+balance=tmp;
+10
+}
+4.实现一个subtractAmount()方法，用来根据传入的参数减少balance的值。
+由于应该只有一个线程能改变balance的值，所以使用synchronized关键字将这个方法转换成临界区。
+
+01
+public synchronized void subtractAmount(double amount) {
+02
+double tmp=balance;
+03
+try {
+04
+Thread.sleep(10);
+05
+} catch (InterruptedException e) {
+06
+e.printStackTrace();
+07
+}
+08
+tmp-=amount;
+09
+balance=tmp;
+10
+}
+5.实现一个类来模拟ATM，它调用subtractAmount()方法来减少账户上的余额（balance值）。这个类必须实现Runnable接口，作为一个线程执行。
+
+1
+public class Bank implements Runnable {
+6.在这个类中，添加一个Account对象。实现构造器用来初始化account的值。
+
+1
+private Account account;
+2
+public Bank(Account account) {
+3
+this.account=account;
+4
+}
+7.实现run()方法。它将调用100次account对象上的subtractAmount()方法，用来减少余额（balance值）。
+
+1
+@Override
+2
+public void run() {
+3
+for (int i=0; i<100; i++){
+4
+account.subtractAmount(1000);
+5
+}
+6
+}
+8.实现一个类来模拟公司，它调用addAmount()方法来增加账户上的余额（balance值）。这个类必须实现Runnable接口，作为一个线程执行。
+
+1
+public class Company implements Runnable {
+9.在这个类中，添加一个Account对象。实现构造器用来初始化account的值。
+
+1
+private Account account;
+2
+public Company(Account account) {
+3
+this.account=account;
+4
+}
+10.实现run()方法。它将调用100次account对象上的addAmount()方法，用来增加余额（balance值）。
+
+1
+@Override
+2
+public void run() {
+3
+for (int i=0; i<100; i++){
+4
+account.addAmount(1000);
+5
+}
+6
+}
+11.通过创建一个类，类名为main，包含main()方法来实现应用程序的主类。
+
+1
+public class Main {
+2
+public static void main(String[] args) {
+12.创建一个Account对象，并且初始化balance值为1000。
+
+1
+Account account=new Account();
+2
+account.setBalance(1000);
+13.创建一个Company对象，并且用一个线程来运行它。
+
+1
+Company company=new Company(account);
+2
+Thread companyThread=new Thread(company);
+14.创建一个Bank对象，并且用一个线程来运行它。
+
+1
+Bank bank=new Bank(account);
+2
+Thread bankThread=new Thread(bank);
+15.在控制台打印balance初始值。
+
+1
+System.out.printf("Account : Initial Balance: %f\n",account.getBalance());
+启动这些线程。
+
+1
+companyThread.start();
+2
+bankThread.start();
+16.等待两个使用join()方法结束的线程，并且在控制台打印账户的最终余额（balance值）。
+
+1
+try {
+2
+companyThread.join();
+3
+bankThread.join();
+4
+System.out.printf("Account : Final Balance: %f\n",account.getBalance());
+5
+} catch (InterruptedException e) {
+6
+e.printStackTrace();
+7
+}
+
+==========
+它是如何工作的…
+
+在 这个指南中，你已经开发了一个增加和减少模拟银行账户的类的余额的应用程序。
+在这个程序中，每次都调用100次addAmount()方法来增加1000 的余额和调用100次subtractAmount()方法来减少1000的余额。
+你应该期望最终的余额和初始的余额是相等的。
+你试图促使一个错误情况使 用tmp变量来存储账户余额，所以你读取帐户余额,你增加临时变量的值，然后你再次设置账户的余额值。
+另外，你通过使用Thread类的sleep()方 法引入一个小延迟，让执行该方法的线程睡眠10毫秒，
+所以，如果另一个线程执行该方法,它可以修改账户的余额来引发一个错误。
+这是 synchronized关键字机制，避免这些错误。
+
+如果你想看到并发访问共享数据的问题，那么就删除addAmount()和 subtractAmount()方法的synchronized关键字，然后运行该程序。
+在没有synchronized关键字的情况下，当一个线程在 睡眠后再读取账户的余额，另一个方法将读取该账户的余额。
+所以这两个方法将修改相同的余额并且其中一个操作不会反映在最终的结果。
+
+正如你所看到下面的截图,你会获得不一致的结果：
+
+1
+
+如果你一直运行这个程序,你会得到不同的结果。
+在JVM中，线程的执行顺序是没有保证的。
+所以每次你执行时，线程会在一个不同的顺序下读和修改账户的余额，所以最后的结果将是不同的。
+
+现在，正如你前面所学的，添加synchronized关键字，再次运行这个程序。
+正如你所看到下面的截图，你获得期望的结果。
+如果你一直运行这个程序，你会得到相同的结果。参考下面的截图：
+
+2
+
+使用synchronized关键字，在并发应用程序中，我们保证了正确地访问共享数据。
+
+如我们在介绍中提到的这个指南，只有一个线程能访问一个对象的声明为synchronized关键字的方法。
+如果一个线程A正在执行一个 synchronized方法，而线程B想要执行同个实例对象的synchronized方法，它将阻塞，直到线程A执行完。
+但是如果线程B访问相同类的不同实例对象，它们都不会被阻塞。
+
+=====
+不止这些…
+
+synchronized关键字不利于应用程序的性能，所以你必须仅在修改共享数据的并发环境下的方法上使用它。
+如果你有多个线程正在调用一个synchronized方法，在同一时刻只有一个线程执行它，而其他的线程将会等 待。
+如果这个操作没有使用synchronized关键字，所有线程可以在同一时刻执行这个操作，减少总的执行时间。
+如果你知道一个方法将不会被多个线程 调用，请不要使用synchronized关键字。
+
+你可以使用递归调用synchronized方法。
+当线程访问一个对象的synchronized方法，你可以调用该对象的其他synchronized方法，包括正在执行的方法。
+它将不会再次访问synchronized方法。
+
+我 们可以使用synchronized关键字来保护访问的代码块，替换在整个方法上使用synchronized关键字。
+我们应该使用 synchronized关键字以这样的方式来保护访问的共享数据，其余的操作移除此代码块，这将会获得更好的应用程序性能。
+这个目标就是让临界区（在同 一时刻可以被多个线程访问的代码块）尽可能短。
+我们已经使用了synchronized关键字来保护访问指令，将不使用共享数据的长操作移除此代码块。
+当 你以这个方式使用synchronized关键字，你必须通过一个对象引用作为参数。
+只有一个线程可以访问那个对象的synchronized代码（代码 块或方法）。
+通常，我们将使用this关键字引用执行该方法的对象。
+
+1
+synchronized (this) {
+2
+// Java code
+3
+}
+
+（全文完）
