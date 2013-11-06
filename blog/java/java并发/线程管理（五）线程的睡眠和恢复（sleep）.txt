@@ -1,0 +1,113 @@
+线程管理（五）线程的睡眠和恢复（sleep）
+http://ifeve.com/thread-management-6/
+
+声明：本文是《 Java 7 Concurrency Cookbook 》的第一章， 作者： Javier Fernández González 译者：郑玉婷 校对：欧振聪
+
+========
+线程的睡眠与恢复
+
+有时, 你会感兴趣在一段确定的时间内中断执行线程。
+例如, 程序的一个线程每分钟检查反应器状态。
+其余时间，线程什么也不做。在这段时间，线程不使用任何计算机资源。
+过了这段时间，当JVM选择它时，线程会准备好继续执行。
+为达此目的，你可以使用Thread类的 sleep() 方法 。
+此方法接收一个整数作为参数，表示线程暂停运行的毫秒数。 
+在调用sleep() 方法后，当时间结束时，当JVM安排他们CPU时间，线程会继续按指令执行，
+
+另一种可能是使用一个有TimeUnit列举元素的sleep() 方法，
+使用线程类的 sleep() 方法让当前线程睡眠，但是它接收的参数单位是表示并转换成毫秒的。
+
+在这个指南中, 我们将开发一个程序使用sleep()方法来每秒写入真实的日期。
+
+=========
+准备
+
+指南中的例子是使用Eclipse IDE 来实现的。如果你使用Eclipse 或者其他的IDE，例如NetBeans, 打开并创建一个新的java项目。
+
+怎么做呢…
+
+按照这些步骤来实现下面的例子：:
+
+1.   创建一个类名为 FileClock，并一定实现Runnable接口。
+
+1
+public class FileClock implements Runnable {
+2.   实现  run() 方法。
+
+1
+@Override
+2
+public void run() {
+3.   写一个10次循环的环。在每次循环，创建一个Date对象，
+写入文本并调用TimeUnit 类有SECONDS属性的sleep()方法来暂停线程1秒的运行。
+根据这个值，线程会停止将近一秒。
+当然 sleep() 方法 可以抛出一个 InterruptedException 异常，我们要加入捕捉代码。
+被中断时，解放或关闭正在使用的线程资源是好习惯。
+
+1
+for (int i = 0; i < 10; i++) {
+2
+  System.out.printf("%s\n", new Date());
+3
+  try {
+4
+      TimeUnit.SECONDS.sleep(1);
+5
+  } catch (InterruptedException e) {
+6
+      System.out.printf("The FileClock has been interrupted");
+7
+  }
+8
+}
+9
+}
+4.   我们已经实现了线程。 现在，让我们来实现例子的主类吧。创建一个类名为 FileMain ，包含 main() 方法。
+
+1
+public class FileMain {
+2
+public static void main(String[] args) {
+5.   创建FileClock类的对象并让一个线程执行它。然后，开始执行线程。
+
+1
+FileClock clock=new FileClock();
+2
+Thread thread=new Thread(clock);
+3
+thread.start();
+6.   在主线程调用TimeUnit类有SECONDS属性的 sleep() 方法来等待5秒。
+
+1
+try {
+2
+  TimeUnit.SECONDS.sleep(5);
+3
+} catch (InterruptedException e) {
+4
+  e.printStackTrace();
+5
+};
+7.   中断 FileClock 线程。
+
+1
+thread.interrupt();
+8.   运行例子并查看结果。
+
+=========
+它是怎么工作的…
+
+当你运行这个例子，你可以发现程序是如何每秒写入一个Date对象的，然后，有信息显示FileClock线程被中断。
+
+当你调用sleep()方法， Thread 离开CPU并在一段时间内停止运行。
+在这段时间内，它是不消耗CPU时间的，使用可以执行其他任务。
+
+当 Thread 是睡眠和中断的时候（？hxzon），那方法会立刻抛出InterruptedException异常并不会一直等到睡眠时间过去。
+
+更多…
+
+Java 并发 API 有另一种方法能让线程对象离开 CPU。
+它是 yield() 方法, 它向JVM表示线程对象可以让CPU执行其他任务。
+JVM 不保证它会遵守请求。通常，它只是用来试调的。
+
+（全文完）
