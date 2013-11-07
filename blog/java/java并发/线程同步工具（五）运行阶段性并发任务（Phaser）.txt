@@ -6,6 +6,9 @@ hxzon修订。
 声明：本文是《 Java 7 Concurrency Cookbook 》的第三章， 作者： Javier Fernández González 译者：郑玉婷
 
 ========
+hxzon：假设移相器的参与者为n，前(n-1)次arriveAndAwaitAdvance()会休眠，第n次arriveAndAwaitAdvance()会全部继续运行（同时进入下一相位）。
+
+========
 运行阶段性并发任务
 
 Java 并发 API 提供的一个非常复杂且强大的功能是，能够使用Phaser类运行阶段性的并发任务。
@@ -74,9 +77,9 @@ public class FileSearch implements Runnable {
 019
  
 020
-    // 5. 最后，声明一个私有 Phaser 属性来控制任务的不同phaser的同步。
+    
 021
-    private Phaser phaser;
+    private Phaser phaser;// 5. 最后，声明一个私有 Phaser 属性来控制任务的不同phaser的同步。
 022
  
 023
@@ -164,9 +167,9 @@ public class FileSearch implements Runnable {
 062
  
 063
-        // 10. 然后，浏览结果list里的所有元素。对于每个路径，为文件创建File对象 go through all the elements
+        // 10. 然后，浏览结果list里的所有元素。对于每个路径，为文件创建File对象 
 064
-        // of the results list. For each path in the list of results, create a
+        // go through all the elements of the results list. For each path in the list of results, create a
 065
         // File object for that file and get the last modified date for it.
 066
@@ -455,6 +458,8 @@ FileSearch对象的 run() 方法中的第一个指令是调用Phaser对象的 ar
 当某个线程调用此方法，Phaser减少终结actual phase的线程数，并让这个线程进入休眠 直到全部其余线程结束phase。
 在run() 方法前面调用此方法，没有任何 FileSearch 线程可以开始他们的工作，直到全部线程被创建。
 
+（hxzon：前(n-1)次arriveAndAwaitAdvance()会休眠，第n次arriveAndAwaitAdvance()会全部继续运行。）
+
 在phase 1 和 phase 2 的末端，我们检查phase 是否生成有元素的结果list,或者它没有生成结果且list为空。
 在第一个情况，checkResults() 方法之前调用 arriveAndAwaitAdvance()。
 在第二个情况，如果list为空，那就没有必要让线程继续了，就直接返回吧。
@@ -500,15 +505,17 @@ The Phaser类还提供了其他相关方法来改变phase。他们是：
 arrive(): 此方法示意phaser某个参与者已经结束actual phase了，但是他应该等待其他的参与者才能继续执行。
 小心使用此法，因为它并不能与其他线程同步。
 
-awaitAdvance(int phase): 如果我们传递的参数值等于phaser的actual phase，
+awaitAdvance(int phase): 如果我们传递的参数值等于phaser的actual phase
+（hxzon：actual phase从arrive等方法返回，表示当前在第几个相位），
 此方法让当前线程进入睡眠直到phaser的全部参与者结束当前的phase。
 如果参数值与phaser 的 actual phase不等，那么立刻返回。
 
-awaitAdvanceInterruptibly(int phaser): 此方法等同与之前的方法，
+awaitAdvanceInterruptibly(int phaser): 此方法等同之前的方法，
 只是在线程正在此方法中休眠而被中断时候，它会抛出InterruptedException 异常。
 
 =========
 Phaser的参与者的注册
+
 当你创建一个 Phaser 对象,你表明了参与者的数量。
 但是Phaser类还有2种方法来增加参与者的数量。他们是：
 
@@ -525,7 +532,7 @@ Phaser类提供的唯一一个减少参与者数量的方法是arriveAndDeregist
 强制终止 Phaser
 当phaser有0个参与者，它进入一个称为Termination的状态。
 Phaser 类提供 forceTermination() 来改变phaser的状态，让它直接进入Termination 状态，不在乎已经在phaser中注册的参与者的数量。
-此机制可能会很有用在一个参与者出现异常的情况下来强制结束phaser.
+此机制可能会很有用：在一个参与者出现异常的情况下来强制结束phaser。
 
 当phaser在 Termination 状态， awaitAdvance() 和 arriveAndAwaitAdvance() 方法立刻返回一个负值，
 而不是一般情况下的正值。如果你知道你的phaser可能终止了，那么你可以用这些方法来确认他是否真的终止了。

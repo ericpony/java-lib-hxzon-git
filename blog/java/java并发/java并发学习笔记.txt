@@ -46,4 +46,28 @@ hxzon：
 2，wait方法，使得允许synchronized代码块执行到一半时睡眠，让其它线程执行同个控制对象的synchronized代码块。
 
 ========
-3，
+3，线程同步工具（五）运行阶段性并发任务（Phaser）
+
+假设移相器的参与者为n，前(n-1)次arriveAndAwaitAdvance()会休眠，第n次arriveAndAwaitAdvance()会全部继续运行（同时进入下一相位）。
+
+========
+4，线程同步工具（四）在同一个点同步任务（CyclicBarrier）
+
+Java 并发 API 提供了可以允许2个或多个线程在在一个确定点的同步应用。它是 CyclicBarrier 类。
+此类与在此章节的等待多个并发事件完成指南中的 CountDownLatch 类相似，但是它有一些特殊性让它成为更强大的类。
+
+CyclicBarrier 类有一个整数初始值，此值表示将在同一点同步的线程数量。
+当其中一个线程到达确定点，它会调用await() 方法来等待其他线程。
+当线程调用这个方法，CyclicBarrier阻塞线程进入休眠直到其他线程到达。
+当最后一个线程调用CyclicBarrier 类的await() 方法，它唤醒所有等待的线程并继续执行它们的任务。
+
+CyclicBarrier 类有个有趣的优势是，你可以传递一个外加的 Runnable 对象作为初始参数，
+并且当全部线程都到达同一个点时，CyclicBarrier类 会把这个对象当做线程来执行。
+此特点让这个类在使用 divide 和 conquer 编程技术时，可以充分发挥任务的并行性。
+
+=======
+5，
+
+
+
+
