@@ -221,7 +221,7 @@ An unbounded TransferQueue based on linked nodes.
 Phaser	
 A reusable synchronization barrier, similar in functionality to CyclicBarrier and CountDownLatch but supporting more flexible usage.
 
-可复用的同步工具。
+移相器，可复用的同步工具。
 
 PriorityBlockingQueue<E>	
 An unbounded blocking queue that uses the same ordering rules as class PriorityQueue and supplies blocking retrieval operations.
@@ -400,6 +400,7 @@ CountDownLatch is a very simple yet very common utility for blocking until a giv
 A CyclicBarrier is a resettable multiway synchronization point useful in some styles of parallel programming.
 
 A Phaser provides a more flexible form of barrier that may be used to control phased computation among multiple threads.
+移相器。
 
 An Exchanger allows two threads to exchange objects at a rendezvous point, and is useful in several pipeline designs.
 Exchanger允许两个线程在汇合点交换对象，在“多管道”设计中很有用。

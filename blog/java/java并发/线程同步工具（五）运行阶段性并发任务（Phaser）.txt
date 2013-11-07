@@ -1,4 +1,4 @@
-线程同步工具（五）运行阶段性并发任务
+线程同步工具（五）运行阶段性并发任务（Phaser）
 http://ifeve.com/thread-synchronization-utilities-6-2/
 
 hxzon修订。
@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 007
  
 008
-//1.   创建一个类名为FileSearch并一定实现Runnable 接口。
+//1.   创建一个类名为FileSearch并实现Runnable 接口。
 这个类实现的操作是在文件夹和其子文件夹中搜索确定的扩展名并在24小时内修改的文件。
 009
 public class FileSearch implements Runnable {
@@ -97,13 +97,13 @@ public class FileSearch implements Runnable {
 030
  
 031
-    // 7. 现在，你必须实现一些要给run() 方法用的辅助方法。第一个是 directoryProcess()
+    // 7. 现在，你必须实现一些要给run() 方法用的辅助方法。第一个是 directoryProcess()方法。
 032
-    // 方法。它接收File对象作为参数并处理全部的文件和子文件夹。
+    // 它接收File对象作为参数并处理全部的文件和子文件夹。
 	对于每个文件夹，此方法会递归调用并传递文件夹作为参数。
-	对于每个文件，此方法会调用fileProcess()
+	对于每个文件，此方法会调用fileProcess()方法。
 033
-    // 方法。
+    // 
 034
     private void directoryProcess(File file) {
 035
@@ -135,10 +135,9 @@ public class FileSearch implements Runnable {
 048
  
 049
-    // 8. 现在，实现 fileProcess() 方法。它接收 File
+    // 8. 现在，实现 fileProcess() 方法。它接收 File对象作为参数并检查它的扩展名是否是我们正在查找的。
 050
-    // 对象作为参数并检查它的扩展名是否是我们正在查找的。
-	如果是，此方法会把文件的绝对路径写入结果列表内。
+    // 如果是，此方法会把文件的绝对路径写入结果列表内。
 051
     private void fileProcess(File file) {
 052
@@ -152,9 +151,9 @@ public class FileSearch implements Runnable {
 056
  
 057
-    // 9. 现在，实现 filterResults()
+    // 9. 现在，实现 filterResults()方法。不接收任何参数。
 058
-    // 方法。不接收任何参数。它过滤在第一阶段获得的文件列表，并删除修改超过24小时的文件。
+    // 它过滤在第一阶段获得的文件列表，并删除修改超过24小时的文件。
 	首先，创建一个新的空list并获得当前时间。
 059
     private void filterResults() {
@@ -209,9 +208,9 @@ public class FileSearch implements Runnable {
 083
  
 084
-        // 14. 首先，检查结果List的大小。如果为0，对象写信息到操控台表明情况，然后调用Phaser对象的
+        // 14. 首先，检查结果List的大小。如果为0，对象写信息到操控台表明情况，
 085
-        // arriveAndDeregister() 方法通知此线程已经结束actual phase，并离开phased操作。
+        // 
 086
         if (results.isEmpty()) {
 087
@@ -223,17 +222,17 @@ public class FileSearch implements Runnable {
 090
                     .getName(), phaser.getPhase());
 091
-            phaser.arriveAndDeregister();
+            phaser.arriveAndDeregister(); //然后调用Phaser对象的arriveAndDeregister() 方法通知此线程已经结束actual phase，并离开phased操作。
 092
             return false;
 093
  
 094
-            // 15. 另一种情况，如果结果list有元素，那么对象写信息到操控台表明情况，调用 Phaser对象懂得
+            // 15. 另一种情况，如果结果list有元素，那么对象写信息到操控台表明情况，
 095
-            // arriveAndAwaitAdvance() 方法并通知 actual phase，它会被阻塞直到phased
+            // 
 096
-            // 操作的全部参与线程结束actual phase。
+            // 
 097
  
 098
@@ -245,7 +244,8 @@ public class FileSearch implements Runnable {
 101
                     .size());
 102
-            phaser.arriveAndAwaitAdvance();
+            phaser.arriveAndAwaitAdvance(); //调用 Phaser对象的 arriveAndAwaitAdvance() 方法并通知 actual phase，
+			//它会被阻塞直到phased操作的全部参与线程结束actual phase。
 103
             return true;
 104
@@ -255,7 +255,7 @@ public class FileSearch implements Runnable {
 106
  
 107
-    // 16. 最好一个辅助方法是 showInfo() 方法，打印results list 的元素到操控台。
+    // 16. 最后一个辅助方法是 showInfo() 方法，打印results list 的元素到操控台。
 108
     private void showInfo() {
 109
@@ -277,7 +277,7 @@ public class FileSearch implements Runnable {
 117
     // 17. 现在，来实现 run() 方法，使用之前描述的辅助方法来执行，并使用Phaser对象控制phases间的改变。
 118
-    // 首先，调用phaser对象的 arriveAndAwaitAdvance() 方法。直到使用线程被创建完成，搜索行为才会开始。
+    
 119
     @Override
 120
@@ -285,7 +285,7 @@ public class FileSearch implements Runnable {
 121
  
 122
-        phaser.arriveAndAwaitAdvance();
+        phaser.arriveAndAwaitAdvance();// 首先，调用phaser对象的 arriveAndAwaitAdvance() 方法。直到使用线程被创建完成，搜索行为才会开始。
 123
  
 124
@@ -297,9 +297,9 @@ public class FileSearch implements Runnable {
 127
  
 128
-        // 19. 查看 initPath 属性储存的文件夹名字并使用 directoryProcess()
+        // 19. 查看 initPath 属性储存的文件夹名字
 129
-        // 方法在文件夹和其子文件夹内查找带特殊扩展名的文件。
+        // 并使用 directoryProcess()方法在文件夹和其子文件夹内查找带特殊扩展名的文件。
 130
         File file = new File(initPath);
 131
@@ -341,7 +341,7 @@ public class FileSearch implements Runnable {
 149
         showInfo();
 150
-        phaser.arriveAndDeregister();
+        phaser.arriveAndDeregister(); //撤销线程的登记
 151
         System.out.printf("%s: Work completed.\n", Thread.currentThread()
 152

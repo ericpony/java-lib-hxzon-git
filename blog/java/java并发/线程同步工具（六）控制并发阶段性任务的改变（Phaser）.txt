@@ -1,4 +1,4 @@
-线程同步工具（六）控制并发阶段性任务的改变
+线程同步工具（六）控制并发阶段性任务的改变（Phaser）
 http://ifeve.com/thread-synchronization-utilities-7/
 
 声明：本文是《 Java 7 Concurrency Cookbook 》的第三章， 作者： Javier Fernández González 译者：郑玉婷
