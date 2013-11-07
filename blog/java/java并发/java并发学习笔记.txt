@@ -22,4 +22,24 @@ by hxzon
 http://www.aqee.net/docs/Concurrency-is-not-Parallelism/
 
 ============
-2，
+2，基本线程同步（四）在同步代码中使用条件（synchronized和wait）
+
+在并发编程中的一个经典问题是生产者与消费者问题，我们有一个数据缓冲区，
+一个或多个数据的生产者在缓冲区存储数据，而一个或多个数据的消费者，把数据从缓冲区取出。
+
+由于缓冲区是一个共享的数据结构，我们必须采用同步机制，比如synchronized关键字来控制对它的访问。
+但是我们有更多的限制因素，如果缓冲区是满的，生产者不能存储数据，如果缓冲区是空的，消费者不能取出数据。
+
+对于这些类型的情况，Java在Object对象中提供wait()，notify()，和notifyAll() 方法的实现。
+一个线程可以在synchronized代码块中调用wait()方法。
+如果在synchronized代码块外部调用wait()方法，JVM会抛出IllegalMonitorStateException异常。
+
+当线程调用wait()方法，JVM让这个线程睡眠，并且释放控制 synchronized代码块的对象，
+这样，虽然它正在执行但允许其他线程执行由该对象保护的其他synchronized代码块。
+为了唤醒线程，你必 须在由相同对象保护的synchronized代码块中调用notify()或notifyAll()方法。
+
+在这个指南中，你将学习如何通过使用synchronized关键字
+和wait()和notify(),notifyAll()方法实现生产者消费者问题。
+
+========
+3，

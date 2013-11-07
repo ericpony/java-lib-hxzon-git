@@ -1,0 +1,203 @@
+基本线程同步（五）使用Lock同步代码块（ReentrantLock）
+http://ifeve.com/basic-thread-synchronization-5/
+
+声明：本文是《 Java 7 Concurrency Cookbook 》的第二章，作者： Javier Fernández González     译者：许巧辉 校对：方腾飞
+
+======
+hxzon学习笔记：
+1，Lock比synchronized更灵活，性能也更优（？）。
+
+2，ReentrantLock类也允许递归调用（锁的可重入性，译者注），当一个线程有锁的控制权并且使用递归调用，它延续了锁的控制权，
+所以调用lock()方法将会立即返回并且继续递归调用的执行。
+此外，我们也可以调用其他方法。
+
+3，Lock 接口（和ReentrantLock类）包含其他方法来获取锁的控制权，那就是tryLock()方法。
+这个方法与lock()方法的最大区别是，如果一 个线程调用这个方法不能获取Lock接口的控制权时，将会立即返回并且不会使这个线程进入睡眠。
+这个方法返回一个boolean值，true表示这个线程 获取了锁的控制权，false则表示没有。
+
+
+=======
+使用Lock同步代码块
+
+Java提供另外的机制用来同步代码块。它比synchronized关键字更加强大、灵活。
+它是基于Lock接口和实现它的类（如ReentrantLock）。
+这种机制有如下优势：
+
+它允许以一种更灵活的方式来构建synchronized块。
+使用synchronized关键字，你必须以结构化方式得到释放synchronized代码块的控制权。
+Lock接口允许你获得更复杂的结构来实现你的临界区。
+
+Lock 接口比synchronized关键字提供更多额外的功能。
+
+新功能之一是实现的tryLock()方法。
+这种方法试图获取锁的控制权并且如果它不能获取该锁，是因为其他线程在使用这个锁，它将返回这个锁。
+使用synchronized关键字，当线程A试图执行synchronized代码块，如果线程B正在执行它，那么线程A将阻塞直到线程B执行完synchronized代码块。
+使用锁，你可以执行tryLock()方法，这个方法返回一个 Boolean值表示，是否有其他线程正在运行这个锁所保护的代码。
+
+当有多个读者和一个写者时，Lock接口允许读写操作分离。
+Lock接口比synchronized关键字提供更好的性能。
+
+在这个指南中，你将学习如何通过锁来同步代码块和通过Lock接口及其实现者ReentrantLock类来创建临界区，实现一个程序来模拟打印队列。
+
+===========
+准备工作
+
+这个指南的例子使用Eclipse IDE实现。如果你使用Eclipse或其他IDE，如NetBeans，打开它并创建一个新的Java项目。
+
+如何做…
+
+按以下步骤来实现的这个例子:
+
+1.创建PrintQueue类，来实现打印队列。
+
+1
+public class PrintQueue {
+2.声明一个Lock对象，并且使用ReentrantLock类的一个新对象来初始化它。
+
+1
+private final Lock queueLock=new ReentrantLock();
+3.实现printJob()方法，它将接收Object对象作为参数，并且不会返回任何值。
+
+1
+public void printJob(Object document){
+4.在printJob()方法内部，通过调用lock()方法来获取Lock对象的控制权。
+
+1
+queueLock.lock();
+5.然后，包含以下代码来模拟文档的打印：
+
+1
+try {
+2
+Long duration=(long)(Math.random()*10000);
+3
+System.out.println(Thread.currentThread().getName()+ ":
+4
+PrintQueue: Printing a Job during "+(duration/1000)+
+5
+" seconds");
+6
+Thread.sleep(duration);
+7
+} catch (InterruptedException e) {
+8
+e.printStackTrace();
+9
+}
+6.最后，通过调用unlock()方法来释放Lock对象的控制。
+
+1
+finally {
+2
+queueLock.unlock();
+3
+}
+7.创建一个Job类，并指定它实现Runnable接口。
+
+1
+public class Job implements Runnable {
+8.声明一个PrintQueue类的对象，并通过实现类（Job类）的构造器来初始化这个对象。
+
+1
+private PrintQueue printQueue;
+2
+public Job(PrintQueue printQueue){
+3
+this.printQueue=printQueue;
+4
+}
+9.实现run()方法，它使用PrintQueue对象来发送一个打印任务。
+
+1
+@Override
+2
+public void run() {
+3
+System.out.printf("%s: Going to print a document\n", Thread.
+4
+currentThread().getName());
+5
+printQueue.printJob(new Object());
+6
+System.out.printf("%s: The document has been printed\n",
+7
+Thread.currentThread().getName());
+8
+}
+10.通过创建类名为Main，且包括main（）方法来实现这个示例的主类。
+
+1
+public class Main {
+2
+public static void main(String[] args) {
+11.创建一个共享的PrintQueue对象。
+
+1
+PrintQueue printQueue=new PrintQueue();
+12.创建10个Job对象，并且使用10个线程来运行它们。
+
+1
+Thread thread[]=new Thread[10];
+2
+for (int i=0; i<10; i++){
+3
+thread[i]=new Thread(new Job(printQueue),"Thread "+ i);
+4
+}
+13.启动这10个线程。
+
+1
+for (int i=0; i<10; i++){
+2
+thread[i].start();
+3
+}
+
+=======
+它是如何工作的…
+
+从以下截图，你可以看到执行这个示例一部分的输出：
+
+4
+
+在 printJob()中，PrintQueue类是这个示例的关键所在。
+当我们通过锁来实现一个临界区并且保证只有一个执行线程能运行一个代码块，我们必 须创建一个ReentrantLock对象。
+在临界区的起始部分，我们必须通过使用lock()方法来获得锁的控制权。
+当一个线程A调用这个方法时，如果 没有其他线程持有这个锁的控制权，那么这个方法就会给线程A分配这个锁的控制权并且立即返回允许线程A执行这个临界区。
+否则，如果其他线程B正在执行由这 个锁控制的临界区，lock()方法将会使线程A睡眠直到线程B完成这个临界区的执行。
+
+在临界区的尾部，我们必须使用unlock()方法来释放锁的控制权，允许其他线程运行这个临界区。
+如果你在临界区的尾部没有调用unlock()方法，那么其他正在等待该代码块的线程将会永远等待，造成 死锁情况。
+如果你在临界区使用try-catch代码块，别忘了在finally部分的内部包含unlock()方法的代码。
+
+======
+不止这些…
+
+Lock 接口（和ReentrantLock类）包含其他方法来获取锁的控制权，那就是tryLock()方法。
+这个方法与lock()方法的最大区别是，如果一 个线程调用这个方法不能获取Lock接口的控制权时，将会立即返回并且不会使这个线程进入睡眠。
+这个方法返回一个boolean值，true表示这个线程 获取了锁的控制权，false则表示没有。
+
+注释：考虑到这个方法的结果，并采取相应的措施，这是程序员的责任。
+如果这个方法返回false值，预计你的程序不会执行这个临界区。
+如果是这样，你可能会在你的应用程序中得到错误的结果。
+
+ReentrantLock类也允许递归调用（锁的可重入性，译者注），当一个线程有锁的控制权并且使用递归调用，它延续了锁的控制权，
+所以调用lock()方法将会立即返回并且继续递归调用的执行。
+此外，我们也可以调用其他方法。
+
+更多信息
+
+你必须要非常小心使用锁来避免死锁，这种情况发生在，当两个或两个以上的线程被阻塞等待将永远不会解开的锁。
+比如，线程A锁定Lock(X)而线程B锁定 Lock(Y)。
+如果现在，线程A试图锁住Lock(Y)而线程B同时也试图锁住Lock(X)，这两个线程将无限期地被阻塞，因为它们等待的锁将不会被解开。
+请注意，这个问题的发生是因为这两个线程尝试以相反的顺序获取锁（译者注：锁顺序死锁）。
+在附录中，提供了一些很好的并发编程设计的建议，适当的设计并发应用程序，来避免这些死锁问题。
+
+参见
+
+在第2章，基本线程同步中的同步方法指南
+在第2章，基本线程同步中的在锁中使用多条件的指南
+在第8章，测试并发应用程序中的监控Lock接口的指南
+（全文完）
+
+

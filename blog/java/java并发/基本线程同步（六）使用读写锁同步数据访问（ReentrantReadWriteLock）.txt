@@ -1,0 +1,232 @@
+基本线程同步（六）使用读写锁同步数据访问（ReentrantReadWriteLock）
+http://ifeve.com/basic-thread-synchronization-6/
+
+声明：本文是《 Java 7 Concurrency Cookbook 》的第二章，作者： Javier Fernández González     译者：许巧辉
+
+========
+使用读/写锁同步数据访问
+
+锁所提供的最重要的改进之一就是ReadWriteLock接口和唯一 一个实现它的ReentrantReadWriteLock类。
+这个类提供两把锁，一把用于读操作和一把用于写操作。
+同时可以有多个线程执行读操作，但只有一个线程可以执行写操作。
+当一个线程正在执行一个写操作，不可能有任何线程执行读操作。
+
+在这个指南中，你将会学习如何使用ReadWriteLock接口实现一个程序，使用它来控制访问一个存储两个产品价格的对象。
+
+========
+准备工作…
+
+你应该事先阅读使用Lock同步代码块的指南，才能更好的理解这个食谱。
+
+如何做…
+
+按以下步骤来实现的这个例子:
+
+1.创建PricesInfo类，用它来存储两个产品价格的信息。
+
+1
+public class PricesInfo {
+2.声明两个double类型的属性，分别命名为price1和price2。
+
+1
+private double price1;
+2
+private double price2;
+3.声明一个名为lock的ReadWriteLock对象。
+
+1
+private ReadWriteLock lock;
+4.实现类的构造器，初始化这三个属性。其中，对于lock属性，我们创建一个新的ReentrantReadWriteLock对象。
+
+1
+public PricesInfo(){
+2
+price1=1.0;
+3
+price2=2.0;
+4
+lock=new ReentrantReadWriteLock();
+5
+}
+5.实现getPrice1()方法，用它来返回price1属性的值。它使用读锁来控制这个属性值的访问。
+
+1
+public double getPrice1() {
+2
+lock.readLock().lock();
+3
+double value=price1;
+4
+lock.readLock().unlock();
+5
+return value;
+6
+}
+6.实现getPrice2()方法，用它来返回price2属性的值。它使用读锁来控制这个属性值的访问。
+
+1
+public double getPrice2() {
+2
+lock.readLock().lock();
+3
+double value=price2;
+4
+lock.readLock().unlock();
+5
+return value;
+6
+}
+7.实现setPrices()方法，用来建立这两个属性的值。它使用写锁来控制对它们的访问。
+
+1
+public void setPrices(double price1, double price2) {
+2
+lock.writeLock().lock();
+3
+this.price1=price1;
+4
+this.price2=price2;
+5
+lock.writeLock().unlock();
+6
+}
+8.创建Reader类，并指定它实现Runnable接口。这个类实现了PricesInfo类属性值的读者。
+
+1
+public class Reader implements Runnable {
+9.声明一个PricesInfo对象，并且实现Reader类的构造器来初始化这个对象。
+
+1
+private PricesInfo pricesInfo;
+2
+public Reader (PricesInfo pricesInfo){
+3
+this.pricesInfo=pricesInfo;
+4
+}
+10.实现Reader类的run()方法，它读取10次两个价格的值。
+
+1
+@Override
+2
+public void run() {
+3
+for (int i=0; i<10; i++){
+4
+System.out.printf("%s: Price 1: %f\n", Thread.
+5
+currentThread().getName(),pricesInfo.getPrice1());
+6
+System.out.printf("%s: Price 2: %f\n", Thread.
+7
+currentThread().getName(),pricesInfo.getPrice2());
+8
+}
+9
+}
+11.创建Writer类，并指定它实现Runnable接口。这个类实现了PricesInfo类属性值的修改者。
+
+1
+public class Writer implements Runnable {
+12.声明一个PricesInfo对象，并且实现Writer类的构造器来初始化这个对象。
+
+1
+private PricesInfo pricesInfo;
+2
+public Writer(PricesInfo pricesInfo){
+3
+this.pricesInfo=pricesInfo;
+4
+}
+13.实现run()方法，它修改了三次两个价格的值，并且在每次修改之后睡眠2秒。
+
+01
+@Override
+02
+public void run() {
+03
+for (int i=0; i<3; i++) {
+04
+System.out.printf("Writer: Attempt to modify the
+05
+prices.\n");
+06
+pricesInfo.setPrices(Math.random()*10, Math.random()*8);
+07
+System.out.printf("Writer: Prices have been modified.\n");
+08
+try {
+09
+Thread.sleep(2);
+10
+} catch (InterruptedException e) {
+11
+e.printStackTrace();
+12
+}
+13
+}
+14
+}
+14.通过创建类名为Main，且包括main（）方法来实现这个示例的主类。
+
+1
+public class Main {
+2
+public static void main(String[] args) {
+15.创建一个PricesInfo对象。
+
+1
+PricesInfo pricesInfo=new PricesInfo();
+16.创建5个Reader对象，并且用5个线程来执行它们。
+
+1
+Reader readers[]=new Reader[5];
+2
+Thread threadsReader[]=new Thread[5];
+3
+for (int i=0; i<5; i++){
+4
+readers[i]=new Reader(pricesInfo);
+5
+threadsReader[i]=new Thread(readers[i]);
+6
+}
+17.创建一个Writer对象，并且用线程来执行它。
+
+1
+Writer writer=new Writer(pricesInfo);
+2
+Thread threadWriter=new Thread(writer);
+18.启动这些线程。
+
+1
+for (int i=0; i<5; i++){
+2
+threadsReader[i].start();
+3
+}
+4
+threadWriter.start();
+
+=========
+它是如何工作的…
+
+在以下截图中，你可以看到执行这个例子的一个部分输出:
+
+5
+
+正如我们前面提及到的，ReentrantReadWriteLock类有两把锁，一把用于读操作，一把用于写操作。
+用于读操作的锁，是通过在 ReadWriteLock接口中声明的readLock()方法获取的。
+这个锁是实现Lock接口的一个对象，所以我们可以使用lock()， unlock() 和tryLock()方法。
+用于写操作的锁，是通过在ReadWriteLock接口中声明的writeLock()方法获取的。
+这个锁是实现Lock接 口的一个对象，所以我们可以使用lock()， unlock() 和tryLock()方法。
+确保正确的使用这些锁，使用它们与被设计的目的是一样的，这是程序猿的职责。
+当你获得Lock接口的读锁时，不能修改这个变量的值。否则，你可能会有数据不一致的错误。
+
+参见
+
+在第2章，基本线程同步中使用Lock同步代码块的指南。
+在第8章，测试并发应该程序中监控Lock接口的指南。
+（全文完）
+
