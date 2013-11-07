@@ -36,10 +36,14 @@ http://www.aqee.net/docs/Concurrency-is-not-Parallelism/
 
 当线程调用wait()方法，JVM让这个线程睡眠，并且释放控制 synchronized代码块的对象，
 这样，虽然它正在执行但允许其他线程执行由该对象保护的其他synchronized代码块。
-为了唤醒线程，你必 须在由相同对象保护的synchronized代码块中调用notify()或notifyAll()方法。
+为了唤醒线程，你必须在由相同对象保护的synchronized代码块中调用notify()或notifyAll()方法。
 
 在这个指南中，你将学习如何通过使用synchronized关键字
 和wait()和notify(),notifyAll()方法实现生产者消费者问题。
+
+hxzon：
+1，是控制对象的wait，notify，notifyAll方法。
+2，wait方法，使得允许synchronized代码块执行到一半时睡眠，让其它线程执行同个控制对象的synchronized代码块。
 
 ========
 3，

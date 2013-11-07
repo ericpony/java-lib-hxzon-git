@@ -44,7 +44,8 @@ A ConcurrentMap supporting NavigableMap operations, and recursively so for its n
 
 Delayed	
 A mix-in style interface for marking objects that should be acted upon after a given delay.
-延迟，接口，用来标记一个对象需在一定延迟后执行。
+
+延迟元素（可能处于未激活状态），接口，用来标记一个对象需在一定延迟后执行。
 
 Executor	
 An object that executes submitted Runnable tasks.
@@ -167,6 +168,7 @@ A synchronization aid that allows a set of threads to all wait for each other to
 DelayQueue<E extends Delayed>	
 An unbounded blocking queue of Delayed elements, in which an element can only be taken when its delay has expired.
 
+延迟队列。只操作激活元素，未激活的元素师不可见的。
 
 Exchanger<V>	
 A synchronization point at which threads can pair and swap elements within pairs.
