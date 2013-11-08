@@ -1,5 +1,7 @@
 ﻿领域驱动设计与模式实战
 ~ 尼尔森(Jimmy Nilsson) (作者), 赵俐 (译者), 马燕新 (译者), 等 (译者) 
+
+有中文版电子书。
 ===========
 出版社: 人民邮电出版社; 第1版 (2009年11月1日)
 外文书名: Applying Domain-driven Design and Patterns
