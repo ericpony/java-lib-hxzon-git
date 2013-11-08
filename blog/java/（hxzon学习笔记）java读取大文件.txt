@@ -1,0 +1,182 @@
+（hxzon学习笔记）java读取大文件
+
+hxzon
+==========
+1，使用apache common io包：
+LineIterator it = FileUtils.lineIterator(src, "gbk");
+while (it.hasNext()) {
+	String line = it.next();
+	xxx;
+}
+
+------
+LineIterator
+
+    public boolean hasNext() {
+        if (cachedLine != null) {
+            return true;
+        } else if (finished) {
+            return false;
+        } else {
+            try {
+                while (true) {
+                    String line = bufferedReader.readLine();
+                    if (line == null) {
+                        finished = true;
+                        return false;
+                    } else if (isValidLine(line)) {
+                        cachedLine = line;
+                        return true;
+                    }
+                }
+            } catch(IOException ioe) {
+                close();
+                throw new IllegalStateException(ioe);
+            }
+        }
+    }
+
+    public LineIterator(final Reader reader) throws IllegalArgumentException {
+        if (reader == null) {
+            throw new IllegalArgumentException("Reader must not be null");
+        }
+        if (reader instanceof BufferedReader) {
+            bufferedReader = (BufferedReader) reader;
+        } else {
+            bufferedReader = new BufferedReader(reader);
+        }
+    }	
+
+--------
+BufferReader
+
+    public String readLine() throws IOException {
+        return readLine(false);
+    }
+
+    String readLine(boolean ignoreLF) throws IOException {
+        StringBuffer s = null;
+        int startChar;
+
+        synchronized (lock) {
+            ensureOpen();
+            boolean omitLF = ignoreLF || skipLF;
+
+        bufferLoop:
+            for (;;) {
+
+                if (nextChar >= nChars)
+                    fill();
+                if (nextChar >= nChars) { /* EOF */
+                    if (s != null && s.length() > 0)
+                        return s.toString();
+                    else
+                        return null;
+                }
+                boolean eol = false;
+                char c = 0;
+                int i;
+
+                /* Skip a leftover '\n', if necessary */
+                if (omitLF && (cb[nextChar] == '\n'))
+                    nextChar++;
+                skipLF = false;
+                omitLF = false;
+
+            charLoop:
+                for (i = nextChar; i < nChars; i++) {
+                    c = cb[i];
+                    if ((c == '\n') || (c == '\r')) {
+                        eol = true;
+                        break charLoop;
+                    }
+                }
+
+                startChar = nextChar;
+                nextChar = i;
+
+                if (eol) {
+                    String str;
+                    if (s == null) {
+                        str = new String(cb, startChar, i - startChar);
+                    } else {
+                        s.append(cb, startChar, i - startChar);
+                        str = s.toString();
+                    }
+                    nextChar++;
+                    if (c == '\r') {
+                        skipLF = true;
+                    }
+                    return str;
+                }
+
+                if (s == null)
+                    s = new StringBuffer(defaultExpectedLineLength);
+                s.append(cb, startChar, i - startChar);
+            }
+        }
+    }
+
+=======
+2，使用RandomAccessFile不能处理字符编码问题。
+RandomAccessFile raf = new RandomAccessFile(new File(indexFile), "rw");
+raf.readLine();//如果有中文字符，这里很容易出错。
+
+------
+String java.io.RandomAccessFile.readLine() throws IOException
+
+
+Reads the next line of text from this file. 
+This method successively reads bytes from the file, starting at the current file pointer, until it reaches a line terminator or the end of the file. 
+Each byte is converted into a character by taking the byte's value for the lower eight bits of the character 
+and setting the high eight bits of the character to zero. 
+This method does not, therefore, support the full Unicode character set. 
+此方法不支持完整的unicode字符集。
+
+A line of text is terminated by a carriage-return character ('\r'), a newline character ('\n'), 
+a carriage-return character immediately followed by a newline character, or the end of the file. 
+Line-terminating characters are discarded and are not included as part of the string returned. 
+返回的字符串不包含换行符。
+
+This method blocks until a newline character is read, 
+a carriage return and the byte following it are read (to see if it is a newline), 
+the end of the file is reached, or an exception is thrown.
+
+Specified by: readLine() in DataInput
+Returns:
+the next line of text from this file, or null if end of file is encountered before even one byte is read.
+Throws:
+IOException - if an I/O error occurs.
+
+------
+    public final String readLine() throws IOException {
+        StringBuffer input = new StringBuffer();
+        int c = -1;
+        boolean eol = false;
+
+        while (!eol) {
+            switch (c = read()) {
+            case -1:
+            case '\n':
+                eol = true;
+                break;
+            case '\r':
+                eol = true;
+                long cur = getFilePointer();
+                if ((read()) != '\n') {
+                    seek(cur);
+                }
+                break;
+            default:
+                input.append((char)c);
+                break;
+            }
+        }
+
+        if ((c == -1) && (input.length() == 0)) {
+            return null;
+        }
+        return input.toString();
+    }
+
+

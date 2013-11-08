@@ -1,0 +1,154 @@
+﻿（hxzon学习笔记）oracle-字符串函数
+
+by hxzon
+
+======
+1，
+INSTR(源字符串, 目标字符串, 起始位置, 匹配序号)
+
+例如：INSTR('CORPORATE FLOOR','OR', 3, 2)中，源字符串为'CORPORATE FLOOR', 目标字符串为'OR'，起始位置为3，取第2个匹配项的位置。
+
+默认查找顺序为从左到右。当起始位置为负数的时候，从右边开始查找。
+
+所以SELECT INSTR('CORPORATE FLOOR', 'OR', -1, 1) "Instring" FROM DUAL的显示结果是
+
+Instring
+——————
+14
+
+hxzon:
+
+ibnamefull=广东电信.肇庆分公司.端州.端州区黄塘营业厅
+
+substr(ibnamefull,instr(ibnamefull,'.',-1)) 结果为“.端州区黄塘营业厅”
+substr(ibnamefull,instr(ibnamefull,'.',-1)+1)结果为“端州区黄塘营业厅”
+
+
+2，
+SUBSTR(string,start,count) 
+取子字符串,从start开始,取count个 
+SQL> select substr('13088888888',3,8) from dual; 
+SUBSTR(' 
+-------- 
+08888888
+
+
+3，
+REPLACE('string','s1','s2') 
+string 希望被替换的字符或变量 
+s1 被替换的字符串 
+s2 要替换的字符串 
+SQL> select replace('he love you','he','i') from dual; 
+REPLACE('H 
+---------- 
+i love you
+
+======
+4，
+to_char：数字转字符串
+
+
+======
+5，
+ASCII 
+返回与指定的字符对应的十进制数; 
+
+SQL> select ascii('A') A,ascii('a') a,ascii('0') zero,ascii(' ') space from dual; 
+A A ZERO SPACE 
+--------- --------- --------- --------- 
+65 97 48 32
+
+6，
+CHR 
+给出整数,返回对应的字符; 
+
+SQL> select chr(54740) zhao,chr(65) chr65 from dual; 
+ZH C 
+-- - 
+赵 A 
+
+7，
+CONCAT 
+连接两个字符串; 
+SQL> select concat('010-','88888888')||'转23' 高乾竞电话 from dual; 
+高乾竞电话 
+---------------- 
+010-88888888转23 
+
+8，
+INITCAP 
+返回字符串并将字符串的第一个字母变为大写; 
+SQL> select initcap('smith') upp from dual; 
+UPP 
+----- 
+Smith
+
+
+
+9，
+LENGTH 
+返回字符串的长度; 
+SQL> select name,length(name),addr,length(addr),sal,length(to_char(sal)) from gao.nchar_tst; 
+NAME LENGTH(NAME) ADDR LENGTH(ADDR) SAL LENGTH(TO_CHAR(SAL)) 
+------ ------------ ---------------- ------------ --------- -------------------- 
+高乾竞 3 北京市海锭区 6 9999.99 7
+
+10，
+LOWER 
+返回字符串,并将所有的字符小写 
+SQL> select lower('AaBbCcDd')AaBbCcDd from dual; 
+AABBCCDD 
+-------- 
+aabbccdd
+
+11，
+UPPER 
+返回字符串,并将所有的字符大写 
+SQL> select upper('AaBbCcDd') upper from dual; 
+UPPER 
+-------- 
+AABBCCDD
+
+12，
+RPAD和LPAD(粘贴字符) 
+
+RPAD 在列的右边粘贴字符 
+LPAD 在列的左边粘贴字符 
+SQL> select lpad(rpad('gao',10,'*'),17,'*')from dual; 
+LPAD(RPAD('GAO',1 
+----------------- 
+*******gao******* 
+不够字符则用*来填满
+
+
+13，
+TRIM('s' from 'string') 
+LEADING 剪掉前面的字符 
+TRAILING 剪掉后面的字符 
+如果不指定,默认为空格符
+
+
+14，
+LTRIM和RTRIM 
+
+LTRIM 删除左边出现的字符串 
+RTRIM 删除右边出现的字符串 
+SQL> select ltrim(rtrim(' gao qian jing ',' '),' ') from dual; 
+LTRIM(RTRIM(' 
+------------- 
+gao qian jing
+
+=======
+15，
+SOUNDEX 
+返回一个与给定的字符串读音相同的字符串 
+SQL> create table table1(xm varchar(8)); 
+SQL> insert into table1 values('weather'); 
+SQL> insert into table1 values('wether'); 
+SQL> insert into table1 values('gao'); 
+SQL> select xm from table1 where soundex(xm)=soundex('weather'); 
+XM 
+-------- 
+weather 
+wether
+

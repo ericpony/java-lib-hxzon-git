@@ -1,0 +1,43 @@
+﻿（hxzon学习笔记）js-函数参数
+
+by hxzon
+
+《javascript高级程序设计（第2版）》
+
+
+=========
+3.7 函数
+
+1，
+函数没有签名。
+函数的参数在内部使用一个数组来表示。
+因为函数没有签名特性，也就没有重载，后定义的函数会覆盖先定义的函数。
+
+
+2，
+在函数体内可以通过arguments对象（与数组类似但不是Array实例）来访问参数数组。
+
+arguments对象可以与命名参数一起使用。
+
+没有传递的命名参数，会自动赋予undefined值。
+
+arguments.length：传给函数的参数个数。
+arguments[0]：访问第一个参数。
+
+=========
+5.5 Function类型
+
+1，arguments.callee ：指向拥有这个参数对象的函数。
+
+2，函数的length属性：表示函数希望接收的命名参数个数。
+
+3，函数的apply和call方法
+
+ff.apply(this,arguments);
+ff.apply(this,[a1,a2]);//参数用数组表示
+ff.call(this,a1,a2);//参数逐个列出来
+
+4，非标准的caller属性，指向调用当前函数的函数。
+
+arguments.callee.caller 可实现对调用栈的追溯。
+

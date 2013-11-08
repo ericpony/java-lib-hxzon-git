@@ -1,0 +1,154 @@
+（hxzon学习笔记）java并发-ForkJoinPool
+
+by hxzon
+==========
+public class WebCrawler7 implements LinkHandler {
+
+    private final Collection<String> visitedLinks = Collections.synchronizedSet(new HashSet<String>());
+//    private final Collection<String> visitedLinks = Collections.synchronizedList(new ArrayList<String>());
+    private String url;
+    private ForkJoinPool mainPool;
+
+    public WebCrawler7(String startingURL, int maxThreads) {
+        this.url = startingURL;
+        mainPool = new ForkJoinPool(maxThreads);//ForkJoin池，可用线程数。
+    }
+
+    private void startCrawling() {
+        mainPool.invoke(new LinkFinderAction(this.url, this));//启动。
+    }
+
+    @Override
+    public int size() {
+        return visitedLinks.size();
+    }
+
+    @Override
+    public void addVisited(String s) {
+        visitedLinks.add(s);
+    }
+
+    @Override
+    public boolean visited(String s) {
+        return visitedLinks.contains(s);
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) throws Exception {
+        new WebCrawler7("http://javaworld.com", 64).startCrawling();
+    }
+}
+
+--------
+public class LinkFinderAction extends java.util.concurrent.RecursiveAction {
+
+    private String url;
+    private LinkHandler cr;
+    /**
+     * Used for statistics
+     */
+    private static final long t0 = System.nanoTime();
+
+    public LinkFinderAction(String url, LinkHandler cr) {
+        this.url = url;
+        this.cr = cr;
+    }
+
+    @Override
+    public void compute() {//定义任务
+        if (!cr.visited(url)) {
+            try {
+                List<RecursiveAction> actions = new ArrayList<RecursiveAction>();
+                URL uriLink = new URL(url);
+                Parser parser = new Parser(uriLink.openConnection());
+                NodeList list = parser.extractAllNodesThatMatch(new NodeClassFilter(LinkTag.class));
+
+                for (int i = 0; i < list.size(); i++) {
+                    LinkTag extracted = (LinkTag) list.elementAt(i);
+
+                    if (!extracted.extractLink().isEmpty() && !cr.visited(extracted.extractLink())) {
+
+                        actions.add(new LinkFinderAction(extracted.extractLink(), cr));
+                    }
+                }
+                cr.addVisited(url);
+
+                if (cr.size() == 1500) {
+                    System.out.println("Time for visit 1500 distinct links= " + (System.nanoTime() - t0));
+                }
+
+                //invoke recursively
+                invokeAll(actions);//递归启动。
+            } catch (Exception e) {
+                //ignore 404, unknown protocol or other server errors
+            }
+        }
+    }
+}
+
+===========
+1，java 理论与实践: 应用 fork-join 框架
+学习如何使用 Java 7 中的 fork-join 框架实现细粒度并行性
+
+Brian Goetz (brian.goetz@sun.com), 高级工程师, Sun Microsystems
+http://www.ibm.com/developerworks/cn/java/j-jtp11137.html
+发布日期： 2007 年 12 月 03 日 
+
+fork-join 框架剖析
+
+可以有很多方法实现 清单 3 中演示的 fork-join 框架。
+可以使用原始的线程；Thread.start() 和 Thread.join() 提供了所有必要的功能。
+然而，这种方法需要的线程数可能比 VM 所能支持的数量更多。
+对于大小为 N（假设为一个很小的顺序阙值）的问题，将需要 O(N) 个线程来解决问题（问题树深度为 log2N，深度为 k 的二进制树有 2k 个节点）。
+在这些线程中，半数线程会用几乎整个生命周期来等待子任务的完成。
+创建线程会占用许多内存，这使得这种方法受到限制（尽管这种方法也能工作，但是代码非常复杂，并且需要仔细针对问题大小和硬件进行参数调优）。
+
+使用传统的线程池来实现 fork-join 也具有挑战性，因为 fork-join 任务将线程生命周期的大部分时间花费在等待其他任务上。
+这种行为会造成线程饥饿死锁（thread starvation deadlock），除非小心选择参数以限制创建的任务数量，或者池本身非常大。
+传统的线程池是为相互独立的任务设计的，而且设计中也考虑了潜在的阻塞、粗粒度任务 — fork-join 解决方案不会产生这两种情况。
+对于传统线程池的细粒度任务，也存在所有工作线程共享的任务队列发生争用的情况。
+
+工作窃取
+
+fork-join 框架通过一种称作工作窃取（work stealing） 的技术减少了工作队列的争用情况。
+每个工作线程都有自己的工作队列，
+这是使用双端队列（或者叫做 deque）来实现的（Java 6 在类库中添加了几种 deque 实现，包括 ArrayDeque 和 LinkedBlockingDeque）。
+当一个任务划分一个新线程时，它将自己推到 deque 的头部。
+当一个任务执行与另一个未完成任务的合并操作时，
+它会将另一个任务推到队列头部并执行，而不会休眠以等待另一任务完成（像 Thread.join() 的操作一样）。
+当线程的任务队列为空，它将尝试从另一个线程的 deque 的尾部 窃取另一个任务。
+
+可以使用标准队列实现工作窃取，但是与标准队列相比，
+deque 具有两方面的优势：减少争用和窃取。
+因为只有工作线程会访问自身的 deque 的头部，deque 头部永远不会发生争用；
+因为只有当一个线程空闲时才会访问 deque 的尾部，所以也很少存在线程的 deque 尾部的争用
+（在 fork-join 框架中结合 deque 实现会使这些访问模式进一步减少协调成本）。
+
+跟传统的基于线程池的方法相比，减少争用会大大降低同步成本。
+此外，这种方法暗含的后进先出（last-in-first-out，LIFO）任务排队机制意味着最大的任务排在队列的尾部，
+当另一个线程需要窃取任务时，它将得到一个能够分解成多个小任务的任务，从而避免了在未来窃取任务。
+因此，工作窃取实现了合理的负载平衡，无需进行协调并且将同步成本降到了最小。
+
+=========
+2，JDK 7 中的 Fork/Join 模式
+轻松实现多核时代的并行计算
+http://www.ibm.com/developerworks/cn/java/j-lo-forkjoin/
+甘 志 (ganzhi@cn.ibm.com), 软件工程师, IBM 中国软件实验室（CSDL BJ）
+戴 晓君 (daixiaoj@cn.ibm.com), 软件工程师, IBM 中国软件实验室（CSDL BJ）
+2007 年 8 月 23 日
+
+Fork/Join 模式；
+TransferQueue，它继承自 BlockingQueue 并能在队列满时阻塞“生产者”；
+ArrayTasks/ListTasks，用于并行执行某些数组/列表相关任务的类；
+IntTasks/LongTasks/DoubleTasks，用于并行处理数字类型数组的工具类，提供了排序、查找、求和、求最小值、求最大值等功能；
+
+hxzon：很多类并没有出现在jdk7中。
+
+=========
+3，http://ifeve.com/tag/fork-join/
+
+4，http://www.importnew.com/2279.html
+
+

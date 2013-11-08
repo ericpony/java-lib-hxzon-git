@@ -1,0 +1,33 @@
+（hxzon学习笔记）lucene-IndexSearcher
+
+by hxzon
+lucene-4.5.0
+==========
+org.apache.lucene.search.IndexSearcher
+
+
+Implements search over a single IndexReader. 
+
+Applications usually need only call the inherited search(Query, int) or search(Query, Filter, int) methods. 
+
+For performance reasons, if your index is unchanging, you should share a single IndexSearcher instance across multiple searches instead of creating a new one per-search. 
+考虑到性能，如果你的索引没有更新，建议在多线程间共享IndexSearcher实例。
+
+If your index has changed and you wish to see the changes reflected in searching, you should use DirectoryReader.openIfChanged(DirectoryReader) to obtain a new reader and then create a new IndexSearcher from that. 
+如果索引有更新，且你希望在搜索时能看到更新，
+你需要使用DirectoryReader.openIfChanged(DirectoryReader)返回一个新的DirectoryReader，
+并创建一个新的IndexSearcher实例。
+
+Also, for low-latency turnaround it's best to use a near-real-time reader (DirectoryReader.open(IndexWriter, boolean)). 
+Once you have a new IndexReader, it's relatively cheap to create a new IndexSearcher from it. 
+为了低延迟周转，更好的方式是通过DirectoryReader.open(IndexWriter, boolean)获得一个“近实时”的DirectoryReader。
+一旦得到一个新的IndexReader，创建一个IndexSearcher实例是非常廉价的。
+
+
+NOTE: IndexSearcher instances are completely thread safe, meaning multiple threads can call any of its methods, concurrently. 
+If your application requires external synchronization, you should not synchronize on the IndexSearcher instance; 
+use your own (non-Lucene) objects instead.
+
+IndexSearcher实例是完全线程安全的，可以多线程并发调用它的方法。
+如果你的应用程序需要外部同步，不要使用IndexSearcher实例来同步，用你自己的对象实例。
+

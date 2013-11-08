@@ -1,0 +1,63 @@
+﻿（hxzon学习笔记）hibernate
+
+by hxzon
+
+1，
+
+from User u
+where u.username like :username
+and exists
+(select 1 from u.roles ur where :roleId in ur)
+
+查找属于特定角色的账户。
+
+
+----
+2，
+
+多对多关联时，会创建中间表，这个中间表只有两个实体的id字段，如何定制这个中间表，例如创建一个“创建时间”字段？
+
+反思：因为这个中间表并没有对应一个类，“创建时间”字段在应用程序中如何使用？
+
+
+----
+3，
+
+select u.userId,u.username,
+(select 1 from u.roles ur where (:roleId in ur)) haveRole
+from User u
+where u.username like :username
+
+列出所有账户，显示账户ID，账户名，及是否拥有指定的角色（如果有则为1，没有则为null）。
+
+----
+4，
+
+如何让一个类能够被映射，却阻止去对应一个数据库表（不会自动创建数据库表）？
+
+sqlQuery有setResultTransformer(Transformers.aliasToBean(clazz));
+的方法，来让一个结果映射到一个非实体类，
+但这是基于bean属性，不像实体类有映射的元数据，
+所以常常会出现字段数据类型不匹配的错误。
+
+即便使用实体类，实体类的“非持久字段”也无法参与映射。
+
+----
+5，
+
+select子句中使用构造函数可能会出错，
+例如在oracle中使用分页，会产生一个额外的rownum列，导致构造函数调用失败。
+hxzon不推荐使用。
+
+----
+6，
+
+缺一个像oracle的decode()那样方便的函数。
+
+decode(uo.caSupplier,1,netca.dateEnd,2,gdca.dateEnd,null)
+
+----
+7，
+
+
+

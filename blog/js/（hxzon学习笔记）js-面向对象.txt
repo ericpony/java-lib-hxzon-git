@@ -1,0 +1,142 @@
+﻿（hxzon学习笔记）js-面向对象
+
+by hxzon
+
+《javascript高级程序设计（第2版）》
+6 面向对象的程序设计
+
+
+========
+hxzon：
+创建对象：动态原型模式（最佳）。
+继承：寄生组合式继承（最佳）。
+
+========
+1，
+
+函数对象属性：
+prototype：创建的实例的原型对象
+prototype.constructor
+
+实例属性：
+_proto_：指向函数对象的原型对象
+constructor：指向函数对象
+
+=========
+2，创建对象
+
+2.1，工厂模式：没有解决对象的识别问题（无法知道一个对象的类型，都是Object类型）。
+
+2.2，构造函数模式：每个方法都在每个实例上重新创建一遍。
+
+2.3，原型模式：
+
+更简单的原型语法（使用对象字面量）：
+function Person(){}
+
+Person.prototype={
+constructor:Person,
+name:"xx",
+age:29,
+friends:["aa","bb"],
+sayName:function(){...}
+};
+
+原型的动态性：
+
+原型对象的问题：原型中的所有属性，是被实例共享的。共享对函数非常合适，对基本值属性也合适（因为在实例上添加同名属性时会隐藏原型中的属性），但引用类型的属性就会出问题，如上述的friends。
+
+2.4，组合使用构造函数模式和原型模式
+
+2.5，动态原型模式（最佳）：
+
+function Person(name,age,job){
+	this.name=name;
+	this.age=age;
+	this.job=job;
+
+	if(typeof this.sayName!="function"){
+		Person.prototype.sayName=function(){
+			alert(this.name);
+		};
+	}
+}
+
+2.6，寄生构造函数模式：不能依赖instanceof来确定对象类型，能用其它模式则不要使用这种模式。
+
+
+2.7，稳妥构造函数模式：instanceof对这种对象也没有意义。
+
+========
+3，继承
+
+3.1，原型链（很少单独使用）：
+
+原型链问题1：问题来自包含引用类型值的原型，原先的实例属性变成了现在的原型属性，即父类的实例属性，变成子类的共享属性。
+
+原型链问题2：在创建子类型的实例时，不能向超类型的构造函数中传递参数。
+
+3.2，借用构造函数（很少单独使用）：
+
+问题：在超类型的原型中定义的方法，对子类型而言是不可见的。
+
+3.3，组合继承：
+
+使用原型链实现对原型属性和方法的继承，通过“借用构造函数”实现对实例属性的继承。
+
+缺点：调用两次超类型的构造函数，多余的共享属性（被实例属性覆盖）。
+
+3.4，原型式继承：
+
+function object(o){
+	function F(){}
+	F.prototype = o;
+	return new F();
+}
+
+缺点：引用类型值的属性，会被共享。
+
+3.5，寄生式继承：
+
+缺点：不能做到函数复用。
+
+3.6，寄生组合式继承（最佳）：
+
+通过“借用构造函数”来继承属性，通过原型链的混成形式来继承方法。
+
+function inheritPrototype(subType,superType){
+	var prototype = object(superType.prototype);
+	prototype.constructor=subType;
+	subType.prototype=prototype;
+}
+
+示例：
+function SuperType(name){
+	this.name=name;
+	this.colors=["red","blue","green"];
+}
+
+SuperType.prototype.sayName=function(){
+	alert(this.name);
+}
+
+function SubType(name,age){
+	SuperType.call(this,name);
+	this.age=age;
+}
+
+inheritPrototype(subType,SuperType);
+
+SubType.prototype.sayAge=function(){
+	alert(this.age);
+}
+
+优点：
+只调用一次SuperType构造函数，因此避免了在SubType.prototype上面创建不必要的多余的属性。
+原型链保持不变，因此能正常使用instanceof和isPrototypeOf()。
+
+YUI的YAHOO.lang.extend()方法采用了这种继承。
+
+
+
+

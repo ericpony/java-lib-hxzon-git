@@ -1,0 +1,599 @@
+（hxzon学习笔记）java nio-选择器
+
+by hxzon
+《java nio中文版 pdf》
+
+======
+3，选择器
+
+选择器提供选择执行已经就绪的任务的能力，这使得多元I/O 成为可能。
+就像在第一章中描述的那样，就绪选择和多元执行使得单线程能够有效率地同时管理多个I/O 通道(channels)。
+
+您需要将之前创建的一个或多个可选择的通道注册到选择器对象中。
+一个表示通道和选择器的键将会被返回。选择键会记住您关心的通道。
+它们也会追踪对应的通道是否已经就绪。
+当您调用一个选择器对象的select( )方法时，相关的键建会被更新，
+用来检查所有被注册到该选择器的通道。
+您可以获取一个键的集合，从而找到当时已经就绪的通道。
+通过遍历这些键，您可以选择出每个从上次您调用select( )开始直到现在，已经就绪的通道。
+
+就绪选择的真正价值在于潜在的大量的通道可以同时进行就绪状态的检查。
+调用者可以轻松地决定多个通道中的哪一个准备好要运行。
+有两种方式可以选择：被激发的线程可以处于休眠状态，
+直到一个或者多个注册到选择器的通道就绪，或者它也可以周期性地轮询选择器，
+看看从上次检查之后，是否有通道处于就绪状态。
+
+选择器(Selector)
+
+选择器类管理着一个被注册的通道集合的信息和它们的就绪状态。
+通道是和选择器一起被注册的，并且使用选择器来更新通道的就绪状态。
+当这么做的时候，可以选择将被激发的线程挂起，直到有就绪的的通道。
+选择器对象控制了被注册到它之上的通道的选择过程。
+
+可选择通道(SelectableChannel)
+
+这个抽象类提供了实现通道的可选择性所需要的公共方法。
+它是所有支持就绪检查的通道类的父类。
+FileChannel对象不是可选择的，因为它们没有继承SelectableChannel(见图 4-2)。
+所有socket通道都是可选择的，包括从管道(Pipe)对象的中获得的通道。
+SelectableChannel可以被注册到Selector对象上，同时可以指定对那个选择器而言，那种操作是感兴趣的。
+一个通道可以被注册到多个选择器上，但对每个选择器而言只能被注册一次。 
+
+选择键(SelectionKey)
+
+选择键封装了特定的通道与特定的选择器的注册关系。
+选择键对象被SelectableChannel.register( ) 返回并提供一个表示这种注册关系的标记。
+选择键包含了两个比特集（以整数的形式进行编码），
+指示了该注册关系所关心的通道操作，以及通道已经准备好的操作。
+对于键的interest（感兴趣的操作）集合和ready（已经准备好的操作）集合的解释是和特定的通道相关的。
+每个通道的实现，将定义它自己的选择键类。
+
+hxzon：一个键对应一个通道，不是复用的。
+
+注意：
+select操作返回的值是ready集合在步骤2中被修改的键的数量，而不是已选择的键的集合中的通道的总数。
+返回值不是已准备好的通道的总数，而是从上一个select( )调用之后进入就绪状态的通道的数量。
+之前的调用中就绪的，并且在本次调用中仍然就绪的通道不会被计入，
+而那些在前一次调用中已经就绪但已经不再处于就绪状态的通道也不会被计入。
+这些通道可能仍然在已选择的键的集合中，但不会被计入返回值中。返回值可能是0。
+
+使用内部的已取消的键的集合来延迟注销，是一种防止线程在取消键时阻塞，
+并防止与正在进行的选择操作冲突的优化。
+注销通道是一个潜在的代价很高的操作，这可能需要重新分配资源
+（请记住，键是与通道相关的，并且可能与它们相关的通道对象之间有复杂的交互）。
+清理已取消的键，并在选择操作之前和之后立即注销通道，
+可以消除它们可能正好在选择的过程中执行的潜在棘手问题。
+这是另一个兼顾健壮性的折中方案。
+
+
+3.1，
+selector.selectNow( );
+
+selectNow()方法执行就绪检查过程，但不阻塞。如果当前没有通道就绪，它将立即返回0。
+
+3.2，
+
+有三种方式可以唤醒在select( )方法中睡眠的线程：
+
+调用wakeup( )
+
+调用Selector对象的wakeup( )方法将使得选择器上的第一个还没有返回的选择操作立即返回。
+如果当前没有在进行中的选择，那么下一次对select( )方法的一种形式的调用将立即返回。
+后续的选择操作将正常进行。
+在选择操作之间多次调用wakeup( )方法与调用它一次没有什么不同。
+有时这种延迟的唤醒行为并不是您想要的。
+您可能只想唤醒一个睡眠中的线程，而使得后续的选择继续正常地进行。
+您可以通过在调用wakeup( )方法后调用selectNow( )方法来绕过这个问题。
+尽管如此，如果您将您的代码构造为合理地关注于返回值和执行选择集合，
+那么即使下一个select( )方法的调用在没有通道就绪时就立即返回，也应该不会有什么不同。
+不管怎么说，您应该为可能发生的事件做好准备。 
+
+调用close( )
+
+如果选择器的close( )方法被调用，那么任何一个在选择操作中阻塞的线程都将被唤醒，
+就像wakeup( )方法被调用了一样。
+与选择器相关的通道将被注销，而键将被取消。
+
+调用interrupt( )
+
+如果睡眠中的线程的interrupt( )方法被调用，它的返回状态将被设置。
+如果被唤醒的线程之后将试图在通道上执行I/O 操作，通道将立即关闭，然后线程将捕捉到一个异常。
+这是由于在第三章中已经探讨过的通道的中断语义。
+使用wakeup( )方法将会优雅地将一个在select( )方法中睡眠的线程唤醒。
+如果您想让一个睡眠的线程在直接中断之后继续执行，
+需要执行一些步骤来清理中断状态（参见Thread.interrupted( )的相关文档）。
+Selector对象将捕捉InterruptedException异常并调用wakeup( )方法。
+
+请注意这些方法中的任意一个都不会关闭任何一个相关的通道。
+中断一个选择器与中断一个通道是不一样的（参见 3.3节）。
+选择器不会改变任意一个相关的通道，它只会检查它们的状态。
+当一个在select( )方法中睡眠的线程中断时，对于通道的状态而言，是不会产生歧义的。
+
+
+3.3，
+
+选择是累积的。
+一旦一个选择器将一个键添加到它的已选择的键的集合中，它就不会移除这个键。
+并且，一旦一个键处于已选择的键的集合中，这个键的ready 集合将只会被设置，而不会被清理。
+乍一看，这好像会引起麻烦，因为选择操作可能无法表现出已注册的通道的正确状态。
+它提供了极大的灵活性，但把合理地管理键以确保它们表示的状态信息不会变得陈旧的任务交给了程序员。
+
+合理地使用选择器的秘诀是理解选择器维护的选择键集合所扮演的角色。
+（参见4.3.1小节，特别是选择过程的第二步。）
+最重要的部分是当键已经不再在已选择的键的集合中时将会发生什么。
+当通道上的至少一个感兴趣的操作就绪时，键的ready 集合就会被清空，
+并且当前已经就绪的操作将会被添加到ready集合中。
+该键之后将被添加到已选择的键的集合中。
+
+清理一个SelectKey的ready 集合的方式是将这个键从已选择的键的集合中移除。
+选择键的就绪状态只有在选择器对象在选择操作过程中才会修改。
+处理思想是只有在已选择的键的集合中的键才被认为是包含了合法的就绪信息的。
+这些信息将在键中长久地存在，直到键从已选择的键的集合中移除，以通知选择器您已经看到并对它进行了处理。
+如果下一次通道的一些感兴趣的操作发生时，键将被重新设置以反映当时通道的状态并再次被添加到已选择的键的集合中。
+
+这种框架提供了很多灵活性。
+通常的做法是在选择器上调用一次select操作(这将更新已选择的键的集合)，然后遍历selectKeys( )方法返回的键的集合。
+在按顺序进行检查每个键的过程中，相关的通道也根据键的就绪集合进行处理。
+然后键将从已选择的键的集合中被移除（通过在Iterator对象上调用remove( )方法），然后检查下一个键。
+完成后，通过再次调用select( )方法重复这个循环。
+
+/**
+ * Simple echo-back server which listens for incoming stream connections
+ * and echoes back whatever it reads.  A single Selector object is used to
+ * listen to the server socket (to accept new connections) and all the
+ * active socket channels.
+ *
+ * @author Ron Hitchens (ron@ronsoft.com)
+ * @version $Id: SelectSockets.java,v 1.5 2002/05/20 07:24:29 ron Exp $
+ */
+public class SelectSockets
+{
+	public static int PORT_NUMBER = 1234;
+
+	public static void main (String [] argv)
+		throws Exception
+	{
+		new SelectSockets().go (argv);
+	}
+
+	public void go (String [] argv)
+		throws Exception
+	{
+		int port = PORT_NUMBER;
+
+		if (argv.length > 0) {	// override default listen port
+			port = Integer.parseInt (argv [0]);
+		}
+
+		System.out.println ("Listening on port " + port);
+
+		// allocate an unbound server socket channel
+		ServerSocketChannel serverChannel = ServerSocketChannel.open();
+		// Get the associated ServerSocket to bind it with
+		ServerSocket serverSocket = serverChannel.socket();
+		// create a new Selector for use below
+		Selector selector = Selector.open();
+
+		// set the port the server channel will listen to
+		serverSocket.bind (new InetSocketAddress (port));
+
+		// set non-blocking mode for the listening socket
+		serverChannel.configureBlocking (false);
+
+		// register the ServerSocketChannel with the Selector
+		serverChannel.register (selector, SelectionKey.OP_ACCEPT);
+
+		while (true) {
+			// this may block for a long time, upon return the
+			// selected set contains keys of the ready channels
+			int n = selector.select();
+
+			if (n == 0) {
+				continue;	// nothing to do
+			}
+
+			// get an iterator over the set of selected keys
+			Iterator it = selector.selectedKeys().iterator();
+
+			// look at each key in the selected set
+			while (it.hasNext()) {
+				SelectionKey key = (SelectionKey) it.next();
+
+				// Is a new connection coming in?
+				if (key.isAcceptable()) {
+					ServerSocketChannel server =
+						(ServerSocketChannel) key.channel();
+					SocketChannel channel = server.accept();
+
+					registerChannel (selector, channel,
+						SelectionKey.OP_READ);
+
+					sayHello (channel);
+				}
+
+				// is there data to read on this channel?
+				if (key.isReadable()) {
+					readDataFromSocket (key);
+				}
+
+				// remove key from selected set, it's been handled
+				it.remove();
+			}
+		}
+	}
+
+	// ----------------------------------------------------------
+
+	/**
+	 * Register the given channel with the given selector for
+	 * the given operations of interest
+	 */
+	protected void registerChannel (Selector selector,
+		SelectableChannel channel, int ops)
+		throws Exception
+	{
+		if (channel == null) {
+			return;		// could happen
+		}
+
+		// set the new channel non-blocking
+		channel.configureBlocking (false);
+
+		// register it with the selector
+		channel.register (selector, ops);
+	}
+
+	// ----------------------------------------------------------
+
+	// Use the same byte buffer for all channels.  A single thread is
+	// servicing all the channels, so no danger of concurrent acccess.
+	private ByteBuffer buffer = ByteBuffer.allocateDirect (1024);
+
+	/**
+	 * Sample data handler method for a channel with data ready to read.
+	 * @param key A SelectionKey object associated with a channel
+	 *  determined by the selector to be ready for reading.  If the
+	 *  channel returns an EOF condition, it is closed here, which
+	 *  automatically invalidates the associated key.  The selector
+	 *  will then de-register the channel on the next select call.
+	 */
+	protected void readDataFromSocket (SelectionKey key)
+		throws Exception
+	{
+		SocketChannel socketChannel = (SocketChannel) key.channel();
+		int count;
+
+		buffer.clear();			// make buffer empty
+
+		// loop while data available, channel is non-blocking
+		while ((count = socketChannel.read (buffer)) > 0) {
+			buffer.flip();		// make buffer readable
+
+			// send the data, don't assume it goes all at once
+			while (buffer.hasRemaining()) {
+				socketChannel.write (buffer);
+			}
+			// WARNING: the above loop is evil.  Because
+			// it's writing back to the same non-blocking
+			// channel it read the data from, this code can
+			// potentially spin in a busy loop.  In real life
+			// you'd do something more useful than this.
+
+			buffer.clear();		// make buffer empty
+		}
+
+		if (count < 0) {
+			// close channel on EOF, invalidates the key
+			socketChannel.close();
+		}
+	}
+
+	// ----------------------------------------------------------
+
+	/**
+	 * Spew a greeting to the incoming client connection.
+	 * @param channel The newly connected SocketChannel to say hello to.
+	 */
+	private void sayHello (SocketChannel channel)
+		throws Exception
+	{
+		buffer.clear();
+		buffer.put ("Hi there!\r\n".getBytes());
+		buffer.flip();
+
+		channel.write (buffer);
+	}
+
+}
+
+3.4，
+选择器对象是线程安全的，但它们包含的键集合不是。
+
+
+3.5，选择过程的可扩展性
+
+我多次提到选择器可以简化用单线程同时管理多个可选择通道的实现。
+使用一个线程来为多个通道提供服务，通过消除管理各个线程的额外开销，可能会降低复杂性并可能大幅提升性能。
+但只使用一个线程来服务所有可选择的通道是否是一个好主意呢？这要看情况。
+对单CPU的系统而言这可能是一个好主意，因为在任何情况下都只有一个线程能够运行。
+通过消除在线程之间进行上下文切换带来的额外开销，总吞吐量可以得到提高。
+但对于一个多CPU的系统呢？
+在一个有n个CPU的系统上，当一个单一的线程线性地轮流处理每一个线程时，可能有n-1个cpu处于空闲状态。
+
+那么让不同道请求不同的服务类的办法如何？
+想象一下，如果一个应用程序为大量的分布式的传感器记录信息。
+每个传感器在服务线程遍历每个就绪的通道时需要等待数秒钟。
+这在响应时间不重要时是可以的。
+但对于高优先级的连接（如操作命令），如果只用一个线程为所有通道提供服务，将不得不在队列中等待。
+不同的应用程序的要求也是不同的。您采用的策略会受到您尝试解决的问题的影响。
+
+在第一个场景中，如果您想要将更多的线程来为通道提供服务，请抵抗住使用多个选择器的欲望。
+在大量通道上执行就绪选择并不会有很大的开销，大多数工作是由底层操作系统完成的。
+管理多个选择器并随机地将通道分派给它们当中的一个并不是这个问题的合理的解决方案。
+这只会形成这个场景的一个更小的版本。 
+
+一个更好的策略是对所有的可选择通道使用一个选择器，并将对就绪通道的服务委托给其他线程。
+您只用一个线程监控通道的就绪状态并使用一个协调好的工作线程池来处理共接收到的数据。
+根据部署的条件，线程池的大小是可以调整的（或者它自己进行动态的调整）。
+对可选择通道的管理仍然是简单的，而简单的就是好的。
+
+第二个场景中，某些通道要求比其他通道更高的响应速度，可以通过使用两个选择器来解决：
+一个为命令连接服务，另一个为普通连接服务。
+但这种场景也可以使用与第一个场景十分相似的办法来解决。
+与将所有准备好的通道放到同一个线程池的做法不同，通道可以根据功能由不同的工作线程来处理。
+它们可能可以是日志线程池，命令/控制线程池，状态请求线程池，等等。
+
+例 4-2的代码是例 4-1的一般性的选择循环的扩展。
+它覆写了readDataFromSocket( )方法，并使用线程池来为准备好数据用于读取的通道提供服务。
+与在主线程中同步地读取数据不同，这个版本的实现将SelectionKey对象传递给为其服务的工作线程。
+
+/**
+ * Specialization of the SelectSockets class which uses a thread pool
+ * to service channels.  The thread pool is an ad-hoc implementation
+ * quicky lashed togther in a few hours for demonstration purposes.
+ * It's definitely not production quality.
+ *
+ * Created May 2002
+ * @author Ron Hitchens (ron@ronsoft.com)
+ * @version $Id: SelectSocketsThreadPool.java,v 1.5 2002/05/20 07:24:29 ron Exp $
+ */
+public class SelectSocketsThreadPool extends SelectSockets
+{
+	private static final int MAX_THREADS = 5;
+
+	private ThreadPool pool = new ThreadPool (MAX_THREADS);
+
+	// -------------------------------------------------------------
+
+	public static void main (String [] argv)
+		throws Exception
+	{
+		new SelectSocketsThreadPool().go (argv);
+	}
+
+	// -------------------------------------------------------------
+
+	/**
+	 * Sample data handler method for a channel with data ready to read.
+	 * This method is invoked from the go() method in the parent class.
+	 * This handler delegates to a worker thread in a thread pool to
+	 * service the channel, then returns immediately.
+	 * @param key A SelectionKey object representing a channel
+	 *  determined by the selector to be ready for reading.  If the
+	 *  channel returns an EOF condition, it is closed here, which
+	 *  automatically invalidates the associated key.  The selector
+	 *  will then de-register the channel on the next select call.
+	 */
+	protected void readDataFromSocket (SelectionKey key)
+		throws Exception
+	{
+		WorkerThread worker = pool.getWorker();
+
+		if (worker == null) {
+			// No threads available, do nothing, the selection
+			// loop will keep calling this method until a
+			// thread becomes available.  This design could
+			// be improved.
+			return;	
+		}
+
+		// invoking this wakes up the worker thread then returns
+		worker.serviceChannel (key);
+	}
+
+	// ---------------------------------------------------------------
+
+	/**
+	 * A very simple thread pool class.  The pool size is set at
+	 * construction time and remains fixed.  Threads are cycled
+	 * through a FIFO idle queue.
+	 */
+	private class ThreadPool
+	{
+		List idle = new LinkedList();
+
+		ThreadPool (int poolSize)
+		{
+			// fill up the pool with worker threads
+			for (int i = 0; i < poolSize; i++) {
+				WorkerThread thread = new WorkerThread (this);
+
+				// set thread name for debugging, start it
+				thread.setName ("Worker" + (i + 1));
+				thread.start();
+
+				idle.add (thread);
+			}
+		}
+
+		/**
+		 * Find an idle worker thread, if any.  Could return null.
+		 */
+		WorkerThread getWorker()
+		{
+			WorkerThread worker = null;
+
+			synchronized (idle) {
+				if (idle.size() > 0) {
+					worker = (WorkerThread) idle.remove (0);
+				}
+			}
+
+			return (worker);
+		}
+
+		/**
+		 * Called by the worker thread to return itself to the
+		 * idle pool.
+		 */
+		void returnWorker (WorkerThread worker)
+		{
+			synchronized (idle) {
+				idle.add (worker);
+			}
+		}
+	}
+
+	/**
+	 * A worker thread class which can drain channels and echo-back
+	 * the input.  Each instance is constructed with a reference to
+	 * the owning thread pool object. When started, the thread loops
+	 * forever waiting to be awakened to service the channel associated
+	 * with a SelectionKey object.
+	 * The worker is tasked by calling its serviceChannel() method
+	 * with a SelectionKey object.  The serviceChannel() method stores
+	 * the key reference in the thread object then calls notify()
+	 * to wake it up.  When the channel has been drained, the worker
+	 * thread returns itself to its parent pool.
+	 */
+	private class WorkerThread extends Thread
+	{
+		private ByteBuffer buffer = ByteBuffer.allocate (1024);
+		private ThreadPool pool;
+		private SelectionKey key;
+
+		WorkerThread (ThreadPool pool)
+		{
+			this.pool = pool;
+		}
+
+		// loop forever waiting for work to do
+		public synchronized void run()
+		{
+			System.out.println (this.getName() + " is ready");
+
+			while (true) {
+				try {
+					// sleep and release object lock
+					this.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					// clear interrupt status
+					this.interrupted();
+				}
+
+				if (key == null) {
+					continue;	// just in case
+				}
+
+				System.out.println (this.getName()
+					+ " has been awakened");
+
+				try {
+					drainChannel (key);
+				} catch (Exception e) {
+					System.out.println ("Caught '"
+						+ e + "' closing channel");
+
+					// close channel and nudge selector
+					try {
+						key.channel().close();
+					} catch (IOException ex) {
+						ex.printStackTrace();
+					}
+
+					key.selector().wakeup();
+				}
+
+				key = null;
+
+				// done, ready for more, return to pool
+				this.pool.returnWorker (this);
+			}
+		}
+
+		/**
+		 * Called to initiate a unit of work by this worker thread
+		 * on the provided SelectionKey object.  This method is
+		 * synchronized, as is the run() method, so only one key
+		 * can be serviced at a given time.
+		 * Before waking the worker thread, and before returning
+		 * to the main selection loop, this key's interest set is
+		 * updated to remove OP_READ.  This will cause the selector
+		 * to ignore read-readiness for this channel while the
+		 * worker thread is servicing it.
+		 */
+		synchronized void serviceChannel (SelectionKey key)
+		{
+			this.key = key;
+
+			key.interestOps (key.interestOps() & (~SelectionKey.OP_READ));
+
+			this.notify();		// awaken the thread
+		}
+
+		/**
+		 * The actual code which drains the channel associated with
+		 * the given key.  This method assumes the key has been
+		 * modified prior to invocation to turn off selection
+		 * interest in OP_READ.  When this method completes it
+		 * re-enables OP_READ and calls wakeup() on the selector
+		 * so the selector will resume watching this channel.
+		 */
+		void drainChannel (SelectionKey key)
+			throws Exception
+		{
+			SocketChannel channel = (SocketChannel) key.channel();
+			int count;
+
+			buffer.clear();			// make buffer empty
+
+			// loop while data available, channel is non-blocking
+			while ((count = channel.read (buffer)) > 0) {
+				buffer.flip();		// make buffer readable
+
+				// send the data, may not go all at once
+				while (buffer.hasRemaining()) {
+					channel.write (buffer);
+				}
+				// WARNING: the above loop is evil.
+				// See comments in superclass.
+
+				buffer.clear();		// make buffer empty
+			}
+
+			if (count < 0) {
+				// close channel on EOF, invalidates the key
+				channel.close();
+				return;
+			}
+
+			// resume interest in OP_READ
+			key.interestOps (key.interestOps() | SelectionKey.OP_READ);
+
+			// cycle the selector so this key is active again
+			key.selector().wakeup();
+		}
+	}
+}
+
+由于执行选择过程的线程将重新循环并几乎立即再次调用select( )，
+键的interest 集合将被修改，并将interest（感兴趣的操作）从读取就绪(read-rreadiness)状态中移除。
+这将防止选择器重复地调用readDataFromSocket( )
+（因为通道仍然会准备好读取数据，直到工作线程从它那里读取数据）。
+当工作线程结束为通道提供的服务时，它将再次更新键的ready集合，
+来将interest重新放到读取就绪集合中。
+它也会在选择器上显式地调用wakeup( )。
+如果主线程在select( )中被阻塞，这将使它继续执行。
+这个选择循环会再次执行一个轮回（可能什么也没做）并带着被更新的键重新进入select( )。
+

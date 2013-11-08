@@ -1,0 +1,108 @@
+﻿（hxzon读书笔记）《SQL反模式》-存储树形结构
+
+by hxzon
+=====
+第3章，单纯的树：如何存储树形结构。
+
+========
+解决方案1，使用邻接表（使用parentId）。
+
+优点：
+1，查询直接后代或直接父亲容易。
+2，插入，断开，移动一个子树容易，只需修改parentId。
+3，没有层级限制。
+
+缺点：
+1，查询所有后代或所有祖先困难。
+2，删除一个子树（非仅仅断开）困难，需从最低级别的节点开始删除。
+
+适用情况：有些数据库支持with关键字加“公共表表达式”，或者有特殊语法。
+
+========
+解决方案2，使用路径枚举（xx/yy/zz/a）。
+
+优点：
+1，查询所有祖先容易，where 'xx/yy' like path||'%';
+2，查询所有后代容易，where path like 'xx/yy'||'%';
+3，使用聚合容易。
+
+缺点：有层级限制，字段长度影响层级数。
+
+========
+解决方案3，使用嵌套集。
+每个节点有两个值，nsleft的数值小于所有后代，nsright的数值大于所有后代，
+即夹在这两个值中间的节点为该节点的后代。
+
+优点：
+1，删除一个枝节点（非删除子树），它的后代会自动代替被删除的节点。
+
+缺点：
+1，获取直接父亲或者直接后代困难。
+2，插入，移动节点困难，需要重新计算左右值。
+
+适用情况：查询性能要求高，其它操作不频繁的场景。
+
+========
+解决方案4，使用闭包表。
+使用一张额外的表treepaths，所有祖孙关系都存成一行（包括节点到自身）。
+
+优点：
+1，查询所有后代，所有祖先都很容易。
+
+hxzon：直接后代，直接父亲，不如邻接表，路径枚举容易。
+可通过增加一个pathLength字段更快的查找直接后代和直接父亲。
+
+2，插入新节点容易。
+
+insert into treePaths(ancestor,descendant)
+select t.ancestor,#myId
+from treePaths t
+where t.descendant = #myParentId
+union all
+select #myId,#myId
+
+3，删除一个叶节点容易。
+
+delete from treepaths where descendant = #myId
+
+4，删除子树容易。
+
+delete from treepaths
+where descendant in
+(
+select descendant from treepaths where ancestor = #myId --所有myId的后代
+)
+
+5，移动一棵子树。
+
+首先断开这棵子树（所有子节点）与所有祖先的关系。
+
+delete from treepaths
+where descendant in
+(select descendant from treepaths where ancestor = #myId) --所有myId的后代，含myId自身
+and ancestor in
+(select ancestor from treepaths where descendant = #myId and ancestor!=descendant) --所有myId的祖先，不含myId自身
+
+新父亲的所有祖先与子树（所有子节点）进行笛卡尔积。
+
+insert into treepaths(ancestor,descendant)
+selec supertree.ancestor,subtree.descendant
+from treepaths supertree
+cross join treepaths subtree
+where supertree.descendant = #myNewParentId
+and subtree.ancestor = #myId
+
+6，删除treepaths的一行时，并不真正删除数据。
+
+7，上述方案中，唯一此方案，允许一个节点属于多棵树。
+
+参考书籍1：Jeo Celko《Trees and Hierarchies in SQL for Smarties》，介绍分层查询。
+参考书籍2：Vadim Tropashko《SQL Design Patterns》，更加正规和理论化。
+
+=======
+hxzon总结：
+闭包表最优，最通用，各项操作都很简单，支持一个节点属于多棵树，属于冗余换时间。
+邻接表次之，查询树困难，如果数据库支持递归查询则很高效。
+路径枚举各项查询都很简单，但是层级数受字段长度限制，也没有引用完整性，性能可能是个问题。
+嵌套集，除了查询所有子代性能高，插入、删除、查询直接子代直接父亲都很复杂，没有引用完整性。
+

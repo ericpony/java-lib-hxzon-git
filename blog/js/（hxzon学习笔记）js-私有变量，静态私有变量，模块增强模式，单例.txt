@@ -1,0 +1,406 @@
+﻿（hxzon学习笔记）js-私有变量，静态私有变量，模块增强模式，单例
+
+hxzon学习笔记
+
+《Professional JavaScript for Web Developers, Third Edition》 pdf
+
+
+
+ CHAPTER 7   FUNCTION EXPRESSIONS（节选）
+
+
+===============
+MIMICKING BLOCK SCOPE  私有变量（块变量）（通过定义匿名函数并立即执行实现）
+
+Anonymous functions can be used to mimic block scoping and avoid such problems.
+
+The basic syntax of an anonymous function used as a block scope (often called a private scope ) is as follows:
+
+(function(){
+    //block code here
+})();
+
+
+This syntax defines an anonymous function that is called immediately and is also sometimes called an immediately invoked function. What looks like a function declaration is enclosed in parentheses to indicate that it’s actually a function expression. This function is then called via the second set of parentheses at the end.
+
+
+Function expressions, however,  can  be followed by parentheses. To turn the function declaration into a function expression, you need only surround it with parentheses like this:
+
+(function(){
+    //block code here
+})();
+
+
+These private scopes can be used anywhere variables are needed temporarily, as in this example:
+
+
+
+function outputNumbers(count){
+    (function () {
+        for (var i=0; i < count; i++){
+            alert(i);
+        }
+    })();
+    
+    alert(i);   //causes an error
+}
+
+
+Consider this example:
+
+(function(){
+                   
+    var now = new Date();
+    if (now.getMonth() == 0 && now.getDate() == 1){
+        alert(“Happy new year!”);
+    }
+                   
+})();
+
+
+Placing this code in the global scope provides functionality for determining if the day is January 1 and, if so, displaying a message to the user. The variable  now  becomes a variable that is local to the anonymous function instead of being created in the global scope.
+
+
+This pattern limits the closure memory problem, because there is no reference to the anonymous function. Therefore the scope chain can be destroyed immediately after the function has completed.
+这个模式避免了闭包内存问题，因为没有对匿名函数的引用。在函数执行完毕后，范围链能被立即释放。
+
+
+==============
+PRIVATE VARIABLES 私有变量
+
+
+A  privileged method  is a public method that has access to private variables and/or private functions. There are two ways to create privileged methods on objects. The first is to do so inside a constructor, as in this example: 
+如下，通过构造函数实现私有变量
+
+
+
+function MyObject(){
+                   
+    //private variables and functions
+    var privateVariable = 10;
+                   
+    function privateFunction(){
+        return false;
+    }
+                   
+    //privileged methods 公开方法（特权方法）
+    this.publicMethod = function (){
+        privateVariable++;
+        return privateFunction();
+    };
+}
+
+This pattern defines all private variables and functions inside the constructor. 
+这个模式在构造函数里定义所有的私有变量和私有函数。
+Then privileged methods can be created to access those private members. 
+然后创建特权方法，特权方法能够访问这些私有变量和私有函数。
+This works because the privileged methods,
+when defined in the constructor, become closures with full access to all variables and functions defined inside the constructor’s scope. 
+这个模式能够有效，因为在构造函数里的特权方法，成为了能访问构造函数内所有变量和函数的闭包。
+
+In this example, the variable  privateVariable and the function  privateFunction() are accessed only by  publicMethod(). 
+
+Once an instance of  MyObject  is created, there is no way to access  privateVariable and privateFunction() directly; 
+you can do so only by way of  publicMethod().
+一旦MyObject生成，你就没有办法再直接访问私有变量和私有函数，只能通过公开函数。
+
+
+You can define private and privileged members to hide data that should not be changed directly, as in this example:
+
+
+function Person(name){
+                   
+    this.getName = function(){
+        return name;
+    };
+                   
+    this.setName = function (value) {
+        name = value;
+    };
+}
+                   
+var person = new Person(“Nicholas”);
+alert(person.getName());   //”Nicholas”
+person.setName(“Greg”);
+alert(person.getName());   //”Greg”
+
+
+
+The constructor in this code defines two privileged methods:  getName() and setName(). Each
+method is accessible outside the constructor and accesses the private name variable. Outside the
+Person constructor, there is no way to access  name. Since both methods are defined inside the
+constructor, they are closures and have access to name through the scope chain. 
+
+The private variable name is unique to each instance of  Person since the methods are being re-created each time the constructor is called. 
+私有变量name是属于实例的，因为getName和setName函数在构造函数每次调用时被重建（被每个实例所有）。
+
+One downside, however, is that you must use the constructor pattern to accomplish this result. 
+As discussed in Chapter 6, the constructor pattern is flawed in that new methods are created for each instance. 
+Using static private variables to achieve privileged methods avoids this problem.
+正如第6章所述，这个模式会导致每个实例都创建一个新函数。
+
+
+================
+Static Private Variables 静态私有变量
+
+
+Privileged methods can also be created by using a private scope to define the private variables or functions. The pattern is as follows:
+
+
+(function(){
+                   
+    //private variables and functions
+    var privateVariable = 10;
+                   
+    function privateFunction(){
+        return false;
+    }
+                   
+    //constructor 公开全局对象（因为没有使用var定义）
+    MyObject = function(){
+    };
+                   
+    //public and privileged methods
+    MyObject.prototype.publicMethod = function(){
+        privateVariable++;
+        return privateFunction();
+    };
+                   
+})();
+
+
+In this pattern, a private scope is created to enclose the constructor and its methods. 
+The private variables and functions are defined first, followed by the constructor and the public methods.
+在构造函数定义之前，先定义私有变量和私有函数。
+
+Public methods are defined on the prototype, as in the typical prototype pattern. 
+Note that this pattern defines the constructor not by using a function declaration but instead by using a function expression. 
+Function declarations always create local functions, which is undesirable in this case.
+For this same reason, the var  keyword is not used with  MyObject . Remember: initializing an
+undeclared variable always creates a global variable, so MyObject  becomes global and available
+outside the private scope. Also keep in mind that assigning to an undeclared variable in strict mode
+causes an error.
+
+
+The main difference between this pattern and the previous one is that private variables and
+functions are shared among instances. 
+本模式与上一个模式的主要区别是，私有变量和私有函数是所有实例共享的。
+
+Since the privileged method is defined on the prototype, all instances use that same function. 
+因为是在prototype定义特权方法，该方法也是所有实例共享的。
+
+The privileged method, being a closure, always holds a reference to the containing scope. 
+Consider the following:
+
+
+ (function(){
+                   
+    var name = “”;
+    
+    Person = function(value){                
+        name = value;                
+    };
+    
+    Person.prototype.getName = function(){
+        return name;
+    };
+    
+    Person.prototype.setName = function (value){
+        name = value;
+    };
+})();
+
+                   
+var person1 = new Person(“Nicholas”);
+alert(person1.getName());   //”Nicholas”
+person1.setName(“Greg”);
+alert(person1.getName());   //”Greg”
+                   
+var person2 = new Person(“Michael”);
+alert(person1.getName());   //”Michael”
+alert(person2.getName());   //”Michael”
+
+
+The  Person constructor in this example has access to the private variable name, as do the
+getName() and setName() methods. Using this pattern, the  name variable becomes static and
+will be used among all instances. 
+This means calling setName() on one instance affects all other instances. 
+Calling setName() or creating a new Person instance sets the  name variable to a new value. 
+This causes all instances to return the same value.
+这会导致所有的实例返回相同的值。
+
+Creating static private variables in this way allows for better code reuse through prototypes,
+although each instance doesn’t have its own private variable. Ultimately, the decision to use instance
+or static private variables needs to be based on your individual requirements.
+The farther up the scope chain a variable lookup is, the slower the lookup
+becomes because of the use of closures and private variables.
+
+
+====================
+The Module Pattern 模块模式（单例）
+
+The previous patterns create private variables and privileged methods for custom types. The module
+pattern, as described by Douglas Crockford, does the same for singletons. Singletons are objects of
+which there will only ever be one instance. Traditionally, singletons are created in JavaScript using
+object literal notation, as shown in the following example:
+
+var singleton = {
+    name : value,
+    method : function () {
+        //method code here
+    }
+};
+
+The module pattern augments the basic singleton to allow for private variables and privileged
+methods, taking the following format:
+
+
+
+var singleton = function(){
+                   
+    //private variables and functions
+    var privateVariable = 10;
+                   
+    function privateFunction(){
+        return false;
+    }
+                   
+    //privileged/public methods and properties  返回对象字面量
+    return {
+                   
+        publicProperty: true,
+                   
+        publicMethod : function(){
+            privateVariable++;
+            return privateFunction();
+        }
+                   
+    };
+}();  //定义匿名函数并立即执行
+
+
+The module pattern uses an anonymous function that returns an object. Inside of the anonymous
+function, the private variables and functions are defined first. After that, an object literal is
+returned as the function value. That object literal contains only properties and methods that should
+be public. 
+
+Since the object is defined inside the anonymous function, all of the public methods
+have access to the private variables and functions. 
+Essentially, the object literal defines the public
+interface for the singleton. This can be useful when the singleton requires some sort of initialization
+and access to private variables, as in this example:
+
+
+var application = function(){
+                   
+    //private variables and functions
+    var components = new Array();
+                   
+    //initialization
+    components.push(new BaseComponent());
+                   
+    //public interface
+    return {
+        getComponentCount : function(){
+            return components.length;
+        },
+                   
+        registerComponent : function(component){
+            if (typeof component == “object”){
+                components.push(component);
+            }
+        }
+    };
+}();
+
+
+In web applications, it’s quite common to have a singleton that manages application-level
+information. This simple example creates an  application object that manages components.
+When the object is fi rst created, the private  components array is created and a new instance of
+BaseComponent  is added to its list. (The code for  BaseComponent  is not important; it is used only
+to show initialization in the example.) The  getComponentCount() and registerComponent()
+methods are privileged methods with access to the components array. The former simply returns the
+number of registered components, and the latter registers a new component.
+The module pattern is useful for cases like this, when a single object must be created and
+initialized with some data and expose public methods that have access to private data. Every
+singleton created in this manner is an instance of Object , since ultimately an object literal
+represents it. This is inconsequential, because singletons are typically accessed globally instead of
+passed as arguments into a function, which negates the need to use the  instanceof operator to
+determine the object type.
+
+
+====================
+The Module-Augmentation Pattern 模块增强模式（单例）
+
+
+Another take on the module pattern calls for the augmentation of the object before returning it. 
+This pattern is useful when the singleton object needs to be an instance of a particular type but must be
+augmented with additional properties and/or methods. 
+这个模式在一个单例需要是某个类的实例，同时需要添加新的属性和方法时很有用。
+
+Consider the following example:
+
+
+var singleton = function(){
+                   
+    //private variables and functions
+    var privateVariable = 10;
+                   
+    function privateFunction(){
+        return false;
+    }
+                   
+    //create object
+    var object = new CustomType();  //父类型
+                   
+    //add privileged/public properties and methods
+    object.publicProperty = true;
+                   
+    object.publicMethod = function(){
+        privateVariable++;
+        return privateFunction();
+    };
+                   
+    //return the object
+    return object;
+}();
+
+
+If the  application object in the module pattern example had to be an instance of  BaseComponent ,
+the following code could be used:
+
+
+var application = function(){
+                   
+    //private variables and functions
+    var components = new Array();
+                   
+    //initialization
+    components.push(new BaseComponent());
+                   
+    //create a local copy of application
+    var app = new BaseComponent();
+                   
+    //public interface
+    app.getComponentCount = function(){
+        return components.length;
+    };
+                   
+    app.registerComponent = function(component){
+        if (typeof component == “object”){
+            components.push(component);
+        }
+    };
+                   
+    //return it
+    return app;
+}();
+
+
+In this rewritten version of the application singleton, the private variables are defined first, as in the
+previous example. The main difference is the creation of a variable named  app  that is a new instance
+of BaseComponent . This is the local version of what will become the  application object. Public
+methods are then added onto the app  object to access the private variables. The last step is to return
+the  app  object, which assigns it to  application.
+
+

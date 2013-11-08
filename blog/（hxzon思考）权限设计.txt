@@ -1,0 +1,228 @@
+﻿（hxzon思考）权限设计
+
+by hxzon
+2013.1.12
+
+=======================
+1，权限表示，权限树
+
+
+首先，将系统里的每一项操作都罗列出来，接着，按一定的规则（例如根据操作对象）分组，形成一棵树。
+
+分组是根据管理需求任意设计的，粒度可粗可细。
+
+这棵树的含义是父节点是子节点的操作集合，即拥有父节点的操作权限，就能执行所有子节点的操作。
+
+接下来，自顶向下给这棵树命名，父节点的名字是子节点名字的前缀。
+
+对于每一项操作（打开页面或提交数据），最终会调用一个方法（一个方法是一个操作），我们在每个方法里做权限检查，如下：
+function xxx(){
+    ifPermitted(“root.material.list”);
+    //xxx
+}
+
+对应页面的显示，也会需要一个检查，如下：
+<t:ifPermitted permission=“root.material.list”>
+    xxx
+</t:ifPermitted>
+
+上述代码表示用户要想执行这个操作或看到这部分内容，必须有“root.material.list”。
+注意，代码里写的总是最低权限要求，即至少要有”root.material.list”权限，如果用户拥有的是“root.material”或“root”权限，因为是包含关系，所以也能执行这个操作（或看到这部分内容）。
+
+该逻辑的代码实现很简单，遍历用户的权限，利用字符串包含操作，看所需的权限是否能包含用户的某一个权限，如下：
+
+ifPermitted(String requirePermision) {
+    for( String permission : user.getPermissions ) {
+        if( requirePermission.contants(permission) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+另外添加一个特殊的“*”表示某节点下的任意的分支可以执行本操作。
+
+例如一个操作的权限为“root.material.*”，则表示拥有“root.material.create”或“root.material.edit”的人都可以执行该操作。
+
+    public static boolean checkPermitted(String require, String input) {
+        //a.b.c -> a , a.b , a.b.c
+        //a.b.* -> a , a.b
+        if (require.contains(input)) {
+            return true;
+        }
+        //a.b.* (a.b) -> a.b.c1 , a.b.c2 , a.b.c.d
+        if (require.endsWith("*")) {
+            String requireParent = require.substring(0, require.length() - 2);
+            return input.contains(requireParent);
+        }
+        return false;
+    }
+
+    public static String permittedAny(Permission permission) {
+        return permission.getPermissionName() + ".*";
+    }
+
+=========================
+2，实体和数据库表设计
+
+
+一般权限设计包含三类对象，账户，角色，操作。
+
+角色是操作的集合，角色本身可以有意义，也可以没意义。我的想法是，角色本身没有意义，仅仅是操作的集合，例如“admin”，它的含义只是它所含有的操作的集合，和它的名字无关。这样，我们判断一个操作能否被执行，都是检查是否有x权限，而不是检查是否是 a角色。
+
+账户被赋予角色，表示拥有该角色的权限。账户也可以被直接赋予权限。我的想法是，账户不跟权限直接关联，而总是通过角色。要把x权限赋给用户，就建立一个角色，只包含x权限，再把这个角色赋给用户。这样的好处是，三者之间的对应关系明确，实现上大大降低复杂性，而管理上，角色这个含义明确，可被复用。
+
+
+这样，数据库表的设计大致如下：
+
+--
+用户表：
+
+Id（用户ID），CreateTime（创建时间），UpdateTime（修改时间），inUse（是否使用中），Username（用户名），Password（密码），realname（真实姓名），Email（电子邮件），DepartmentId（部门表ID）。
+
+--
+角色表：
+
+Id（角色ID），CreateTime（创建时间），UpdateTime（修改时间），inUse（是否使用中），rolename（角色名），RoleGroup（角色组，仅用于分组显示），displayName（角色显示名）。
+
+--
+权限表（操作表）：
+
+Id（权限ID），CreateTime（创建时间），UpdateTime（修改时间），PermissionName（权限名），displayName（权限显示名）。
+
+--
+用户角色表：
+
+Uzer_Id（用户ID），Role_id（角色ID）。
+
+--
+角色权限表：
+
+Role_id（角色ID），Permission_ID（权限ID）。
+
+=========================
+3，“动态角色”
+
+但是上述的设计有一个问题，就是一个用户的角色是固定在“用户角色表”里的，这种方式不能实现实例级别的访问控制。
+
+所以，还有一个“动态角色”的概念，它不是固定在“用户角色表”里的，而是根据当前主体和客体的关系，临时拥有的角色，比方说，“物料创建者”就属于动态角色。
+
+动态角色可以修改所含有的操作集合，但是动态角色不能被赋予用户。（或者，也可以放宽，允许将动态角色赋予用户，但是一旦将这个角色赋予某个用户，例如将“物料创建者”赋予a用户，就相当于说a用户是所有物料的创建者。）
+
+所以，上述的ifPermitted方法在执行前，会先根据条件，给当前用户临时加上一些角色。代码如下：
+
+    List<Role> appendRole() {
+        if(material.creater==user) {
+              appendRole.add(materialCreaterRole);
+        }
+    }
+
+=======================
+4，和shiro的比较
+
+
+shiro的示例用法大概如下：
+
+对于页面的显示控制，使用<shiro:hasPermission>标签，这个用tapestry5的组件很容易就做到了（利用tapestry5的“混入”甚至更简洁），而且，语法可以根据我们的规则来控制。
+
+而对于操作的控制，使用大概如下：
+
+登陆控制：
+        UsernamePasswordToken token = new UsernamePasswordToken(command.getUsername(), command.getPassword(), command.isRememberMe());
+        try {
+            SecurityUtils.getSubject().login(token);
+        } catch (AuthenticationException e) {
+            errors.reject( "error.login.generic", "Invalid username or password.  Please try again." );
+        }
+
+角色检查：
+if ( subject.hasRole(“administrator”) ) {
+    //显示‘Create User’按钮
+} else {
+    //按钮置灰
+}
+
+权限检查：
+if ( subject.isPermitted(“user:create”) ) {
+    //显示‘Create User’按钮
+} else {
+    //按钮置灰
+}
+
+假如我们使用数据库，自定义的Realm大概如下：
+public class SampleRealm extends AuthorizingRealm {
+ 
+    protected UserDAO userDAO = null;
+ 
+    public SampleRealm() {
+        setName("SampleRealm");
+        setCredentialsMatcher(new Sha256CredentialsMatcher());
+    }
+ 
+    @Autowired
+    public void setUserDAO(UserDAO userDAO) {
+        this.userDAO = userDAO;
+    }
+ 
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authcToken) throws AuthenticationException {
+        UsernamePasswordToken token = (UsernamePasswordToken) authcToken;
+        User user = userDAO.findUser(token.getUsername());
+        if( user != null ) {
+            return new SimpleAuthenticationInfo(user.getId(), user.getPassword(), getName());
+        } else {
+            return null;
+        }
+    }
+ 
+ 
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+        Long userId = (Long) principals.fromRealm(getName()).iterator().next();
+        User user = userDAO.getUser(userId);
+        if( user != null ) {
+            SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+            for( Role role : user.getRoles() ) {
+                info.addRole(role.getName());
+                info.addStringPermissions( role.getPermissions() );
+            }
+            return info;
+        } else {
+            return null;
+        }
+    }
+
+这样，无非是把原来写在userService的代码搬到realm中，而且还需要把user转成UernameAndToken和AuthenticationInfo，不如使用userService（只需要传送user）来得简洁。
+
+
+另外，shrio的第三个功能是定义过滤器拦截url。不过，如果像上文，把每一个操作定义成一项权限后，这种功能已经没有什么意义，对于什么操作哪些人能执行已经完全由系统管理员来决定，这已经是最灵活的。
+每提取出一个权限需求，开发人员只需要在操作表插入一条新记录，然后就由管理员决定它属于哪些角色，再把角色赋给用户即可。
+
+=======================
+5，权限管理页面设计
+
+--
+1）账户列表页面（按帐户名搜索，按帐户名排序）
+--
+2）修改账户页面，新建账户页面（列出所有角色，通过勾选来添加或删除该账户所拥有的角色，前提是角色总数不多，可在一个页面内显示）
+--
+3）角色列表页面
+--
+4）修改角色权限页面，新建角色页面（列出所有权限，用权限树来显示，通过勾选来添加或删除该角色所拥有的权限，前提是权限总数不多，可在一个页面内显示）
+--
+5）修改角色所属账户页面
+（一般账户总数会比较多，通过分页显示拥有该角色的账户，通过取消勾选，账户移除该角色。
+通过账户名搜索，分页显示还未拥有该角色的账户，通过勾选，账户添加该角色。）
+--
+6）权限列表页面
+--
+7）修改权限页面（列出所有角色，通过勾选来添加或删除该权限所属的角色，前提是角色总数不多，可在一个页面内显示）
+
+
+=======================
+6，权限使用场景
+
+1）批量添加权限或删除权限：总是以角色来思考，以角色来管理帐户，通过角色权限的添加或删除，来修改对应一组账户的权限。
+
+2）某部门有特定权限，可建立以部门为名的角色，概念简洁（权限始终只来自角色），部门和权限解耦（某个账户可属于某个部门，却不拥有该部门的权限）。
+
+3）批量添加或删除角色：见5.5。更复杂的批量处理，用sql更合理？
+

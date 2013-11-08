@@ -1,0 +1,33 @@
+﻿（hxzon学习笔记）js-switch语句
+
+by hxozn
+
+《javascript高级程序设计（第2版）》
+3.6.9 switch语句
+
+==========
+1，每个case后面都要加一个break语句。
+
+2，
+特色1：可以在switch语句中使用任何数据类型，包括字符串，对象。
+特色2：每个case值不一定是常量，可以是变量，甚至是表达式。
+
+switch("hello world"){
+case "hello"+" world":...
+case "goodbye":...
+default:...
+}
+
+--
+var num=25;
+switch(true){
+case num<0:...
+case num>=0 && num<=10:...
+case num>10 && num<=20:...
+default:...
+}
+
+之所以给switch语句传递表达式true，是因为每个case值都返回一个布尔值。
+
+switch语句在比较值时使用的是全等操作符，不会发生类型转换。
+

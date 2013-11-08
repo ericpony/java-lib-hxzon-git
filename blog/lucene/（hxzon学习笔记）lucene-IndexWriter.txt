@@ -1,0 +1,67 @@
+（hxzon学习笔记）lucene-IndexWriter
+
+by hxzon
+lucene-4.5.0
+==========
+org.apache.lucene.index.IndexWriter
+
+
+An IndexWriter creates and maintains an index. 
+
+The OpenMode option on IndexWriterConfig.setOpenMode(OpenMode) determines whether a new index is created, or whether an existing index is opened. Note that you can open an index with OpenMode.CREATE even while readers are using the index. The old readers will continue to search the "point in time" snapshot they had opened, and won't see the newly created index until they re-open. If OpenMode.CREATE_OR_APPEND is used IndexWriter will create a new index if there is not already an index at the provided path and otherwise open the existing index.
+operMode决定了新索引如何创建，及已存在的索引如何打开。
+
+In either case, documents are added with addDocument and removed with deleteDocuments(Term) or deleteDocuments(Query). A document can be updated with updateDocument (which just deletes and then adds the entire document). When finished adding, deleting and updating documents, close should be called.
+当添加、删除或更新文档后，必须调用close方法。
+
+
+These changes are buffered in memory and periodically flushed to the Directory (during the above method calls). 
+A flush is triggered when there are enough added documents since the last flush. 
+刷新会在添加的文档足够多时触发（自上一次刷新后）。
+Flushing is triggered either by RAM usage of the documents (see IndexWriterConfig.setRAMBufferSizeMB) or the number of added documents (see IndexWriterConfig.setMaxBufferedDocs(int)). 
+可按内存缓冲大小，或添加文档数量来触发。
+The default is to flush when RAM usage hits IndexWriterConfig.DEFAULT_RAM_BUFFER_SIZE_MB MB. 
+For best indexing speed you should flush by RAM usage with a large RAM buffer. 
+增加内存缓冲大小，可获得更好的索引速度。
+Additionally, if IndexWriter reaches the configured number of buffered deletes (see IndexWriterConfig.setMaxBufferedDeleteTerms) the deleted terms and queries are flushed and applied to existing segments. 
+
+In contrast to the other flush options IndexWriterConfig.setRAMBufferSizeMB and IndexWriterConfig.setMaxBufferedDocs(int), deleted terms won't trigger a segment flush. 
+
+Note that flushing just moves the internal buffered state in IndexWriter into the index, but these changes are not visible to IndexReader until either commit() or close is called. 
+A flush may also trigger one or more segment merges which by default run with a background thread so as not to block the addDocument calls (see below for changing the MergeScheduler).
+刷新只是将内部缓冲移入IndexWriter的索引中，但这些更新IndexReader是不可见的，直到调用commit或close方法。
+刷新也会触发一个或多个段的合并。
+
+Opening an IndexWriter creates a lock file for the directory in use. 
+Trying to open another IndexWriter on the same directory will lead to a LockObtainFailedException. 
+The LockObtainFailedException is also thrown if an IndexReader on the same directory is used to delete documents from the index.
+
+Expert: IndexWriter allows an optional IndexDeletionPolicy implementation to be specified. 
+You can use this to control when prior commits are deleted from the index. 
+The default policy is KeepOnlyLastCommitDeletionPolicy which removes all prior commits as soon as a new commit is done (this matches behavior before 2.2). 
+Creating your own policy can allow you to explicitly keep previous "point in time" commits alive in the index for some time, 
+to allow readers to refresh to the new commit without having the old commit deleted out from under them. 
+This is necessary on filesystems like NFS that do not support "delete on last close" semantics, which Lucene's "point in time" search normally relies on. 
+类似NFS这样的不支持“在最后一次关闭时删除”语义的文件系统，这是必须的。
+
+Expert: IndexWriter allows you to separately change the MergePolicy and the MergeScheduler. 
+The MergePolicy is invoked whenever there are changes to the segments in the index. 
+Its role is to select which merges to do, if any, and return a MergePolicy.MergeSpecification describing the merges. 
+The default is LogByteSizeMergePolicy. 
+Then, the MergeScheduler is invoked with the requested merges and it decides when and how to run the merges. 
+The default is ConcurrentMergeScheduler. 
+默认的调度器是ConcurrentMergeScheduler。
+
+NOTE: if you hit an OutOfMemoryError then IndexWriter will quietly record this fact and block all future segment commits. 
+This is a defensive measure in case any internal state (buffered documents and deletions) were corrupted. 
+Any subsequent calls to commit() will throw an IllegalStateException. 
+The only course of action is to call close(), which internally will call rollback(), 
+to undo any changes to the index since the last commit. 
+You can also just call rollback() directly.
+
+NOTE: IndexWriter instances are completely thread safe, meaning multiple threads can call any of its methods, concurrently. 
+If your application requires external synchronization, you should not synchronize on the IndexWriter instance as this may cause deadlock; use your own (non-Lucene) objects instead. 
+
+NOTE: If you call Thread.interrupt() on a thread that's within IndexWriter, IndexWriter will try to catch this (eg, if it's in a wait() or Thread.sleep()), 
+and will then throw the unchecked exception ThreadInterruptedException and clear the interrupt status on the thread.
+
