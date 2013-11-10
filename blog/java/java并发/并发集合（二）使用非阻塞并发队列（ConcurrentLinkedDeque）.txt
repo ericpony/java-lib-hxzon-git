@@ -1,0 +1,230 @@
+并发集合（二）使用非阻塞并发队列（ConcurrentLinkedDeque）
+
+
+并发集合（二）使用非阻塞线程安全的列表（ConcurrentLinkedDeque）
+http://ifeve.com/concurrent-collections-2/
+
+声明：本文是《 Java 7 Concurrency Cookbook 》的第六章，作者： Javier Fernández González     译者：许巧辉
+
+=======
+使用非阻塞线程安全的列表
+
+列表（list）是最基本的集合。一个列表有不确定的元素数量，并且你可以添加、读取和删除任意位置上的元素。
+并发列表允许不同的线程在同一时刻对列表的元素进行添加或删除，而不会产生任何数据不一致（问题）。
+
+在这个指南中，你将学习如何在你的并发应用程序中使用非阻塞列表。
+非阻塞列表提供这些操作：如果操作不能立即完成（比如，你想要获取列表的元素而列表却是空的），它将根据这个操作抛出异常或返回null值。
+Java 7引进实现了非阻塞并发列表的ConcurrentLinkedDeque类。
+
+我们将使用以下两种不同任务来实现一个例子：
+
+大量添加数据到列表
+在同个列表中，大量删除数据
+
+==========
+准备工作…
+
+这个指南的例子使用Eclipse IDE实现。如果你使用Eclipse或其他IDE，如NetBeans，打开它并创建一个新的Java项目。
+
+如何做…
+
+按以下步骤来实现的这个例子:
+
+1.创建一个实现Runnable接口的AddTask类：
+
+1
+public class AddTask implements Runnable {
+2.声明一个私有的、ConcurrentLinkedDeque类型的、参数化为String类的属性list。
+
+1
+private ConcurrentLinkedDeque&lt;String&gt; list;
+3.实现这个类的构造器，并初始化它的属性。
+
+1
+public AddTask(ConcurrentLinkedDeque&lt;String&gt; list) {
+2
+this.list=list;
+3
+}
+4.实现这个类的run()方法。它将在列表中存储10000个正在执行任务的线程的名称和一个数字的字符串。
+
+1
+@Override
+2
+public void run() {
+3
+String name=Thread.currentThread().getName();
+4
+for (int i=0; i&lt;10000; i++){
+5
+list.add(name+&quot;: Element &quot;+i);
+6
+}
+7
+}
+5.创建一个实现Runnable接口的PollTask类。
+
+1
+public class PollTask implements Runnable {
+6.声明一个私有的、ConcurrentLinkedDeque类型的、参数化为String类的属性list。
+
+1
+private ConcurrentLinkedDeque&lt;String&gt; list;
+7.实现这个类的构造器，并初始化它的属性。
+
+1
+public PollTask(ConcurrentLinkedDeque&lt;String&gt; list) {
+2
+this.list=list;
+3
+}
+8.实现这个类的run()方法。它从列表中取出10000个元素（在一个循环5000次的循环中，每次取出2个元素）。
+
+1
+@Override
+2
+public void run() {
+3
+for (int i=0; i&lt;5000; i++) {
+4
+list.pollFirst();
+5
+list.pollLast();
+6
+}
+7
+}
+9.实现这个例子的主类，通过实现Main类，并实现main()方法。
+
+1
+public class Main {
+2
+public static void main(String[] args) {
+10.创建一个参数化为String、名为list的ConcurrentLinkedDeque对象。
+
+1
+ConcurrentLinkedDeque&lt;String&gt; list=new ConcurrentLinkedDeque&lt;&gt;();
+11.创建一个存储100个Thread对象的数组threads。
+
+1
+Thread threads[]=new Thread[100];
+12.创建100个AddTask对象，对于它们中的每一个用一个线程来运行。用之前创建的数组来存储每个线程，并启动这些线程。
+
+1
+for (int i=0; i&lt;threads.length ; i++){
+2
+AddTask task=new AddTask(list);
+3
+threads[i]=new Thread(task);
+4
+threads[i].start();
+5
+}
+6
+System.out.printf(&quot;Main: %d AddTask threads have been
+7
+launched\n&quot;,threads.length);
+13.使用join()方法，等待这些线程的完成。
+
+1
+for (int i=0; i&lt;threads.length; i++) {
+2
+try {
+3
+threads[i].join();
+4
+} catch (InterruptedException e) {
+5
+e.printStackTrace();
+6
+}
+7
+}
+14.将列表的大小写入控制台。
+
+1
+System.out.printf(&quot;Main: Size of the List: %d\n&quot;,list.size());
+15.创建100个PollTask对象，对于它们中的每一个用一个线程来运行。用之前创建的数组来存储每个线程，并启动这些线程。
+
+1
+for (int i=0; i&lt; threads.length; i++){
+2
+PollTask task=new PollTask(list);
+3
+threads[i]=new Thread(task);
+4
+threads[i].start();
+5
+}
+6
+System.out.printf(&quot;Main: %d PollTask threads have been
+7
+launched\n&quot;,threads.length);
+16.使用join()方法，等待这些线程的完成。
+
+1
+for (int i=0; i&lt;threads.length; i++) {
+2
+try {
+3
+threads[i].join();
+4
+} catch (InterruptedException e) {
+5
+e.printStackTrace();
+6
+}
+7
+}
+17.将列表的大小写入控制台。
+
+1
+System.out.printf(&quot;Main: Size of the List: %d\n&quot;,list.size());
+
+=======
+它是如何工作的…
+
+在这个指南中，我们已使用参数化为String类的ConcurrentLinkedDeque对象来处理非阻塞并发列表的数据。
+以下截图显示这个例子执行的输出：
+
+1
+
+首先，你已执行100个AddTask任务来给列表添加元素。
+每个任务使用add()方法添加10000个元素到列表。
+这个方法将新元素插入到列表的尾部。
+当这些任务全部完成，你已在控制台打印这个列表元素的数量。
+此时，列表有1000000个元素。
+
+然后，你执行100个PollTask任务从列表中删除元素。
+每个任务使用pollFirst()和pollLast()方法删除列表的10000个元素。
+pollFirst()方法返回并删除列表的第一个元素，pollLast()方法返回并删除列表的最后一个元素。
+如果列表为空，这些方法将返回一个null值。
+当这些任务全部完成，你已在控制台打印这个列表元素的数量。
+此时，列表有0个元素。
+
+你使用size()方法，打印列表元素的数量。
+你必须考虑到这个方法会返回一个并不真实的值，尤其是如果你使用这个方法，而有线程正在添加或删除列表的数据。
+这个方法必须遍历整个列表来计算元素而对于这个操作列表的内容可以改变。
+只有在没有任何线程修改列表的情况下，你使用这个方法时，才能保证这个返回值是正确的。
+
+=======
+不止这些…
+
+ConcurrentLinkedDeque类提供更多方法来获取列表的元素：
+
+getFirst()和getLast()：这些方法将分别返回列表的第一个和最后一个元素。
+它们不会从列表删除返回的元素。
+如果列表为空，这些方法将抛出NoSuchElementExcpetion异常。
+
+
+peek()、peekFirst()和peekLast()：这些方法将分别返回列表的第一个和最后一个元素。
+它们不会从列表删除返回的元素。
+如果列表为空，这些方法将返回null值。
+
+remove()、removeFirst()、 removeLast()：这些方法将分别返回列表的第一个和最后一个元素。
+它们将从列表删除返回的元素。
+如果列表为空，这些方法将抛出NoSuchElementExcpetion异常。
+
+（全文完）
+
+

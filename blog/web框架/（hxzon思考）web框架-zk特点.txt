@@ -1,0 +1,14 @@
+﻿（hxzon思考）web框架-zk特点
+
+by hxzon
+
+http://books.zkoss.org/wiki/ZK%20Developer's%20Reference/Overture/Technology%20Guidelines
+
+
+1，使用MVVM模式。也支持MVC模式。
+
+2，实时通信，每个js ui事件通过ajax触发后端相同事件。丰富的交互。
+
+3，控制层基于会话。
+
+4，zuml中可使用脚本。

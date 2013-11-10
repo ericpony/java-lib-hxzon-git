@@ -1,0 +1,397 @@
+﻿（hxzon学习笔记）centos6下安装oracle11gR2
+
+by hxzon
+=========
+配置linux系统-》安装数据库软件-》配置监听器及本地网络服务名-》创建数据库
+
+=========
+1，检查和配置linux系统参数
+
+--------
+1.1，检查下列包是否安装，如果未安装则要先安装。 
+
+（hxzon：主要安装gcc，gcc-c++，elfutils-libelf-devel，libaio-devel，unixODBC-devel。
+必须安装compat-libstdc++，否则oracle安装程序在链接库文件时出错。该包无法通过yum安装，可在linux安装光盘中查找安装。）
+
+# rpm -qa | grep make gcc glibc 等等 
+binutils-2.17.50.0.6-2.el5
+compat-libstdc++-33-3.2.3-61
+elfutils-libelf-0.125-3.el5
+elfutils-libelf-devel-0.125
+glibc-2.5-12
+glibc-common-2.5-12
+glibc-devel-2.5-12
+gcc-4.1.1-52
+gcc-c++-4.1.1-52
+libaio-0.3.106
+libaio-devel-0.3.106
+libgcc-4.1.1-52
+libstdc++-4.1.1
+libstdc++-devel-4.1.1-52.e15
+make-3.81-1.1
+sysstat-7.0.0
+unixODBC-2.2.11
+unixODBC-devel-2.2.11 
+
+在安装Oracle 11g前，先关闭系统防火墙，禁用selinux；
+
+（hxzon：注意，内存必须2G以上，交换空间需要2G以上，安装后程序本身占用近4G。）
+--------
+1.2，创建oracle用户和oinstall、dba用户组
+
+
+#groupadd oinstall                       //创建用户组oinstall  
+#groupadd dba                            //创建用户组dba  
+#useradd -m -g oinstall -G dba oracle    //创建用户oracle  
+
+//-m表示创建家目录，-g表示初始群组，-G表示次要群组。
+
+# id oracle                                         //查看用户oracle的属性  
+uid=512(oracle) gid=1005(oinstall) groups=1005(oinstall),1006(dba) 
+
+设置oracle用户的口令，命令如下所示。
+
+# passwd oracle                                     //设置oracle用户的口令  
+Changing password for user oracle.  
+New UNIX password:   
+BAD PASSWORD: it is too simplistic/systematic  
+Retype new UNIX password:   
+passwd: all authentication tokens updated successfully.                //口令更改成功 
+
+---------
+1.3，创建Oracle的安装目录。
+
+# mkdir -p /app/oracle/u01                         
+# chown -R oracle:oinstall /app/oracle                //更改目录的所有者和属组  
+# chmod -R 775 /app/oracle                            //更改目录的权限 
+
+--------
+1.4，更改系统的核心参数，以满足Oracle 11g的安装要求。
+
+#vi /etc/sysctl.conf     //修改/etc/sysctl.conf文件中的核心参数  
+> kernel.shmmni = 4096              //设置kernel.shmmni参数值为4096  
+> kernel.sem = 250 32000 100 128    //设置kernel.sem参数值为250 32000 100 128  
+> fs.file-max = 65536               //设置fs.file-max参数值为65536  
+> net.ipv4.ip_local_port_range = 1024 65000
+//设置net.ipv4.ip_local_port_range参数值为1024 65000  
+> net.core.rmem_default=4194304    //设置net.core.rmem_default参数值为4194304  
+> net.core.wmem_default=262144    //设置net.core.wmem_default参数值为262144  
+> net.core.rmem_max=4194304       //设置net.core.rmem_max参数值为4194304  
+> net.core.wmem_max=262144        //设置net.core.wmem_max参数值为262144  
+> EOF  
+
+#sysctl -p                 //使更改后的内核参数生效  
+
+net.ipv4.ip_forward = 0          //该命令会同时输出更改后的内核参数的值  
+net.ipv4.conf.default.rp_filter = 1 
+net.ipv4.conf.default.accept_source_route = 0 
+…省略部分输出…  
+
+注意：上述的内核参数值只是Oracle 11g数据库的最小要求，用户可以根据实际情况把参数值增大，执行以下命令可查看上述内核参数的当前值。
+
+/sbin/sysctl -a | grep shm  
+/sbin/sysctl -a | grep sem  
+/sbin/sysctl -a | grep file-max  
+/sbin/sysctl -a | grep ip_local_port_range  
+/sbin/sysctl -a | grep rmem_default  
+/sbin/sysctl -a | grep rmem_max  
+/sbin/sysctl -a | grep wmem_default  
+/sbin/sysctl -a | grep wmem_max 
+
+1.5，为oracle用户设置可使用的文件和进程数限制。
+
+# vi /etc/security/limits.conf    //更改/etc/security/limits.conf文件  
+> oracle soft nproc 2047                    //设置oracle用户的进程数限制  
+> oracle hard nproc 16384  
+> oracle soft nofile 1024                  //设置oracle用户的文件数限制  
+> oracle hard nofile 65536  
+> EOF  
+
+# vi /etc/pam.d/login  //更改/etc/pam.d/login文件  
+> session required /lib/security/pam_limits.so  
+> EOF 
+
+
+1.6，更改bash、ksh及cshell的默认profile文件的内容。
+
+#vi /etc/profile 
+> if [ \$USER = "oracle" ]; then  
+> if [ \$SHELL = "/bin/ksh" ]; then           //如果当前SHELL为ksh                
+> ulimit -p 16384                          //更改进程数限制为16384  
+> ulimit -n 65536                          //更改文件数限制为65536  
+> else                                     //否则执行以下代码  
+> ulimit -u 16384 -n 65536  
+> fi  
+> umask 022                                //设置umask的值  
+> fi  
+
+# cat >> /etc/csh.login <<EOF               //cshell的配置  
+> if ( \$USER == "oracle" ) then  
+> limit maxproc 16384                      //更改进程数限制为16384  
+> limit descriptors 65536                  //更改文件数限制为65536  
+> umask 022                                //设置umask的值  
+> endif  
+> EOF 
+
+把上述内容加入到/etc/profile后，用户每次登录都会自动执行上述代码。
+
+1.7，允许所有客户端连接X服务器。
+# xhost + 
+
+
+===============
+2，安装Oracle 11g软件
+
+Oracle 11g提供了图形化的安装界面，用户可通过移动和单击鼠标完成安装过程。具体安装步骤如下所示。
+
+2.1，解压Oracle 11g安装包文件。
+
+#unzip linux_11gR1_database_1013.zip 
+
+-----------
+2.2，以oracle用户重新登录系统，启动Oracle安装程序。(必须重新启动)
+
+$ ./runInstaller   
+
+正在启动 Oracle Universal Installer...  
+检查临时空间: 必须大于 80 MB。   实际为 1611 MB    通过 //检查临时空间通过  
+检查交换空间: 必须大于 150 MB。   实际为 2484 MB    通过    //检查检查交换空间通过  
+检查监视器: 监视器配置至少必须显示 256 种颜色。     实际为 16777216        通过  
+                                                    //检查监视器通过  
+准备从以下地址启动 Oracle Universal Installer /tmp/OraInstall2008-10-27_09-  
+32-54AM. 请稍候...[oracle@demoserver database]$
+Oracle Universal Installer, 版本 11.1.0.6.0 正式版  
+版权所有 (c) 1999, 2007, Oracle。保留所有权利。 
+
+命令执行后将弹出【Oracle Database 11g 安装 - 选择要安装的产品】对话框。
+
+（hxzon：注意，只安装数据库程序，不要创建数据库，否则监听器经常会出问题。）
+
+
+Oracle基位置：Oracle产品的基本目录。
+Oracle主目录位置：Oracle程序的安装目录。
+安装类型：可供选择的安装类型包括"企业版"、"标准版"和"标准版（单处理器）"。
+UNIX DBA组：数据库管理员组。
+创建启动数据库：安装Oracle程序的同时创建Oracle数据库（由于在此创建的数据库是采用标准的模板，所以选择不创建Oracle数据库，在后面再手工进行创建）。
+全局数据库名：指定创建的数据库名称。
+数据库口令：数据库用户SYS、SYSTEM和SYSMAN的口令。
+
+
+安装过程中的日志信息默认会被记录到"/u01/app/oraInventory/logs/installActions<日期时间>.log"文件中。
+下面是该日志文件的一个内容截取。
+
+Using paramFile: /software/linux_11gR1_database_
+1013/database/install/or-  
+aparam.ini  
+//检查临时空间  
+Checking Temp space: must be greater than 80 MB.  
+Actual 1547 MB    Passed  
+//检查swap空间  
+Checking swap space: must be greater than 150 MB.  
+Actual 1315 MB    Passed  
+//检查监视器  
+Checking monitor: must be configured to display at
+least 256 colors.    Actual 16777216    Passed  
+//unzip的命令行  
+The commandline for unzip:  
+/software/linux_11gR1_database_1013/database/
+install/unzip -qqqo ../stage/Components/oracle.jdk/
+1.5.0.1.1/1/DataFiles/\*.jar -d /tmp  
+/OraInstall2008-10-28_10-39-09AM  
+使用 oraparam.ini 中提供的 umask 值 '022'  
+//启动Java图形界面  
+Execvp of the child jre : the cmdline is  
+ /tmp/OraInstall2008-10-28_10-39-09AM/jdk/jre/bin/
+java, and the argv is  
+/tmp/OraInstall2008-10-28_10-39-09AM/jdk/jre/bin/java  
+-Doracle.installer.library_loc=/tmp/OraInstall2008-
+10-28_10-39-09AM/oui/lib/linux  
+-Doracle.installer.oui_loc=/tmp/OraInstall2008-10-28_10-39-09AM/oui  
+-Doracle.installer.bootstrap=TRUE 
+
+2.3，完成安装后，用户需要手动执行对话框中列出的脚本文件。
+   
+打开一个终端窗口，以root身份执行上述两个脚本，运行结果如下所示。
+
+# /app/oracle/u01/oraInventory/orainstRoot.sh    
+
+//执行/app/oracle/u01/oraInventory/orainstRoot.s脚本  
+更改权限/u01/app/oraInventory 到 770.  
+//更改/u01/app/oraInventory目录的访问权限为770  
+更改组名/u01/app/oraInventory 到 oinstall.  
+//更改/u01/app/oraInventory目录的属主为oinstall  
+脚本的执行已完成  
+
+# /app/oracle/u01/product/11.2.0/dbhome_1/root.sh  
+
+//执行/app/oracle/u01/product/11.2.0/dbhome_1/root.sh脚本  
+Running Oracle 11g root.sh script...  
+The following environment variables are set as:  
+//在系统中设置ORACLE_OWNER和ORACLE_HOME环境变量  
+    ORACLE_OWNER= oracle 
+    ORACLE_HOME=  /u01/app/oracle/product/11.1.0/db_1  
+Enter the full pathname of the local bin directory:
+[/usr/local/bin]:                       //（回车接受默认选项）
+   Copying dbhome to /usr/local/bin ...  //复制文件到/usr/local/bin目录下  
+   Copying oraenv to /usr/local/bin ...  
+   Copying coraenv to /usr/local/bin ...  
+Entries will be added to the /etc/oratab file as needed by  //更新/etc/oratab文件的内容  
+Database Configuration Assistant when a database is created  
+Finished running generic part of root.sh script.  
+Now product-specific root actions will be performed.  
+Finished product-specific root actions. 
+
+脚本运行完成后，单击【确定】按钮进入【安装结束】对话框。
+
+
+2.4，安装结束后更改oracle用户的配置文件
+
+在"/home/oracle/.bash_profile"配置文件，加入如下的内容：
+
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/bin
+
+export PATH
+unset USERNAME
+export ORACLE_BASE=/app/oracle/u01
+export ORACLE_HOME=/app/oracle/u01/product/11.1.0/dbhome_1
+export ORACLE_SID=orcl01
+export PATH=$ORACLE_HOME/bin:$PATH
+
+（hxzon：修改后source /home/oracle/.bash_profile使得立即生效。）
+
+------
+把SELinux的安全策略设置为警告。
+# getenforce            //查看当前的SELinux安全策略  
+Enforcing  
+# setenforce 0          //把SELinux的安全策略设置为警告  
+# getenforce            //查看更改后的SELinux安全策略  
+Permissive 
+
+否则，在运行Oracle的一些命令时会由于SELinux的限制导致出错，如下所示。
+
+$ ./sqlplus /nolog  
+./sqlplus: error while loading shared libraries: /u01/app/oracle/product  
+/11.1.0/db_1/lib/libnnz11.so: cannot restore 
+segment prot after reloc: Permission denied 
+上述的设置在系统重启后便会失效，可编辑/etc/sysconfig/selinux文件更改SELINUX选项，更改后将一直有效。
+SELINUX=permissive 
+
+
+====================
+3，配置网络监听程序
+
+（hxzon：先配置监听器和网络服务名，创建数据库时需要先有监听器。）
+
+运行netca。
+    
+
+【监听程序配置，监听程序】对话框。在其中选择【添加】选项，然后单击【下一步】按钮。
+    
+输入监听程序名为LISTENER，然后单击【下一步】按钮。
+
+在【选定的协议】列表框中选择TCP选项，然后单击【下一步】按钮。
+    
+在【监听程序配置，TCP/IP协议】对话框中输入ip地址，选择【使用标准端口号1521】单选按钮，然后单击【下一步】按钮。
+
+可添加“网络服务名”已方便本地连接数据库。输入服务名，ip地址，端口，网络服务名（别名）。
+
+注意：
+在防火墙开启的状况下，要允许客户端通过网络远程连接Oracle数据库，还需要在防火墙中允许外部网络对Oracle网络监听程序服务端口的访问。
+   
+==============
+4，创建数据库
+
+运行dbca命令。
+
+选择"定制数据库"，然后单击【下一步】按钮。
+    
+进入【数据库标识】对话框。在【全局数据库名】和【SID】文本框中输入数据库的名称（本例中为orcl01），然后单击【下一步】按钮。
+
+在进入的如图28.28所示的【管理选项】对话框中单击【下一步】按钮。
+    
+进入【数据库身份证明】对话框。选择【所有账户使用同一管理口令】单选按钮，为所有数据库用户设置相同的口令。
+
+进入【存储选项】对话框。在其中选择【文件系统】单选按钮然后单击【下一步】按钮。
+
+  
+进入【数据库文件所在位置】对话框中，选择【使用模版中的数据库文件位置】单选按钮，然后单击【下一步】按钮。
+
+如果希望位置数据库文件设置其他的位置，可选择【所有数据库文件使用公共位置】单选按钮，然后在【数据库文件位置】文本框中输入新的位置路径。
+
+进入【恢复配置】对话框，在其中取消【指定快速恢复区】复选框的选择，然后单击【下一步】按钮。
+    
+进入【创建选项】对话框中，选择【创建数据库】复选框，然后单击【完成】按钮进入下一步。
+    
+
+进入【确认】对话框中可查看新数据库的详细资料，然后单击【确定】按钮。
+    
+
+进入Database Configuration Assistant界面，在其中可查看数据库的创建进度。
+
+注意：
+数据库创建过程中的日志信息会被保存到"/app/oracle/u01/cfgtoollogs/dbca/orcl01"目录下，用户可查看这些日志文件，以检查数据库创建过程中是否存在错误和警告信息。
+
+数据库创建完成后，单击【退出】按钮，完成数据库创建并退出数据库配置向导。
+
+至此，数据库orcl已经创建完成，Oracle会自动在"/app/oracle/u01/oradata"目录下创建一个以数据库名orcl01命名的目录，
+并在该目录下创建数据库所需的表空间文件、控制文件以及重做日志文件，如下所示。
+
+$ ll orcl01
+
+总计 829704  
+-rw-r----- 1 oracle oinstall        9748480 10-29 09:15 control01.ctl  
+                                //.ctl 后缀的文件是Oracle数据库的控制文件  
+-rw-r----- 1 oracle oinstall        9748480 10-29 09:15 control02.ctl  
+-rw-r----- 1 oracle oinstall        9748480 10-29 09:15 control03.ctl  
+-rw-r----- 1 oracle oinstall       52429312 10-29 09:15 redo01.log  
+                                //.log后缀的文件是Oracle数据库的重做日志文件  
+-rw-r----- 1 oracle oinstall       52429312 10-29 08:59 redo02.log  
+-rw-r----- 1 oracle oinstall       52429312 10-29 08:59 redo03.log  
+-rw-r----- 1 oracle oinstall     125837312 10-29 09:15 sysaux01.dbf  
+                                //.dbf后缀的文件是Oracle数据库的表空间文件  
+-rw-r----- 1 oracle oinstall     314580992 10-29 09:15 system01.dbf  
+-rw-r----- 1 oracle oinstall       20979712 10-29 09:10 temp01.dbf  
+-rw-r----- 1 oracle oinstall    209723392 10-29 09:15 undotbs01.dbf  
+-rw-r----- 1 oracle oinstall        5251072 10-29 08:59 users01.dbf 
+
+（hxzon：dbca可用来修改和删除数据库。）
+
+==============
+6，创建表空间和账户
+
+1，安装数据库时修改了sys的密码
+
+sqlplus /nolog
+
+SQL> conn sys@orcl01 as sysdba
+
+2，创建表空间
+
+确认文件路径存在。
+
+create tablespace PMS  
+datafile '/app/oracle/u01/product/11.2.0/dbhome_1/datafile\orcl01\PMS01.dbf' 
+size 800M  
+autoextend on  
+next 50M  
+maxsize unlimited ;
+
+3，创建用户并指定表空间
+
+create user PMS identified by pms123  
+default tablespace PMS  
+temporary tablespace temp;  
+
+4，授权
+
+grant connect,resource,dba to PMS;
+

@@ -1,0 +1,39 @@
+﻿（hxzon学习笔记）js-表单脚本
+
+by hxzon
+
+《javascript高级程序设计（第2版）》
+13 表单脚本
+
+=====
+1，取得表单对象
+
+document.forms[0]
+document.forms["表单名"]
+document.form2//不推荐
+
+2，
+
+有提交按钮（回车或点击按钮）-》submit事件-》提交服务器
+没有提交按钮（回车）-》（无）
+直接调submit方法-》（无submit事件）提交服务器
+
+--
+点重置按钮-》reset事件
+直接调reset方法-》reset事件
+
+3，取得表单字段对象
+
+form.elements[0]
+form.elements["textbox1"]
+form.elements.length
+
+4，避免多次提交表单
+
+EventUtil.addHandler(form,"submit",function(event){
+	event = EventUtil.getTarget(event);
+	var target = EventUtil.getTarget(event);
+	var btn = target.elements["submit-btn"];
+	btn.disabled = true;
+});
+

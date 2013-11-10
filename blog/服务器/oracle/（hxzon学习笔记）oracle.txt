@@ -1,0 +1,37 @@
+﻿（hxzon学习笔记）oracle
+
+by hxzon
+
+=========
+1，cat /etc/sysconfig/network
+
+
+2，sqlplus
+
+
+sqlplus /nolog
+
+SQL> conn usernamexx@'(description=(address=(protocol=TCP)(host=192.168.0.173)(port=1521))(connect_data=(sid=orcl11g173)(service_name=orcl11g173)))'
+成功。不区分大小写。注意括号匹配。
+
+
+SQL> conn usernamexx/passwordyy@'(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.0.173)(PORT=1521))(CONNECT_DATA=(SID=orcl11g173)))'
+成功。
+
+conn usernamexx/passwordyy@'(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.0.173)(PORT=1521))(CONNECT_DATA=(SID=orcl11g173)))' as sysdba
+
+如果是sys账户，必须使用as sysdba 或sysoper。
+
+conn / as sysdba
+oracle忽略斜杠两边的用户名和密码，使用操作系统账户。
+
+startup
+启动数据库（装载并打开数据库）。
+
+! mkdir -p /u01/app/oracle/datafile
+使用惊叹号可以执行linux命令。
+
+3，修改oracle端口
+
+在$oracle_home/network/admin/listener.ora中修改。
+

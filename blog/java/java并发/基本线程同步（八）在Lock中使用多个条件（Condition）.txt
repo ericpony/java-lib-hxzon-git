@@ -1,0 +1,542 @@
+基本线程同步（八）在Lock中使用多个条件（Condition）
+http://ifeve.com/basic-thread-synchronization-8/
+
+声明：本文是《 Java 7 Concurrency Cookbook 》的第二章，作者： Javier Fernández González     译者：许巧辉 校对：方腾飞
+
+=======
+在Lock中使用多个条件
+
+一个锁可能伴随着多个条件。这些条件声明在Condition接口中。 这些条件的目的是允许线程拥有锁的控制并且检查条件是否为true，
+如果是false，那么线程将被阻塞，直到其他线程唤醒它们。
+Condition接口提供一种机制，阻塞一个线程和唤醒一个被阻塞的线程。
+
+在并发编程中，生产者与消费者是经典的问题。
+我们有一个数据缓冲区，一个或多个数据生产者往缓冲区存储数据，一个或多个数据消费者从缓冲区中取出数据，
+正如在这一章中前面所解释的一样。
+
+在这个指南中，你将学习如何通过使用锁和条件来实现生产者与消费者问题。
+
+========
+准备工作…
+
+你应该事先阅读使用Lock同步代码的指南，才能更好的理解这个食谱。
+
+如何做…
+
+按以下步骤来实现的这个例子:
+
+1.首先，让我们创建一个类来模拟文本文件。创建FileMock类，包括两个属性：
+一个字符串数组类型，名叫content，
+另一个int类型，名叫index。它们将存储文件内容和被检索到的模拟文件的行数。
+
+1
+public class FileMock {
+2
+private String content[];
+3
+private int index;
+2.实现FileMock类的构造器，用随机字符初始化文件的内容。
+
+01
+public FileMock(int size, int length){
+02
+content=new String[size];
+03
+for (int i=0; i<size; i++){
+04
+StringBuilder buffer=new StringBuilder(length);
+05
+for (int j=0; j<length; j++){
+06
+int indice=(int)Math.random()*255;
+07
+buffer.append((char)indice);
+08
+}
+09
+content[i]=buffer.toString();
+10
+}
+11
+index=0;
+12
+}
+3.实现hasMoreLines()方法，如果文件有更多的行来处理，则返回true，如果我们已经取到了模拟文件的尾部，则返回false。
+
+1
+public boolean hasMoreLines(){
+2
+return index<content.length;
+3
+}
+4.实现getLine()方法，返回index属性所确定的行数并增加其值。
+
+1
+public String getLine(){
+2
+if (this.hasMoreLines()) {
+3
+System.out.println("Mock: "+(content.length-index));
+4
+return content[index++];
+5
+}
+6
+return null;
+7
+}
+5.现在，实现Buffer类，用来实现在生产者与消费者之间共享的缓冲区。
+
+1
+public class Buffer {
+6.Buffer类，有6个属性：
+
+一个类型为LinkedList<String>，名为buffer的属性，用来存储共享数据
+一个类型为int，名为maxSize的属性，用来存储缓冲区的长度
+一个名为lock的ReentrantLock对象，用来控制修改缓冲区代码块的访问
+两个名分别为lines和space，类型为Condition的属性
+一个Boolean类型，名为pendingLines的属性，表明如果缓冲区中有行
+1
+private LinkedList<String> buffer;
+2
+private int maxSize;
+3
+private ReentrantLock lock;
+4
+private Condition lines;
+5
+private Condition space;
+6
+private boolean pendingLines;
+7.实现Buffer类的构造器，初始化前面描述的所有属性。
+
+1
+public Buffer(int maxSize) {
+2
+this.maxSize=maxSize;
+3
+buffer=new LinkedList<>();
+4
+lock=new ReentrantLock();
+5
+lines=lock.newCondition();
+6
+space=lock.newCondition();
+7
+pendingLines=true;
+8
+}
+8. 实现insert()方法，接收一个String类型参数并试图将它存储到缓冲区。
+首先，它获得锁的控制。当它有锁的控制，它将检查缓冲区是否有空闲空 间。
+如果缓冲区已满，它将调用await()方法在space条件上等待释放空间。
+如果其他线程在space条件上调用signal()或 signalAll()方法，这个线程将被唤醒。
+当这种情况发生，这个线程在缓冲区上存储行并且在lines条件上调用signallAll()方法，
+稍后我们将会看到，这个条件将会唤醒所有在缓冲行上等待的线程。
+
+01
+public void insert(String line) {
+02
+lock.lock();
+03
+try {
+04
+while (buffer.size() == maxSize) {
+05
+space.await();
+06
+}
+07
+buffer.offer(line);
+08
+System.out.printf("%s: Inserted Line: %d\n", Thread.
+09
+currentThread().getName(),buffer.size());
+10
+lines.signalAll();
+11
+} catch (InterruptedException e) {
+12
+e.printStackTrace();
+13
+} finally {
+14
+lock.unlock();
+15
+}
+16
+}
+9. 实现get()方法，它返回存储在缓冲区上的第一个字符串。
+首先，它获取锁的控制。当它拥有锁的控制，它检查缓冲区是否有行。
+如果缓冲区是空的，它调用 await()方法在lines条件上等待缓冲区中的行。
+如果其他线程在lines条件上调用signal()或signalAll()方法，这个线程将 被唤醒。
+当它发生时，这个方法获取缓冲区的首行，并且在space条件上调用signalAll()方法，然后返回String。
+
+01
+public String get() {
+02
+String line=null;
+03
+lock.lock();
+04
+try {
+05
+while ((buffer.size() == 0) &&(hasPendingLines())) {
+06
+lines.await();
+07
+}
+08
+if (hasPendingLines()) {
+09
+line = buffer.poll();
+10
+System.out.printf("%s: Line Readed: %d\n",Thread.
+11
+currentThread().getName(),buffer.size());
+12
+ 
+13
+space.signalAll();
+14
+}
+15
+} catch (InterruptedException e) {
+16
+e.printStackTrace();
+17
+} finally {
+18
+lock.unlock();
+19
+}
+20
+return line;
+21
+}
+10.实现setPendingLines()方法，用来设置pendingLines的值。
+当没有更多的行生产时，它将被生产者调用。
+
+1
+public void setPendingLines(boolean pendingLines) {
+2
+this.pendingLines=pendingLines;
+3
+}
+11.实现hasPendingLines()方法，如果有更多的行被处理时，返回true，否则返回false。
+
+1
+public boolean hasPendingLines() {
+2
+return pendingLines || buffer.size()>0;
+3
+}
+12.现在轮到生产者，实现Producer类，并指定其实现Runnable接口。
+
+1
+public class Producer implements Runnable {
+13.声明两个属性：一个FileMock类对象，另一个Buffer类对象。
+
+1
+private FileMock mock;
+2
+private Buffer buffer;
+14.实现Producer类的构造器，初始化这两个属性。
+
+1
+public Producer (FileMock mock, Buffer buffer){
+2
+this.mock=mock;
+3
+this.buffer=buffer;
+4
+}
+15.实现run()方法，读取在FileMock对象中创建的所有行，并使用insert()方法将它们存储到缓冲区。
+一旦这个过程结束，使用setPendingLines()方法警告缓冲区，不会再产生更多的行。
+
+1
+@Override
+2
+public void run() {
+3
+buffer.setPendingLines(true);
+4
+while (mock.hasMoreLines()){
+5
+String line=mock.getLine();
+6
+buffer.insert(line);
+7
+}
+8
+buffer.setPendingLines(false);
+9
+}
+16.接下来轮到消费者，实现Consumer类，并指定它实现Runnable接口。
+
+1
+public class Consumer implements Runnable {
+17.声明Buffer对象，实现Consumer构造器来初始化这个对象。
+
+1
+private Buffer buffer;
+2
+public Consumer (Buffer buffer) {
+3
+this.buffer=buffer;
+4
+}
+18.实现run()方法，当缓冲区有等待的行，它将获取一个并处理它。
+
+1
+@Override
+2
+public void run() {
+3
+while (buffer.hasPendingLines()) {
+4
+String line=buffer.get();
+5
+processLine(line);
+6
+}
+7
+}
+19.实现辅助方法processLine()，它只睡眠10毫秒，用来模拟某种行的处理。
+
+1
+private void processLine(String line) {
+2
+try {
+3
+Random random=new Random();
+4
+Thread.sleep(random.nextInt(100));
+5
+} catch (InterruptedException e) {
+6
+e.printStackTrace();
+7
+}
+8
+}
+20.通过创建类名为Main，且包括main（）方法来实现这个示例的主类。
+
+1
+public class Main {
+2
+public static void main(String[] args) {
+21.创建一个FileMock对象。
+
+1
+FileMock mock=new FileMock(100, 10);
+22.创建一个Buffer对象。
+
+1
+Buffer buffer=new Buffer(20);
+23.创建Producer对象，并且用10个线程运行它。
+
+1
+Producer producer=new Producer(mock, buffer);
+2
+Thread threadProducer=new Thread(producer,"Producer");
+24.创建Consumer对象，并且用10个线程运行它。
+
+1
+Consumer consumers[]=new Consumer[3];
+2
+Thread threadConsumers[]=new Thread[3];
+3
+for (int i=0; i<3; i++){
+4
+consumers[i]=new Consumer(buffer);
+5
+threadConsumers[i]=new Thread(consumers[i],"Consumer "+i);
+6
+}
+25.启动producer和3个consumers。
+
+1
+threadProducer.start();
+2
+for (int i=0; i<3; i++){
+3
+threadConsumers[i].start();
+4
+}
+
+=======
+它是如何工作的…
+
+所有Condition对象都与锁有关，并且使用声明在Lock接口中的newCondition()方法来创建。
+使用condition做任何操作之前， 你必须获取与这个condition相关的锁的控制。
+所以，condition的操作一定是在以调用Lock对象的lock()方法为开头，以调用相同 Lock对象的unlock()方法为结尾的代码块中。
+
+当一个线程在一个condition上调用await()方法时，它将自动释放锁的控制，
+所以其他线程可以获取这个锁的控制并开始执行相同操作，或者由同个锁保护的其他临界区。
+
+注释：当一个线程在一个condition上调用signal()或signallAll()方法，一个或者全部在这个condition上等待的线程将被唤醒。
+这并不能保证“使它们睡眠的条件”现在是true，所以你必须在while循环内部调用await()方法。
+你不能离开这个循环，直到 condition为true。
+当condition为false，你必须再次调用 await()方法。
+
+你必须十分小心 ，在使用await()和signal()方法时。
+如果你在condition上调用await()方法而却没有在这个condition上调用signal()方法，这个线程将永远睡眠下去。
+
+在调用await()方法后，一个线程可以被中断的，所以当它正在睡眠时，你必须处理InterruptedException异常。
+
+========
+不止这些…
+
+Condition接口提供不同版本的await()方法，如下：
+
+await(long time, TimeUnit unit):这个线程将会一直睡眠直到：
+(1)它被中断
+
+(2)其他线程在这个condition上调用singal()或signalAll()方法
+
+(3)指定的时间已经过了
+
+(4)TimeUnit类是一个枚举类型如下的常量：
+
+DAYS,HOURS, MICROSECONDS, MILLISECONDS, MINUTES, NANOSECONDS,SECONDS
+
+----
+awaitUninterruptibly():这个线程将不会被中断，一直睡眠直到其他线程调用signal()或signalAll()方法
+
+----
+awaitUntil(Date date):这个线程将会一直睡眠直到：
+(1)它被中断
+
+(2)其他线程在这个condition上调用singal()或signalAll()方法
+
+(3)指定的日期已经到了
+
+
+你可以在一个读/写锁中的ReadLock和WriteLock上使用conditions。
+
+参见
+
+在第2章，基本线程同步中使用Lock同步代码块的指南
+在第2章，基本线程同步中使用读/写锁同步数据访问
+
+（全文完）
+
+============
+java.util.concurrent.locks.Condition
+
+
+Condition factors out the Object monitor methods (wait, notify and notifyAll) into distinct objects 
+to give the effect of having multiple wait-sets per object, 
+by combining them with the use of arbitrary Lock implementations. 
+Where a Lock replaces the use of synchronized methods and statements, 
+a Condition replaces the use of the Object monitor methods. 
+
+正如Lock用来替代synchronized方法和语句，
+Condition用来替代对象的监视器方法。
+
+Conditions (also known as condition queues or condition variables) provide a means 
+for one thread to suspend execution (to "wait") until notified by another thread that some state condition may now be true. 
+Because access to this shared state information occurs in different threads, it must be protected, 
+so a lock of some form is associated with the condition. 
+The key property that waiting for a condition provides is that 
+it atomically releases the associated lock and suspends the current thread, just like Object.wait. 
+
+A Condition instance is intrinsically bound to a lock. 
+To obtain a Condition instance for a particular Lock instance use its newCondition() method. 
+
+As an example, suppose we have a bounded buffer which supports put and take methods. 
+If a take is attempted on an empty buffer, then the thread will block until an item becomes available; 
+if a put is attempted on a full buffer, then the thread will block until a space becomes available. 
+We would like to keep waiting put threads and take threads in separate wait-sets 
+so that we can use the optimization of only notifying a single thread at a time 
+when items or spaces become available in the buffer. 
+This can be achieved using two Condition instances. 
+
+我们必须让生产者和消费者线程处于分开的不同的等待集中。
+
+ class BoundedBuffer {
+   final Lock lock = new ReentrantLock();
+   final Condition notFull  = lock.newCondition(); 
+   final Condition notEmpty = lock.newCondition(); 
+
+   final Object[] items = new Object[100];
+   int putptr, takeptr, count;
+
+   public void put(Object x) throws InterruptedException {
+     lock.lock();
+     try {
+       while (count == items.length)
+         notFull.await();
+       items[putptr] = x;
+       if (++putptr == items.length) putptr = 0;
+       ++count;
+       notEmpty.signal();
+     } finally {
+       lock.unlock();
+     }
+   }
+
+   public Object take() throws InterruptedException {
+     lock.lock();
+     try {
+       while (count == 0)
+         notEmpty.await();
+       Object x = items[takeptr];
+       if (++takeptr == items.length) takeptr = 0;
+       --count;
+       notFull.signal();
+       return x;
+     } finally {
+       lock.unlock();
+     }
+   }
+ }
+ 
+(The java.util.concurrent.ArrayBlockingQueue class provides this functionality, so there is no reason to implement this sample usage class.) 
+
+A Condition implementation can provide behavior and semantics that is different from that of the Object monitor methods, 
+such as guaranteed ordering for notifications, or not requiring a lock to be held when performing notifications. 
+If an implementation provides such specialized semantics then the implementation must document those semantics. 
+
+Note that Condition instances are just normal objects and can themselves be used as the target in a synchronized statement, 
+and can have their own monitor wait and notification methods invoked. 
+Acquiring the monitor lock of a Condition instance, or using its monitor methods, 
+has no specified relationship with acquiring the Lock associated with that Condition 
+or the use of its waiting and signalling methods. 
+It is recommended that to avoid confusion you never use Condition instances in this way, 
+except perhaps within their own implementation. 
+
+Except where noted, passing a null value for any parameter will result in a NullPointerException being thrown. 
+
+Implementation Considerations
+
+When waiting upon a Condition, a "spurious wakeup" is permitted to occur, 
+in general, as a concession to the underlying platform semantics. 
+This has little practical impact on most application programs as a Condition should always be waited upon in a loop, 
+testing the state predicate that is being waited for. 
+An implementation is free to remove the possibility of spurious wakeups 
+but it is recommended that applications programmers always assume that they can occur and so always wait in a loop. 
+
+The three forms of condition waiting (interruptible, non-interruptible, and timed) 
+may differ in their ease of implementation on some platforms and in their performance characteristics. 
+In particular, it may be difficult to provide these features and maintain specific semantics such as ordering guarantees. 
+Further, the ability to interrupt the actual suspension of the thread may not always be feasible to implement on all platforms. 
+
+Consequently, an implementation is not required to define exactly the same guarantees or semantics for all three forms of waiting, 
+nor is it required to support interruption of the actual suspension of the thread. 
+
+An implementation is required to clearly document the semantics and guarantees provided by each of the waiting methods, 
+and when an implementation does support interruption of thread suspension 
+then it must obey the interruption semantics as defined in this interface. 
+
+As interruption generally implies cancellation, and checks for interruption are often infrequent, 
+an implementation can favor responding to an interrupt over normal method return. 
+This is true even if it can be shown that the interrupt occurred after another action that may have unblocked the thread. 
+An implementation should document this behavior.
+
+Since:
+1.5
+Author:
+Doug Lea
+
+

@@ -1,0 +1,232 @@
+并发集合（九）使用原子数组（AtomicIntegerArray，AtomicLongArray）
+http://ifeve.com/concurrent-collections-9/
+
+声明：本文是《 Java 7 Concurrency Cookbook 》的第六章， 作者： Javier Fernández González 译者：郑玉婷 校对：黄庭
+
+========
+当你实现一个多个线程共享一个或者多个对象的并发应用时，
+你就要使用像锁或者同步关键词（例如synchronized）来对他们的属性的访问进行保护，来避免并发造成的数据不一致的错误。
+
+但是这些机制会有以下一些缺点：
+
+死锁(dead lock)：
+例如：当一个线程等待一个锁的时候，会被阻塞，而这个锁被其他线程占用并且永不释放。
+这种情况就是死锁，程序在这种情况下永远都不会往下执行。
+
+即使只有一个线程在访问共享对象，它也要执行必要的获取锁和释放锁的代码。
+
+CAS(compare-and-swap)操作为并发操作对象的提供更好的性能，CAS操作通过以下3个步骤来实现对变量值得修改：
+
+获取当前内存中的变量的值
+用一个新的临时变量(temporal variable)保存改变后的新值
+如果当前内存中的值等于变量的旧值，则将新值赋值到当前变量；否则不进行任何操作
+
+对于这个机制，你不需要使用任何同步机制，这样你就避免了 deadlocks，也获得了更好的性能。
+这种机制能保证多个并发线程对一个共享变量操作做到最终一致。
+
+Java 在原子类中实现了CAS机制。
+这些类提供了compareAndSet() 方法；这个方法是CAS操作的实现和其他方法的基础。
+
+Java 中还引入了原子Array，用来实现Integer类型和Long类型数组的操作。
+在这个指南里，你将要学习如何使用AtomicIntegerArray 类来操作原子 arrays。
+
+=========
+指南中的例子是在Eclipse IDE下面实现的，你也可以使用其他IDE例如NetBeans来实现：
+
+那要怎么做呢….
+
+按照这些步骤来实现下面的例子：
+
+01
+//1.创建一个类，名为 Incrementer，并实现 Runnable 接口。
+02
+public class Incrementer implements Runnable {
+03
+ 
+04
+//2.声明一个私有 AtomicIntegerArray 属性，名为 vector，用来储存一个整数 array。
+05
+private AtomicIntegerArray vector;
+06
+ 
+07
+//3.实现类的构造函数，初始化它的属性值。
+08
+public Incrementer(AtomicIntegerArray vector) {
+09
+         this.vector=vector;
+10
+}
+11
+ 
+12
+//4.实现 run() 方法。使用 getAndIncrement() 方操作array里的所有元素。
+13
+@Override
+14
+public void run() {
+15
+         for (int i=0; i<vector.length(); i++){
+16
+                 vector.getAndIncrement(i);
+17
+         }
+18
+}
+19
+ 
+20
+//5.创建一个类，名为 Decrementer，并实现 Runnable 接口。
+21
+public class Decrementer implements Runnable {
+22
+ 
+23
+//6.声明一个私有 AtomicIntegerArray 属性，名为 vector，用来储存一个整数 array。
+24
+private AtomicIntegerArray vector;
+25
+ 
+26
+//7.实现类的构造函数，初始化它的属性值。
+27
+public Decrementer(AtomicIntegerArray vector) {
+28
+         this.vector=vector;
+29
+}
+30
+ 
+31
+//8.实现 run() 方法。使用 getAndDecrement() 方法操作array里的所有元素。
+32
+@Override
+33
+public void run() {
+34
+         for (int i=0; i<vector.length(); i++) {
+35
+         vector.getAndDecrement(i);
+36
+         }
+37
+}
+38
+ 
+39
+//9.我们创建一个示例来进行示范，创建一个类，名为 Main 并添加 main()方法。
+40
+public class Main {
+41
+         public static void main(String[] args) {
+42
+ 
+43
+//10.声明一个常量，名为 THREADS，分配它的值为 100。创建一个有1，000个元素的 AtomicIntegerArray 对象。
+44
+final int THREADS=100;
+45
+AtomicIntegerArray vector=new AtomicIntegerArray(1000);
+46
+ 
+47
+//11. 创建一个 Incrementer 任务来操作之前创建的原子 array。
+48
+Incrementer incrementer=new Incrementer(vector);
+49
+ 
+50
+//12.创建一个 Decrementer 任务来操作之前创建的原子 array。
+51
+Decrementer decrementer=new Decrementer(vector);
+52
+ 
+53
+//13.创建2个array 分别存储 100 个Thread 对象。
+54
+Thread threadIncrementer[]=new Thread[THREADS];
+55
+Thread threadDecrementer[]=new Thread[THREADS];
+56
+ 
+57
+//14.创建并运行 100 个线程来执行 Incrementer 任务和另外 100 个线程来执行 Decrementer 任务。把线程储存入之前创建的arrays内。
+58
+for (int i=0; i<THREADS; i++) {
+59
+         threadIncrementer[i]=new Thread(incrementer);
+60
+         threadDecrementer[i]=new Thread(decrementer);
+61
+ 
+62
+         threadIncrementer[i].start();
+63
+         threadDecrementer[i].start();
+64
+}
+65
+//15.使用 join() 方法来等待线程的完结。
+66
+for (int i=0; i<100; i++) {
+67
+         try {
+68
+                 threadIncrementer[i].join();
+69
+                 threadDecrementer[i].join();
+70
+         } catch (InterruptedException e) {
+71
+                 e.printStackTrace();
+72
+         }
+73
+}
+74
+//16.把原子array里非0的元素写入操控台。使用 get() 方法来获取原子 array 元素。
+75
+for (int i=0; i<vector.length(); i++) {
+76
+         if (vector.get(i)!=0) {
+77
+                 System.out.println("Vector["+i+"] : "+vector.get(i));
+78
+         }
+79
+}
+80
+ 
+81
+//17.在操控台写个信息表明例子结束。
+82
+System.out.println("Main: End of the example");
+
+========
+它是怎么工作的…
+
+在这个例子里，你实现了2个不同的任务来操作 AtomicIntegerArray 对象：
+
+Incrementer task: 这个类使用getAndIncrement()方法array里的全部元素 +1
+Decrementer task: 这个类使用getAndDecrement()方法array里的全部元素 -1
+
+在 Main 类，你创建了有1000个元素的 AtomicIntegerArray，然后你执行了100次 Incrementer 和100次 Decrementer 任务。
+在任务结束后，如果没有出现任何数据不一致错误，那么array的全部元素的值都为0。
+如果你运行这个任务，由于全部元素都是0，你只会看到程序在操控台只写了结束信息。
+
+========
+更多…
+
+如今，Java仅提供了另一个原子 array类。它是 AtomicLongArray 类，与 IntegerAtomicArray 类提供了相同的方法。
+
+这些类的一些其他有趣的方法有：
+
+get(int i): 返回array中第i个位置上的值
+
+set(int I, int newValue): 设置array中第i个位置上的值为newValue
+
+
+参见
+第六章，并发集：使用原子变量
+
+（全文完）

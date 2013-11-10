@@ -1,0 +1,381 @@
+﻿（hxzon学习笔记）js-高级定时器
+
+hxzon学习笔记
+
+========
+ADVANCED TIMERS
+高级定时器。
+
+
+Timers created using setTimeout() or setInterval() can be used to achieve interesting and useful functionality. 
+Despite the common misconception that timers in JavaScript are actually threads, 
+JavaScript runs in a single-threaded environment. 
+
+
+Timers, then, simply schedule code execution to happen at some point in the future. 
+The timing of execution is not guaranteed, because other code 
+may control the JavaScript process at different times during the page life cycle. 
+
+定时调用是没有保证的，因为处理器可能被别的代码占用。
+
+Code running when the page is downloaded, event handlers, and Ajax callbacks all must use the same thread for execution. 
+It’s the browser’s job to sort out which code has priority at what point in time.
+It helps to think of JavaScript as running on a timeline. 
+When a page is loading, the first code to be executed is any code included using a <script>element. 
+This often is simply function and variable declarations to be used later during the page life cycle, 
+but sometimes it can contain initial data processing. 
+After that point, the JavaScript process waits for more code to execute. 
+When the process isn’t busy, the next code to be triggered is executed immediately. 
+For instance, an onclick event handler is executed immediately when a button is clicked, 
+as long as the JavaScript process isn’t executing any other code. 
+
+The timeline for such a page might look like Figure 22-1.
+
+（图片）
+FIGURE 22-1
+
+
+Alongside the main JavaScript execution process, 
+there is a queue of code that should be executed the next time the process is idle. 
+As the page goes through its life cycle, code is added to the queue in the order in which it should be executed. 
+When a button is clicked, for example, its event handler code is added to the queue and executed at the next possible moment. 
+
+代码只是被添加到队列，等待处理器空闲时再执行。
+
+When an Ajax response is received, the callback function code is added to the queue. 
+No code is executed immediately in JavaScript; it is executed as soon as the process is idle.
+
+Timers work with this queue by inserting code when a particular amount of time has passed. 
+Note that adding code to the queue doesn’t mean it’s executed immediately; 
+it simply means that it will be executed as soon as possible. 
+Setting a timer for execution in 150 milliseconds doesn’t mean that the code will be executed in 150 milliseconds; 
+it means that the code will be added to the queue in 150 milliseconds. 
+If nothing else is in the queue at that point in time, the timer code will be executed, 
+giving the appearance that the code executed exactly when specified. 
+At other times, the code may take significantly longer to execute.
+
+Consider the following code:
+
+var btn = document.getElementById(“my-btn”);
+btn.onclick = function(){
+	setTimeout(function(){
+		document.getElementById(“message”).style.visibility = “visible”;
+	}, 250);
+	//other code
+};
+
+
+Here, an event handler is set up for a button. 
+The event handler sets a timer to be called in 250 milliseconds. 
+When the button is clicked, the onclickevent handler is first added to the queue. 
+When it is executed, the timer is set, and 250 milliseconds later, 
+the specified code is added to the queue for execution. 
+
+In effect, the call to setTimeout() says that some code should be executed later.
+The most important thing to remember about timers is that 
+the specified interval indicates when the timer’s code will be added to the queue, 
+not when the code will actually be executed. 
+
+If the onclick event handler in the previous example took 300 milliseconds to execute, 
+then the timer’s code would execute, at the earliest, 300 milliseconds after the timer was set. 
+
+All code in the queue must wait until the JavaScript process is free before it can be executed, 
+regardless of how it was added to the queue (see Figure 22-2).
+
+（图片）
+FIGURE 22-2
+
+
+As you can see from Figure 22-2, even though the timer code was added at the 255-millisecond mark, 
+it cannot be executed at that time because the onclickevent handler is still running. 
+The timer code’s first opportunity to be executed is at the 300-millisecond mark, 
+after the onclick event handler has finished.
+
+Firefox’s implementation of timers actually allows you to determine how far behind a timer has slipped. 
+It does so by passing in the differential between the time that it was executed and the interval specified. 
+
+Here is an example:
+
+//works in Firefox only
+setTimeout(function(diff){
+	if (diff > 0) {
+		//call is late
+	} else if (diff < 0){
+		//call is early
+	} else {
+		//call is on time
+	}
+}, 250);
+
+
+When the execution of one set of code is complete, 
+the JavaScript process yields for a short amount of time so that other processes on the page can be executed. 
+Since the JavaScript process blocks other page processes, 
+these small breaks are necessary to prevent the user interface from locking 
+(which can still happen during long-running code). 
+Setting a timer ensures that there will be at least one process break before the timer code is executed.
+
+============
+Repeating Timers
+重复执行定时器。
+
+
+Timers created using setInterval() ensure regular injection of timer code into the queue. 
+The problem with this approach is that the timer code may not finish execution 
+before the code is added to the queue again. 
+The result would be that the timer code is run multiple times in a row, 
+with no amount of time between them. 
+Fortunately, JavaScript engines are smart enough to avoid this issue. 
+
+When using setInterval(), timer code is added to the queue only if 
+there are no other instances of the timer code already in the queue. 
+This ensures that the time between additions of the timer code to the queue is, at a minimum, the specified interval.
+
+
+The downside to this regulation of repeating timers is twofold: (1) intervals may be skipped, and 
+(2) intervals may be smaller than expected between multiple timer-code executions. Suppose you 
+have a situation where an onclickevent handler sets a repeating timer using setInterval()at any 
+interval of 200 milliseconds. If the event handler takes a little over 300 milliseconds to complete, and 
+the timer code takes about the same amount of time, you’ll end up with both a skipped interval 
+and timer code running back-to-back (see Figure 22-3).
+
+
+
+JavaScript Process Timeline
+onclick
+0
+5
+100 200
+205
+405
+605
+300 400 500
+Timer code added to queue
+Timer code added to queue
+Timer code queueing skipped
+Repeating timer created with interval of 200
+600 700 800
+Timer code Timer code
+FIGURE 22-3
+
+The first timer in this example is added to the queue at 205 milliseconds but can’t be executed until 
+after the 300-millisecond mark. While the timer code is being executed, another copy is added to 
+the queue at 405 milliseconds. At the next interval, 605 milliseconds, the first timer code is still 
+being executed, and there is already one instance of the timer code in the queue. As a result, timer 
+code is not added to the queue at that point. The timer code added at 405 milliseconds is then 
+executed right after the timer code that was added at 5 milliseconds.
+To avoid the two downfalls of repeating timers with setInterval(), you can use chained 
+
+setTimeout()calls in the following pattern:
+
+setTimeout(function(){
+	//processing
+	setTimeout(arguments.callee, interval);
+}, interval);
+
+This pattern chains calls to setTimeout(), creating a new timer each time the function is executed. 
+The second call to setTimeout() uses arguments.callee to get a reference to the currently 
+executing function and set another timer for it. The advantage is that new timer code isn’t inserted 
+into the queue until the previous timer code has been executed, ensuring that there won’t be any 
+dropped intervals. Furthermore, you are guaranteed that the next time the timer code is executed, it 
+will be in at least the interval specified, avoiding back-to-back runs. This pattern is used most often 
+for repeating timers, as in this example:
+setTimeout(function(){
+var div = document.getElementById(“myDiv”),
+left = parseInt(div.style.left) + 5;
+div.style.left = left + ”px”;
+if (left < 200){
+setTimeout(arguments.callee, 50);
+
+}
+}, 50);
+RepeatingTimersExample.htm
+This code moves a <div>element to the right every time the timer code executes, stopping when the 
+left coordinate is at 200 pixels. It’s quite common to use this pattern for JavaScript animation.
+Each browser window, tab, or frame has its own code execution queue. This 
+means that the timing of cross-frame or cross-window JavaScript calls may 
+result in race conditions when code is executed synchronously. Whenever this 
+type of communication is necessary, it’s a good idea to create a timer on the 
+receiving frame or window to execute the code.
+Yielding Processes
+JavaScript running in a browser has a finite amount of resources allocated to it. Unlike desktop 
+applications, which often have free rein over the amount of memory and processor time they 
+can command, JavaScript is severely restricted to ensure that malicious web programmers can’t 
+bring down a user’s computer. One of these restrictions is the long-running scriptlimit, which 
+prevents code from running if it takes longer than a certain amount of time or a certain number of 
+statements. If you reach that limit, the user is presented with a browser error dialog indicating that 
+a script is taking too long to execute and asking whether the user would like to allow it to continue 
+processing or stop. It’s the goal of all JavaScript developers to ensure that the user never sees this 
+confusing message from the browser. Timers are one way to work around this limitation.
+Long-running script problems typically result from one of two issues: long, deeply nested function 
+calls or loops that are doing a lot of processing. Of these two, the latter is an easier problem to 
+solve. Long-running loops typically follow this pattern:
+for (var i=0, len=data.length; i < len; i++){
+process(data[i]);
+}
+The problem with this pattern is that the number of items to process is unknown until runtime.
+If process()takes 100 milliseconds to complete, an array of two items may not be cause for worry, 
+but an array of ten results in the script running for a second to complete. The amount of time it 
+takes to completely execute this loop is directly related to the number of items in the array. And 
+since JavaScript execution is a blocking operation, the longer a script takes to run, the longer users 
+are left unable to interact with the page.
+
+Before unrolling the loop, you need to answer these two important questions:
+1.  Does the processing have to be done synchronously?If the processing of this data is 
+blocking something else from finishing, then you may not want to touch it. However, 
+if you can answer a definitive “no” to this question, then it’s a good candidate for deferring 
+some processing until later.
+2.  Does the data have to be processed sequentially?Oftentimes, an array of values is just a 
+convenient way to group and iterate over items regardless of the order. If the order of the 
+items has no significance, then it’s likely that you can postpone some processing until later.
+When you find a loop is taking a significant amount of time to complete, and you can answer “no” 
+to either of the previous two questions, you can split the loop using timers. This is a technique called 
+array chunking, whereby processing of the array happens in small chunks, most often one at a time. 
+The basic idea is to create a queue of items to process, use timers to pull the next item to process, 
+process it, and then set another timer. The basic pattern looks like this:
+setTimeout(function(){
+//get next item and process it
+var item = array.shift();
+process(item);
+//if there’s more items, set another timeout
+if(array.length > 0){
+setTimeout(arguments.callee, 100);
+}
+}, 100);
+In the array chunking pattern, the arrayvariable is essentially a “to do” list of items to process. 
+Using the shift()method, you retrieve the next item in the queue to process and pass it in to 
+a function. If there are still items in the queue, then another timer is set, calling the same 
+anonymous function via arguments.callee. You can accomplish array chunking easily, using 
+the following function:
+function chunk(array, process, context){
+setTimeout(function(){
+var item = array.shift();
+process.call(context, item);
+if (array.length > 0){
+setTimeout(arguments.callee, 100); 
+}
+}, 100); 
+}
+ArrayChunkingExample.htm
+The chunk()method accepts three arguments: the array of items to process, a function to use to 
+process the items, and an optional context in which to run the function. Inside the function is a 
+duplication of the basic pattern described previously, with the process()function being called 
+
+via call()so that a proper context can be set if necessary. The interval of the timers is set to 100 
+milliseconds, which gives the JavaScript process time to go idle between item processing events. This 
+interval can be changed based on your needs, although 100 milliseconds works well in most cases. 
+The function can be used as follows:
+var data = [12,123,1234,453,436,23,23,5,4123,45,346,5634,2234,345,342];
+function printValue(item){
+var div = document.getElementById(“myDiv”);
+div.innerHTML += item + ”<br>”; 
+}
+chunk(data, printValue);
+ArrayChunkingExample.htm
+This example outputs each value in the dataarray to a <div>element by using the printValue()
+function. Since the function exists in the global scope, there’s no need to pass in a contextobject 
+to chunk().
+Something to be aware of is that the array passed into chunk()is used as a queue, so the items in 
+the array change as the data is processed. If you want to keep the original array intact, you should 
+pass a clone of the array into chunk(), such as in this example:
+chunk(data.concat(), printValue);
+When the concat()method is called on an array without any arguments, it returns an array with 
+the same items as the original. In this way, you can be assured that the original array is not changed 
+by the function.
+The importance of array chunking is that it splits the processing of multiple items into separate 
+code on the execution queue. Other browser processes are given a chance to run after each item is 
+processed, and you’ll avoid long-running script errors.
+Whenever you have a function that takes over 50 milliseconds to complete, it’s 
+best to see if you can split up the job into a number of smaller ones that can be 
+used with timers.
+Function Throttling
+Some calculations and processes are more expensive in the browser than others. For instance, 
+DOM manipulations require more memory and CPU time than non-DOM interactions. Attempting 
+to perform too many DOM-related operations in sequence can cause the browser to hang, and 
+sometimes crash. This tends to happen frequently in Internet Explorer when using an onresizeevent 
+handler, which fires repeatedly as the browser is being resized. Attempting DOM manipulations inside 
+the onresizeevent handler can make the browser crash because of the frequency of the changes 
+being calculated. To get around this problem, you can throttlethe function call by using timers.
+
+The basic idea behind function throttling is that some code should not be executed repeatedly 
+without a break. The first time the function is called, a timer is created that will run the code after 
+a specified interval. When the function is called a second time, it clears the previous timer and sets 
+another. If the previous timer has already executed, then it is of no consequence. However, if the 
+previous timer hasn’t executed, it is essentially replaced by a newer timer. The goal is to execute the 
+function only after the requests to execute it have subsided for some amount of time. The following 
+is a basic representation of this pattern:
+var processor = {
+timeoutId: null,
+//method that actually performs the processing 
+performProcessing: function(){
+//actual processing code
+},
+//method that is called to initiate processing
+process: function(){
+clearTimeout(this.timeoutId);
+var that = this;
+this.timeoutId = setTimeout(function(){
+that.performProcessing();
+}, 100);
+}
+};
+//try to start processing
+processor.process();
+In this code, an object called processoris created. There are two methods on this object: process()
+and performProcessing(). The former is the one that should be called to initiate any processing, and 
+the latter actually performs the processing that should be done. When process()is called, the fi rst step 
+is to clear the stored timeoutIdto prevent any previous calls from being executed. Then, a new 
+timer is created to call performProcessing(). Since the context of the function used in setTimeout()
+is always window, it’s necessary to store a reference to thisso that it can be used later.
+The interval is set to 100 milliseconds, which means that performProcessing()will not be called 
+until at least 100 milliseconds after the last call to process(). So if process()is called 20 times 
+within 100 milliseconds, performProcessing()will still be called only once.
+This pattern can be simplified by using a throttle()function that automatically sets up the timer 
+setting/clearing functionality, as in the following example:
+function throttle(method, context) {
+clearTimeout(method.tId);
+method.tId= setTimeout(function(){
+method.call(context);
+}, 100);
+}
+ThrottlingExample.htm
+
+The throttle()function accepts two arguments: the function to execute and the scope in 
+which to execute it. The function first clears any timer that was set previously. The timer ID 
+is stored on the tIdproperty of the function, which may not exist the first time the method is 
+passed into throttle(). Next, a new timer is created, and its ID is stored in the method’s tId
+property. If this is the first time that throttle()is being called with this method, then the 
+code creates the property. The timer code uses call()to ensure that the method is executed 
+in the appropriate context. If the second argument isn’t supplied, then the method is executed in 
+the global scope.
+As mentioned previously, throttling is most often used during the resizeevent. If you are changing 
+the layout of the page based on this event, it is best to throttle the processing to ensure that the 
+browser doesn’t do too many calculations in a short period of time. For example, consider having 
+a <div>element that should have its height changed so that it’s always equal to its width. The 
+JavaScript to effect this change may look something like this:
+window.onresize = function(){
+var div = document.getElementById(“myDiv”);
+div.style.height = div.offsetWidth + “px”;
+};
+This very simple example shows a couple of things that may slow down the browser. First, the 
+offsetWidthproperty is being calculated, which may be a complex calculation when there are 
+enough CSS styles applied to the element and the rest of the page. Second, setting the height of 
+an element requires a reflow of the page to take these changes into account. Once again, this can 
+require multiple calculations if the page has many elements and a moderate amount of CSS applied. 
+The throttle()function can help, as shown in this example:
+function resizeDiv(){
+var div = document.getElementById(“myDiv”);
+div.style.height = div.offsetWidth + ”px”;
+}
+window.onresize = function(){
+throttle(resizeDiv);
+};
+ThrottlingExample.htm
+Here, the resizing functionality has been moved into a separate function called resizeDiv(). The 
+onresizeevent handler then calls throttle()and passes in the resizeDiv()function, instead 
+of calling resizeDiv()directly. In many cases, there is no perceivable difference to the user, even 
+though the calculation savings for the browser can be quite large.
+Throttling should be used whenever there is code that should be executed only periodically, 
+but you cannot control the rate at which the execution is requested. The throttle()function 
+presented here uses an interval of 100 milliseconds, but that can be changed, depending on 
+your needs.

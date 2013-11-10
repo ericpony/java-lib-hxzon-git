@@ -1,0 +1,293 @@
+（hxzon学习笔记）java nio-通道，缓冲区
+
+by hxzon
+《java nio中文版 pdf》
+
+=========
+1，通道
+
+通道不能被重复使用。
+一个打开的通道即代表与一个特定I/O服务的特定连接并封装该连接的状态。
+当通道关闭时，那个连接会丢失，然后通道将不再连接任何东西。
+
+SocketChannel sc = (SocketChannel) key.channel();
+
+1.1，Scatter/Gather
+
+通道提供了一种被称为Scatter/Gather的重要新功能（有时也被称为矢量I/O）。
+Scatter/Gather是一个简单却强大的概念（参见1.4.1.1节），它是指在多个缓冲区上实现一个简单的I/O操作。
+对于一个write操作而言，数据是从几个缓冲区按顺序抽取（称为gather）并沿着通道发送的。
+缓冲区本身并不需要具备这种gather的能力（通常它们也没有此能力）。
+该gather过程的效果就好比全部缓冲区的内容被连结起来，并在发送数据前存放到一个大的缓冲区中。
+对于read操作而言，从通道读取的数据会按顺序被散布（称为scatter）到多个缓冲区，
+将每个缓冲区填满直至通道中的数据或者缓冲区的最大空间被消耗完。
+
+大多数现代操作系统都支持本地矢量I/O（native vectored I/O）。当您在一个通道上请求一个
+Scatter/Gather操作时，该请求会被翻译为适当的本地调用来直接填充或抽取缓冲区。这是一个很大
+的进步，因为减少或避免了缓冲区拷贝和系统调用。Scatter/Gather应该使用直接的ByteBuffers以从
+本地I/O获取最大性能优势。
+
+1.2，通道工具类
+java.nio.channels.Channels
+
+1.3，
+全部socket通道类（DatagramChannel、SocketChannel和ServerSocketChannel）
+都是由位于java.nio.channels.spi包中的AbstractSelectableChannel引申而来。
+这意味着我们可以用一个Selector对象来执行socket通道的有条件的选择（readiness selection）。
+
+请注意DatagramChannel和SocketChannel实现定义读和写功能的接口而ServerSocketChannel不实现。
+ServerSocketChannel负责监听传入的连接和创建新的SocketChannel对象，它本身从不传输数据。
+
+虽然每个socket通道（在java.nio.channels包中）都有一个关联的java.net socket对象，却并非所有的socket都有一个关联的通道。
+如果您用传统方式（直接实例化）创建了一个Socket对象，它就不会有关联的SocketChannel并且它的getChannel( )方法将总是返回null。
+Socket通道委派协议操作给对等socket对象。
+如果在通道类中存在似乎重复的socket方法，那么将有某个新的或者不同的行为同通道类上的这个方法相关联。
+
+1.4，
+SocketChannel，它是使用最多的socket通道类。
+Socket和SocketChannel类封装点对点、有序的网络连接，类似于我们所熟知并喜爱的TCP/IP网络连接。
+
+第二种带InetSocketAddress参数形式的open( )是在返回之前进行连接的便捷方法。这段代码：
+SocketChannel socketChannel =
+SocketChannel.open (new InetSocketAddress ("somehost", somePort));
+等价于下面这段代码：
+SocketChannel socketChannel = SocketChannel.open( );
+socketChannel.connect (new InetSocketAddress ("somehost", somePort));
+
+在SocketChannel上并没有一种connect( )方法可以让您指定超时（timeout）值，
+当connect( )方法在非阻塞模式下被调用时SocketChannel提供并发连接：
+它发起对请求地址的连接并且立即返回值。
+如果返回值是true，说明连接立即建立了（这可能是本地环回连接）；
+如果连接不能立即建立，connect( )方法会返回false且并发地继续连接建立过程。
+
+面向流的的socket建立连接状态需要一定的时间，
+因为两个待连接系统之间必须进行包对话以建立维护流socket所需的状态信息。
+跨越开放互联网连接到远程系统会特别耗时。
+假如某个SocketChannel上当前正由一个并发连接，isConnectPending( )方法就会返回true值。
+
+调用finishConnect( )方法来完成连接过程，该方法任何时候都可以安全地进行调用。
+假如在一个非阻塞模式的SocketChannel对象上调用finishConnect( )方法，将可能出现下列情形之一：
+
+  connect( )方法尚未被调用。那么将产生NoConnectionPendingException异常。
+
+  连接建立过程正在进行，尚未完成。那么什么都不会发生，finishConnect( )方法会立即返回
+false值。
+
+  在非阻塞模式下调用connect( )方法之后，SocketChannel又被切换回了阻塞模式。
+那么如果有必要的话，调用线程会阻塞直到连接建立完成，finishConnect( )方法接着就会返回true值。
+
+  在初次调用connect( )或最后一次调用finishConnect( )之后，连接建立过程已经完成。
+那么SocketChannel对象的内部状态将被更新到已连接状态，
+finishConnect( )方法会返回true值，然后SocketChannel对象就可以被用来传输数据了。
+
+  连接已经建立。那么什么都不会发生，finishConnect( )方法会返回true值。
+
+当通道处于中间的连接等待（connection-pending）状态时，
+您只可以调用finishConnect( )、isConnectPending( )或isConnected( )方法。
+一旦连接建立过程成功完成，isConnected( )将返回true值。
+
+InetSocketAddress addr = new InetSocketAddress (host, port);
+SocketChannel sc = SocketChannel.open( );
+sc.configureBlocking (false);
+sc.connect (addr);
+while ( ! sc.finishConnect( )) {
+	doSomethingElse( );
+}
+doSomethingWithChannel (sc);
+sc.close( );
+
+如果尝试异步连接失败，那么下次调用finishConnect( )方法会产生一个适当的经检查的异常以指出问题的性质。
+通道然后就会被关闭并将不能被连接或再次使用。
+与连接相关的方法使得我们可以对一个通道进行轮询并在连接进行过程中判断通道所处的状态。
+第四章中，我们将了解到如何使用选择器来避免进行轮询并在异步连接建立之后收到通知。
+
+Socket通道是线程安全的。
+并发访问时无需特别措施来保护发起访问的多个线程，不过任何时候都只有一个读操作和一个写操作在进行中。
+请记住，sockets是面向流的而非包导向的。
+它们可以保证发送的字节会按照顺序到达但无法承诺维持字节分组。
+某个发送器可能给一个socket写入了20个字节而接收器调用read( )方法时却只收到了其中的3个字节。
+剩下的17个字节还是传输中。
+
+由于这个原因，让多个不配合的线程共享某个流socket的同一侧绝非一个好的设计选择。
+connect( )和finishConnect( )方法是互相同步的，并且只要其中一个操作正在进行，
+任何读或写的方法调用都会阻塞，即使是在非阻塞模式下。
+如果此情形下您有疑问或不能承受一个读或写操作在某个通道上阻塞，请用isConnected( )方法测试一下连接状态。
+
+1.5，DatagramChannel
+
+最后一个socket通道是DatagramChannel。
+正如SocketChannel对应Socket，ServerSocketChannel对应ServerSocket，
+每一个DatagramChannel对象也有一个关联的DatagramSocket对象。
+不过原命名模式在此并未适用：“DatagramSocketChannel”显得有点笨拙，
+因此采用了简洁的“DatagramChannel”名称。
+
+正如SocketChannel模拟连接导向的流协议（如TCP/IP），DatagramChannel则模拟包导向的无连接协议（如UDP/IP）
+
+创建DatagramChannel的模式和创建其他socket通道是一样的：调用静态的open( )方法来创建一个新实例。
+新DatagramChannel会有一个可以通过调用socket( )方法获取的对等DatagramSocket对象。
+DatagramChannel对象既可以充当服务器（监听者）也可以充当客户端（发送者）。
+如果您希望新创建的通道负责监听，那么通道必须首先被绑定到一个端口或地址/端口组合上。
+绑定DatagramChannel同绑定一个常规的DatagramSocket没什么区别，都是委托对等socket对象上的API实现的。
+
+receive( )方法将下次将传入的数据报的数据净荷复制到预备好的ByteBuffer中并返回一个SocketAddress对象以指出数据来源。
+如果通道处于阻塞模式，receive( )可能无限期地休眠直到有包到达。
+如果是非阻塞模式，当没有可接收的包时则会返回null。
+如果包内的数据超出缓冲区能承受的范围，多出的数据都会被悄悄地丢弃。
+
+调用send( )会发送给定ByteBuffer对象的内容到给定SocketAddress对象所描述的目的地址和端口，
+内容范围为从当前position开始到末尾处结束。
+如果DatagramChannel对象处于阻塞模式，调用线程可能会休眠直到数据报被加入传输队列。
+如果通道是非阻塞的，返回值要么是字节缓冲区的字节数，要么是“0”。
+发送数据报是一个全有或全无（all-or-nothing）的行为。
+如果传输队列没有足够空间来承载整个数据报，那么什么内容都不会被发送。
+
+请注意，数据报协议的不可靠性是固有的，它们不对数据传输做保证。
+send( )方法返回的非零值并不表示数据报到达了目的地，仅代表数据报被成功加到本地网络层的传输队列。
+此外，传输过程中的协议可能将数据报分解成碎片。
+例如，以太网不能传输超过1,500个字节左右的包。
+如果您的数据报比较大，那么就会存在被分解成碎片的风险，成倍地增加了传输过程中包丢失的几率。
+被分解的数据报在目的地会被重新组合起来，接收者将看不到碎片。
+但是，如果有一个碎片不能按时到达，那么整个数据报将被丢弃。
+
+DatagramChannel对数据报socket的连接语义不同于对流socket的连接语义。
+有时候，将数据报对话限制为两方是很可取的。
+将DatagramChannel置于已连接的状态可以使除了它所“连接”到的地址之外的任何其他源地址的数据报被忽略。
+这是很有帮助的，因为不想要的包都已经被网络层丢弃了，从而避免了使用代码来接收、检查然后丢弃包的麻烦。
+
+当DatagramChannel已连接时，使用同样的令牌，
+您不可以发送包到除了指定给connect( )方法的目的地址以外的任何其他地址。
+试图一定要这样做的话会导致一个SecurityException异常。
+我们可以通过调用带SocketAddress对象的connect( )方法来连接一个DatagramChannel，
+该
+SocketAddress对象描述了DatagramChannel远程对等体的地址。如果已经安装了一个安全管理器，
+那么它会进行权限检查。
+之后，每次send/receive时就不会再有安全检查了，因为来自或去到任何其他地址的包都是不允许的。
+
+已连接通道会发挥作用的使用场景之一是一个客户端/服务器模式、使用UDP通讯协议的实时游戏。
+每个客户端都只和同一台服务器进行会话而希望忽视任何其他来源地数据包。
+将客户端的DatagramChannel实例置于已连接状态可以减少按包计算的总开销
+（因为不需要对每个包进行安全检查）和剔除来自欺骗玩家的假包。
+服务器可能也想要这样做，不过需要每个客户端都有一个DatagramChannel对象。
+
+不同于流socket，数据报socket的无状态性质不需要同远程系统进行对话来建立连接状态。
+没有实际的连接，只有用来指定允许的远程地址的本地状态信息。
+由于此原因，DatagramChannel上也就没有单独的finishConnect( )方法。
+我们可以使用isConnected( )方法来测试一个数据报通道的连接状态。
+
+不同于SocketChannel（必须连接了才有用并且只能连接一次），
+DatagramChannel对象可以任意次数地进行连接或断开连接。
+每次连接都可以到一个不同的远程地址。
+调用disconnect( )方法可以配置通道，
+以便它能再次接收来自安全管理器（如果已安装）所允许的任意远程地址的数据或发送数据到这些地址上。
+
+
+=========
+2，缓冲区
+
+容量（Capacity）
+缓冲区能够容纳的数据元素的最大数量。这一容量在缓冲区创建时被设定，并且永远不能被改变。
+
+上界（Limit）
+缓冲区的第一个不能被读或写的元素。或者说，缓冲区中现存元素的计数。
+
+位置（Position）
+下一个要被读或写的元素的索引。位置会自动由相应的get( )和put( )函数更新。
+
+标记（Mark）
+一个备忘位置。调用mark( )来设定mark = postion。调用reset( )设定position = mark。标记在设定前是未定义的(undefined)。
+
+2.1，
+翻转
+
+我们已经写满了缓冲区，现在我们必须准备将其清空。我们想把这个缓冲区传递给一个通道，以使内容能被全部写出。
+但如果通道现在在缓冲区上执行get()，那么它将从我们刚刚插入的有用数据之外取出未定义数据。
+如果我们将位置值重新设为0，通道就会从正确位置开始获取，但是它是怎样知道何时到达我们所插入数据末端的呢？
+这就是上界属性被引入的目的。
+上界属性指明了缓冲区有效内容的末端。
+我们需要将上界属性设置为当前位置，然后将位置重置为0。
+我们可以人工用下面的代码实现： 
+buffer.limit(buffer.position()).position(0); 
+
+但这种从填充到释放状态的缓冲区翻转是API设计者预先设计好的，他们为我们提供了一个非常便利的函数：
+Buffer.flip(); 
+
+flip()函数将一个能够继续添加数据元素的填充状态的缓冲区翻转成一个准备读出元素的释放状态。
+
+（hxzon：netty的buffer将读和写的位置分开，更人性化。）
+
+----
+后退
+
+rewind()函数与flip()相似，但不影响上界属性。它只是将位置值设回0。
+您可以使用rewind()后退，重读已经被翻转的缓冲区中的数据。 
+
+如果将缓冲区翻转两次会怎样呢？它实际上会大小变为0。按照图2.5的相同步骤对缓冲区进行操作；
+把上界设为位置的值，并把位置设为0。上界和位置都变成0。
+尝试对缓冲区上位置和上界都为0的get()操作会导致BufferUnderflowException异常。
+而put()则会导致BufferOverflowException异常。 
+
+----
+remaining()函数将告知您从当前位置到上界还剩余的元素数目。
+
+clear()函数将缓冲区重置为空状态。
+它并不改变缓冲区中的任何数据元素，而是仅仅将上界设为容量的值，并把位置设回0。
+
+
+2.2，通道读写示例
+
+/**
+* Channel copy method 1. This method copies data from the src
+* channel and writes it to the dest channel until EOF on src.
+* This implementation makes use of compact( ) on the temp buffer
+* to pack down the data if the buffer wasn't fully drained. This
+* may result in data copying, but minimizes system calls. It also
+* requires a cleanup loop to make sure all the data gets sent.
+*/
+private static void channelCopy1 (ReadableByteChannel src,
+WritableByteChannel dest)
+throws IOException
+{
+	ByteBuffer buffer = ByteBuffer.allocateDirect (16 * 1024);
+	while (src.read (buffer) != -1) {
+		// Prepare the buffer to be drained
+		buffer.flip( );
+		// Write to the channel; may block
+		dest.write (buffer);
+		// If partial transfer, shift remainder down
+		// If buffer is empty, same as doing clear( ) 
+		buffer.compact( );
+	}
+	// EOF will leave buffer in fill state
+	buffer.flip( );
+	// Make sure that the buffer is fully drained
+	while (buffer.hasRemaining( )) {
+		dest.write (buffer);
+	}
+}
+
+/**
+* Channel copy method 2. This method performs the same copy, but
+* assures the temp buffer is empty before reading more data. This
+* never requires data copying but may result in more systems calls.
+* No post-loop cleanup is needed because the buffer will be empty
+* when the loop is exited.
+*/
+private static void channelCopy2 (ReadableByteChannel src,
+WritableByteChannel dest)
+throws IOException
+{
+	ByteBuffer buffer = ByteBuffer.allocateDirect (16 * 1024);
+	while (src.read (buffer) != -1) {
+		// Prepare the buffer to be drained
+		buffer.flip( );
+
+		// Make sure that the buffer was fully drained
+		while (buffer.hasRemaining( )) {
+			dest.write (buffer);
+		}
+
+		// Make the buffer empty, ready for filling
+		buffer.clear( );
+	}
+}
+

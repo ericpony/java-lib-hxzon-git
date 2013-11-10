@@ -1,0 +1,74 @@
+﻿（hxzon学习笔记）js-数组
+
+by hxzon
+
+《javascript高级程序设计（第2版）》
+5.2 Array类型
+
+=========
+1，如何遍历数组？
+
+hxzon：没有特殊的for语法。
+
+2，
+js数组特点：每项可以是不同的数据类型，数组大小时可以动态调整的。
+
+3，
+var xx=new Array();//括号可省
+var xx=new Array("xx","yy","zz");
+var xx=new Array(3);//含有3个项
+
+new可以省略。
+
+4，数组字面量
+var xx=["xx","yy","zz"];
+var xx=[1,2,]
+
+最后的逗号，ie和其它浏览器解释不同。ie会多一项，值为undefined.
+
+5，
+var xx=["xx","yy"];
+xx[4]="aa";
+
+如果数组没有那么多项，会自动增加长度。
+数组的项数保存在length属性中，它不是只读的，设置这个值可以改变数组大小。
+
+6，
+toLocalString()：调用每一项的toLocalString方法，用逗号拼起来。
+toString()：调用每一项的toString方法，用逗号拼起来。
+valueOf()：和toString方法返回值一样。
+
+xx.join("||");//使用指定分隔符来拼接。
+
+如果某一项为null或undefined，会用空字符串表示。
+
+7，
+push(xx,yy);//添加到末尾，返回数组项数
+pop();//从末尾移除一项，返回该项
+shift();//从头部移除一项，返回该项
+unshift(aa,bb);//天骄到头部，返回数组项数
+
+栈：push，pop：尾进尾出
+队列：push，shift：尾进头出
+反向队列：unshift，pop：头进尾出。
+
+8，
+reverse();//反转数组
+sort();//每一项调用toString，按字符串返回值排序。
+sort(compare);//按给定比较函数排序
+
+9，
+xx.concat("aa",["bb","cc"]);//返回一个新数组，添加了三项
+
+--
+slice（起始位置，结束位置）：截取部分，结束位置可选，不包含结束位置的项。
+
+如果位置参数使用负数，则相当于加上数组长度后的值。
+
+--
+splice（起始位置，删除项数，插入的项1，插入的项2...）：用于替换。
+splice（起始位置，删除项数）：用于删除。
+splice（起始位置，0，插入的项1，插入的项2...）：用于插入。
+
+
+

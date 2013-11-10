@@ -1,0 +1,55 @@
+（hxzon学习笔记）lucene-IndexReader
+
+hxzon
+lucene-4.5.0
+=========
+org.apache.lucene.index.IndexReader
+
+
+IndexReader is an abstract class, providing an interface for accessing an index. 
+Search of an index is done entirely through this abstract interface, so that any subclass which implements it is searchable. 
+
+IndexReader是一个抽象类，提供接口访问索引。
+此接口完成搜索的全部工作。
+
+There are two different types of IndexReaders: 
+主要有两类不同的子类：
+
+AtomicReader: 
+These indexes do not consist of several sub-readers, they are atomic. 
+They support retrieval of stored fields, doc values, terms, and postings. 
+原子读取器，不含子读取器。
+它们支持获取存储域，文档值，项及位置信息。
+
+CompositeReader: 
+Instances (like DirectoryReader) of this reader can only be used to get stored fields from the underlying AtomicReaders, 
+but it is not possible to directly retrieve postings. 
+To do that, get the sub-readers via CompositeReader.getSequentialSubReaders. 
+Alternatively, you can mimic an AtomicReader (with a serious slowdown), by wrapping composite readers with SlowCompositeReaderWrapper. 
+组合读取器，只能通过底层的原子读取器获得存储域，不能直接获得位置信息，
+可通过CompositeReader.getSequentialSubReaders获得底层读取器。
+
+
+IndexReader instances for indexes on disk are usually constructed with a call to one of the static DirectoryReader.open() methods, e.g. DirectoryReader.open(org.apache.lucene.store.Directory). 
+读取索引的读取器实例通过静态方法获得。
+
+DirectoryReader implements the CompositeReader interface, it is not possible to directly get postings. 
+
+DirectoryReader实现的是CompositeReader接口，不能直接获得位置信息。
+
+For efficiency, in this API documents are often referred to via document numbers, 
+non-negative integers which each name a unique document in the index. 
+These document numbers are ephemeral -- they may change as documents are added to and deleted from an index. 
+Clients should thus not rely on a given document having the same number between sessions. 
+
+本api使用文档编号（document numbers）来引用文档，这是一些非负数字，用来唯一标识索引中的一个文档。
+但这些文档编号不是保持不变的，客户端不能依赖这些文档编码。
+
+NOTE: 
+IndexReader instances are completely thread safe, meaning multiple threads can call any of its methods, concurrently. 
+If your application requires external synchronization, you should not synchronize on the IndexReader instance; 
+use your own (non-Lucene) objects instead.
+
+IndexReader实例是完全线程安全的，可多线程并发调用它的方法。
+如果你的应用程序需要外部同步，不要使用IndexSearcher实例来同步，用你自己的对象实例。
+

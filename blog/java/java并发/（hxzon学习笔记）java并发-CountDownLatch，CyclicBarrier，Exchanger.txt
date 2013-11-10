@@ -1,0 +1,196 @@
+（hxzon学习笔记）java并发-CountDownLatch，CyclicBarrier，Exchanger
+
+by hxzon
+==========
+1，CountDownLatch
+
+new CountDownLatch(int);//设置计数器的初始值。
+countDownLatch.await();//阻塞直到计数器的值为0。
+countDownLatch.countDown();//计数器的值减1。
+
+示例：
+public class TestCountDownLatch {
+    public static void main(String[] args) {
+        CountDownLatch beginSignal = new CountDownLatch(1);
+        CountDownLatch endSignal = new CountDownLatch(8);
+
+        for (int i = 0; i < 8; i++) {
+            new Thread(new Work(i, beginSignal, endSignal)).start();
+        }
+
+        try {
+            System.out.println("统一起跑");
+            beginSignal.countDown(); //统一起跑
+            endSignal.await(); //等待所有运动员到达终点
+            System.out.println("所有运动员到达终点，比赛结束");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+class Work implements Runnable {
+    private final int id;
+    private final CountDownLatch beginSignal;
+    private final CountDownLatch endSignal;
+
+    public Work(int id, CountDownLatch begin, CountDownLatch end) {
+        this.id = id;
+        this.beginSignal = begin;
+        this.endSignal = end;
+    }
+
+    public void run() {
+        try {
+            System.out.println("work-" + id + "-等待起跑...");
+            beginSignal.await();
+            System.out.println("work-" + id + "-起跑...");
+            System.out.println("work-" + id + "-到达终点");
+            endSignal.countDown();
+            System.out.println("work-" + id + "-继续干其他事情");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+2，CyclicBarrier
+
+new CyclicBarrier(int, new Runnable() {});//设置计数器要到达的值（最大值），及到达时的动作
+cyclicBarrier.await();//计数器的值加1，并阻塞直到计数器达到最大值。
+
+hxzon：与CountDownLatch的区别是，CountDownLatch的“计数器值更改”，和“阻塞”，是分开成两个方法。
+
+示例：
+public class TestCyclicBarrier {
+    public static void main(String[] args) {
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(4, new Runnable() {
+            public void run() {
+                System.out.println("所有玩家过第一关！");
+            }
+        });
+
+        for (int i = 0; i < 4; i++) {
+            new Thread(new Player(i, cyclicBarrier)).start();
+        }
+    }
+}
+
+class Player implements Runnable {
+
+    private final CyclicBarrier cyclicBarrier;
+    private final int id;
+
+    public Player(int id, CyclicBarrier cyclicBarrier) {
+        this.cyclicBarrier = cyclicBarrier;
+        this.id = id;
+    }
+
+    public void run() {
+        try {
+            System.out.println("玩家-" + id + "-正在玩第一关...");
+            System.out.println("玩家-" + id + "-过第一关，等待进入第二关...");
+            cyclicBarrier.await();//等待所有玩家过第一关
+            System.out.println("玩家-" + id + "-进入第二关...");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (BrokenBarrierException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+3，Exchanger
+
+buff = exchanger.exchange(buff);//请求交换，阻塞直到对方也请求交换。
+
+示例（生产者消费者）：
+public class TestExchanger {
+    private static Exchanger<ArrayList<Integer>> exchanger = null;
+    private static ArrayList<Integer> buffer1 = null;
+    private static ArrayList<Integer> buffer2 = null;
+
+    public static void main(String[] args) throws Exception {
+        exchanger = new Exchanger<ArrayList<Integer>>();
+        buffer1 = new ArrayList<Integer>(10);
+        buffer2 = new ArrayList<Integer>(10);
+
+        Thread producerThread = new ProducerThread();
+        Thread consumerThread = new ConsumerThread();
+
+        producerThread.start();
+        consumerThread.start();
+
+        Thread.sleep(60 * 1000);
+        System.out.println("main: interrupting threads.");
+        producerThread.interrupt();
+        consumerThread.interrupt();
+
+        producerThread.join();
+        consumerThread.join();
+
+        System.out.println("main: end.");
+    }
+
+    private static class ProducerThread extends Thread {
+        AtomicInteger ax = new AtomicInteger(1);
+
+        @Override
+        public void run() {
+            ArrayList<Integer> buff = buffer1;
+            try {
+                while (true) {
+                    if (buff.size() >= 10) {
+                        // 与consumer交换buffer.
+                        System.out.println("producer: ask exchanging.");
+                        buff = exchanger.exchange(buff);
+                        System.out.println("producer: exchanging.");
+                        buff.clear();
+                    }
+
+                    int x = ax.getAndIncrement();
+                    buff.add(x);
+                    System.out.println("producer: " + x);
+
+                    // 随机等待0-3秒 。
+                    int t = (int) (Math.random() * 3);
+                    Thread.sleep(t * 1000);
+                }
+            } catch (InterruptedException e) {
+                System.out.println("producer: interrupted.");
+            }
+        }
+    }
+
+    private static class ConsumerThread extends Thread {
+        @Override
+        public void run() {
+            ArrayList<Integer> buff = buffer2;
+            try {
+                while (true) {
+                    for (Integer x : buff) {
+                        System.out.println("consumer: " + x);
+
+                        // 随机等待0-3秒 。
+                        int t = (int) (Math.random() * 3);
+                        Thread.sleep(t * 1000);
+                    }
+
+                    // 与producer交换buffer。
+                    System.out.println("consumer: ask exchanging.");
+                    buff = exchanger.exchange(buff);
+                    System.out.println("consumer: exchanging.");
+                }
+            } catch (InterruptedException e) {
+                System.out.println("consumer: interrupted.");
+            }
+        }
+    }
+}
+
+
+

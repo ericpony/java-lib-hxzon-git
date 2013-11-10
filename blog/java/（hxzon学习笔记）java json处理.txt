@@ -1,0 +1,134 @@
+（hxzon学习笔记）java json处理
+
+by hxzon
+===========
+使用tapestry-json-5.3.6.jar包。
+
+其它参考：
+http://json.org/
+http://www.json.org/java/index.html
+https://github.com/douglascrockford/JSON-java/blob/master/JSONObject.java
+
+1，
+
+JSONObject.get(key)，如果key没有对应值会抛出异常，可改用
+JSONObject.opt(key)。
+
+2，
+JSONObject.put(key,value)，如果value为null，则会移除该key。
+如果要保存null值，应该用
+JSONObject.put(key,JSONObject.NULL)。
+
+3，
+
+JSONObject.put(key,string)时，字符会自动转换，要避免转换，
+需要自定义一个JSONString子类，如下：
+
+public class MyString implements JSONString {
+    private final String text;
+
+    public MyString(String text) {
+        this.text = text;
+    }
+
+    @Override
+    public String toString() {
+        return text;
+    }
+
+    public String toJSONString() {
+        return "\"" + text + "\"";
+    }
+
+}
+
+JSONObject.put(key,new MyString(string))。
+
+----
+另一个子类JSONLiteral，或原样输出（可用于输出js函数、变量等），如下：
+{"s1":s1}
+或
+{"s1Fun":function(){
+alert("s1");
+}}
+
+
+4，类库层次结构
+
+json的顶级对象只有两种，映射和列表。
+
+JSONCollection：基类
+JSONObject：两个子类之一，表示映射。
+JSONArray：两个子类之一，表示列表。
+
+--------
+org.apache.tapestry5.json.JSONObject.Null
+
+JSONObject.NULL is equivalent to the value that JavaScript calls null, whilst Java's null is equivalent to the value that JavaScript calls undefined.
+
+--------
+org.apache.tapestry5.json.JSONObject
+
+
+A JSONObject is an unordered collection of name/value pairs. Its external form is a string wrapped in curly braces with colons between the names and values, and commas between the values and names. The internal form is an object having get and opt methods for accessing the values by name, and put methods for adding or replacing values by name. 
+
+The values can be any of these types: Boolean, org.apache.tapestry5.json.JSONArray, org.apache.tapestry5.json.JSONLiteral, JSONObject, Number, String, or the JSONObject.NULL object. 
+可用的值：布尔，数组，字面量（不转换字符），映射（object），数字，字符串，空指针（不是未定义）。
+
+A JSONObject constructor can be used to convert an external form JSON text into an internal form whose values can be retrieved with the get and opt methods, or to convert values into a JSON text using the put and toString methods. A get method returns a value if one can be found, and throws an exception if one cannot be found. An opt method returns a default value instead of throwing an exception, and so is useful for obtaining optional values. 
+
+The generic get() and opt() methods return an object, which you can cast or query for type. There are also typed get and opt methods that do type checking and type coersion for you. 
+
+The put methods adds values to an object. For example, 
+
+ myString = new JSONObject().put("JSON", "Hello, World!").toString();
+ 
+produces the string {"JSON": "Hello, World"}. 
+
+The texts produced by the toString methods strictly conform to the JSON syntax rules. The constructors are more forgiving in the texts they will accept: 
+
+An extra , (comma) may appear just before the closing brace. 
+Strings may be quoted with ' (single quote). 
+Strings do not need to be quoted at all if they do not begin with a quote or single quote, and if they do not contain leading or trailing spaces, and if they do not contain any of these characters: { } [ ] / \ : , = ; # and if they do not look like numbers and if they are not the reserved words true, false, or null. 
+Keys can be followed by = or => as well as by :. 
+Values can be followed by ; (semicolon) as well as by , (comma). 
+Numbers may have the 0- (octal) or 0x- (hex) prefix. 
+Comments written in the slashshlash, slashstar, and hash conventions will be ignored. 
+
+--------------------------------------------------------------------------------
+
+This class, and the other related classes, have been heavily modified from the original source, to fit Tapestry standards and to make use of JDK 1.5 features such as generics. Further, since the interest of Tapestry is primarily constructing JSON (and not parsing it), many of the non-essential methods have been removed (since the original code came with no tests). 
+
+Finally, support for the org.apache.tapestry5.json.JSONLiteral type has been added, which allow the exact output to be controlled; useful when a JSONObject is being used as a configuration object, and must contain values that are not simple data, such as an inline function (technically making the result not JSON).
+
+Version:
+2
+Author:
+JSON.org
+
+--------
+org.apache.tapestry5.json.JSONArray
+
+
+A JSONArray is an ordered sequence of values. Its external text form is a string wrapped in square brackets with commas separating the values. The internal form is an object having get and opt methods for accessing the values by index, and put methods for adding or replacing values. The values can be any of these types: Boolean, JSONArray, JSONObject, Number, String, or the JSONObject.NULL object. 
+
+The constructor can convert a JSON text into a Java object. The toString method converts to JSON text. 
+
+A get method returns a value if one can be found, and throws an exception if one cannot be found. An opt method returns a default value instead of throwing an exception, and so is useful for obtaining optional values. 
+
+The generic get() and opt() methods return an object which you can cast or query for type. There are also typed get and opt methods that do type checking and type coersion for you. 
+
+The texts produced by the toString methods strictly conform to JSON syntax rules. The constructors are more forgiving in the texts they will accept: 
+
+An extra , (comma) may appear just before the closing bracket. 
+The null value will be inserted when there is , (comma) elision. 
+Strings may be quoted with ' (single quote). 
+Strings do not need to be quoted at all if they do not begin with a quote or single quote, and if they do not contain leading or trailing spaces, and if they do not contain any of these characters: { } [ ] / \ : , = ; #} and if they do not look like numbers and if they are not the reserved words true, false, or null. 
+Values can be separated by ; (semicolon) as well as by , (comma). 
+Numbers may have the 0- (octal) or 0x- (hex) prefix. 
+Comments written in the slashshlash, slashstar, and hash conventions will be ignored. 
+Version:
+2
+Author:
+JSON.org
+

@@ -1,0 +1,152 @@
+（hxzon学习笔记）lucene-Directory
+
+by hxzon
+
+lucene-4.5.0
+=========
+1，
+org.apache.lucene.store.Directory
+
+
+A Directory is a flat list of files. Files may be written once, when they are created. Once a file is created it may only be opened for read, or deleted. Random access is permitted both when reading and writing. 
+目录只是一个平的文件列表（没有子目录）。
+文件创建后，只能写入一次，然后就只能读，或者被删除。
+文件可以随机读写。
+
+Java's i/o APIs not used directly, but rather all i/o is through this API. This permits things such as: 
+
+implementation of RAM-based indices; 
+implementation indices stored in a database, via JDBC; 
+implementation of an index as a single file; 
+
+Directory locking is implemented by an instance of LockFactory, and can be changed for each Directory instance using setLockFactory.
+可以调用setLockFactory方法来修改锁的实现。
+
+========
+2，
+org.apache.lucene.store.RAMDirectory
+
+
+A memory-resident Directory implementation. Locking implementation is by default the SingleInstanceLockFactory but can be changed with setLockFactory. 
+
+Warning: This class is not intended to work with huge indexes. Everything beyond several hundred megabytes will waste resources (GC cycles), because it uses an internal buffer size of 1024 bytes, producing millions of byte[1024] arrays. 
+This class is optimized for small memory-resident indexes. 
+It also has bad concurrency on multithreaded environments. 
+警告：此类不是专门用于很大的索引。只要超过几百兆，就会浪费资源，因为它使用1024字节的内部缓冲，导致产生百万个1024字节的数组。
+此类是专门为小索引优化的。
+在多线程环境下，它的并发性很差。
+
+It is recommended to materialize large indexes on disk and use MMapDirectory, which is a high-performance directory implementation working directly on the file system cache of the operating system, so copying data to Java heap space is not useful.
+
+（materialize物质化）
+建议大的索引使用磁盘存储并使用MMapDirectory。它是工作在操作系统磁盘缓存的一个高性能的实现，它避免了复制数据到java堆。
+
+=========
+3，
+
+org.apache.lucene.store.MMapDirectory
+
+
+File-based Directory implementation that uses mmap for reading, and FSDirectory.FSIndexOutput for writing. 
+读取时使用内存映射，写则使用FSDirectory.FSIndexOutput。
+
+NOTE: memory mapping uses up a portion of the virtual memory address space in your process equal to the size of the file being mapped. Before using this class, be sure your have plenty of virtual address space, e.g. by using a 64 bit JRE, or a 32 bit JRE with indexes that are guaranteed to fit within the address space. On 32 bit platforms also consult MMapDirectory(File, LockFactory, int) if you have problems with mmap failing because of fragmented address space. If you get an OutOfMemoryException, it is recommended to reduce the chunk size, until it works. 
+
+Due to this bug in Sun's JRE, MMapDirectory's IndexInput.close is unable to close the underlying OS file handle. Only when GC finally collects the underlying objects, which could be quite some time later, will the file handle be closed. 
+因为sun jre的bug，无法关闭底层操作系统的文件句柄。
+
+This will consume additional transient disk usage: on Windows, attempts to delete or overwrite the files will result in an exception; on other platforms, which typically have a "delete on last close" semantics, while such operations will succeed, the bytes are still consuming space on disk. For many applications this limitation is not a problem (e.g. if you have plenty of disk space, and you don't rely on overwriting files on Windows) but it's still an important limitation to be aware of. 
+
+This class supplies the workaround mentioned in the bug report (see setUseUnmap), which may fail on non-Sun JVMs. It forcefully unmaps the buffer on close by using an undocumented internal cleanup functionality. UNMAP_SUPPORTED is true, if the workaround can be enabled (with no guarantees). 
+
+NOTE: Accessing this class either directly or indirectly from a thread while it's interrupted can close the underlying channel immediately if at the same time the thread is blocked on IO. The channel will remain closed and subsequent access to MMapDirectory will throw a ClosedChannelException. 
+
+=========
+4，
+org.apache.lucene.store.NIOFSDirectory
+
+
+An FSDirectory implementation that uses java.nio's FileChannel's positional read, which allows multiple threads to read from the same file without synchronizing. 
+使用java.nio's FileChannel的位置读取，从而允许多线程不必同步的读取同一个文件。
+
+This class only uses FileChannel when reading; writing is achieved with FSDirectory.FSIndexOutput. 
+
+NOTE: NIOFSDirectory is not recommended on Windows because of a bug in how FileChannel.read is implemented in Sun's JRE. Inside of the implementation the position is apparently synchronized. See here for details. 
+因为sun jre的实现问题，不建议在Windows上使用此类。
+
+NOTE: Accessing this class either directly or indirectly from a thread while it's interrupted can close the underlying file descriptor immediately if at the same time the thread is blocked on IO. The file descriptor will remain closed and subsequent access to NIOFSDirectory will throw a ClosedChannelException. If your application uses either Thread.interrupt() or Future.cancel(boolean) you should use SimpleFSDirectory in favor of NIOFSDirectory. 
+
+========
+5，
+org.apache.lucene.store.FSDirectory
+
+
+Base class for Directory implementations that store index files in the file system. There are currently three core subclasses: 
+主要有三个子类：
+
+SimpleFSDirectory is a straightforward implementation using java.io.RandomAccessFile. However, it has poor concurrent performance (multiple threads will bottleneck) as it synchronizes when multiple threads read from the same file. 
+使用随机访问文件。可惜，它在多线程读取同一文件时，并发性能差。
+
+NIOFSDirectory uses java.nio's FileChannel's positional io when reading to avoid synchronization when reading from the same file. Unfortunately, due to a Windows-only Sun JRE bug this is a poor choice for Windows, but on all other platforms this is the preferred choice. Applications using Thread.interrupt() or Future.cancel(boolean) should use SimpleFSDirectory instead. See NIOFSDirectory java doc for details. 
+
+MMapDirectory uses memory-mapped IO when reading. This is a good choice if you have plenty of virtual memory relative to your index size, eg if you are running on a 64 bit JRE, or you are running on a 32 bit JRE but your index sizes are small enough to fit into the virtual memory space. Java has currently the limitation of not being able to unmap files from user code. The files are unmapped, when GC releases the byte buffers. Due to this bug in Sun's JRE, MMapDirectory's IndexInput.close is unable to close the underlying OS file handle. Only when GC finally collects the underlying objects, which could be quite some time later, will the file handle be closed. 
+
+This will consume additional transient disk usage: on Windows, attempts to delete or overwrite the files will result in an exception; on other platforms, which typically have a "delete on last close" semantics, while such operations will succeed, the bytes are still consuming space on disk. 
+
+For many applications this limitation is not a problem (e.g. if you have plenty of disk space, and you don't rely on overwriting files on Windows) but it's still an important limitation to be aware of. This class supplies a (possibly dangerous) workaround mentioned in the bug report, which may fail on non-Sun JVMs. Applications using Thread.interrupt() or Future.cancel(boolean) should use SimpleFSDirectory instead. See MMapDirectory java doc for details. 
+在有大量的虚拟内存时是个好选择。
+这会增加磁盘的使用量：在Windows上，试图删除或重写文件会抛出异常；在其它平台，
+
+Unfortunately, because of system peculiarities, there is no single overall best implementation. Therefore, we've added the open method, to allow Lucene to choose the best FSDirectory implementation given your environment, and the known limitations of each implementation. 
+For users who have no reason to prefer a specific implementation, it's best to simply use open. For all others, you should instantiate the desired implementation directly. 
+The locking implementation is by default NativeFSLockFactory, but can be changed by passing in a custom LockFactory instance.
+因为各个系统的差异（怪癖），没有最佳的实现。
+所以，我们添加了一个open方法，让lucene自己根据你的环境来选择最佳的实现。
+
+
+See Also:
+Directory
+
+------
+FSDirectory org.apache.lucene.store.FSDirectory.open(File path) throws IOException
+
+
+Creates an FSDirectory instance, trying to pick the best implementation given the current environment. The directory returned uses the NativeFSLockFactory. 
+根据环境自动选择一个最佳的FSDirectory实现。
+
+Currently this returns MMapDirectory for most Solaris and Windows 64-bit JREs, 
+NIOFSDirectory for other non-Windows JREs, 
+and SimpleFSDirectory for other JREs on Windows. 
+It is highly recommended that you consult the implementation's documentation for your platform before using this method. 
+当前的实现，在solaris和Windows 64位下，使用MMapDirectory，非Windows的其它系统，使用NIOFSDirectory，
+而Windows下，使用SimpleFSDirectory。
+
+NOTE: this method may suddenly change which implementation is returned from release to release, in the event that higher performance defaults become possible; if the precise implementation is important to your application, please instantiate it directly, instead. For optimal performance you should consider using MMapDirectory on 64 bit JVMs. 
+
+========
+6，
+org.apache.lucene.store.NRTCachingDirectory
+
+
+Wraps a RAMDirectory around any provided delegate directory, to be used during NRT search. 
+
+This class is likely only useful in a near-real-time context, where indexing rate is lowish but reopen rate is highish, resulting in many tiny files being written. This directory keeps such segments (as well as the segments produced by merging them, as long as they are small enough), in RAM.
+此类只在“近实时”上下文时有用。
+
+This is safe to use: when your app calls {IndexWriter#commit}, all cached files will be flushed from the cached and sync'd.
+
+Here's a simple example usage: 
+
+   Directory fsDir = FSDirectory.open(new File("/path/to/index"));
+   NRTCachingDirectory cachedFSDir = new NRTCachingDirectory(fsDir, 5.0, 60.0);
+   IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_32, analyzer);
+   IndexWriter writer = new IndexWriter(cachedFSDir, conf);
+ 
+This will cache all newly flushed segments, all merges whose expected segment size is <= 5 MB, unless the net cached bytes exceeds 60 MB at which point all writes will not be cached (until the net bytes falls below 60 MB).
+
+@lucene.experimental
+
+
+
+
+

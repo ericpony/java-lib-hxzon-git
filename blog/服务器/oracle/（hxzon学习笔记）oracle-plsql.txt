@@ -1,0 +1,183 @@
+﻿（hxzon学习笔记）oracle-plsql
+
+by hxzon
+
+==============
+1，
+定义存储过程：
+
+create or replace procedure pms2_updateNsrSwjg is begin
+begin
+  update pms2_nsr nsr set (swjgId,swjgName) = 
+  (select swjg.swjgId,swjg.swjgname 
+  from pms2_swjg swjg
+  where nsr.swjgCode=swjg.swjgCode)
+  where exists(
+    select 1
+    from pms2_swjg swjg
+    where nsr.swjgCode=swjg.swjgCode
+  ); -- and rownum=1
+end;
+end pms2_updateNsrSwjg;
+
+执行：
+
+begin
+  pms2_updateNsrSwjg;
+end;
+
+存储过程参数和局部变量的定义和使用：
+
+create or replace procedure pms2_insertBroken
+  (p_newUkeySn varchar,p_oldUkeySn varchar) is begin --定义存储过程参数，只能定义类型，不能带长度
+  declare
+    v_ukeyoperidRevoke number(19); -- 定义局部变量
+    v_ukeyidRevoke number(19);
+    v_ukeyoperidInUse number(19);
+  begin
+    --
+    select ukeyoperid,ukeyid into v_ukeyoperidRevoke,v_ukeyidRevoke --select语句多个字段赋值
+    from pms2_ukeyoper
+    where ukeysn=p_oldUkeySn -- 使用存储过程参数
+    and ishistory=0;
+    --
+    select ukeyoperid into v_ukeyoperidInUse
+    from pms2_ukeyoper
+    where ukeysn=p_newUkeySn
+    and ishistory=0;
+    --
+    update pms2_ukeyoper
+    set ishistory=1
+    where ukeyoperid=v_ukeyoperidRevoke; --使用局部变量
+    --
+  end;
+end pms2_insertBroken;
+
+
+=============
+2，
+使用游标：
+
+
+create or replace procedure pms2_tmp_ibswjg is
+begin
+  declare
+    --声明游标：
+    cursor resultCursor is
+      select swjg_dm swjgcode from pms2_tmp_swjgall order by mylevel desc;
+    --声明带参数的游标：
+    cursor parentcodes(p_swjgcode varchar) is
+      select swjg_dm swjgcode 
+        from (select mylevel, swjg_dm
+                from pms2_tmp_swjgall
+               start with swjg_dm = p_swjgcode
+              connect by swjg_dm = prior sjswjg_dm)
+       order by mylevel desc;
+    --声明记录类型：
+    type rR is record(
+      swjgcode varchar2(32 char)); --必须带长度
+
+    type parentCode is record(
+      swjgcode varchar2(32 char));
+    --声明变量：
+    l_ibid number;
+    --
+  begin
+    for rR in resultCursor loop --使用不带参数的游标
+    
+      for parentCode in parentcodes(rR.swjgcode) loop -- 使用带参数的游标
+      
+        if l_ibid = -1 or l_ibid = -2 then --if语句
+          begin -- begin exception语句开始
+            select ibid
+              into l_ibid  --select语句赋值
+              from pms2_ibswjg
+             where swjgcode = parentCode.swjgcode;
+            --
+          exception
+            when no_data_found then
+              --dbms_output.put_line(parentCode.swjgcode);
+              l_ibid := -2;  --变量赋值
+          end;
+        end if;
+      end loop;
+      update pms2_tmp_swjgall
+         set ibid = l_ibid
+       where swjg_dm = rR.swjgcode;
+      l_ibid := -1;
+    end loop;
+  end;
+end pms2_tmp_ibswjg;
+
+-------
+异常：ORA-01788: 此查询块中要求 CONNECT BY 子句。
+通过以下语句解决：
+
+alter system set "_allow_level_without_connect_by"=true scope=both
+
+hxzon：ok。
+===============
+3，
+时间函数：
+
+to_char(timeCreate,'YYYY-MM-DD HH24:MI:SSxFF') timecreate
+
+to_date('2000-01-01 00:00:00','yyyy-MM-dd HH24:mi:ss')
+
+===============
+4，
+将o1的timeUkeyFf设为离它最近的类型为110或210的o2的时间：
+
+update pms2_ukeyoper o1 
+set o1.timeukeyff=
+nvl(
+(
+select o2.timeukeyff
+from pms2_ukeyoper o2
+where o2.ukeyid=o1.ukeyid
+and (o2.opertype=110 or o2.opertype=210)
+and o2.timecreate<o1.timecreate
+and not exists(
+select 1 from pms2_ukeyoper o3
+where o3.ukeyid=o2.ukeyid
+and (o3.opertype=110 or o3.opertype=210)
+and o3.timecreate>o2.timecreate
+and o3.timecreate<o1.timecreate
+)
+),to_date('2000-01-01 00:00:00','yyyy-MM-dd HH24:mi:ss'))
+where (o1.opertype!=110 and o1.opertype!=210 and o1.opertype!=141 and o1.opertype!=151)
+
+================
+5，
+oracle的字符串比较区分大小写，考虑到索引的使用等问题，如果不区分大小写，则应统一为大写或小写。
+
+================
+6，
+merge语句
+
+===============
+7，层级
+
+select level,* from xx
+start with myId = 'rootId'
+connect by prior myId = parentId;
+
+----
+从末梢到根（level都为0）
+
+select level,* from xx
+start with myId = 'someId'
+connect by prior parentId = myId;
+
+整个语句放在子查询中时，不能保证顺序。
+
+=========
+8，重新设为null
+
+update tt set ff=''
+
+9，更新多个值
+
+update tt set (ff,gg) = (select ff,gg from tt2 where xxx)
+
+10，

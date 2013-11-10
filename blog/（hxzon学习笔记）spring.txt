@@ -1,0 +1,59 @@
+﻿（hxzon学习笔记）spring
+
+
+1，事务管理中，一个方法如果标记为“只读的”，里面的查删改操作不会提交到数据库。
+
+
+2，使用@Async可将一个方法变成异步的，该方法必须是public的。
+
+见文档《27. Task Execution and Scheduling》。
+
+
+spring代理忽略非公开的方法。
+
+
+3，使用@Scheduled可将一个方法变成定时执行的，该方法必须是public的。
+
+见文档《27. Task Execution and Scheduling》。
+
+hxzon：如何在运行时修改定时方法的时间间隔？
+
+
+----
+4，
+
+每半个小时执行一次。（即每个小时的第0和第30分钟的第0秒执行。）
+
+@Scheduled(cron="0 0,30 * * * *")
+
+秒，分，时，日期，月，星期。
+只要有一个条件满足，就会触发。
+
+
+逗号 (',') 分开的值，例如：“1,3,4,7,8”
+连词符 ('-') 制定值的范围，例如：“1-6”，意思等同于“1,2,3,4,5,6”
+星号 ('*') 代表任何可能的值。例如，在“小时域” 里的星号等于是“每一个小时”。
+斜线 ('/') 操作符，用于表示跳过某些给定的数。例如，“*/3”在小时域中等于“0,3,6,9,12,15,18,21”等被3整除的数；
+
+----
+5，
+
+spring+hibernate，实体类保存后拥有了id，但数据库没有该数据。未见异常抛出。
+
+将spring事务的日志级别调到DEBUG，可以看到其实是抛出了异常。
+
+<logger name="org.springframework" level="WARN" />
+<logger name="org.springframework.orm" level="WARN" />
+<logger name="org.springframework.transaction" level="WARN" />
+<logger name="org.springframework.jdbc" level="WARN" />
+
+
+javax.validation.UnexpectedTypeException: HV000030: No validator could be found for type: java.util.Date.
+	at org.hibernate.validator.internal.engine.ConstraintTree.verifyResolveWasUnique(ConstraintTree.java:411) ~[hibernate-validator-4.3.1.Final.jar:4.3.1.Final]
+
+错误原因是对Date类型字段，使用了不合法的校验器，例如@Size(max = DefineSize1024)。
+
+
+----
+6，
+

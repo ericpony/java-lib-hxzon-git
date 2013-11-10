@@ -86,6 +86,18 @@ java-groovy
 交互设计，软件工程，it视野
 
 ----
+191，领域驱动设计与模式实战
+尼尔森(Jimmy Nilsson) (作者), 赵俐 (译者), 马燕新 (译者), 等 (译者)
+2009年11月1日
+52.00(75折)，有中文扫描电子版，基于.net
+
+----
+领域驱动设计C# 2008实现:问题•设计•解决方案
+麦卡锡(Tim McCarthy) (作者), UML China (译者)
+2010年3月1日
+24.50(5折)
+
+----
 122，黑客与画家：硅谷创业之父Paul Graham文集
 http://product.dangdang.com/product.aspx?product_id=21049598
 33.80(69折)，电子版，已读，受益匪浅
@@ -146,6 +158,7 @@ java
 
 ----
 java nio（中文版）
+中文电子版
 
 ----
 Java 7 Concurrency Cookbook
@@ -155,7 +168,7 @@ http://ifeve.com/concurrency-collection-9/
 ----
 48，Programming Concurrency on the JVM
 英文打印版
-《Java虚拟机并发编程》，28.90(51折)
+《Java虚拟机并发编程》，38.40(65折)，28.90(51折)
 
 ----
 151，Filthy Rich Clients,2007
