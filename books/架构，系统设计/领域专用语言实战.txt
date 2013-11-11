@@ -39,6 +39,14 @@ Debasish Ghosh Anshinsoft公司（http://www.anshinsoft.com）首席技术布道
 原书出版社	Manning
 原书页数	376
 
+=========
+出版社: 人民邮电出版社; 第1版 (2013年11月1日)
+外文书名: DSLs in Action
+丛书名: 图灵程序设计丛书
+平装: 292页
+语种： 简体中文
+开本: 16
+
 
 =========
 版权声明	

@@ -9,6 +9,9 @@ Pattern.compile(String pattern, int patternMode);
 Pattern.DOTALL | Pattern.UNICODE_CASE | Pattern.MULTILINE//
                 | Pattern.UNIX_LINES | Pattern.UNICODE_CHARACTER_CLASS
 
-2，
+2，Matcher
+matcher.appendReplacement
+
+
 
 
