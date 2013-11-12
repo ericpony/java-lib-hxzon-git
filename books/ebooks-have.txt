@@ -17,10 +17,6 @@ Mat Buckland (作者), 罗岱 (译者), 等 (译者)
 196，游戏开发中的人工智能
 有扫描中文电子版，有详细书签。
 
-----
-193，3D游戏编程大师技巧(套装共2册)
-拉莫斯(André LaMothe) (作者), 李祥瑞 (译者), 陈武 (译者)
-88.80，有扫描中文电子版，没有书签。重点学习。
 
 ----
 194，Windows游戏编程大师技巧(第2版)
@@ -163,7 +159,7 @@ http://product.dangdang.com/product.aspx?product_id=21049598
 ----
 159，代码的未来
 [日]松本行弘 (作者), 周自恒 (译者)
-59.20(75折)，39.50(5折)，必看，电子书优先，有扫描电子版
+59.20(75折)，39.50(5折)，必看，不买，有扫描电子版
 
 
 ----
@@ -179,8 +175,10 @@ http://book.realworldhaskell.org/read/
 真实世界的Haskell(影印版) 
 沙利文(Bryan O'sullivan)、戈尔(Jobn Goerzen)、 斯图尔特(Don Stewart) 
 东南大学出版社 (2010-01出版)
+
 缺货，编程思想的学习，想买，英文版是否有耐心读？
 中文版夭折，http://rwh.readthedocs.org/en/latest/
+
 --
 Parallel and Concurrent Programming in Haskell
 
@@ -244,11 +242,10 @@ http://ifeve.com/concurrency-collection-9/
 ----
 48，Programming Concurrency on the JVM
 英文打印版
-《Java虚拟机并发编程》，38.40(65折)，28.90(51折)
 
 ----
 162，Java虚拟机并发编程
-215页，40.70(69折)
+215页，40.70(69折)，38.40(65折)，28.90(51折)
 《Programming Concurrency on the JVM》，有英文打印版，必看，不买
 
 ----

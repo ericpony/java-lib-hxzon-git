@@ -1,6 +1,16 @@
 ﻿itbooks.txt
 
-
+C++
+windows(VC++，系统核心，MFC)
+linux服务器
+linux c编程
+js
+css，html
+算法，数学
+sql数据库
+nosql
+工具实践，编程语言
+架构设计，软件工程，it视野
 ====================================================
 C++
 
@@ -38,12 +48,6 @@ http://product.dangdang.com/product.aspx?product_id=22577577
 184，提高C++性能的编程技术
 布尔卡(Dov Bulka)、梅休(David Mayhew)、左飞、 薛佟佟 (2011-03)
 41.00
-
-----
-101，C++程序设计语言
-http://product.china-pub.com/196448
-《The C++ Programming Language: Special Edition》，（美）Bjarne Stroustrup
-不买。
 
 ----
 104，Think in C++
@@ -100,6 +104,12 @@ http://www.amazon.cn/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6
 170，深入理解C++11:C++11新特性解析与应用
 41.40 (6折)
 
+
+----
+101，C++程序设计语言
+http://product.china-pub.com/196448
+《The C++ Programming Language: Special Edition》，（美）Bjarne Stroustrup
+不买。
 
 ==============================================
 windows，系统核心优先
@@ -556,9 +566,29 @@ http://www.ituring.com.cn/book/979
 ==============================================================
 javascript
 
+
+----
+90，深入浅出CoffeeScript/图灵程序设计丛书
+26.20，17.20(49折)
+
+----
+74，JavaScript高级程序设计(第3版)
+http://www.ituring.com.cn/book/946
+48.50(49折)，有英文电子版，不买
+
+----
+83，JavaScript设计模式
+http://www.ituring.com.cn/book/388
+http://product.dangdang.com/product.aspx?product_id=20511558
+有英文电子版，不买
+
+----
+72，JavaScript DOM高级程序设计
+AdvancED DOM Scripting: Dynamic Web Design Techniques
+有英文电子版（，2008），观望
+
 ----
 73，ppk谈JavaScript
-不买
 
 ----
 28，JavaScript语言精粹
@@ -569,28 +599,10 @@ javascript
 36.80(75折)
 
 ----
-74，JavaScript高级程序设计(第3版)
-http://www.ituring.com.cn/book/946
-48.50(49折)，不买
-
-----
-83，JavaScript设计模式
-http://www.ituring.com.cn/book/388
-http://product.dangdang.com/product.aspx?product_id=20511558
-有英文电子版，不买
-
-----
 65，JavaScript DOM编程艺术(第2版)
 36.80，有第1版中文（2006,2007），不买
 
-----
-72，JavaScript DOM高级程序设计
-AdvancED DOM Scripting: Dynamic Web Design Techniques
-有英文电子版（，2008），观望
 
-----
-90，深入浅出CoffeeScript/图灵程序设计丛书
-26.20，17.20(49折)
 
 ----
 188，ASP.NET 4高级程序设计(第4版)
