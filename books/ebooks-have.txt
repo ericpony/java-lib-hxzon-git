@@ -1,54 +1,7 @@
 ﻿ebooks-have
 
 ========================
-游戏开发（3D，大型多人在线游戏，人工智能）
-
-----
-197，大型多人在线游戏开发
-有扫描中文电子版，有详细书签。
-
-----
-195，游戏人工智能编程案例精粹(修订版)
-《Programming Game AI by Example》
-Mat Buckland (作者), 罗岱 (译者), 等 (译者)
-有扫描中文电子版，有详细书签。
-
-----
-196，游戏开发中的人工智能
-有扫描中文电子版，有详细书签。
-
-
-----
-194，Windows游戏编程大师技巧(第2版)
-拉莫斯(André LaMothe)，
-第1版，有扫描中文电子版，没有书签。
-第2版，有扫描中文电子版，有详细书签。
-
-----
-202，DIRECTX9.03D游戏开发编程基础
-有扫描中文电子版，有详细书签。
-
-
-----
-192，3D数学基础:图形与游戏开发
-邓恩 (作者), 帕贝利 (作者), 史银雪 (译者), 陈洪 (译者), 王荣静 (译者)
-25.20，不如《3D游戏编程大师技巧》？
-
-----
-198，人工智能:一种现代方法(第2版)
-斯图尔特·罗素(Stuart Russell) (作者), 诺文(Peter Norvig) (作者), 姜哲 (译者), 金奕江 (译者), 张敏 (译者), 等 (译者)
-
-----
-人工智能游戏编程真言
-有扫描中文电子版，没有书签。
-
-----
-C++游戏设计案例教程
-有扫描中文电子版，有详细书签。
-
-
-========================
-js
+js（前端mvc，控件编程，js基础）
 
 ----
 150，JavaScript异步编程：设计快速响应的网络应用
@@ -72,13 +25,35 @@ http://www.ituring.com.cn/book/922
 英文打印版，html，css，浏览器检测和自定义控件
 
 ----
+72，JavaScript DOM高级程序设计
+AdvancED DOM Scripting: Dynamic Web Design Techniques
+有英文电子版（，2008），观望
+
+----
 119，JavaScript Patterns
+《javascript模式》
 by Stoyan Stefanov，2010
 英文打印版
 
 ----
+83，JavaScript设计模式
+《Learning JavaScript Design Patterns》
+http://www.ituring.com.cn/book/388
+http://product.dangdang.com/product.aspx?product_id=20511558
+有英文电子版，不买
+
+----
 152，Jquery1.2.6源码分析
 英文打印版
+
+----
+74，JavaScript高级程序设计(第3版)
+http://www.ituring.com.cn/book/946
+48.50(49折)，有英文电子版，不买
+
+----
+28，JavaScript语言精粹
+31.90(91折)，有英文电子版，不买
 
 ----
 153，Professional JavaScript Frameworks : Prototype, YUI, Ext JS, Dojo and MooTools
@@ -106,28 +81,12 @@ http://www.ituring.com.cn/book/903
 http://www.ituring.com.cn/book/924
 英文打印版
 
-
-==========================
-java-clojure
-
-
 ----
-127，Seven Languages in Seven Weeks
-《七周七语言》，不买，只是入门简介
-英文打印版，节选“7 Clojure，8 Haskell”部分。
-
-Clojure:简单介绍，day1基本数据类型，绑定，day2集合，延迟计算，类和接口，day3并发（引用，原子，代理）
-
-Haskell:
-
+68，Eric Meyer谈CSS(卷2)
+http://product.dangdang.com/product.aspx?product_id=20176096
+36.80 (75折)，有中文电子版，不买
 
 ==========================
-java-scala
-
-
-==========================
-java-groovy
-
 
 ==========================
 交互设计，软件工程，it视野
@@ -149,12 +108,6 @@ Eric Redmond (作者), Jim R.Wilson (作者), 王海鹏 (译者), 田思源 (译
 麦卡锡(Tim McCarthy) (作者), UML China (译者)
 2010年3月1日
 24.50(5折)
-
-----
-122，黑客与画家：硅谷创业之父Paul Graham文集
-http://product.dangdang.com/product.aspx?product_id=21049598
-33.80(69折)，电子版，已读，受益匪浅
-
 
 ----
 159，代码的未来
@@ -252,3 +205,60 @@ http://ifeve.com/concurrency-collection-9/
 151，Filthy Rich Clients,2007
 英文打印版，java swing，java 2d。
 
+========================
+游戏开发（3D，大型多人在线游戏，人工智能）
+
+----
+197，大型多人在线游戏开发
+有扫描中文电子版，有详细书签。
+
+----
+195，游戏人工智能编程案例精粹(修订版)
+《Programming Game AI by Example》
+Mat Buckland (作者), 罗岱 (译者), 等 (译者)
+有扫描中文电子版，有详细书签。
+
+----
+196，游戏开发中的人工智能
+有扫描中文电子版，有详细书签。
+
+
+----
+194，Windows游戏编程大师技巧(第2版)
+拉莫斯(André LaMothe)，
+第1版，有扫描中文电子版，没有书签。
+第2版，有扫描中文电子版，有详细书签。
+
+----
+202，DIRECTX9.03D游戏开发编程基础
+有扫描中文电子版，有详细书签。
+
+
+----
+192，3D数学基础:图形与游戏开发
+邓恩 (作者), 帕贝利 (作者), 史银雪 (译者), 陈洪 (译者), 王荣静 (译者)
+25.20，不如《3D游戏编程大师技巧》？
+
+----
+198，人工智能:一种现代方法(第2版)
+斯图尔特·罗素(Stuart Russell) (作者), 诺文(Peter Norvig) (作者), 姜哲 (译者), 金奕江 (译者), 张敏 (译者), 等 (译者)
+
+----
+人工智能游戏编程真言
+有扫描中文电子版，没有书签。
+
+----
+C++游戏设计案例教程
+有扫描中文电子版，有详细书签。
+
+=================
+感觉一般，不值，或过时的书
+
+----
+127，Seven Languages in Seven Weeks
+《七周七语言》，不买，只是入门简介。
+英文打印版，节选“7 Clojure，8 Haskell”部分。
+
+Clojure:简单介绍，day1基本数据类型，绑定，day2集合，延迟计算，类和接口，day3并发（引用，原子，代理）
+
+Haskell:

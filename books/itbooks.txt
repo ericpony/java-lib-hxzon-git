@@ -12,7 +12,7 @@ nosql
 工具实践，编程语言
 架构设计，软件工程，it视野
 ====================================================
-C++
+C++，VC++
 
 ----
 187，D程序设计语言
@@ -43,6 +43,36 @@ C++
 86，编程原本(STL之父Alexander Stepanov力作,裘宗燕老师倾情献译)
 http://product.dangdang.com/product.aspx?product_id=22577577
 44.30(75折)，28.90(49折)，C++库设计，暂缓，是否有必要？
+
+
+----
+108，Advanced C++
+http://product.china-pub.com/16697
+
+----
+109，Modern C++ Design: Applied Generic and Design Patterns
+《C++设计新思维——泛型编程与设计模式之应用》
+曾荣获2001年最佳C++图书称号，书中所开发的Loki已经成为最负盛名的C++程序库之一。
+作者被认为是新一代C++的代表人物，因为对Template技术的精湛运用，震撼了整个C++社群。
+http://product.china-pub.com/9700
+http://www.amazon.cn/Modern-C-Design-Applied-Generic-and-Design-Patterns-Alexandrescu-Andrei/dp/0201704315/ref=sr_1_1?s=books&ie=UTF8&qid=1347035699&sr=1-1
+不买，有清晰的中文版电子书
+
+----
+110，泛型编程与STL
+http://product.china-pub.com/9864
+作者: Matthew H. Austern 译者: 侯捷 中国电力出版社2003-1
+本书阐述了泛型编程的中心思想：concepts、modeling、refinement，并为你展示这些思想如何导出STL的基础概念：iterators、containers、function Objects。循此路线，你可以把STL想像为一个由concepts(而非明确之functions或classes)组成的程序库。你将学习其正式结构并因此获得其潜在威力所带采的完整优势。
+已缺货，观望，暂缓
+
+----
+111，深入探索C++对象模型
+http://product.china-pub.com/3290
+http://www.amazon.cn/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B-%E4%BC%A0%E4%B8%96%E7%BB%8F%E5%85%B8%E4%B9%A6%E4%B8%9B-%E6%96%AF%E5%9D%A6%E5%88%A9%E2%80%A2B-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B006QXQXTM/ref=pd_rhf_se_s_cp_4
+
+----
+170，深入理解C++11:C++11新特性解析与应用
+41.40 (6折)
 
 ----
 184，提高C++性能的编程技术
@@ -76,40 +106,10 @@ http://product.china-pub.com/197666
 http://www.amazon.cn/More-Exceptional-C-40%E4%B8%AA%E6%96%B0%E7%9A%84%E5%B7%A5%E7%A8%8B%E9%9A%BE%E9%A2%98-%E7%BC%96%E7%A8%8B%E7%96%91%E9%97%AE%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95-%E8%88%92%E7%89%B9/dp/B004IUISIO/ref=pd_rhf_se_s_cp_3
 
 ----
-108，Advanced C++
-http://product.china-pub.com/16697
-
-----
-109，Modern C++ Design: Applied Generic and Design Patterns
-《C++设计新思维——泛型编程与设计模式之应用》
-曾荣获2001年最佳C++图书称号，书中所开发的Loki已经成为最负盛名的C++程序库之一。
-作者被认为是新一代C++的代表人物，因为对Template技术的精湛运用，震撼了整个C++社群。
-http://product.china-pub.com/9700
-http://www.amazon.cn/Modern-C-Design-Applied-Generic-and-Design-Patterns-Alexandrescu-Andrei/dp/0201704315/ref=sr_1_1?s=books&ie=UTF8&qid=1347035699&sr=1-1
-不买，有清晰的中文版电子书
-
-----
-110，泛型编程与STL
-http://product.china-pub.com/9864
-作者: Matthew H. Austern 译者: 侯捷 中国电力出版社2003-1
-本书阐述了泛型编程的中心思想：concepts、modeling、refinement，并为你展示这些思想如何导出STL的基础概念：iterators、containers、function Objects。循此路线，你可以把STL想像为一个由concepts(而非明确之functions或classes)组成的程序库。你将学习其正式结构并因此获得其潜在威力所带采的完整优势。
-已缺货，观望，暂缓
-
-----
-111，深入探索C++对象模型
-http://product.china-pub.com/3290
-http://www.amazon.cn/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B-%E4%BC%A0%E4%B8%96%E7%BB%8F%E5%85%B8%E4%B9%A6%E4%B8%9B-%E6%96%AF%E5%9D%A6%E5%88%A9%E2%80%A2B-%E6%9D%8E%E6%99%AE%E6%9B%BC/dp/B006QXQXTM/ref=pd_rhf_se_s_cp_4
-
-----
-170，深入理解C++11:C++11新特性解析与应用
-41.40 (6折)
-
-
-----
 101，C++程序设计语言
 http://product.china-pub.com/196448
 《The C++ Programming Language: Special Edition》，（美）Bjarne Stroustrup
-不买。
+不买。不如《C++ Primer》？
 
 ==============================================
 windows，系统核心优先
@@ -161,15 +161,6 @@ http://www.amazon.com/Windows-via-C-softcover/dp/0735663777/ref=sr_1_1?s=books&i
 
 ----
 174，Windows并发编程指南
-
-
-
-
-======
-VC++
-
-
-
 
 
 ===========================================================
@@ -407,6 +398,10 @@ http://product.dangdang.com/product.aspx?product_id=20518616
 39.50 (5折)，较底层，暂不考虑
 
 ----
+25，黑客大曝光:Web应用程序安全(原书第3版)(Web安全技术人员必备参考)
+46.20(67折)，31.80(49折)，想买
+
+----
 163，云端代码：Google App Engine编程指南
 Mark C. Chu-Carroll (作者), 刘姝 (译者), 管雪涛 (译者)
 22.50(5折)，
@@ -425,10 +420,6 @@ Mark C. Chu-Carroll (作者), 刘姝 (译者), 管雪涛 (译者)
 2013年3月20日
 Programming Clojure, Second Edition，The Pragmatic Programmers，2012年4月17日
 36.80 (7.5折)，24.00(49折)，不买
-
-----
-25，黑客大曝光:Web应用程序安全(原书第3版)(Web安全技术人员必备参考)
-46.20(67折)，31.80(49折)，想买
 
 ----
 92，Git权威指南
@@ -549,11 +540,6 @@ http://www.ituring.com.cn/book/845?q=%E6%B7%B1%E5%85%A5NoSQL
 css,html5
 
 ----
-68，Eric Meyer谈CSS(卷2)
-http://product.dangdang.com/product.aspx?product_id=20176096
-36.80 (75折)，有中文电子版，不买
-
-----
 89，Pro CSS for High Traffic Websites
 高流量网站CSS开发技术
 http://www.ituring.com.cn/book/979
@@ -566,33 +552,12 @@ http://www.ituring.com.cn/book/979
 ==============================================================
 javascript
 
-
 ----
 90，深入浅出CoffeeScript/图灵程序设计丛书
 26.20，17.20(49折)
 
 ----
-74，JavaScript高级程序设计(第3版)
-http://www.ituring.com.cn/book/946
-48.50(49折)，有英文电子版，不买
-
-----
-83，JavaScript设计模式
-http://www.ituring.com.cn/book/388
-http://product.dangdang.com/product.aspx?product_id=20511558
-有英文电子版，不买
-
-----
-72，JavaScript DOM高级程序设计
-AdvancED DOM Scripting: Dynamic Web Design Techniques
-有英文电子版（，2008），观望
-
-----
 73，ppk谈JavaScript
-
-----
-28，JavaScript语言精粹
-31.90(91折)，有英文电子版，不买
 
 ----
 67，高性能JavaScript
@@ -602,8 +567,7 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 65，JavaScript DOM编程艺术(第2版)
 36.80，有第1版中文（2006,2007），不买
 
-
-
+==============================================================
 ----
 188，ASP.NET 4高级程序设计(第4版)
 103.30(7折)
@@ -613,15 +577,14 @@ AdvancED DOM Scripting: Dynamic Web Design Techniques
 朱华伟
 27.60(6折)
 
+========
+游戏开发（3D，大型多人在线游戏，人工智能）
+
 ----
 190，Processing语言权威指南（混彩）
 Casey Reas（凯西·瑞斯） (作者), Ben Fry（本·弗莱） (作者), 张静 (译者)
 710页，2013年10月1日，
 123.70(8.9折)，83.40(6折)，
-
-
-========
-游戏开发（3D，大型多人在线游戏，人工智能）
 
 ----
 207，
