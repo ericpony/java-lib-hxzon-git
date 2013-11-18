@@ -1,5 +1,9 @@
-﻿（hxzon学习笔记）实用Common Lisp编程-ch03
+﻿（hxzon学习笔记）《实用Common Lisp编程》-ch03简单的数据库
 
+by hxzon
+
+《第3 章 实践：简单的数据库》
+======
 定义条件函数：
 (defmacro where (&rest clauses)
 	`#'(lambda (cd) 

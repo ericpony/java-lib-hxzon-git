@@ -1,0 +1,193 @@
+（hxzon学习笔记）《领域专用语言实战》-clojure装饰器
+
+by hxzon
+
+==========
+《5.4，思路迥异的clojure》
+
+hxzon提示：
+
+两个串行宏：
+
+--1，-> 把第一个form插入到第二个form的第二个位置。
+--2，->> 把第一个form插入到第二个form的最后一个位置。
+
+“模板”：
+--1，反引号（Syntax-quote）·，阻止求值。
+--2，波浪号（Unquote）~，嵌在反引号表达式内，表示求值。
+--3，（Unquote-splicing）~@，将表达式（必须求值为一个列表）的值嵌入到其外围的列表里。
+
+其它：
+
+--1，与号&，用来将函数参数打包成列表 （相当于java中的...）。
+
+
+==========
+使用map，用一种抽象来建模所有数据。
+
+交易规则函数trade的定义：
+（tax-fees为要缴纳的各项费用）
+
+(defn trade
+	"Make a trade from the request"
+	[request]
+	{:ref-no (:ref-no request) 
+	:account (:account request)
+	:instrument (:instrument request)
+	:principal (* (:unit-price request) (:quantity request)) 
+	:tax-fees {}}) 
+
+请求的定义：
+
+(def request 
+	{:ref-no "trd-123" 
+	:account "nomura-123"
+	:instrument "IBM"
+	:unit-price 120
+	:quantity 300})
+
+=====
+定制交易规则的方式：
+(with-tax-fee trade
+	(with-values :tax 12)
+	(with-values :commission 23))
+
+with-values函数的定义：
+(defn with-values [trade tax-fee value] 
+	(fn [request] ;返回一个新函数，这个新函数以request为参数。
+		(let [trdval (trade request) 
+			principal (:principal trdval)]
+			(assoc-in trdval [:tax-fees tax-fee] ;往trdval的tax-fees（是一个映射）压入tax-fee键，值为需要缴纳的费用。
+				(* principal (/ value 100)))))) 
+
+----
+定制交易规则的方式（不够方便，用户需要使用串行宏，并且需要重定义trade）：
+
+(def trade
+(-> trade
+(with-values :tax 20)
+(with-values :commission 30)))
+
+----
+定义一个用来“重定义”的宏：
+(defmacro redef
+	"Redefine an existing value, keeping the metadata intact."
+	[name value]
+	`(let [m# (meta #'~name)
+		v# (def ~name ~value)]
+		(alter-meta! v# merge m#)
+		v#))
+
+----
+with-tax-fee宏（会对第1个参数func重定义）：
+
+(defmacro with-tax-fee 
+	"Wrap a function in one or more decorators."
+	[func & decorators]
+	`(redef ~func (-> ~func ~@decorators)))
+
+=========
+求出费用的函数：
+（使用方式net-value (trade request)。）
+
+(defn net-value [trade]
+	(let [principal (:principal trade)
+		tax-fees (vals (trade :tax-fees))] ;取出trade的tax-fees（是一个映射）的所有值。
+		(reduce + (conj tax-fees principal)))) 
+
+=========
+实际使用示例：
+
+定义一个请求：
+
+user> (def request {:ref-no "r-123", :account "a-123", 
+:instrument "i-123", :unit-price 20, 
+:quantity 100}) 
+#'user/request
+
+用trade处理请求（返回一个新的映射）：
+
+user> (trade request) 
+{:ref-no "r-123", :account "a-123", :instrument "i-123", 
+:principal 2000, :tax-fees {}}
+
+用with-tax-fee对trade进行重定义，trade的tax-fees（是一个映射）会压入两个键tax和commission。
+
+user> (with-tax-fee trade
+(with-values :tax 12)
+(with-values :commission 23)) 
+#'user/trade
+
+用新的trade（函数）处理请求（算出两项新费用，在tax-fees中）：
+
+user> (trade request) 
+{:ref-no "r-123", :account "a-123", :instrument "i-123", 
+:principal 2000, :tax-fees {:commission 460, :tax 240}}
+
+继续用with-tax-fee对trade进行重定义：
+
+user> (with-tax-fee trade
+(with-values :vat 12)) 
+
+用新的trade处理请求：
+
+#'user/trade
+user> (trade request) 
+{:ref-no "r-123", :account "a-123", :instrument "i-123", 
+:principal 2000, :tax-fees {:vat 240, :commission 460, :tax 240}}
+
+算出值（principal加上所有的tax-fees值）：
+
+user> (net-value (trade request)) 
+2940
+
+=================
+=================
+《4.5，生成式dsl：在编译时生成代码的宏》
+
+(def tr1 
+	{:ref-no "tr-123" 
+	:account {:no "cl-a1" :name "john doe" :type ::trading} 
+	:instrument "eq-123" :value 1000})
+
+--
+(def ex1 
+	{:ref-no "er-123" 
+	:account {:no "br-a1" :name "j p morgan" :type ::trading} 
+	:instrument "eq-123" :value 1000})
+--
+夹杂太多的异常处理（空指针判断，类型判断）：
+
+(defn trading?
+	"Returns true if the account is a trading account"
+	[account]
+	(= (:type account) ::trading))
+	(defn allocate
+	"Allocate execution to client account and generate client trade"
+	[acc exe]
+	(cond 
+		(nil? acc) (throw (IllegalArgumentException. 
+			"account cannot be nil")) 
+		(= (trading? acc) false) (throw (IllegalArgumentException.
+			"must be a trading account")) 
+		:else {:ref-no (generate-trade-ref-no) 
+			:account acc
+			:instrument (:instrument exe) :value (:value exe)}))
+----
+通过宏来补上这些异常处理：
+(defmacro with-account
+	[acc & body]
+	`(cond
+		(nil? ~acc) (throw (IllegalArgumentException.
+			"account cannot be nil"))
+		(= (trading? ~acc) false) (throw (IllegalArgumentException.
+			"must be a trading account"))
+		:else ~@body))
+----
+(defn allocate
+	"Allocate execution to client account and generate client trade"
+	[acc exe]
+	(with-account acc
+		{:ref-no (generate-trade-ref-no) 
+		:account acc 
+		:instrument (:instrument exe) :value (:value exe)}))
