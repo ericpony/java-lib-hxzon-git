@@ -5,12 +5,14 @@ by hxzon
 （2013.11.16）
 
 《第1部分，领域专用语言入门》
-《第1章，初始DSL》
+《第1章，初识DSL》
 《第2章，现实中的DSL》
 
 《2.2.3，执行Groovy DSL》
 
+==============
 《第3章，DSL驱动的应用程序开发》
+
 本章主要内容：
 -1，DSL集成问题，
 -2，处理错误和异常（友好明确的提示），
@@ -33,11 +35,14 @@ by hxzon
 
 ================
 《第2部分，实现DSL》
+
 《第4章，内部DSL实现模式》
+
 -1，内嵌式dsl：
 --1，元编程：隐式上下文（ruby和groovy），灵巧api（连贯接口），动态装饰器（ruby mixin），groovy builder。
 --2，类型化抽象：利用scala的静态类型系统（利用编译器编译期检查，可节省大量判断代码）
 （hxzon：可节省的只是类型判断代码，不如代码生成更灵活定制。）
+
 -2，生成式dsl：
 --3，运行时元编程：ruby代码生成
 --4，编译时元编程：clojure宏（没有运行时开销）。
@@ -49,12 +54,13 @@ p80，ruby中的动态装饰器（类似scala trait的运行时混入，只混�
 《第5章，ruby，groovy，clojure语言中的内部dsl设计》
 动态类型语言。
 没有类型标注干扰，鸭子类型。
+
 groovy.xml.MarkupBuilder
 
 groovy category来控制元编程的作用域（比ruby猴子补丁的全局作用域更安全）。
 groovy ExpandoMetaClass，在运行时向已有的类添加方法、属性、构造器以及静态方法。（类似ruby的猴子补丁。）
 
-p129，clojure实现装饰器。
+p129，clojure实现装饰器。见《（hxzon学习笔记）《领域专用语言实战》-clojure装饰器》。
 
 -----------
 《第6章，scala语言中的内部dsl设计》
@@ -82,6 +88,7 @@ p129，clojure实现装饰器。
 《第9章，展望dsl设计得未来》
 
 xml繁琐，表达高阶结构（如条件结构）的能力也有欠缺。
+
 分析器组合子越来越流行。
 新语言Newspeak拥有一个特别丰富的分析器组合子库，比scala分析器组合子能更好的解耦文法规则和语义模型。
 F#，javascript，scheme都在发展自己的分析器组合子库。
@@ -99,6 +106,165 @@ dsl的成长和演化
 -3，门面式dsl设计可以解决诸多版本化问题。
 -4，遵从优秀抽象设计的各项原则（附录A）。
 
+
+===========
+《附录F Clojure语言的DSL相关特性》
+
+-1，纯函数式。
+
+-2，抽象设计：字段都是公开的，不可变对象，通过多方法和协议实现多态，不支持实现继承。
+
+-3，一种数据结构：序列。
+序列本身是函数。
+很方便的创建序列，过滤序列，变换序列（map，reduce）。
+
+-4，clojure dsl设计的秘诀是宏。
+
+===========
+《附录E Groovy语言的DSL相关特性》
+
+基于类的面向对象。
+
+-1，类型声明是可选的。
+-2，支持多行字符串，含变量字符串（GString）。
+-3，各种集合类型的字面量（Range，List，Map）。
+-4，闭包。
+-5，构建器（builder），如groovy.xml.MarkupBuilder，秘诀是元编程能力和闭包。
+-6，ExpandoMetaClass，动态打开类增加方法，构造器，字段和静态方法。
+
+-7，category，限制元编程的作用域。
+示例：
+class IntegerCategory {
+	static Integer twice(Integer i) {
+		return i * 2
+	} 
+} 
+use (IntegerCategory) {
+	assert 4 == 2.twice() 
+}
+twice方法只在use作用域内有效。
+
+===========
+《附录D Scala语言的DSL相关特性》
+
+基于类的面向对象。
+
+-1，case类。
+构造器参数默认变成不可变。
+自动实现equals，hashcode，toString方法。
+不必使用new关键字。
+case类在模式匹配中非常有用。
+可用来定义值对象。
+
+-2，traits，多重继承的最佳方式。
+不仅可静态混入（类定义），还可动态混入（对实例）。
+
+-3，高阶函数和闭包。
+
+-4，模式匹配。
+模式匹配能实现可扩展的visitor模式。
+（hxzon：模式匹配比正则表达式更佳。）
+def process(acc: Account) = acc match 
+{
+	case Checking(no) => // do stuff
+	case Savings(no, rt) => // do stuff 
+}
+
+-5，对象作为模块，示例：
+object RuleComponent extends Rule 
+with CountryLocale with Calendar { 
+	// .. 
+}
+
+-6，隐式参数。
+def shout(at: String)(implicit curse: String) {
+	println("hey: " + at + " " + curse) 
+} 
+implicit val curse = "Damn! " 
+shout("Rob")
+
+-7，隐式转换。类似ruby的猴子补丁，但是限制词法作用域。
+
+-8，偏函数。
+
+hxzon：
+不要把部分应用函数（Partial Applied Function)和偏函数（Partial Function） 搞混。 
+部分应用函数（Partial Applied Function)是缺少部分参数的函数，是一个逻辑上概念。
+偏函数是只对函数定义域的一个子集进行定义的函数。 scala中用scala.PartialFunction[-T, +S]类来表示。
+
+A partial function is one that's defined only for a set of values of its arguments. 
+Partial functions in Scala are modeled as blocks of pattern-matching case statements.
+PartialFunctionsare used idiomatically to define the message receive loop in Scala actors.
+
+val onlyTrue: 
+PartialFunction[Boolean, Int] = { 
+	case true => 100 
+}
+
+onlyTrue is a PartialFunctionthat’s defined for a limited domain. 
+It’s defined only for the Boolean value true. 
+The PartialFunctiontrait contains a method isDefinedAt that returns true for the domain values for which the PartialFunctionis defined. 
+
+示例：
+scala> onlyTrue isDefinedAt(true) 
+res1: Boolean = true 
+scala> onlyTrue isDefinedAt(false) 
+res2: Boolean = false
+
+-9，泛型（类型参数）。
+使得编译器能够帮助检查。
+（hxzon：仍然不够，编译器只能够帮助检查类型，无法检查非空指针等。
+如果支持可空类型，可以帮助检查非空指针？）
+（hxzon：类型越具体，算法使用范围可能越小。）
+
+hxzon补充：
+-10，Monad化。
+
+===========
+《附录C Ruby语言的DSL相关特性》
+
+基于类的面向对象。
+
+-1，单例对象。
+accnt = Account.new(12, "john p. ") 
+	def accnt.do_special
+	## 
+end 
+accnt.do_special ## runs 
+
+acc = Account.new(23, "peter s. ") 
+acc.do_special ## error!
+
+-2，反射式元编程。
+-3，开放类（可动态添加字段，方法，即猴子补丁）。
+
+-4，evals
+class_eval—以类和模块为上下文执行字符串或块。
+instance_eval—以实例为上下文执行字符串或块。
+eval—在当前上下文执行字符串或块。
+
+-5，模块，用来实现混入。示例：
+class Account
+	include Audit
+	## can use the method record here 
+end
+
+-6，块。块可带参数。示例：
+sum = 0 
+[1, 2, 3, 4].each do |value|
+sum += (value * value) 
+end 
+puts sum
+
+-7，通过映射（hash）实现可变参数。可用来实现builder。
+示例：
+def foo(values)
+## values is a hash 
+end
+按如下方式调用：
+foo(:a => 1, :b => 2)
+
+-8，鸭子类型，一个对象，只要能响应对应的消息即可。
 
 =========
 附录A	 抽象在领域建模中的角色
@@ -131,18 +297,6 @@ A.5.1	 用设计模式满足组合性
 A.5.2 回归语言
 A.5.3	 副作用和组合性
 A.5.4 组合性与并发
-
-===========
-《附录C Ruby语言的DSL相关特性》
-
-《附录D Scala语言的DSL相关特性》
-
-《附录E Groovy语言的DSL相关特性》
-
-
-《附录F Clojure语言的DSL相关特性》
-
-
 ======
 《附录B 元编程与DSL设计》（忽略。）
 《附录G 多语言开发》（忽略。）
