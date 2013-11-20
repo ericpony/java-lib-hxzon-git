@@ -1,0 +1,175 @@
+Programming Clojure学习笔记——探索Clojure-2.4 变量（var）
+http://blog.csdn.net/zh2qiang/article/details/7080461
+
+=====
+2.4 变量（var）
+
+当你使用def和defn定义一个对象时，对象就存贮在变量中，如：
+
+user=> (def foo 10)
+#'user/foo
+
+定义变量foo，其值为10。
+
+说明：这里的对象可以是数，也可以是函数。
+
+变量的初始值称为根绑定。
+
+--
+使用var特殊形式可以直接获取变量而不是变量的值：
+(var a-symbol)
+
+示例：
+user=> (var foo)
+#'user/foo
+
+var有一个等价的读者宏#':
+
+user=> #'foo
+#'user/foo
+
+二者返回值相同。
+
+----
+绑定
+
+函数调用时，传入参数值绑定到参数名称，函数参数绑定有一个词法作用域：仅在函数体范围内可见。
+
+特殊形式let可以创建一组词法绑定：
+(let [bingdings*] exprs*)
+
+其中bingdings在exprs中有效，let返回exprs最后一个表达式的值。如：
+
+user=> (defn square-corners [bottom left size]
+         (let [top (+ bottom size)
+               right (+ left size)]
+           [[bottom left] [top left] [top right] [bottom right]]))
+#'user/square-corners
+
+user=> (square-corners 1 1 2)
+[[1 1] [3 1] [3 3] [1 3]]
+
+----
+非结构化（hxzon：解构）
+
+有时候我们需要访问结构体的部分数据，如访问作者的first-name，可以通过以下函数实现：
+
+user=> (defn greet-author-1 [author]
+                (println "Hello," (:first-name author)))
+#'user/greet-author-1
+
+user=> (greet-author-1 {:last-name "Vinge" :first-name "Vernor"})
+Hello, Vernor
+
+函数接受作者结构体并绑定到author参数，但函数只需要first-name。
+
+通过非结构化，Clojure通过在绑定中嵌入向量或映射深入集合内部并只绑定需要的部分数据。如：
+
+user=> (defn greet-author-2 [{fname :first-name}]
+                (println "Hello," fname))
+#'user/greet-author-2
+
+user=> (greet-author-1 {:last-name "Vinge" :first-name "Vernor"})
+Hello, Vernor
+
+--
+可以使用向量解构任意有序集合。如：
+
+user=> (let [[x y] [1 2 3]] [x y])
+[1 2]
+
+表达式[x y]解构向量[1 2 3]，绑定x到1，y到2。
+
+可以使用下划线(_)来忽略某个元素，如：
+
+user=> (let [[_ _ z] [1 2 3]] z)
+3
+
+两个下划线表示忽略前两个元素，将z绑定到第三个元素3。
+
+--
+在解构表达式中，:as语句:as后的变量绑定到整个结构：
+
+user=> (let [[x y :as coords] [1 2 3 4 5 6]]
+         (str "x: " x ", y: " y ", total dimensions " (count coords)))
+"x: 1, y: 2, total dimensions 6"
+
+将coords绑定到向量[1 2 3 4 5 6]。
+
+----
+命名空间
+
+在Clojure REPL中，user=>提示符表明当前处于user命名空间。
+
+根绑定都在命名空间中，如：
+user=> (def foo 10)
+#'user/foo
+
+Clojure解析变量foo时，使用当前命名空间user来限定它，如：
+user=> (resolve 'foo)
+#'user/foo
+
+--
+使用in-ns切换（如果没有则创建）命名空间：
+(in-ns name)
+
+创建并切换至myapp命名空间：
+user=> (in-ns 'myapp)
+#
+myapp=>
+
+当前的命名空间变为myapp，此时定义的任何东西都属于myapp，如：
+myapp=> (def foo 11)
+#'myapp/foo
+
+当使用in-ns创建新的命名空间时，java.lang包自动引入到新的命名空间中，如：
+myapp=> String
+java.lang.String
+
+--
+使用下面语句引入Clojure核心函数到新命名空间：
+myapp=> (clojure.core/use 'clojure.core)
+
+因为没法直接使用use，所以需要加上前缀clojure.core。
+
+使用java.lang包以外的类时，需要加上完整包名，如：
+myapp=> java.io.File/separator
+"\\"
+
+如果不想麻烦，每次都使用类时都加上类的包名，可以使用import函数引入要使用的类：
+(import '(package Class+))
+
+引入后，就可以直接使用类名无需加包名前缀，如：
+myapp=> (import '(java.io InputStream File))
+java.io.File
+myapp=> File/separator
+"\\"
+
+注意：import只针对Java类。
+
+--
+如果要使用其他命名空间的Clojure变量则需要使用全名称或使用use将其映射到当前命名空间，如：
+myapp=> (use 'clojure.contrib.math)
+myapp=> (round 1.7)
+2
+
+使用use时，可以加上:only选项只映射需要的变量：
+myapp=> (use '[clojure.contrib.math :only (round)])
+nil
+myapp=> (round 1.2)
+1
+
+使用use时，可以加上:reload选项实时加载最新的库代码：
+myapp=> (use :reload '[clojure.contrib.math :only (round)])
+
+--
+习惯使用us宏在源文件头，一次性导入Java类和Clojure命名空间：
+(ns name & references)
+
+ns 宏将当前命名空间切换至name命名空间（如果需要则创建），
+references可以包含:import,:require和:use语句，示例：
+
+myapp=> (ns examples.exploring
+                    (:use examples.utils clojure.contrib.str-utils)
+                    (:import (java.io File)))
+java.io.File
