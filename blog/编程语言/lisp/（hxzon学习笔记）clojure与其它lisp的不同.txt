@@ -16,7 +16,9 @@ clojure是大小写敏感的。
 
 Clojure is a Lisp-1
 
-clojure是lisp-1的，即使用一个变量名和函数名不可相同？。
+clojure是lisp-1的，变量和函数名在同一个空间。
+lisp-2的变量和函数名在2个空间，可以同时有一个变量f和一个函数f。
+Clojure和Scheme是Lisp-1，CLisp是Lisp-2。
 
 () is not the same as nil
 

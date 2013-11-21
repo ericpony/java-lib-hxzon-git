@@ -35,7 +35,12 @@ http://clojure.org/special_forms#quote
 -2.2，反引号（Syntax-quote）·，阻止求值。
 除了符号，列表，向量，集合，映射外的所有形式，`x 和 'x 相同。
 
-For Symbols, syntax-quote resolves the symbol in the current context, yielding a fully-qualified symbol (i.e. namespace/name or fully.qualified.Classname). If a symbol is non-namespace-qualified and ends with '#', it is resolved to a generated symbol with the same name to which '_' and a unique id have been appended. e.g. x# will resolve to x_123. All references to that symbol within a syntax-quoted expression resolve to the same generated symbol.
+For Symbols, syntax-quote resolves the symbol in the current context, yielding a fully-qualified symbol 
+(i.e. namespace/name or fully.qualified.Classname). 
+If a symbol is non-namespace-qualified and ends with '#', 
+it is resolved to a generated symbol with the same name to which '_' and a unique id have been appended. 
+e.g. x# will resolve to x_123. 
+All references to that symbol within a syntax-quoted expression resolve to the same generated symbol.
 
 对于符号，反引用在当前上下文识别它们，返回它们的全名。
 如果一个符号没有命名空间限定，且以井号结尾，
@@ -43,7 +48,11 @@ For Symbols, syntax-quote resolves the symbol in the current context, yielding a
 在反引用表达式中，所有对该符号的引用会继续维持。
 
 
-For Lists/Vectors/Sets/Maps, syntax-quote establishes a template of the corresponding data structure. Within the template, unqualified forms behave as if recursively syntax-quoted, but forms can be exempted from such recursive quoting by qualifying them with unquote or unquote-splicing, in which case they will be treated as expressions and be replaced in the template by their value, or sequence of values, respectively.
+For Lists/Vectors/Sets/Maps, syntax-quote establishes a template of the corresponding data structure. 
+Within the template, unqualified forms behave as if recursively syntax-quoted, 
+but forms can be exempted from such recursive quoting by qualifying them with unquote or unquote-splicing, 
+in which case they will be treated as expressions 
+and be replaced in the template by their value, or sequence of values, respectively.
 
 对于列表、向量、集合、映射，反引用使得它们像个数据结构的模板，
 在模板中，所有形式（递归的包括内部）都是不求值的，
@@ -102,8 +111,10 @@ user=> `(1 2 ~@(list 3 4))
 
 -3.4，下划线_，占位符，不关注的匹配项。
 
--3.5，^，Meta，添加元数据，^form等价于(meta  form)。
+-3.5，^，添加元数据，^form等价于(meta  form)。
 
 #^，（hxzon：未在官方文档中看到？），Metadata， #^metadata  form。
+
+^{:a 1 :b 2} [1 2 3] ，给向量添加元数据。
 
 -3.6，;，分号，单行注释。
