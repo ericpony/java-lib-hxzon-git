@@ -1,0 +1,46 @@
+（hxzon学习笔记）clojure元数据
+
+by hxzon
+
+===========
+http://clojure.org/metadata
+
+Metadata
+元数据。
+
+Symbols and collections support metadata, a map of data about the symbol or collection. 
+The metadata system allows for arbitrary annotation of data. 
+It is used to convey information to the compiler about types, 
+but can also be used by application developers for many purposes, 
+annotating data sources, policy etc.
+
+符号和集合支持元数据，元数据是关于符号和集合自身信息的一个映射。
+（arbitrary，随意。）
+元数据系统允许任意添加。
+（convey，传达。）
+这不仅方便向编译传达类型等信息，也可供应用程序本身加以使用。
+
+An important thing to understand about metadata is that it is not considered to be part of the value of an object. 
+As such, metadata does not impact equality (or hash codes). 
+Two objects that differ only in metadata are equal.
+
+关于元数据最重要的一点，是它不属于对象的值的一部分。
+即元数据不影响值的相等性，对hash code也没有影响。
+只有元数据不同的两个对象是相等的。
+
+That said, metadata and its relationship to an object is immutable 
+- an object with different metadata is a different object.
+这意味着，元数据和对象之间的关系是不变的，
+一个对象拥有不同的元数据是不同的对象。
+
+（hxzon：拥有不同元数据的对象一定是不同的对象，但是可能相等。）
+
+(meta obj)
+Returns the metadata of obj, returns nil if there is no metadata.
+
+返回obj的元数据，如果没有则返回nil。
+
+(with-meta obj map)
+Returns an object of the same type and value as obj, with map as its metadata.
+
+返回一个新对象，与原对象类型和值相同，加上元数据。
