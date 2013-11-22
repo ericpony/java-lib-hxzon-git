@@ -74,7 +74,7 @@ x = s.length();
 
 For the latter, you don’t have to check whether s is null because we know definitely that findName2() will return a String which is not null.
 
-我们必须检查s是否是空指针，因为findName2()的返回值不会是空指针。
+我们不必检查s是否是空指针，因为findName2()的返回值不会是空指针。
 
 
 In fact this approach is hinted by Tony Hoare in the above video at 00:24.00. He said that null should be a class. Indeed, the union type {String, null} certainly thinks of null to be at the same status of String – it is a class.
@@ -91,7 +91,7 @@ null是一个类或者不是一个类其实不重要，因为它只有一个值�
 
 Static analysis tools such Coverity can already help alleviate this issue by essentially inferring the union types like {String, null} even when the programmers write String instead, although a type annotation system which allows the programmers to specify union types directly certainly makes type checking easier and also makes programs easier to read.
 
-（alleviate缓和）
+（alleviate，缓和。）
 静态分析工具如Coverity，能够缓和这个问题，通过推断能识别出联合类型，即便程序员只是使用String。
 当然，允许程序员指明联合类型会让类型检查更容易，也更可读。
 
