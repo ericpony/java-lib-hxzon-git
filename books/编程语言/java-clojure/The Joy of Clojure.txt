@@ -1,0 +1,192 @@
+The Joy of Clojure
+
+（第1版，基于clojure1.2。）
+（正在出第2版，会覆盖clojure1.5。）
+http://www.manning.com/fogus/
+http://www.manning.com/fogus2/
+
+========
+Michael Fogus and Chris Houser
+Foreword by Steve Yegge
+March, 2011 | 360 pages 
+ISBN 9781935182641
+
+=========
+DESCRIPTION
+If you've seen how dozens of lines of Java or Ruby can dissolve into just a few lines of Clojure, you'll know why the authors of this book call it a "joyful language." Clojure is a dialect of Lisp that runs on the JVM. It combines the nice features of a scripting language with the powerful features of a production environment—features like persistent data structures and clean multithreading that you'll need for industrial-strength application development.
+
+The Joy of Clojure goes beyond just syntax to show you how to write fluent and idiomatic Clojure code. You'll learn a functional approach to programming and will master Lisp techniques that make Clojure so elegant and efficient. The book gives you easy access to hard soft ware areas like concurrency, interoperability, and performance. And it shows you how great it can be to think about problems the Clojure way.
+
+WHAT'S INSIDE
+The what and why of Clojure
+How to work with macros
+How to do elegant application design
+Functional programming idioms
+Written for programmers coming to Clojure from another programming background—no prior experience with Clojure or Lisp is required.
+
+ABOUT THE AUTHORS
+Michael Fogus is a member of Clojure/core with experience in distributed simulation, machine vision, and expert systems. Chris Houser is a key contributor to Clojure who has implemented several of its features.
+
+====
+Contents
+
+foreword 
+preface 
+acknowledgments 
+about this book
+
+
+Part 1	 Foundations
+
+
+Chapter 1 Clojure philosophy
+
+The Clojure way
+Why a(nother) Lisp?
+Functional programming
+Why Clojure isn’t especially object-oriented
+Summary
+
+
+Chapter 2 Drinking from the Clojure firehose
+
+Scalars
+Putting things together: collections
+Making things happen: functions
+Vars
+Locals, loops, and blocks
+Preventing things from happening: quoting
+Leveraging Java via interop
+Exceptional circumstances
+Namespaces
+Summary
+
+
+Chapter 3 Dipping our toes in the pool
+
+Truthiness
+Nil pun with care
+Destructuring
+Using the REPL to experiment
+Summary
+
+
+Part 2	 Data types
+
+
+Chapter 4 On scalars
+
+Understanding precision
+Trying to be rational
+When to use keywords
+Symbolic resolution
+Regular expressions—the second problem
+Summary
+
+
+Chapter 5 Composite data types
+
+Persistence, sequences, and complexity
+Vectors: creating and using them in all their varieties
+Lists: Clojure’s code form data structure
+How to use persistent queues
+Persistent sets
+Thinking in maps
+Putting it all together: finding the position of items in a sequence
+Summary
+
+
+Part 3	 Functional programming
+
+
+Chapter 6 Being lazy and set in your ways
+
+On immutability
+Designing a persistent toy
+Laziness
+Putting it all together: a lazy quicksort
+Summary
+
+
+Chapter 7 Functional programming
+
+Functions in all their forms
+Closures
+Thinking recursively
+Putting it all together: A* pathfinding
+Summary
+
+
+Part 4	Large-scale design
+
+
+Chapter 8 Macros
+
+Data is code is data
+Defining control structures
+Macros combining forms
+Using macros to change forms
+Using macros to control symbolic resolution time
+Using macros to manage resources
+Putting it all together: macros returning functions
+Summary
+
+
+Chapter 9 Combining data and code
+
+Namespaces
+Exploring Clojure multimethods with the Universal Design Pattern
+Types, protocols, and records
+Putting it all together: a fluent builder for chess moves
+Summary
+
+
+Chapter 10 Java.next
+
+Generating objects on the fly with proxy
+Clojure gen-class and GUI programming
+Clojure’s relationship to Java arrays
+All Clojure functions implement...
+Using Clojure data structures in Java APIs
+definterface
+Be wary of exceptions
+Summary
+
+
+Chapter 11 Mutation
+
+Software transactional memory with multiversion concurrency control and snapshot isolation
+When to use Refs
+When to use Agents
+When to use Atoms
+When to use locks
+When to use futures
+When to use promises
+Parallelism
+Vars and dynamic binding
+Summary
+
+
+Part 5	Tangential considerations
+
+
+Chapter 12 Performance
+
+Type hints
+Transients
+Chunked sequences
+Memoization
+Understanding coercion
+Summary
+
+
+Chapter 13 Clojure changes the way you think
+
+DSLs
+Testing
+A lack of design patterns
+Error handling and debugging
+Fare thee well
+
+resources 
+index

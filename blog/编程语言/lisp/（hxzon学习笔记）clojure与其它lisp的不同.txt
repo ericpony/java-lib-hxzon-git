@@ -1,0 +1,263 @@
+（hxzon学习笔记）clojure与其它lisp的不同
+
+by hxzon
+
+http://clojure.org/lisps
+=========
+Differences with other Lisps
+clojure与其它lisp的不同点：
+
+This information is provided for programmers familiar with Common Lisp or Scheme.
+
+====
+Clojure is case sensitive
+
+clojure是大小写敏感的。
+
+Clojure is a Lisp-1
+
+clojure是lisp-1的，变量和函数名在同一个空间。
+lisp-2的变量和函数名在2个空间，可以同时有一个变量f和一个函数f。
+Clojure和Scheme是Lisp-1，CLisp是Lisp-2。
+
+() is not the same as nil
+
+空列表不等同于nil。
+
+The reader is side-effect free
+
+阅读器（读取宏？）是无副作用的。
+
+Keywords are not Symbols
+
+关键字不是符号。
+
+Symbols are not storage locations (see Var)
+
+符号不存储位置。（参见var。）
+
+nil is not a Symbol
+
+nil不是一个符号。
+
+t is not syntax, use true
+
+使用true而不是t。
+
+The read table is currently not accessible to user programs
+
+当前，阅读表不能被用户程序访问。
+
+let binds sequentially
+
+let的绑定是顺序的，后面的绑定可读到前面绑定的值。
+
+do is not a looping construct
+
+do不是一个循环结构。
+
+There is no tail-call optimization, use recur.
+
+没有尾递归调用优化，请使用recur。
+
+syntax-quote does symbol resolution, so `x is not the same as 'x.
+` has auto-gensyms.
+~ is unquote ',' is whitespace
+
+反引用对符号进行处理，所以`x不等同于'x。
+？反引用
+波浪号表示继续求值（在反引用表达式中），逗号等同于空白符。
+
+There is reader syntax for maps and vectors
+
+映射和向量有语法糖。
+
+cons, first and rest manipulate sequence abstractions, not concrete cons cells
+
+cons，first和rest对序列进行操作，而不是具体的cons单元。
+
+Most data structures are immutable
+
+多数数据结构都是不可变的。
+
+lambda is fn, and supports overloading by arity
+
+？lambda是函数，支持元数重载。
+
+= is the equality predicate
+
+等号是相等断言。
+
+All (global) Vars can be dynamically rebound without interfering with lexical local bindings. 
+No special declarations are necessary to distinguish between dynamic and lexical bindings. 
+Since Clojure is a Lisp-1, (global) functions can be dynamically rebound.
+
+所有（全局）变量可被动态重绑定，不需要用词法本地绑定来干预。
+不需要特殊声明来区分动态和词法绑定。
+因为clojure是lisp-1，（全局）函数可被动态重绑定。
+
+
+No letrec, labels or flet - use (fn name [args]...) for self-reference, letfn for mutual reference.
+
+没有letrec，labels和flet，使用(fn name [args]...)来引用自身，letfn来彼此引用（两个函数在定义时相互引用对方）。
+
+In Clojure nil means 'nothing'. 
+It signifies the absence of a value, of any type, and is not specific to lists or sequences.
+
+nil意味着无。
+它是任何值的占位符，不仅仅是列表和序列。
+
+Empty collections are distinct from nil. 
+Clojure does not equate nil and '().
+
+空集合不同于nil。
+nil和'()不相同。
+
+false means one of the two possible boolean values, the other being true
+
+false和true是唯一可用的两个布尔值。
+
+There is more to collections than lists. 
+You can have instances of empty collections, some of which have literal support ([], {}, and ()). 
+Thus there can be no sentinel empty collection value.
+
+集合不仅仅只有列表一种。
+可以使用字面量（[], {}, and ()）来创建各种空集合。
+？没有其它方式表示空集合。
+
+Coming from Scheme, nil may map most closely to your notion of #f.
+
+如果使用过Scheme，那么，nil近似于Scheme中的#f。
+
+
+A big difference in Clojure, is sequences. 
+Sequences are not specific collections, esp. 
+they are not necessarily concrete lists. 
+When you ask an empty collection for a sequence of its elements (by calling seq) it returns nil, saying "I can't produce one". 
+When you ask a sequence on its last element for the rest it returns another logical sequence. 
+You can only tell if that sequence is empty by calling seq on it in turn. 
+This enables sequences and the sequence protocol to be lazy.
+
+序列在clojure中是很特别的。
+序列不是一种特殊的集合。
+它们不需要具体的列表。
+请求空集合的序列，将返回nil，意味着“我不能生成序列”。
+请求一个序列的最后一个元素的尾部，将返回另一个逻辑序列。
+你只能通过返回的序列是否为空来判断。
+这是为了序列和序列协议能够延迟生成（延迟求值）。
+
+Some of the sequence functions correspond to functions from Scheme and CL 
+that there manipulated only pairs/conses ('lists') and returned sentinel values ('() and nil) that represented 'empty' lists. 
+The Clojure return values differ in not returning specific empty collections, but rather another logical sequence. 
+Some of the sequence functions have no counterpart in Scheme/CL, and map to Haskell/ML-like functions. 
+Some of those functions return infinite or calculated sequences, 
+where the analogy to concrete data-structures like Scheme/CL lists is tenuous at best.
+
+（sentinel，哨兵。）
+（analogy，n.类似，相似；比拟，类比；类推）
+（tenuous，adj.薄的，细的；精细的；稀薄的；贫乏的）
+在Scheme和CL中，许多序列函数是对点对操作，然后返回占位值（'() 和nil）来表示空列表。
+在clojure中，不返回任何特定的空集合，而是返回一个逻辑序列。
+有些序列函数在Scheme和CL中没有对等物，它们参照自Haskell/ML-like中的函数。
+这些序列函数返回无限序列或已计算序列。
+？有些具体的数据结构，例如Scheme和CL中的列表，
+
+
+It helps to distinguish collections/data-structures and seqs/iteration. 
+In both CL and Scheme they are conflated, in Clojure they are separate.
+
+（conflated，合并。）
+“集合/数据结构”和“序列/迭代”是不同的。
+在Scheme和CL中，它们是合并的。而在clojure中，它们是分离的。
+
+====
+表格：
+
+Clojure
+Common Lisp
+Scheme
+Java
+
+--
+Has nil?
+
+nil - means 'nothing'
+nil - means false or empty list
+-
+null
+
+--
+Has true?
+
+true
+-
+#t
+true (primitive)
+
+--
+Has false?
+
+false
+-
+#f
+false (primitive)
+
+--
+Conditionals distinguish:
+条件区分：
+
+nil or false/ everything else
+nil/non-nil
+#f/non-#f
+false/true
+
+--
+List/sequence library manipulates distinguished concrete type(s)?
+
+
+No - seq abstraction with many collection implementations
+Yes - cons and vector
+Yes - pair
+No - Iterator abstraction with many collection implementations
+
+--
+Singleton empty-list value?
+空列表有单一表示？
+
+No - can have distinct empty values of concrete collection types
+nil
+'()
+No
+
+--
+End-of-sequence returns:
+序列末尾返回：
+
+a logical sequence for which seq returns nil
+nil
+'()
+false
+
+--
+Host null:
+
+nil
+NA
+NA
+NA
+
+--
+Host true:
+
+true (boxed)
+NA
+NA
+NA
+
+--
+Host false:
+
+false (boxed)
+NA
+NA
+NA

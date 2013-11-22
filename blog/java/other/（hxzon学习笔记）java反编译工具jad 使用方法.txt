@@ -1,0 +1,212 @@
+（hxzon学习笔记）java反编译工具jad 使用方法
+
+by hxzon
+=======
+http://java.decompiler.free.fr/?q=jdgui#downloads   jd-gui-0.3.0.windows.zip
+
+//首先使用jar命令将jar文件解压缩到classes目录
+jar -xvf test.jar -C classes
+
+//然后使用jad对classes目录进行反编译
+//其中-r 表示恢复源文件的目录结构, -ff 表示将类属性定义放在类方法定义之前
+// -d 表示输出目录， -s 表示文件的扩展名
+jad.exe -r -ff -d src -s java classes/**/*.class
+
+hxzon：
+D:\javaTool\jad -o -r -ff -sjava -dD:/jad-code/xx/ D:/jad-code/xx-classes/**/*.class
+保存为jad.bat，生成D:/jad-code/xx/目录，按包存放，生成文件以java为后缀。
+
+=============================
+http://www.kpdus.com/jad.html 官方最新版本，支持jdk1.6
+Java下的一个简单易用的反编译工具jad, 可以很方便的将.class反编译为.Java. 点击下载
+
+一、基本用法 
+Usage:jad [option(s)] 
+直接输入类文件名，且支持通配符，如下所示。 
+c:\Java\>jad example1.class 
+c:\Java\>jad *.class 
+结果是将example1.class反编译为example1.jad。将example1.jad改为example1.Java即得源文件。
+
+二、Option -o 
+不提示，覆盖源文件
+
+三、Option -s 
+c:\Java\>jad -sJava example1.class 
+反编译结果以.Java为扩展名。
+
+四、Option -p 
+将反编译结果输出到屏幕 
+c:\Java\>jad -p example1.class 
+将反编译结果重定向到文件 
+c:\Java\>jad -p example1.class>example1.Java
+
+五、Option -d 
+指定反编译的输出文件目录 
+c:\Java\>jad -o -dtest -sJava *.class
+该文章转载自网络大本营：http://www.haoad.net/Info/3883.Html
+
+　　反编译别人的程序是不对的，但是有时候由于某种原因，不得不反编译别人的代码，那就需要一个工具了。小颖JAVA源代码反编译专家V1.4终极版是个很好的工具，但是只能对JDK1.4.2和之前的版本编译的程序反编译，而JDK5.0后的就无能为力了，但是可以下载JAD.EXE来逐个反编译 CLASS文件，不过如果碰到有几十个或几百个文件夹，并且目录很深的时候，就麻烦了，这个给出一个直接使用命令行反编译整个目录的方法：使用jad批量反编译
+jad -o -r -sjava -d src bin/**/*.class
+src: 是反組後的目錄
+bin:指 package 開頭
+将bin里面所有的.class反编译到src下面JAD下载： 文件名: jadnt157.ziphttp://download.pchome.net/php/dl.php?sid=9111
+
+jad:反编译工具
+可以将class文件反编译成java文件
+假设将jad.exe安装在f:\java\jad目录下
+把要反编译的文件*.class复制到此目录下，接着接以下步骤，
+在命令行窗口环境中进入jad目录，
+然后运行：jad -s java *.class (附，*.class指要反编译的文件名)
+如果*.class文件和jad程序不在同一个目录，就要用到path环境变量，
+将jad 所在目录加到path路径中即可：set path=%path%;f:\java\jad
+若要了解jad更为详细的使用帮助信息，直接运行jad.exe查看
+以下假设jad.exe在c:\java目录下
+一、基本用法 
+Usage:jad [option(s)] 
+直接输入类文件名，且支持通配符，如下所示。 
+c:\java\>jad example1.class 
+c:\java\>jad *.class 
+结果是将example1.class反编译为example1.jad。将example1.jad改为example1.java即得源文件。
+二、Option -o 
+不提示，覆盖源文件
+三、Option -s 
+c:\java\>jad -sjava example1.class 
+反编译结果以.java为扩展名。
+四、Option -p 
+将反编译结果输出到屏幕 
+c:\java\>jad -p example1.class 
+将反编译结果重定向到文件 
+c:\java\>jad -p example1.class>example1.java
+五、Option -d 
+指定反编译的输出文件目录 
+c:\java\>jad -o -dtest -sjava *.class
+六、Option -r 
+按*.class的包结构输出文件目录
+c:\java\>jad -o -r -dtest -sjava d:/1/**/*.class
+将d:\1\文件夹下的.class文件按照原程序的包结构反编译到test目录下。
+===================
+反编译工具jad简单用法 
+以下假设jad.exe在c:\java目录下 
+一、基本用法 
+Usage:     jad [option(s)] <filename(s)> 
+直接输入类文件名，且支持通配符，如下所示。 
+c:\java\>jad example1.class 
+c:\java\>jad *.class 
+结果是将example1.class反编译为example1.jad。将example1.jad改为example1.java即得源文件。 
+
+二、Option -o 
+不提示，覆盖源文件 
+三、Option -s 
+c:\java\>jad -sjava example1.class 
+反编译结果以.java为扩展名。 
+
+四、Option -p 
+将反编译结果输出到屏幕 
+c:\java\>jad -p example1.class 
+将反编译结果重定向到文件 
+c:\java\>jad -p example1.class>example1.java 
+
+五、Option -d 
+指定反编译的输出文件目录 
+c:\java\>jad -o -dtest -sjava *.class 
+命令行选择的列表
+
+-a        - 用JVM字节格式来注解输出
+-af       - 同 -a,但是注解的时候用全名称
+-clear    - 清除所有的前缀
+-b        - 输出多于的括号 (e.g., if(a) { b(); }, default: no)
+-d <dir> - 指定输出文件的文件目录
+-dead      -试图反编译代码的dead 部分(default: no)
+-disass   - 不用用字节码的方式反编译 (no JAVA source generated)
+-f        - 输出整个的名字,无论是类还是方法
+-ff        -输出类的成员在方法之前 (default: after methods)
+-i        - 输出所有的变量的缺省的最初值
+-l<num>    - 将strings分割成指定数目的块的字符 (default: no)
+-lnc      - 将输出文件用行号来注解 (default: no)
+-nl       - 分割strings用新行字符 newline character (default: no)
+-nodos    -不要去检查class文件是否以dos方式写 (CR before NL, default: check)
+-nocast   - 不要生成辅助文件
+-nocode    -不要生成方法的源代码 
+-noconv    - 不要转换java的定义符 (default: do)
+-noctor   - 不允许空的构造器存在
+-noinner   -关掉对内部类的支持 (default: turn on)
+-nolvt    - 忽略局部变量的表信息
+-nonlb     - 不要输出一个新行在打开一个括号之前 (default: do)
+-o        - 无需确认直接覆盖输出 (default: no)
+-p        - 发送反编译代码到标准输出 STDOUT (e.g., for piping) =========
+这是jad的readme文件jad -sjava example1.class
+jad的主页是：http://www.geocities.com/SiliconValley/Bridge/8617/jad.html
+Copyright 2000 Pavel Kouznetsov (kpdus@yahoo.com).
+1.     请先读jad主页的否认声明文件
+2.     安装
+解压缩jad.zip包，并把它放在你硬盘的某个目录下。将会创建两个文件     jad.exe和readme.txt文件,不需要其他的安装文件
+3.     怎样去用jad
+如果要简单的反编译一个.class文件的话，用以下命令 jad example1.class这个命 令在当前文件夹下创建了一个example1.jad文件如果jad文件已经存在的话，会提示你是否要覆盖这个jad文件 
+-o 允许你直接覆盖掉以前存在的jad文件
+-s 允许你改变输出文件的扩展类型，如下所示将输出文件类型变成 *.java
+jad -sjava example1.class
+这个命令创建了一个example1.java文件
+要注意的是连用-o,-s命令，可能会将你自己的源文件也覆盖掉的
+jad用class自己的名字作为一个输出文件的名字，比如如果'example1.class'包含一个test1的类就会创建一个test1.jad文件而不是创建example1.jad文件
+如果你想指定输出文件的名字的话，用以下的转移命令
+jad -p example1.class > myexm1.java
+-d允许你指定另外一个文件目录作为输出文件的目录，没有指定的情况下会输出到缺省路径下
+jad -o -dtest -sjava *.class
+或者 jad -o -d test -s java *.class
+以下的命令反编译了所有的*.class文件，并且将输出文件放置到test文件目录下
+如果你想反编译tree目录下的所有*.class文件，用下面的命令
+jad -o -r -sjava -dsrc tree/**/*.class
+这个命令反编译了tree目录下所有*.class文件，将输出文件以*.java的形式
+放置到src目录下
+注意到**了吗？在unix可以表示为：
+jad -o -r -sjava -dsrc 'tree/**/*.class'
+
+如果你想测试一下反编译的精确度的话，用-a
+jad支持所有内部和匿名的类
+4.     命令行选择的列表
+-a        - 用JVM字节格式来注解输出
+-af       - 同 -a,但是注解的时候用全名称
+-clear    - 清除所有的前缀
+-b        - 输出多于的括号 (e.g., if(a) { b(); }, default: no)
+-d <dir> - 指定输出文件的文件目录
+-dead     -试图反编译代码的dead 部分(default: no)
+-disass   - 不用用字节码的方式反编译 (no JAVA source generated)
+-f        - 输出整个的名字,无论是类还是方法
+-ff       -输出类的成员在方法之前 (default: after methods)
+-i        - 输出所有的变量的缺省的最初值
+-l<num>   - 将strings分割成指定数目的块的字符 (default: no)
+-lnc      - 将输出文件用行号来注解 (default: no)
+-nl       - 分割strings用新行字符 newline character (default: no)
+-nodos    -不要去检查class文件是否以dos方式写 (CR before NL, default: check)
+-nocast   - 不要生成辅助文件
+-nocode   -不要生成方法的源代码 
+-noconv   - 不要转换java的定义符 (default: do)
+-noctor   - 不允许空的构造器存在
+-noinner ?关掉对内部类的支持 (default: turn on)
+-nolvt    - 忽略局部变量的表信息
+-nonlb    - 不要输出一个新行在打开一个括号之前 (default: do)
+-o        - 无需确认直接覆盖输出 (default: no)
+-p        - 发送反编译代码到标准输出 STDOUT (e.g., for piping)
+-pi<num> -在<num> 的导入之后将其他引用包裹成一行导入 (default: 3)
+-pv<num> -将同类型的成员包裹成一行 (default: no)
+-pa <pfx>- 在生成源代码时将所有的包加前缀
+-pc <pfx>- 用数字名字给所有的类加前缀 (default: _cls)
+-pf <pfx>- 用数字名字给所有的成员变量加前缀 (default: _fld)
+-pe <pfx>-给没有用到的异常的名字加前缀
+-pl <pfx>- 给局部变量用数字名字加前缀 (default: _lcl)
+-pm <pfx>-给方法用数字名字加前缀 (default: _mth)
+-pp <pfx>- 给方法的参数用数字名字加前缀 (default: _prm)
+-r        - 恢复包的目录结构
+-s <ext> - 指定输出文件的类型 (by default '.jad')
+-space    -遇到关键字(if/for/while/etc)输出空格和表达式 (default: off)
+-stat     - 显示所有的类，方法，成员变量的总数
+-t        - 用tabs代替空格对于边缘
+-t<num>   -用 <num>个的空格 (default: 4)
+-v        - 正在反编译的时候 显示方法的名字
+-8        - 将 UNICODE strings 转换成 8-bit strings
+用当前的 ANSI 码页 (Win32 only)
+-&        - 重新定向 STDERR to STDOUT (Win32 only)
+--转自http://blog.163.com/flywyvern@126/blog/static/195743642007930225266/
+
+
+

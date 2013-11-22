@@ -1,0 +1,182 @@
+Clojure的变量和全局环境
+http://www.blogjava.net/steven2012/archive/2012/07/31/384387.html
+
+原文请参考，如有问题和歧义请指正，谢谢:)
+
+http://clojure.org/vars
+
+修订by hxzon。
+=========
+变量和全局环境
+
+Clojure是个很实用的语言，偶尔需要维护和改变数据的值。
+她提供了4种不同的方式来操作变量：Vars, Refs, Agents, 和Atoms。
+Vars机制是指向一个可改变的数据的位置，你可以为每个线程动态的绑定（制定一个新的存储位置）一个新值。
+Vars可以初始化根绑定(不是必须的)，绑定的值对于所有线程都是共享的，
+但却别的线程就不能重新绑定。
+因此，要么Var可以为每个线程绑定值，要么使用根绑定。
+
+下面的特殊形式def 创建了一个Var，如果Var不存在和没有给初始化，var就是不绑定的
+（不允许创建非动态的Var，必须显式指定根绑定）：
+
+user=> (def x)
+#'user/x
+user=> x
+java.lang.IllegalStateException: Var user/x is unbound.
+
+为根值初始化（如果存在，就被再次绑定）。
+
+user=> (def x 1)
+#'user/x
+user=> x
+1
+ 
+----
+默认情况下(定义的时候初始化了根绑定），Vars是静态的(static)，
+但是，建立动态Var的定义可以通过元数据标记的方式，然后在线程用时通过binding来指定。
+
+user=> (def ^:dynamic x 1)
+
+user=> (def ^:dynamic y 1)
+
+user=> (+ x y)
+
+2
+
+user=> (binding [x 2 y 3]
+
+         (+ x y))
+
+5
+
+user=> (+ x y)
+
+2
+
+binding被创建后其他线程是是不可见的。
+创建的binding可以被赋值，也就是在没有离开调用堆栈之前可以被上下文访问。
+可以在一块代码之前设置matadata标签:dynamic来指定:
+
+user=> (def ^:dynamic x 1)
+
+#'user/x
+
+user=> (meta #'x)
+
+{:ns #<Namespace user>, :name x, :dynamic true, :line 30, :file "NO_SOURCE_PATH"}
+
+user=> (binding [x 2] (println x))
+
+2
+
+nil
+
+user=> x
+
+1
+
+user=>
+
+ 
+----
+如果你想让函数编译为static的，并且指定返回值，可以看下面的例子
+(速度提升不少，关键的调用函数可以采用这种方式加速)：
+
+ (defn fib [n]   (if (<= n 1)
+
+    1
+
+    (+ (fib (dec n)) (fib (- n 2)))))
+
+#'user/fib
+
+ (defn ^:static fib2 ^long [^long n]
+
+  (if (<= n 1)
+
+    1
+
+    (+ (fib2 (dec n)) (fib2 (- n 2)))))
+
+#'user/fib2
+
+user=> (time (fib 38))
+
+"Elapsed time: 1831.113 msecs"
+
+63245986
+
+user=> (time (fib2 38))
+
+"Elapsed time: 328.715 msecs"
+
+63245986
+
+user=> (meta (var fib))
+
+{:arglists ([n]), :ns #<Namespace user>, :name fib, :line 1, :file "NO_SOURCE_PATH"}
+
+user=> (meta (var fib2))
+
+{:arglists ([n]), :ns #<Namespace user>, :name fib2, :static true, :line 4, :file "NO_SOURCE_PATH"}
+
+user=>
+
+ 
+----
+在上下文中可能需要重定义静态变量，从Clojure1.3开始提供with-redefs和with-redefs-fn这两个宏来修改。
+
+定义函数的defn也是Vars的存储方式，也可以在运行时被重定义。
+这也为aop编程带来很多方便，例如：你可以封装一个类似logging函数给调用的上下文或者或者线程。
+
+(set! var-symbol expr)
+
+将Vars指定为special form
+
+当地一个操作符为symbol的时候，它必须是全局变量。
+当前线程绑定的值就是后面的expr，也就是说必须是Thread-local的才可以，
+否则将会抛出一个使用set!来设定根绑定变量的错误。
+变量的表达式expr必须有返回值。
+
+注意，你不能赋值给一个函数的参数或者本地绑定，
+只能是java的字段Vars Refs和Agents，因为这些数据在Clojure里是不可变的。
+
+使用set为java字段设置值，可以查看 Java Interop.
+ 
+----
+Interning
+
+命名空间维护了每个Var对象的全局符号映射。
+使用def定义变量时，如果没有在当前的命名空间找到该符号，就创建一个，否则使用现有的。
+创建或者寻找的过程被称作interning。
+这就意味着，除非Var对象取消映射，否则Var对象每次被查询，
+所以请在循环中千万不要引用Var的全局变量，否则将非常慢，
+通过let或者binding让全局变量取消映射来提高速度。
+命名空间在Evaluation中构建了全局环境，编译器也把所有free symbols当做Vars来解析了。
+
+可以使用阅读宏(Reader)#’来得到Var对象的内部的值。
+
+----
+Non-interned的类型的变量
+
+可以通过with-local-vars来创建non-interned类型的变量，
+在free symbol解析的时候将不会被发现，这些值只能被手工的访问，但是也可以用作当前线程的变量。
+
+user=> (defn factorial [x]
+
+         (with-local-vars [acc 1, cnt x]
+
+           (while (> @cnt 0)
+
+             (var-set acc (* @acc @cnt))
+
+             (var-set cnt (dec @cnt)))
+
+           @acc))
+
+#'user/factorial
+
+user=> (factorial 7)
+
+5040
+
