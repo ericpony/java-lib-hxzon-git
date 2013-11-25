@@ -1,0 +1,599 @@
+Scheme语言深入
+
+宋国伟 (gwsong52@sohu.com)吉林省德惠市信息中心
+发布日期： 2004 年 10 月 01 日 
+http://www.ibm.com/developerworks/cn/linux/l-schm/part3/
+
+
+简介：
+在Scheme语言中，符号类型的用法、过程的多参数情况、Continuation、记录类型、宏定义与模块等等一些问题成为阻挡初学者的门槛，
+也是深入理解和使用Scheme语言编程的关键，下面分别论述，做为对《Scheme语言概要》一文的补充。
+
+一、关于符号类型
+
+符号类型又称引用类型，在概要一文中本人介绍得非常的模糊，使很多初学者不理解。
+符号类型在Scheme语言中是最基础也是最重要的一种类型，这是因为Scheme语言的祖先Lisp语言的最初目的就是符号处理，
+在Scheme语言中几乎所有的东西都可以看做是符号或做为符号列表来处理，这也是我们把符号类型做为第一个问题研究的原因。
+
+与符号类型相关的关键字有四个，分别是：quote, quasiquote, unquote和unquote-splicing，如下所示：
+
+规范用法：(quote obj) 
+简化用法：'obj (注意，'为右单引号，"双引号下面的那个符号。) 
+意义：符号类型的定义，(quote obj)本身就是一个值，虽然它不如数字123这样直观。
+
+规范用法：(quasiquote obj) 
+简化用法：`obj (注意，`为左单引号，~波浪号下面的那个符号。) 
+意义："类似符号"类型的定义，最好称之为逆符号类型，它可以将符号类型转换为具有实际意义的东西。
+
+规范用法：(unquote obj) 
+简化用法：,obj (注意，,逗号，<小于号下面的那个符号。) 
+意义："非符号"类型的定义，非符号类型出现在符号类型或逆符号类型定义中间，它不直接做为符号类型使用，而是将运算结果做为符号类型的一部分。
+
+规范用法：(unquote-splicing obj) 
+简化用法：,@obj 
+意义：非符号类型的拼接，注意：,@ 两个符号做为一个操作符来使用)。当非符号类型是一些复杂算法时，需要用它来做一下拼接，以达到符号类型的目的。 
+
+上面所说的所有规范用法和简化用法的功能都是相同的。
+符号类型的意义在于，一个说明，英文单词zebra指的是活生生的斑马，
+而'zebra或(quote zebra)指的是由字母z、e、b、r、a构成的这串符号(不是字符串)，
+就象我们定义变量(define x 100)，这时x指的就是100这个数值，而'x或(quote x)则代表字母x构成的这个符号。
+
+首先看一段代码：
+guile> (define s '(good morning))
+guile> s
+(good morning)
+guile> (symbol? s)
+#f
+guile> (list? s)
+#t
+guile> (symbol? (list-ref s 1))
+#t
+
+从此示例中可以看出，用quote定义的列表的类型仍是列表，而列表中的某一值的类型则是符号类型。
+还可以看出有点类似于如下：
+
+(+ 1 (+ 2 (+ 3 (+ 4 5))))  ==>  (+ 1 2 3 4 5)
+(list 'a 'b 'c 'd 'e)      ==>  '(a b c d e)
+
+两者有异曲同工之妙，减少了多余的操作符，使表达式更直观，更容易理解。
+从 '(1 2 3 4 5) ==> (1 2 3 4 5) 可以看出，由符号类型的定义来形成列表，这是Scheme语言继承自LISP语言的传统。
+
+下面是在guile中的用法示例：
+guile> `(1 ,(+ 1 1) 3)
+(1 2 3)
+guile> (quasiquote (1 (unquote (+ 1 1)) 3))
+(1 2 3)
+;;;第一个是简化用法，第二个是标准用法。
+guile> `(1 ,@(map + '(1 3) '(2 4)) 9)
+(1 3 7 9)
+guile> (quasiquote (1 (unquote-splicing (map + (quote (1 3)) (quote (2 4)))) 9))
+(1 3 7 9)
+;;;第一个是简化用法，第二个是标准用法(注意：,@ 两个符号做为一个操作符来使用)。
+
+从示例中我们可以看出，这些应用多数与列表有关，而处理列表是Scheme语言的关键所在。
+符号类型的用法对深入理解Scheme语言也非常关键，因为Scheme语言本身就可以理解为是这种符号类型的列表，处理符号类型就是处理Scheme语言本身。
+
+二、关于尾递归
+
+数列问题是研究递归的非常好的范例，在王垠的主页中有关于用菲波那契数列来说明非尾递归与尾递归之间区别和尾递归的好处的一个例子，
+见 http://learn.tsinghua.edu.cn/homepage/2001315450/wiki/TailRecursion.html 。 
+我们这里用更简单一点的问题，求累计的问题来说明，即求自然数1+2+3+4+ ... +n的和。
+事实上就是设计一个过程，给它一个参数n，求1+2+3+ ... +n的和，
+我们首先设计一个suma过程，代码如下：
+#! /usr/local/bin/guile -s
+!#
+(define suma
+  (lambda (n)
+    (if (= n 1)
+	1
+	(+ n (suma (- n 1))))))
+(display "(suma 100)  ==>  ")
+(display (suma 100)) (newline)
+(display "(suma 818)  ==>  ")
+(display (suma 818)) (newline)
+
+运行这段代码，会出现如下结果：
+(suma 100)  ==>  5050
+(suma 818)  ==>  334971
+
+说明： 
+以(suma 5)为例，表达式展开后：
+(suma 5)
+(+ 5 (suma 4))
+(+ 5 4 (suma 3))
+(+ 5 4 3 (suma 2))
+(+ 5 4 3 2 (suma 1))
+(+ 5 4 3 2 1)  ==>  15
+
+如果n为1000的话则会最终形成(+ 1000 999 ... 3 2 1)这样长度惊人的表达式，结果直接导致guile的崩溃。
+为什么会是818呢？因为819是会溢出的，出错，得不到结果，这可能大出乎我们意料之外，
+因为如果用C来写这样功能的程序代码，可能会求到6位数而不出问题。
+
+这一过程是用非尾递归来完成的，它的扩张呈指数级增长。
+代码的迅速膨胀，使guile没有处理到1000就崩溃了。
+
+我们再来看看采用尾递归的情况，代码如下：
+#! /usr/local/bin/guile -s
+!#
+(define sumb
+  (lambda (n)
+    (let f ((i n) (a 1))
+      (if (= i 1)
+	  a
+	  (f (- i 1) (+ a i))))))
+(display "(sumb 100)  ==>  ")
+(display (sumb 100)) (newline)
+(display "(sumb 1000)  ==>  ")
+(display (sumb 1000)) (newline)
+运行结果如下：
+(sumb 100)  ==>  5050
+(sumb 1000)  ==>  500500
+
+还是以n为5的情况来说明：
+(sumb 5)
+(f 5 1)
+(f 4 6)
+(f 3 10)
+(f 2 13)
+(f 1 15) ==> 15
+
+这样的话，始终是依次计算，不会出现列表膨胀，所以n为1000时也不会出错，计算速度也很快。
+此结果大超出了非尾递归的818限制，参数是10000也没问题，因它采用尾递归，代码根本没有膨胀，而是依次计算。
+首先是在过程内部绑定了一个过程f，它有两个参数，
+一个i的值来自sum过程的参数n，另一个参数a定义值为1，
+当i值不等于1时，仍调用f，第一个参数(也就是i)减1，第二个参数(也就是a)的值在原来的基础上加上i，
+当i的值为1是返回a，也就此sum过程的结果。
+理解这些后，你会发现事实上尾递归是在过程的绑定和过程的参数上做文章，用参数来保存运算结果，递归调用绑定的过程，最终达到运算目的。
+
+三、关于过程参数的问题
+
+过程的多参数问题对初学者不太好理解，一般情况下我们处理过程时，过程参数的数量是固定的，当过程的参数数量不固定时怎么办呢？
+对了，时刻记住列表，把过程的参数做为一个列表来处理，如求和过程：(sum arg1 arg2 ...)，
+(初学者可能对如何实现定义这样的过程无从下手不知所措)，我们如何来求这些参数的和呢？
+看下面的代码：
+
+guile> (define sum (lambda args (apply + args)))
+guile> sum
+#<procedure sum args>
+guile> (sum 1 2 3 4 5)
+15
+
+从中可以看出，lambda的格式有所变化，由原来的((lambda arg1 arg2 ...) body ...)变成了(lambda args body ...)，
+也就是将原来的多个项组成的列表，改成了用一个名称args来标识的列表，
+其本质并没有变，变的是我们的方法，由原来的单项处理变成了统一处理的列表。
+
+这里还用到了for-each过程，通过下面代码来看一下for-each过程的一般用法：
+
+guile> (define newdisplay (lambda (x) (begin (display x)(newline))))
+guile> newdisplay
+#<procedure newdisplay (x)>
+guile> (define tt (lambda args (for-each newdisplay args)))
+guile> tt
+#<procedure tt args>
+guile> (tt 'abc 'efg 'tomson)
+abc
+efg
+tomson
+
+for-each过程的一般用法是(for-each 过程 列表)，此中的过程可以是我们自定义的，也可以是系统提供的，还可以是lambda 表达式。
+
+栈结构是一种简单而又有意义的数据结构，我们可以用列表来模拟一个简单的栈，下面是代码：
+
+#! /usr/local/bin/guile -s
+!#
+(define stack '())
+(define push!
+  (lambda (x)
+    (set! stack (cons x stack))))
+(define pop!
+  (lambda ()
+    (let ((temp (car stack)))
+      (set! stack (cdr stack))
+      temp)))
+(push! 9)
+(push! 8)
+(push! 7)
+(display stack) (newline)
+(display (pop!)) (newline)
+(display stack) (newline)
+
+结果如下：
+(7 8 9)
+7
+(8 9)
+
+这里面我们定义了一个变量stack来表示栈，定义一个过程push!向栈内压数据，
+同时还定义了一个过程pop!来从栈内弹出数据，完成了基本的栈功能。
+这段代码的缺点是要定义一个外部的变量来表示栈，同时还有两个过程，
+如果创建多个栈的话就需要更多的过程和变量了，这在某些情况下是不可想象的，
+如果程序中要用100个栈，我们就不得不100次复制和更改上面的代码。
+如何解决这一问题呢？看下面的代码：
+
+#! /usr/local/bin/guile -s
+!#
+(define make-stack
+  (lambda ()
+    (let ((st '()))
+      (lambda (process arg)
+	(case process
+	  ((push!) (begin
+		     (set! st (cons arg st))
+		     st))
+	  ((pop!)  (let ((temp (car st)))
+		     (set! st (cdr st))
+		     temp))
+	  ((view)  (display st))
+	  (else "error!"))))))
+(define s (make-stack))
+(display (s 'push! 9)) (newline)
+(display (s 'push! 8)) (newline)
+(display (s 'push! 7)) (newline)
+(display (s 'pop! 0)) (newline)
+(s 'view 0) (newline)
+
+结果如下：
+(9)
+(8 9)
+(7 8 9)
+7
+(8 9)
+
+在上面代码中定义的make-stack过程，它的形式是一种特殊的情况，在lambda表达式里面又嵌有lambda表达式，
+在使用这类过程时，先要调用这一过程定义一个变量(这个变量其实就是第二个lambda表达式)，
+然后将这个变量再做为一个过程来直接调用(事实上也就是生成了一个过程)，就像代码中的(s 'push 9) 。
+
+我们首先绑定了一个变量st为空值做为栈的基础，与栈有关的操作都围绕它展开，
+这样的话前面提到代码重复问题就不会出现了，你可以定义任意多个栈。
+这段代码里还用到了case结构，它有点像C语言中的switch语句，用它判断第二个lambda表达式的第一个参数，也就是要对栈的操作，
+在调用时要用符号变量来使用，否则会出错，因为'push结果就是push，所以在过程定义中直接使用push，而调用时用'push。
+从这段代码中你会意识到变量和符号的重要性了。
+
+这段代码中我们仍用上面代码的形式，用列表来模拟栈，因为这更能体现栈的原理和列表这一Scheme语言的基础数据类型的做用。
+细心的读者朋友会发现我们对栈进行pop操作时的调用是(s 'pop! 0)，而正确的操作应该是(s 'pop!)，'view也同样；
+这是因为我们第二个lambda表达式是lambda (process arg)，为了不出错，不得不用这样的调用，
+如果将第二个lambda表达式改为lambda (process . arg)就可以避免这种尴尬情况了，但结果可能并不是我们想要的，栈会变成((7) (8) (9))这种情况。
+如何更好的实现一个栈呢？
+对了，改变现有的形式，使用list(不用原始的cons)或vector来模拟，将 lambda (process arg) 改成 (process . arg) 或 (process . args) (注意，这两者可不一样啊！)，
+这就要看你对栈结构的理解和编码水平了，相信参照这一代码你会模拟出更实用更快捷的栈结构来的。
+(本文代码中有一个用list来模拟栈结构的稍完整的代码) 
+这里我们还会发现一个小小的惯例，如果过程要更改变量的值，那么它的过程名后一定要加一个!；
+而如果过程是一个判断，结果为逻辑值时，它的过程名后一定要加一个?，这会使别人很快理解你的代码。
+
+四、关于continuation
+
+Scheme语言相对Lisp语言的重要特征是提出并实现了continuation，这是让初学者最难理解，也是最让程序员心动的特征。
+那么Continuation到底是什么呢？
+在运算Scheme表达式过程中，我们必须跟踪两个东西：1、运算什么？2、什么与值相关？
+看一看下面表达式的计算：	(if (null? x) (quote ()) (car x)) 。
+其中首先要运算的是(null? x)，然后在这个值的基础上再运算(quote ())或(cdr x)，要运算的是(null? x)而与值相关的是(quote ())和(car x)；
+这里把与值相关的称为运算的continuation。
+
+我们看(null? x)表达式中与值相关的东西就有三个，
+1、表达式本身，结果为#t或#f；
+2、过程null?，它是一个lambda表达式；
+3、变量x，它应用当有一个值。
+
+那么上面的表达式里面有几个continuation呢？
+答案是六个，上面的表达式本身，我们说过的三个，car也是一个lambda表达式，还有它后面的x，也和值相关；
+而(car x)没有计算在内，因为它与上面表达式结果之一是相同的。
+
+在任何表达式中，Continuation可以用一个叫call-with-current-continuation的过程来得到，多数情况下它被简化为call/cc。
+在guile的1.6.4或以前版本中，简化代码如下所示：
+(define call/cc call-with-current-continuation)
+
+而在其它的Scheme语言的实现版本中完全可以不用这样定义，而直接使用call/cc。
+call/cc过程的唯一个参数应该是一个过程(或lambda表达式)，而且这个过程只能有一个参数，continuation就绑定在这个参数上。
+看下面的代码：
+
+guile> (define call/cc call-with-current-continuation)
+guile> call/cc
+#<procedure call-with-current-continuation (proc)>
+guile> (call/cc (lambda (k) 5))
+5
+;;;此时过程参数k未用到，所以取过程的返回值5做为结果
+guile> (call/cc (lambda (k) (* 5 (k 8))))
+8
+;;;此时过程参数k绑定为8，所以其结果为8
+guile> (+ 2 (call/cc (lambda (k) (* 5 (k 8)))))
+10
+;;;此时结果在我们意料之中了
+
+可以利用call/cc这一特点，让它从一个循环中跳出来，这有点像C语言中的break，看下面的代码：
+guile> (call/cc (lambda (return)
+        (for-each (lambda (x) (if (< x 0) (return x)))
+                '(99 88 77 66 55))
+        #t))
+#t
+
+其结果为#t，因为for-each运算过程中未出现过(< x 0)的情况，所以(lambda (return ) ...)的结果为#t，call/cc取此值为最终结果。
+guile> (call/cc (lambda (return)
+         (for-each (lambda (x) (if (< x 0) (return x)))
+                '(11 22 33 44 -55 66 77))
+        #t))
+-55
+
+其结果为-55，因为当遇到小于0的数时，return就绑定x，call/cc就返回此值，即从for-each处理过程中跳出来，
+这是call/cc的重要功能之一，也是最基本的功能。
+call/cc 还可以这样操作：
+
+guile> (define foo #f)
+guile> (call/cc (lambda (bar) (set! foo bar) 123))
+123
+guile> (foo 456)
+456
+guile> (foo 'abc)
+abc
+
+上面的操作中，call/cc绑定了lambda表达式的参数bar，而后我们又设定foo的值为bar，此时foo即为一个灵活的continuation；
+最后我们又让lambda表达式的值为123，所以整个call/cc表达式的值为123，
+如果我们不加这个123而直接结束这个表达式的话，此表达式就没有结果，不返回任何值。
+当foo成为一个continuation后，我们可以象调用过程那样来调用它(当然它并不是过程)，
+其后面绑定的值即为此continuation的结果，如上面的代码运行所示。
+这段代码的前提是有call/cc的定义，如果你直接运行guile后就输入上面的代码是肯定会出错的。
+在赵蔚的文章 http://www.ibm.com/developerworks/cn/linux/l-scheme/part2/index.shtml中提到过由David Madore先生提出的"阴阳迷题"，
+下面我们通过对它的研究来理解一下continuation，代码如下所示(为解释方便，稍做改动)：
+(let* ((yin ((lambda (foo) (display "@") foo) (call/cc (lambda (bar) bar))))
+       (yang ((lambda (foo) (display "*") foo) (call/cc (lambda (bar) bar)))))
+  (yin yang))
+
+我们进行一些简化，将其中的lambda表达式定义为过程，使其看起来更清晰：
+(define bar (lambda (bar) bar))
+(define foox (lambda (foo) (display "@") foo))
+(define fooy (lambda (foo) (display "*") foo))
+
+则上面的繁琐的表达式可以变成为：
+  (let* ((yin (foox (call/cc bar)))
+       (yang (fooy (call/cc bar))))
+  (yin yang))
+  
+
+将let*改变成let，使其进一步简化为：
+  (let ((yin (foox (call/cc bar))))
+     (let ((yang (fooy (call/cc bar))))
+  (yin yang)))
+  
+
+最后将let去掉，继而成为：
+((foox (call/cc bar)) (fooy (call/cc bar)))
+
+经过这一翻简化处理(对初学者是有必要的)，相信我们对Scheme语言会有新的认识。
+需要说明的是每一次简化后，都要运行一下，保证它的结果如下所示，否则说明我们简化过程中有错误：
+@*@**@***@****@*****@******@*******@********@*********@**********  ......
+
+在理解continuation之前，这一结果是我们无论如何也想不到的，如果你有足够奈心的话，你会发现它会按这一规律无限的延长，
+在我的老机上从11:20一直到15:20仍无迹象表明要停止。
+为什么会出现这一结果呢？
+首先看看我们为了简化而定义的三个过程bar、foox和fooy，bar是Scheme语言中最简单的过程，只有一个参数，并且返回这个参数；
+foox和fooy比它们只多了一步，执行完一个display过程后再返回这个参数；
+这样简单的两个过程确出现如此复杂的结果，原因全在call/cc身上。
+
+首先，看(call/cc bar)表达式，它形成了一个灵活的continuation，用它来做foox的参数，
+表达式(foox (call/cc bar))则形成一个新的灵活的continuation，即显示一个@字符同时也是一个continuation。
+
+再看，表达式((call/cc bar) (foox bar))的结果与表达式((foox bar) (foox bar))的结果相同，均为显示两个@字符，
+同时返回一个过程#<procedure bar (bar)>，这就让我们在某种程度上理解了表达式(call/cc procedure?)的结果为#t了，
+因为(procedure? procedure?)也为#t；
+而(call/cc boolean?)则不然，因为(boolean? boolean?)为#f。
+
+从上面我们可以看出表达式((call/cc bar) (foox (call/cc bar)))实际则是与表达式((foox (call/cc bar)) (foox (call/cc bar)))，
+运行一下会发现，两者确实相同，显示@字符，无穷无尽，看来(call/cc bar)这个参数起到了关键作用。
+那么再看我们的阴阳表达式((foox (call/cc bar)) (fooy (call/cc bar)))，
+前者(foox (call/cc bar))为一个显示字符@的continuation，我们表示为*cc；
+后者(fooy (call/cc bar))为一个显示字符*的continuation，我们表示为*cc；
+则在@cc的调动指挥下，每次*cc再加下一个(fooy (call/cc bar))，形成**cc，再加后，如此形成我们前面的效果。
+过程如下所示：
+
+@cc *cc
+@cc **cc
+@cc ***cc
+@cc ****cc  一直至无穷尽
+
+前一段时间，"晕"这个字总会出现在网友的聊天中，相信现在不"晕"了。
+我们给上面的代码改动一下：
+#! /usr/local/bin/guile -s
+!#
+(define call/cc call-with-current-continuation)
+(define n 0)
+(define bar (lambda (bar) bar))
+(define foo (lambda (foo) (display n) (newline) (set! n (+ n 1)) foo))
+((call/cc bar) (foo (call/cc bar)))
+
+这样形成了，0 1 2 3 4 ......无限制的循环，由此我们解决了一个不用循环语句来形成循环的问题。
+
+五、关于记录类型
+
+在guile中提供了很多复杂的复合类型，如record，struct，hashtable，array等等，
+record类型是其中较简单的一种，我们这里称之为记录类型，这种类型有点像C语言中的结构，更像C++中的类。
+通过它我们可以了解一些面向对象思想在Scheme语言中的应用。
+记录类型包括九个相关过程，以下是简单介绍：
+
+record? 记录类型的判断过程 
+make-record-type 创建记录类型，两个参数，类型的名称和类型的成员名称列表 
+record-constructor 创建记录类型构建过程，一个参数，类型 
+record-predicate 创建记录类型的判断过程，用此过程某一变量是否为已创建的记录类型 
+record-accessor 创建记录类型的get系列过程，两个参数，类型和表示成员名称的符号 
+record-modifier 创建记录类型的set系列过程，同上 
+record-type-descriptor 一般不用，可忽略 
+record-type-name 取得记录类型的名字，返回字符串 
+record-type-fields 取得记录类型的成员名字列表
+
+要想知道如何定义一个记录类型和上面提到的相关过程的用法，具体代码是必不可少的，下面是一个简单的示例：
+#! /usr/local/bin/guile -s
+!#
+(define girl (make-record-type "girl" '(name info)))
+;;定义record类型girl，包含两个成员name和info，其中name为一字符串，info为一过程用来显示信息
+(define girl-init! (record-constructor girl))
+;;定义girl的初始化过程
+(define girl-name-get (record-accessor girl 'name))
+;;定义取得girl类型的name成员的值的过程
+(define girl-name-set! (record-modifier girl 'name))
+;;定义设定girl类型的name成员的值的过程
+(define girl-info-get (record-accessor girl 'info))
+;;定义取得girl类型的info成员的值的过程
+(define girl-info-set! (record-modifier girl 'info))
+;;定义设定girl类型的info成员的值的过程
+(define hi
+  (lambda (name)
+    (display "Hi! I'm ")
+    (display name)
+    (display ".")))
+;;定义hi过程，显示"Hi! I'm " 加字符串 name 加 "."
+(define g (girl-init! "Lucy" hi))
+;;定义一个girl类型的变量g，其成员name值为"Lucy"，成员info值为上面定义的hi过程
+((girl-info-get g) (girl-name-get g)) (newline)
+;;取得girl类型变量g的info成员，做为过程来执行它，取得girl类型变量g的name成员做为此过程的参数
+
+这段代码的运行结果为： Hi! I'm Lucy.
+
+代码中的注释相信大家都能看懂，需要说的是当我们用定义一个用make-record-type创建的记录类型后，
+就可以用record?来判断此类型是否为记录类型了，即 (record? girl) ==> #t 。
+
+还有就是可以用代码 (define girl? (record-predicate girl)) 来定义一个此记录类型girl的判断过程girl?，也就是 (girl? g) ==> #t 。
+
+还有就是下面的结果也应该在我们的想象之中：
+
+(record-type-name girl)  ==>  "girl"
+(record-type-fields girl)  ==>  (name info)
+
+从这个简单的例子来看，记录类型已经具备了面向对象的编程思想所要求的一些必备的东西，而且更具有Scheme语言自己的特色。
+相信在我的这个例子基础上你可以创建一个更优秀的girl来。
+
+六、关于宏定义
+
+Scheme语言中的宏定义类似于自己定义一个Scheme语言关键字，可以实现不同的功能，
+很多关键字都可以通过宏定义来实现，我们在多数参考资料中都可以看到这样的例子。
+在多数Scheme语言的实现中，都提供了不同形式的宏定义功能，
+在guile中提供了用defmacro或define-macro来定义宏，defmacro的格式为：
+(defmacro name (args ...) body ...)
+
+它等同于
+(define-macro (name args ...) body ...)
+
+我们来看一个简单的宏定义：
+#! /usr/local/bin/guile -s
+!#
+(define-macro (defobj name)
+  `(begin
+     (define ,(string->symbol (string-append "make-" name))
+       (lambda ()
+	 (display "make object ok!\n")))
+     (define ,(string->symbol (string-append name "?"))
+       (lambda (obj)
+	 (if (eq? obj 'name)
+	     #t
+	     #f)))))
+(defobj "foo")
+(make-foo)
+(display (foo? 'name)) (newline)
+这段程序的运行结果如下：
+make object ok!
+#t
+
+从这段代码中你可能看到了逆符号(quasiquote)以及相关的操作的重要性了，这里我们定义了一个宏defobj，当运行完(defobj "boy")这个宏时，产生了两个过程定义即make-foo和foo?，
+从这一点上来看，高性能的宏定义可以大大减轻我们代码的重复使用的麻烦。
+还有就是guile系统中很多宏定义都是按上面的宏定义方式来进行的。
+
+在Scheme语言中，R5RS中的宏定义是通用的标准，guile中通过调用syncase模块来实现这一功能，
+你需要在代码中加入：(use-modules (ice-9 syncase)) 来调用ice-9目录下的syncase模块。
+下面的R5RS格式的宏定义实现了前面提到的sum功能和一个列表定义功能，它都有多参数的特点，这在R5RS宏观定义中很容易实现：
+
+#! /usr/local/bin/guile -s
+!#
+(use-modules (ice-9 syncase))
+(define-syntax sum
+  (syntax-rules ()
+    ((_ exp1 exp2 ...)
+     (+ exp1 exp2 ...))))
+(display (sum 1 2 3 4 5)) (newline)
+(define-syntax ourlst
+  (syntax-rules ()
+    ((_ exp)
+     (cons exp '()))
+    ((_ exp1 exp2 ...)
+     (cons exp1 (ourlst exp2 ...)))))
+(display (ourlst 1 2 3 4 5)) (newline)
+
+上面代码的结果如下：
+15
+(1 2 3 4 5)
+
+在sum宏定义中，如果附合规则(_ exp1 exp2 ...)或(sum exp1 exp2 ...)将按(+ exp1 exp2 ...)的方式来处理，
+其中exp1、exp2表示Scheme表达式，而省略号 ... 则表示更多的表达式。
+也就是说 (sum 1 2 3 4 5)将按(+ 1 2 3 4 5)来处理，其结果为15。
+在ourlst宏中则有两个规则，第一是只有一个参数的情况，第二是多参数的情况，在多参数情况下还用到了递归，相信大家都能理解。
+这是按R5RS标准来实现的最简单的两个宏(当然还有我在概要一文中提到的糟糕的start宏)，
+相信通过这两个宏的定义，您会理解并能进行宏定义了。
+
+七、关于模块
+
+上面提到的syncase模块是如何实现的呢？
+多数Scheme语言的实现版本都提供了一套模块系统，guile也不例外，看一看下面的简单的模块定义：
+
+    ;;;file : tt.scm , a module test here .
+(define-module (ice-9 tt)
+  :export (newdisplay))
+(define newdisplay
+  (lambda (str)
+    (display str)
+    (newline)))
+    
+
+将其以tt.scm文件名保存。
+这段代码中，首先用define-module表示定义一个模块，而(ice-9 tt)则指明了模块的具体位置和名称，
+最后:export指出模块中要导出的过程等的名称，这们这里只有一个newdisplay，可以用列表来形成多个导出过程名。
+而下面的代码则和我们普通的过程定义代码相同，简单的定义了一个名为newdisplay的过程，功能是在要显示的东西后面加一个换行符。
+我们再编写一段代码来测试一下这个模块：
+
+#! /usr/local/bin/guile -s
+!#
+(use-modules (ice-9 tt))
+(newdisplay "test use tt modules")
+
+这段代码中用usemodules来调用我们上面定义的tt模块，以test_tt.scm文件名保存，
+运行后会出现错误信息： ERROR: no code for module (ice-9 tt) 。
+这是因为，默认情况下，模块所在目录为/usr/local/share/guile/1.6/ice-9 或 /usr/share/guile/1.6/ice-9 。
+执行命令： cp tt.scm /usr/local/share/guile/1.6/ice-9/ ，将模块文件复制到相应目录，
+再执行test_tt.scm文件，其输出结果如下：(输出字符串自动换行了)
+test use tt modules
+
+这说明我们成功的定义了一个模块。
+我们在宏定义时用的syncase模块实际上就是在/usr/local/share/guile/1.6/ice-9目录中的syncase.scm文件，
+研究一下此目录中的scm文件会发现很多定义模块的技巧。
+
+八、关于eval
+
+在概要一文中还没有提到的是eval这个过程的用法，利用它可以实现用Scheme语言本身来解释Scheme表达式的功能，
+这对一个学习编译系统和Scheme语法功能的实现非常重要。
+下面是在guile中运行eval过程来解释Scheme表达式的情况:
+
+guile> (primitive-eval '(+ 2 3))
+5
+guile> (eval '(+ 1 2) (interaction-environment))
+3
+
+这里面包含了两个版本的eval过程，首先是原始的guile内部使用的primitive-eval，它可以直接解释运行Scheme表达式；
+第二个是正常的eval过程，它需要两个参数，一个是要解释运行的要Scheme表达式，
+第二个是表达式运行的环境，可以由interaction-environment过程来获得，如此则eval过程正常运行。
+
+可以想象用C语言来写C语言编译器对初学者来说的难度，但掌握Scheme语法和eval的用法后，
+你会发现用Scheme语言来写一个Scheme语言解释器并不是很难，这可能成为你理解编译原理的重要一步。
+我们在感觉到Scheme语言的简单易用的同时，还应该意识到它是一门富于挑战意义的语言，相信现在我们能够真正理解Scheme挑战意义的所在了吧。
+(本文涉及到了Scheme语言中大多数的稍复杂一些的内容，还请热爱Scheme语言的朋友们多多指正。)
+
+注：所有代码在redhat9.0 guile1.6.4下测试通过
+
+参考资料
+《the Scheme Programming Language》 Tahird Edition ，《Scheme编程语言》第三版，
+在线网址：http://www.scheme.com/tspl3/ 这可能是最权威而又不失简洁的Scheme语言著作了。 
+
+本文中的部分代码包在这里下载， scm.tar.gz。 
+
+guile的主页， http://www.gnu.org/software/guile/ 这里又有新版本的guile要发布了，还有guile的参考文档，内容相当丰富。 
+
+http://lonelycactus.com/guilebook/book1.html，一本关于如何使用guile做扩展语言的书，还未完善。 
+
+http://www.schemer.org，Scheme语言爱好者的大本营。 
+
+关于作者
+宋国伟（ gwsong52@sohu.com），目前在吉林省德惠市信息中心从事网络维护工作，
+著有《GTK+2.0编程范例》一书，热衷于Linux系统上的编程及相关的研究。

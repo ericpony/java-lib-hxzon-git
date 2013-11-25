@@ -29,21 +29,61 @@ Binding Forms (Destructuring)
 
 ======
 Special Forms
+特殊形式。
 
+----
 (def symbol init?)
-Creates and interns or locates a global var with the name of symbol and a namespace of the value of the current namespace (*ns*). If init is supplied, it is evaluated, and the root binding of the var is set to the resulting value. If init is not supplied, the root binding of the var is unaffected. def always applies to the root binding, even if the var is thread-bound at the point where def is called. def yields the var itself (not its value). Throws an exception if symbol is already in the namespace and not mapped to an interned var. Since 1.3, def has allowed an optional doc-string: (def symbol doc-string? init?).
 
-Any metadata on the symbol will be evaluated, and become metadata on the var itself. There are several metadata keys that have special interpretation:
+Creates and interns or locates a global var with the name of symbol and a namespace of the value of the current namespace (*ns*). 
+If init is supplied, it is evaluated, and the root binding of the var is set to the resulting value. 
+If init is not supplied, the root binding of the var is unaffected. 
+def always applies to the root binding, even if the var is thread-bound at the point where def is called. 
+def yields the var itself (not its value). 
+Throws an exception if symbol is already in the namespace and not mapped to an interned var. 
+Since 1.3, def has allowed an optional doc-string: (def symbol doc-string? init?).
+
+（intern：扣留，羁押。）
+（unaffected：不受影响的；不装扮的，无装饰的；自然的；不矫揉造作的。）
+（yield：vi.放弃，屈服；生利；退让，退位。）
+创建然后扣留或定位一个带名字的全局var。
+如果提供init参数，它会被求值，这个值会作为这个var的根绑定。
+如果不提供init参数，这个var的根绑定是不受影响的。
+def总是作用于根绑定，即使def被调用时这个var是线程绑定的。
+def返回这个var本身，而不是它的值。
+当这个符号在命名空间存在，且没被映射到一个已经被扣留的var时，抛出异常。
+从1.3开始，def允许一个可选的文档参数。
+
+Any metadata on the symbol will be evaluated, and become metadata on the var itself. 
+There are several metadata keys that have special interpretation:
+
+符号的任何元数据都会被求值，并作为这个var本身的元数据。
+有几个特殊的元数据：
+
 :private
-a boolean indicating the access control for the var. If this key is not present, the default access is public (e.g. as if :private false).
+a boolean indicating the access control for the var. 
+If this key is not present, the default access is public (e.g. as if :private false).
+控制这个var的可见性。
+如果这个元数据不存在，可见性为公开。
+
 :doc
 a string containing short (1-3 line) documentation for the var contents
+定义这个var的文档说明。
+
 :test
-a fn of no args that uses assert to check various operations. The var itself will be accessible during evaluation of a literal fn in the metadata map.
+a fn of no args that uses assert to check various operations. 
+The var itself will be accessible during evaluation of a literal fn in the metadata map.
+一个无参函数用来检查各种操作。
+？var本身在求值过程中可被访问。
+
 :tag
-a symbol naming a class or a Class object that indicates the Java type of the object in the var, or its return value if the object is a fn.
+a symbol naming a class or a Class object that indicates the Java type of the object in the var, 
+or its return value if the object is a fn.
+一个一个类或类对象的名字，对于var，用来指明对象的java类型。
+如果对象是一个函数，这指的是返回值。
 
 In addition the compiler will place the following keys on the var:
+编译器会为var额外添加如下键：
+
 :file string
 :line int
 :name simple symbol
@@ -51,7 +91,12 @@ In addition the compiler will place the following keys on the var:
 :macro true if var names a macro
 :arglists a list of vector(s) of argument forms, as were supplied to defn
 
-The var metadata can be used for application-specific purposes as well. Consider using namespace-qualified keys (e.g. :myns/foo) to avoid clashes.
+The var metadata can be used for application-specific purposes as well. 
+Consider using namespace-qualified keys (e.g. :myns/foo) to avoid clashes.
+
+var的元数据也可被应用程序使用。
+
+
 (defn
  ^{:doc "mymax [xs+] gets the maximum value in xs using > "
    :test (fn []
@@ -62,7 +107,7 @@ The var metadata can be used for application-specific purposes as well. Consider
   ([x y] (if (> x y) x y))
   ([x y & more]
    (reduce mymax (mymax x y) more)))
- 
+
 user=> (meta #'mymax)
   {:name mymax,
    :user/comment "this is the best fn ever!",
@@ -72,23 +117,67 @@ user=> (meta #'mymax)
    :line 126,
    :ns #<Namespace user >,
    :test #<user$fn__289 user$fn__289@20f443 >}
-Many macros expand into def (e.g. defn, defmacro), and thus also convey metadata for the resulting var from the symbol used as the name.
-
-Using def to modify the root value of a var at other than the top level is usually an indication that you are using the var as a mutable global, and is considered bad style. Consider either using binding to provide a thread-local value for the var, or putting a ref or agent in the var and using transactions or actions for mutation.
 
 
+Many macros expand into def (e.g. defn, defmacro), 
+and thus also convey metadata for the resulting var from the symbol used as the name.
+许多宏，例如defn、defmacro最终扩展成def。
+
+
+Using def to modify the root value of a var at other than the top level 
+is usually an indication that you are using the var as a mutable global, and is considered bad style. 
+Consider either using binding to provide a thread-local value for the var, 
+or putting a ref or agent in the var and using transactions or actions for mutation.
+
+使用def来修改一个var的根值，作为一个可变的全局变量，这是一种不好的做法。
+更好的方式是，为var提供一个线程本地值，
+或者将var放入一个ref或agent，然后使用事务或动作来修改。
+
+----
 (if test then else?)
-Evaluates test. If not the singular values nil or false, evaluates and yields then, otherwise, evaluates and yields else. If else is not supplied it defaults to nil. All of the other conditionals in Clojure are based upon the same logic, that is, nil and false constitute logical falsity, and everything else constitutes logical truth, and those meanings apply throughout. if performs conditional tests of boolean Java method return values without conversion to Boolean. Note that if does not test for arbitrary values of java.lang.Boolean, only the singular value false (Java's Boolean.FALSE), so if you are creating your own boxed Booleans make sure to use Boolean/valueOf and not the Boolean constructors.
 
+Evaluates test. 
+If not the singular values nil or false, evaluates and yields then, otherwise, evaluates and yields else. 
+If else is not supplied it defaults to nil. 
+All of the other conditionals in Clojure are based upon the same logic, 
+that is, nil and false constitute logical falsity, and everything else constitutes logical truth, 
+and those meanings apply throughout. 
+if performs conditional tests of boolean Java method return values without conversion to Boolean. 
+Note that if does not test for arbitrary values of java.lang.Boolean, only the singular value false (Java's Boolean.FALSE), 
+so if you are creating your own boxed Booleans make sure to use Boolean/valueOf and not the Boolean constructors.
 
+（singular：adj.<语>单数的；<正>突出的；奇特的；非凡的。）
+（arbitrary：adj.随意的，任性的，随心所欲的；主观的，武断的；霸道的，专制的，专横的，独断独行的；乱。）
+对test表达式求值。
+如果值不为nil或false，求值then表达式并返回其值，否则求值else表达式并返回其值。
+如果没有else表达式，则相当于nil。
+clojure的其它条件都是相同的逻辑，即nil和false表示假值，而其它值都是真值。
+如果test表达式，java方法返回值没有转成Boolean。
+如果你创建你自己的布尔值装箱，记住使用Boolean.valueOf而不是Boolean构造器。
+
+----
 (do exprs*)
-Evaluates the expressions in order and returns the value of the last. If no expressions are supplied, returns nil.
 
+Evaluates the expressions in order and returns the value of the last. 
+If no expressions are supplied, returns nil.
+顺序求值表达式，并返回最后一个表达式的值。
+如果没有表达式，返回nil。
 
+----
 (let [bindings* ] exprs*)
+
 binding => binding-form init-expr
 
-Evaluates the exprs in a lexical context in which the symbols in the binding-forms are bound to their respective init-exprs or parts therein. The bindings are sequential, so each binding can see the prior bindings. The exprs are contained in an implicit do. If a binding symbol is annotated with a metadata tag, the compiler will try to resolve the tag to a class name and presume that type in subsequent references to the binding. The simplest binding-form is a symbol, which is bound to the entire init-expr:
+Evaluates the exprs in a lexical context in which the symbols in the binding-forms 
+are bound to their respective init-exprs or parts therein. 
+The bindings are sequential, so each binding can see the prior bindings. 
+The exprs are contained in an implicit do. 
+If a binding symbol is annotated with a metadata tag, 
+the compiler will try to resolve the tag to a class name and presume that type in subsequent references to the binding. 
+The simplest binding-form is a symbol, which is bound to the entire init-expr:
+
+
+
 (let [x 1
       y x]
   y)
@@ -96,32 +185,56 @@ Evaluates the exprs in a lexical context in which the symbols in the binding-for
 
 See Binding Forms for more information about binding forms.
 
-Locals created with let are not variables. Once created their values never change!
+Locals created with let are not variables. 
+Once created their values never change!
 
-
+----
 (quote form)
+
 Yields the unevaluated form.
 user=> '(a b c)
 (a b c)
-Note there is no attempt made to call the function a. The return value is a list of 3 symbols.
 
+Note there is no attempt made to call the function a. 
+The return value is a list of 3 symbols.
 
+---
 (var symbol)
-The symbol must resolve to a var, and the Var object itself (not its value) is returned. The reader macro #'x expands to (var x).
 
+The symbol must resolve to a var, and the Var object itself (not its value) is returned. 
+The reader macro #'x expands to (var x).
 
+----
 (fn name? [params* ] exprs*)
+
 (fn name? ([params* ] exprs*)+)
+
 params => positional-params* , or positional-params* & rest-param
 positional-param => binding-form
 rest-param => binding-form
 name => symbol
 
-Defines a function (fn). Fns are first-class objects that implement the IFn interface. The IFn interface defines an invoke() function that is overloaded with arity ranging from 0-20. A single fn object can implement one or more invoke methods, and thus be overloaded on arity. One and only one overload can itself be variadic, by specifying the ampersand followed by a single rest-param. Such a variadic entry point, when called with arguments that exceed the positional params, will find them in a seq contained in the rest param. If the supplied args do not exceed the positional params, the rest param will be nil.
+Defines a function (fn). 
+Fns are first-class objects that implement the IFn interface. 
+The IFn interface defines an invoke() function that is overloaded with arity ranging from 0-20. 
+A single fn object can implement one or more invoke methods, and thus be overloaded on arity. 
+One and only one overload can itself be variadic, by specifying the ampersand followed by a single rest-param. 
+Such a variadic entry point, when called with arguments that exceed the positional params, 
+will find them in a seq contained in the rest param. 
+If the supplied args do not exceed the positional params, the rest param will be nil.
 
-The first form defines a fn with a single invoke method. The second defines a fn with one or more overloaded invoke methods. The arities of the overloads must be distinct. In either case, the result of the expression is a single fn object.
+The first form defines a fn with a single invoke method. 
+The second defines a fn with one or more overloaded invoke methods. 
+The arities of the overloads must be distinct. 
+In either case, the result of the expression is a single fn object.
 
-The exprs are compiled in an environment in which the params are bound to the actual arguments. The exprs are enclosed in an implicit do. If a name symbol is provided, it is bound within the function definition to the function object itself, allowing for self-calling, even in anonymous functions. If a param symbol is annotated with a metadata tag, the compiler will try to resolve the tag to a class name and presume that type in subsequent references to the binding.
+The exprs are compiled in an environment in which the params are bound to the actual arguments. 
+The exprs are enclosed in an implicit do. 
+If a name symbol is provided, it is bound within the function definition to the function object itself, 
+allowing for self-calling, even in anonymous functions. 
+If a param symbol is annotated with a metadata tag, 
+the compiler will try to resolve the tag to a class name and presume that type in subsequent references to the binding.
+
 (def mult
   (fn this
       ([] 1)
@@ -129,9 +242,13 @@ The exprs are compiled in an environment in which the params are bound to the ac
       ([x y] (* x y))
       ([x y & more]
           (apply this (this x y) more))))
+
+
 Note that named fns such as mult are normally defined with defn, which expands into something such as the above.
 
-A fn (overload) defines a recursion point at the top of the function, with arity equal to the number of params including the rest param, if present. See recur.
+A fn (overload) defines a recursion point at the top of the function, 
+with arity equal to the number of params including the rest param, if present. 
+See recur.
 
 fns implement the Java Callable, Runnable and Comparator interfaces.
 
@@ -142,21 +259,27 @@ Functions support specifying runtime pre- and postconditions.
 The syntax for function definitions becomes the following:
 
 (fn name? [params* ] condition-map? exprs*)
+
 (fn name? ([params* ] condition-map? exprs*)+)
 
 
 The syntax extension also applies to to defn and other macros which expand to fn forms.
 
-Note: If the sole form following the parameter vector is a map, it is treated as the function body, and not the condition map.
+Note: If the sole form following the parameter vector is a map, 
+it is treated as the function body, and not the condition map.
 
-The condition-map parameter may be used to specify pre- and postconditions for a function. It is of the following form:
+The condition-map parameter may be used to specify pre- and postconditions for a function. 
+It is of the following form:
 
 {:pre [pre-expr*]
 :post [post-expr*]}
 
-where either key is optional. The condition map may also be provided as metadata of the arglist.
+where either key is optional. 
+The condition map may also be provided as metadata of the arglist.
 
-pre-expr and post-expr are boolean expressions that may refer to the parameters of the function. In addition, % may be used in a post-expr to refer to the function's return value. If any of the conditions evaluate to false and *assert* is true, an assertion failure exception is thrown.
+pre-expr and post-expr are boolean expressions that may refer to the parameters of the function. 
+In addition, % may be used in a post-expr to refer to the function's return value. 
+If any of the conditions evaluate to false and *assert* is true, an assertion failure exception is thrown.
 
 Example:
 (defn constrained-sqr [x]
@@ -166,15 +289,29 @@ Example:
 
 See Binding Forms for more information about binding forms.
 
-
+----
 (loop [bindings* ] exprs*)
-loop is exactly like let, except that it establishes a recursion point at the top of the loop, with arity equal to the number of bindings. See recur.
 
+loop is exactly like let, except that it establishes a recursion point at the top of the loop, 
+with arity equal to the number of bindings. 
+See recur.
 
+----
 (recur exprs*)
-Evaluates the exprs in order, then, in parallel, rebinds the bindings of the recursion point to the values of the exprs. If the recursion point was a fn method, then it rebinds the params. If the recursion point was a loop, then it rebinds the loop bindings. Execution then jumps back to the recursion point. The recur expression must match the arity of the recursion point exactly. In particular, if the recursion point was the top of a variadic fn method, there is no gathering of rest args - a single seq (or null) should be passed. recur in other than a tail position is an error.
 
-Note that recur is the only non-stack-consuming looping construct in Clojure. There is no tail-call optimization and the use of self-calls for looping of unknown bounds is discouraged. recur is functional and its use in tail-position is verified by the compiler.
+Evaluates the exprs in order, then, in parallel, rebinds the bindings of the recursion point to the values of the exprs. 
+If the recursion point was a fn method, then it rebinds the params. 
+If the recursion point was a loop, then it rebinds the loop bindings. 
+Execution then jumps back to the recursion point. 
+The recur expression must match the arity of the recursion point exactly. 
+In particular, if the recursion point was the top of a variadic fn method, 
+there is no gathering of rest args - a single seq (or null) should be passed. 
+recur in other than a tail position is an error.
+
+Note that recur is the only non-stack-consuming looping construct in Clojure. 
+There is no tail-call optimization and the use of self-calls for looping of unknown bounds is discouraged. 
+recur is functional and its use in tail-position is verified by the compiler.
+
 (def factorial
   (fn [n]
     (loop [cnt n acc 1]
@@ -182,54 +319,97 @@ Note that recur is the only non-stack-consuming looping construct in Clojure. Th
             acc
           (recur (dec cnt) (* acc cnt))))))
 
+----
 (throw expr)
+
 The expr is evaluated and thrown, therefore it should yield an instance of some derivee of Throwable.
 
-
+----
 (try expr* catch-clause* finally-clause?)
+
 catch-clause -> (catch classname name expr*)
 finally-clause -> (finally expr*)
 
-The exprs are evaluated and, if no exceptions occur, the value of the last is returned. If an exception occurs and catch clauses are provided, each is examined in turn and the first for which the thrown exception is an instance of the named class is considered a matching catch clause. If there is a matching catch clause, its exprs are evaluated in a context in which name is bound to the thrown exception, and the value of the last is the return value of the function. If there is no matching catch clause, the exception propagates out of the function. Before returning, normally or abnormally, any finally exprs will be evaluated for their side effects.
+The exprs are evaluated and, if no exceptions occur, the value of the last is returned. 
+If an exception occurs and catch clauses are provided, each is examined in turn 
+and the first for which the thrown exception is an instance of the named class is considered a matching catch clause. 
+If there is a matching catch clause, its exprs are evaluated in a context in which name is bound to the thrown exception, 
+and the value of the last is the return value of the function. 
+If there is no matching catch clause, the exception propagates out of the function. 
+Before returning, normally or abnormally, any finally exprs will be evaluated for their side effects.
 
-
+----
 (monitor-enter x)
+
 (monitor-exit x)
+
 These are synchronization primitives that should be avoided in user code. Use the locking macro.
 
 
-
+----
 Other Special Forms
+
 The special forms dot ('.'), new, and set! of fields are described in the Java Interop section of the reference.
 set! of vars is described in the Vars section of the reference.
 
-
+----
 Binding Forms (Destructuring)
-Clojure supports abstract structural binding, often called destructuring, in let binding lists, fn parameter lists, and any macro that expands into a let or fn. The basic idea is that a binding-form can be a data structure literal containing symbols that get bound to the respective parts of the init-expr. The binding is abstract in that a vector literal can bind to anything that is sequential, while a map literal can bind to anything that is associative.
 
-Vector binding-exprs allow you to bind names to parts of sequential things (not just vectors), like vectors, lists, seqs, strings, arrays, and anything that supports nth. The basic sequential form is a vector of binding-forms, which will be bound to successive elements from the init-expr, looked up via nth. In addition, and optionally, & followed by a binding-forms will cause that binding-form to be bound to the remainder of the sequence, i.e. that part not yet bound, looked up via nthnext . Finally, also optional, :as followed by a symbol will cause that symbol to be bound to the entire init-expr:
+Clojure supports abstract structural binding, often called destructuring, 
+in let binding lists, fn parameter lists, and any macro that expands into a let or fn. 
+The basic idea is that a binding-form can be a data structure literal containing symbols 
+that get bound to the respective parts of the init-expr. 
+The binding is abstract in that a vector literal can bind to anything that is sequential, 
+while a map literal can bind to anything that is associative.
+
+Vector binding-exprs allow you to bind names to parts of sequential things (not just vectors), 
+like vectors, lists, seqs, strings, arrays, and anything that supports nth. 
+The basic sequential form is a vector of binding-forms, which will be bound to successive elements from the init-expr, looked up via nth. 
+In addition, and optionally, & followed by a binding-forms will cause that binding-form to be bound to the remainder of the sequence,
+i.e. that part not yet bound, looked up via nthnext . 
+Finally, also optional, :as followed by a symbol will cause that symbol to be bound to the entire init-expr:
+
 (let [[a b c & d :as e] [1 2 3 4 5 6 7]]
   [a b c d e])
 ->[1 2 3 (4 5 6 7) [1 2 3 4 5 6 7]]
+
 These forms can be nested:
+
 (let [[[x1 y1][x2 y2]] [[1 2] [3 4]]]
   [x1 y1 x2 y2])
 ->[1 2 3 4]
+
 Strings work too:
+
 (let [[a b & c :as str] "asdjhhfdas"]
   [a b c str])
 ->[\a \s (\d \j \h \h \f \d \a \s) "asdjhhfdas"]
-Map binding-forms allow you to bind names to parts of associative things (not just maps), like maps, vectors, string and arrays (the latter three have integer keys). It consists of a map of binding-form-key pairs, each symbol being bound to the value in the init-expr at the key. In addition, and optionally, an :as key in the binding form followed by a symbol will cause that symbol to be bound to the entire init-expr. Also optionally, an :or key in the binding form followed by another map may be used to supply default values for some or all of the keys if they are not found in the init-expr:
+
+Map binding-forms allow you to bind names to parts of associative things (not just maps), 
+like maps, vectors, string and arrays (the latter three have integer keys). 
+It consists of a map of binding-form-key pairs, each symbol being bound to the value in the init-expr at the key. 
+In addition, and optionally, an :as key in the binding form followed by a symbol 
+will cause that symbol to be bound to the entire init-expr. 
+Also optionally, an :or key in the binding form followed by another map 
+may be used to supply default values for some or all of the keys if they are not found in the init-expr:
+
 (let [{a :a, b :b, c :c, :as m :or {a 2 b 3}} {:a 5 :c 6}]
   [a b c m])
 ->[5 3 6 {:c 6, :a 5}]
-It is often the case that you will want to bind same-named symbols to the map keys. The :keys directive allows you to avoid the redundancy:
+
+It is often the case that you will want to bind same-named symbols to the map keys. 
+The :keys directive allows you to avoid the redundancy:
+
 (let [{fred :fred ethel :ethel lucy :lucy} m] ...
+
 can be written:
+
 (let [{:keys [fred ethel lucy]} m] ...
+
 There are similar :strs and :syms directives for matching string and symbol keys.
 
 Since binding forms can be nested within one another arbitrarily, you can pull apart just about anything:
+
 (let [{j :j, k :k, i :i, [r s & t :as v] :ivec, :or {i 12 j 13}}
 {:j 15 :k 16 :ivec [22 23 24 25]}]
 [i j k r s t v])
