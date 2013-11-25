@@ -1,0 +1,674 @@
+《On Lisp》-第 20 章 续延(continuation)
+
+http://www.ituring.com.cn/article/53793
+
+
+续延是在运行中被暂停了的程序：即含有计算状态的单个函数型对象。
+当这个对象被求值时，就会在它上次停下来的地方重新启动之前保存下来的计算。
+对于求解特定类型的问题，能够保存程序的状态并在之后重启是非常有用的。
+例如在多进程中，续延可以很方便地表示挂起的进程。
+而在非确定性的搜索问题里，续延可以用来表示搜索树中的节点。
+
+要一下子理解续延或许会有些困难。
+本章分两步来探讨这个主题。
+本章的第一部分会先分析续延在 Scheme 中的应用，这门语言内置了对续延的支持。
+一旦说清楚了续延的行为，第二部分将展示如何使用宏在 Common Lisp 程序里实现续延。
+第 21-24 章都将用到这里定义的宏。
+
+=========
+20.1 Scheme 续延
+
+Scheme 和 Common Lisp 在几个主要方面存在着不同，
+其中之一就是：前者拥有显式的续延支持。
+本节展示的是续延在Scheme 中的工作方式。
+([示例代码 20.1] 列出了 Scheme 和 Common Lisp 间一些其他的区别。)
+
+续延是一个代表着计算的将来的函数。
+不管是哪一个表达式被求值，总会有谁在翘首以待它将要返回的值。
+例如，在
+
+(/ (- x 1) 2)
+中，当求值 (- x 1) 时，外面的 / 表达式就在等着这个值，
+同时，还有另外一个式子也在等着它的值，依此类推下去，
+最后总是回到 toplevel 上 print 正等在那里。
+
+无论何时，我们都可以把续延视为带一个参数的函数。
+如果上面的表达式被输入到 toplevel，那么当子表达式 (- x 1) 被求值时，续延将是：
+
+(lambda (val) (/ val 2))
+也就是说，接下来的计算可以通过在返回值上调用这个函数来重现。
+如果该表达式在下面的上下文中出现
+
+(define (f1 w)
+  (let ((y (f2 w)))
+    (if (integer? y) (list 'a y) 'b)))
+
+(define (f2 x)
+  (/ (- x 1) 2))
+
+并且 f1 在toplevel 下被调用，那么当 (- x 1) 被求值时，续延将等价于
+
+(lambda (val)
+  (let ((y (/ val 2)))
+    (if (integer? y) (list 'a y) 'b)))
+
+
+在 Scheme 中，续延和函数同样是第一类对象。
+你可以要求 Scheme 返回当前的续延，然后它将为你生成一个只有单个参数的函数，以表示未来的计算。
+你可以任意长时间地保存这个对象，然后在你调用它时，它将重启当它被创建时所发生的计算。
+
+在 Common Lisp 眼中，一个符号的 symbol-value 和 symbol-function 是不一样的，而 Scheme 对两者不作区分。
+在 Scheme 里面，变量只有唯一对应的值，它可以是个函数，也可以是另一种对象。
+因此，在 Scheme 中就不需要 #' 或者 funcall 了。
+
+Common Lisp 的：
+
+(let ((f #'(lambda (x) (1+ x)))) (funcall f 2))
+
+在 Scheme 中将变成：
+
+(let ((f (lambda (x) (1+ x))))
+  (f 2))
+
+由于 Scheme 只有一个名字空间，因而它没有必要为各个名字空间专门设置对应的赋值操作符(例如 defun 和 setq )。
+取而代之，它使用 define ，define 的作用和 defvar 大致相当，同时用 set! 替代了 setq 。
+在用 set! 为全局变量赋值前，必须先用 define 创建这个变量。
+
+在 Scheme 中，通常用 define 定义有名函数，它行使着 defun 和 defvar 在 Common Lisp 中的功能。
+
+Common Lisp 的：
+
+(defun foo (x) (1+ x))
+
+有两种可能的 Scheme 翻译：
+
+(define foo (lambda (x) (1+ x)))
+(define (foo x) (1+ x))
+
+在 Common Lisp 中，函数的参数按从左到右的顺序求值。
+而在 Scheme 中，有意地不对求值顺序加以规定。
+(并且语言的实现者对于忘记这点的人幸灾乐祸。)
+
+Scheme 不用 t 和 nil ，相应的，它有 #t 和 #f 。
+空列表，()，在某些实现里为真，而在另一些实现里为假。
+
+cond 和 case 表达式里的默认子句在 Scheme 中带有 else 关键字，而不是 Common Lisp 中的 t 。
+
+某些内置操作符的名字被改掉了：consp 成了 pair? ，而 null 则是 null? ，mapcar (几乎) 是 map ，等等。
+通常根据上下文，应该能看出这些操作符的意思。
+
+[示例代码 20.1]： Scheme 和 Common Lisp 之间的一些区别
+
+续延可以理解成是一种广义的闭包。
+闭包就是一个函数加上一些指向闭包创建时可见的词法变量的指针。
+续延则是一个函数加上一个指向其创建时所在的整个栈的指针。
+当续延被求值时，它返回的是使用自己的栈拷贝算出的结果，而没有用当前栈。
+如果某个续延是在 T1 时刻创建的，而在 T2 时刻被求值，那么它求值时使用的将是 T1 时刻的栈。
+
+Scheme 程序通过内置操作符 call-with-current-continuation (缩写为 call/cc) 来访问当前续延。
+当一个程序在一个单个参数的函数上调用 call/cc 时：
+
+(call-with-current-continuation
+  (lambda (cc)
+    ...))
+
+这个函数将被传进另一个代表当前续延的函数。
+通过将 cc 的值存放在某个地方，我们就可以保存在 call/cc 那一点上的计算状态。
+
+在这个例子里，我们 append 出一个列表，列表的最后一个元素是一个 call/cc 表达式的返回值：
+
+> (define frozen)
+FROZEN
+> (append '(the call/cc returned)
+  (list (call-with-current-continuation
+      (lambda (cc)
+        (set! frozen cc)
+        'a))))
+(THE CALL/CC RETURNED A)
+
+这个 call/cc 返回了 a ，但它首先将续延保存在了全局变量 frozen 中。
+
+调用 frozen 会导致在 call/cc 那一点上的旧的计算重新开始。
+无论我们传给 frozen 什么值，这个值都将作为 call/cc 的值返回：
+
+> (frozen 'again)
+(THE CALL/CC RETURNED AGAIN)
+
+续延不会因为被求值而用完。
+它们可以被重复调用，就像任何其他的函数型对象一样：
+
+> (frozen 'thrice)
+(THE CALL/CC RETURNED THRICE)
+
+当我们在某些其他的计算里调用一个续延时，我们可以更清楚地看到所谓返回到原先的栈上是什么意思：
+
+> (+ 1 (frozen 'safely))
+(THE CALL/CC RETURNED SAFELY)
+
+这里，紧接着的 + 当 frozen 调用时被忽略掉了。
+后者返回到了它首次被创建时的栈上：先经过 list ，然后是 append ，直到 toplevel。
+如果 frozen 像正常函数调用那样返回了一个值，那么上面的表达式将在试图给一个列表加 1 时产生一个错误。
+
+各续延并不会每人都分到自己的一份栈的拷贝。
+它们可能跟其他续延或者当前正在进行的计算共享一些变量。
+在下面这个例子里，两个续延共享了同一个栈：
+
+> (define froz1)
+FROZ1
+> (define froz2)
+FROZ2
+> (let ((x 0))
+  (call-with-current-continuation
+    (lambda (cc)
+      (set! froz1 cc)
+      (set! froz2 cc)))
+  (set! x (1+ x))
+  x)
+1
+
+因此调用任何一个都将返回后继的整数：
+
+> (froz2 ())
+2
+> (froz1 ())
+3
+
+由于 call/cc 表达式的值将被丢弃，所以无论我们给 froz1 和 froz2 什么参数都无关紧要。
+
+现在能保存计算的状态了，我们可以用它做什么呢？第 21-24 章致力于使用续延的应用。
+这里将要考察一个比较简单的例子，它能够体现出使用保存状态编程的特色：
+假设有一组树，我们想从每棵树都取出一个元 素，组成一个列表，直到获得一个满足某种条件的组合。
+
+树可以用嵌套列表来表示。
+第 5.6 节上描述了一种将一类树表示成列表的方法。
+这里我们采用另一种方法，允许内部节点带有(原子的) 值，以及任意数量的孩子。
+在这种表示方法里，内部节点变成了一个列表；
+其 car 包含保存在这个节点上的值，其 cdr 包含该节点孩子的表示。
+例如，[示例代码 20.2] 里显示的两棵树可以被表示成：
+
+(define t1 '(a (b (d h)) (c e (f i) g)))
+(define t2 '(1 (2 (3 6 7) 4 5)))
+
+
+a 1
+
+b c 2
+
+d e f g 3 4 5
+
+h i 6 7
+
+(a) t1 (b) t2
+[示例代码 20.2]： 两棵树
+
+[示例代码 20.3]： 用续延来遍历树
+
+(define (dft tree)
+  (cond ((null? tree) ())
+    ((not (pair? tree)) (write tree))
+    (else (dft (car tree))
+      (dft (cdr tree)))))
+
+(define *saved* ())
+
+(define (dft-node tree)
+  (cond ((null? tree) (restart))
+    ((not (pair? tree)) tree)
+    (else (call-with-current-continuation
+        (lambda (cc)
+          (set! *saved*
+            (cons (lambda ()
+                (cc (dft-node (cdr tree))))
+              *saved*))
+          (dft-node (car tree)))))))
+
+(define (restart)
+  (if (null? *saved*)
+    'done
+    (let ((cont (car *saved*)))
+      (set! *saved* (cdr *saved*))
+      (cont))))
+
+(define (dft2 tree)
+  (set! *saved* ())
+  (let ((node (dft-node tree)))
+    (cond ((eq? node 'done) ())
+      (else (write node)
+        (restart)))))
+
+[示例代码 20.3] 中的函数能在这样的树上做深度优先搜索。
+在实际的程序里，我们可能想要在遇到节点时用它们做一些事。
+这里只是打印它们。
+为了便于比较，这里给出的函数 dft 实现了通常的深度优先遍历：
+
+> (dft t1)
+ABDHCEFIG()
+
+函数 dft-node 按照同样的路径遍历这棵树，但每次只处理一个节点。
+当 dft-node 到达一个节点时，它跟着节点的 car 走，并且在 *saved* 里压入一个续延来浏览其 cdr 部分。
+
+> (dft-node t1)
+A
+
+调用 restart 可以继续遍历，作法是弹出最近保存的续延并调用它。
+
+> (restart)
+B
+
+最后，所有之前保存的状态都用完了，restart 通过返回 done 来通告这一事实：
+
+.
+.
+.
+> (restart)
+G
+> (restart)
+DONE
+
+最后，函数 dft2 把我们刚刚手工完成的工作干净漂亮地一笔带过：
+
+> (dft2 t1)
+ABDHCEFIG()
+
+注意到在dft2 的定义里没有显式的递归或迭代：后继的节点被打印出来，
+是因为由 restart 引入的续延总是返回到 dft-node 中同样的 cond 子句那里。
+
+这种程序的工作方式就跟采矿差不多。
+它先调用 dft-node 初步挖出一个矿坑。
+一旦返回值不是 done ，dft-node 后面的代码将调用 restart 将控制权发回到栈上。
+这个过程会一直持续，直到到返回值表明矿被采空。
+这时，dft2 将不再打印返回值，而是返回 #f 。
+使用续延的搜索方式带来了一种编写程序的新思路：
+将合适的代码放在栈上，然后不断地返回到那里来获得结果。
+
+如果我们只是想同时遍历一棵树，就像 dft2 里那样，那么实在没有必要使用这种技术。
+dft-node 的优势在于，可以同时运行它的多个实例。
+假设有两棵树，并且我们想要以深度优先的顺序生成其中元素的叉积。
+
+> (set! *saved* ())
+()
+> (let ((node1 (dft-node t1)))
+  (if (eq? node1 'done)
+    'done
+    (list node1 (dft-node t2))))
+(A 1)
+> (restart)
+(A 2)
+.
+.
+.
+> (restart)
+(B 1)
+.
+.
+.
+
+借助常规技术，我们必须采取显式的措施来保存我们在两棵树中的位置。
+而通过续延，则能非常自然地维护两个正在进行的遍历操作的状态。
+对于诸如本例的简单情形，要保存我们在树中的位置还不算太难。
+树是持久性的数据结构，所以我们至少有办法找到 "我们在树中的位置"。
+
+续延的过人之处在于，即使没有持久性的数据结构与之关联，它同样可以在任何的计算过程中轻松保存我们的位置。
+这一计算甚至也不需要具有有限数量的状态，只要重启它们有限次就行了。
+
+正如第24 章将要展示的，这两种考虑被证实在 Prolog 的实现中至关重要。
+在 Prolog 程序里，"搜索树" 并非真正的数据结构，而只是程序生成结果的一种隐式方式。
+而且这些树经常是无穷大的，这种情况下，我们不能指望在搜索下一棵树之前把整棵树都搜完，
+所以只得想个办法保存我们的位置，除此之外别无选择。
+
+
+20.2 续延传递宏
+
+虽然 Common Lisp 没有提供 call/cc ，但是再加把劲，我们就可以像在 Scheme 里那样做到同样的事情了。
+
+本节展示如何用宏在 Common Lisp 程序中构造续延。
+
+Scheme 的续延给了我们两样东西：
+
+续延被创建时所有变量的绑定。
+
+计算的状态 从那时起将要发生什么。
+
+在一个词法作用域的 Lisp 里，闭包给了我们前者。
+可以看出我们也能使用闭包来获得后者，办法是把计算的状态同样也保存在变量绑定里。
+
+[示例代码 20.4] 续延传递宏
+
+(defvar *actual-cont* #'values)
+
+(define-symbol-macro \*cont\*
+  *actual-cont*)
+
+(defmacro =lambda (parms &body body)
+  '#'(lambda (\*cont\* ,@parms) ,@body))
+
+(defmacro =defun (name parms &body body)
+  (let ((f (intern (concatenate 'string
+            "=" (symbol-name name)))))
+    '(progn
+      (defmacro ,name ,parms
+        '(,',f \*cont\* ,,@parms))
+      (defun ,f (\*cont\* ,@parms) ,@body))))
+
+(defmacro =bind (parms expr &body body)
+  '(let ((\*cont\* #'(lambda ,parms ,@body))) ,expr))
+
+(defmacro =values (&rest retvals)
+  '(funcall \*cont\* ,@retvals))
+
+(defmacro =funcall (fn &rest args)
+  '(funcall ,fn \*cont\* ,@args))
+
+(defmacro =apply (fn &rest args)
+  '(apply ,fn \*cont\* ,@args))
+
+
+[示例代码 20.4] 给出的宏让我们能在保留续延的情况下，进行函数调用。
+这些宏取代了几个内置的 Common Lisp form，它们被用来定义函数，进行函数调用，以及返回函数值。
+
+如果有函数需要使用续延，或者这个函数所调用的函数要用到续延，那么该函数就该用=defun 而不是 defun 定义。
+=defun 的语法和 defun 相同，但其效果有些微妙的差别。
+=defun 定义的并不是单单一个函数，它实际上定义了一个函数和一个宏，这个宏会展开成对该函数的调用。
+(宏定义必须在先，原因是被定义的函数有可能会调用自己。) 
+函数的主体就是传给=defun 的那个，但还另有一个形参，即 *cont* ，它被连接在原有的形参列表上。
+在宏展开式里，*cont* 会和其他参数一同传给这个函数。
+所以
+
+(=defun add1 (x) (=values (1+ x)))
+
+宏展开成
+
+(progn (defmacro add1 (x)
+    '(=add1 \*cont\* ,x))
+  (defun =add1 (\*cont\* x)
+    (=values (1+ x))))
+
+
+当调用add1 时，实际被调用的不是函数而是个宏。
+这个宏会展开成一个函数调用，但是另外带了一个参数：*cont*。
+所以，在调用 =defun 定义的操作符的时候，*cont* 的当前值总是被默默地传递着。
+
+那 *cont* 有什么用呢？它将被绑定到当前的续延。
+=values 的定义显示了这个续延的用场。
+只要是用 =defun 定义的函数，都必须通过 =values 来返回值，或者调用另一个使用 =values 的函数。
+=values 的语法与 Common Lisp 的values 相同。
+如果有个带有相同数量参数的 =bind 等着它的话，它可以返回多值， 但它不能返回多值到 toplevel。
+
+参数 *cont* 告诉那个由 =defun 定义的函数对其返回值做什么。
+当 =values 被宏展开时，它将捕捉 *cont* ，并用它模拟从函数返回值的过程。表达式
+
+(=values (1+ n))
+
+会展开成
+
+(funcall \*cont\* (1+ n))
+
+在 toplevel 下，*cont* 的值是 #'values，这就相当于一个真正的 values 多值返回。
+当我们在 toplevel 下调用 (add1 2) 时，这个调用的宏展开式与下式等价
+
+(funcall #'(lambda (\*cont\* n) (=values (1+ n))) \*cont\* 2)
+
+*cont* 的引用在这种情况下将得到全局绑定。
+因而，=values 表达式在宏展开后将等价于下式
+
+(funcall #'values (1+ n))
+
+即把在 n 上加 1，并返回结果。
+
+在类似 add1 的函数里，我们克服了重重困难，不过是为了模拟 Lisp 进行函数调用和返回值的过程：
+
+> (=defun bar (x)
+  (=values (list 'a (add1 x))))
+BAR
+> (bar 5)
+(A 6)
+
+关键在于，现在有了 "函数调用" 和 "函数返回" 可供差遣，
+而且如果愿意的话，我们还可以把它们用在其他地方。
+
+我们之所以能获得续延的效果，要归功于对 *cont* 的操控。
+虽然 *cont* 的值是全局的，但这个全局变量很少用到：*cont* 几乎总是一个形参，它被 =values 以及用 =defun 定义的宏所捕捉。
+例如在 add1 的函数体里，*cont* 就是一个形参而非全局变量。
+这个区别是很重要的，因为如果 *cont* 不是一个局部变量的话这些宏将无法工作。 
+[示例代码 20.4] 中的第三个宏，=bind ，其用法和 multiple-value-bind 相同。
+它接受一个参数列表，一个表达式，以及一个代码体：
+参数将被绑定到表达式返回的值上，而代码体在这些绑定下被求值。
+倘若一个由 =defun 定义的函数，在被调用之后，需要对另一个表达式进行求值，那么就应该使用=bind 宏。
+
+> (=defun message ()
+  (=values 'hello 'there))
+MESSAGE
+
+
+> (=defun baz ()
+  (=bind (m n) (message)
+    (=values (list m n))))
+BAZ
+> (baz)
+(HELLO THERE)
+
+注意到 =bind 的展开式会创建一个称为 *cont* 的新变量。
+baz 的主体展开成：
+
+(let ((\*cont\* #'(lambda (m n)
+        (=values (list m n)))))
+  (message))
+
+然后会变成：
+
+(let ((\*cont\* #'(lambda (m n)
+        (funcall \*cont\* (list m n)))))
+  (=message \*cont\*))
+
+由于 *cont* 的新值是 =bind 表达式的代码体，所以当 message 通过函数调用 *cont* 来 "返回" 时，结果将是去求值这个代码体。
+尽管如此(并且这里是关键)，在=bind 的主体里：
+
+#'(lambda (m n)
+  (funcall \*cont\* (list m n)))
+
+作为参数传递给=baz 的*cont* 仍然是可见的，所以当代码的主体求值到一个=values 时，它将能够返回到最初的主调函数那里。
+所有闭包环环相扣：每个*cont* 的绑定都包含了上一个*cont* 绑定的闭包，它们串成一条锁链，锁链的尽头指向那个全局的值。
+
+在这里，我们也可以观察到更小规模的同样现象：
+
+> (let ((f #'values))
+  (let ((g #'(lambda (x) (funcall f (list 'a x)))))
+    #'(lambda (x) (funcall g (list 'b x)))))
+#<Interpreted-Function BF6326>
+> (funcall * 2)
+(A (B 2))
+
+本例创建了一个函数，它是含有指向g 的引用的闭包，而g 本身也是一个含有到f 的引用的闭包。
+第 6.3 节上的网络编译器中曾构造过类似的闭包链。
+
+剩下两个宏，分别是=apply 和=funcall ，它们适用于由=lambda 定义的函数。
+注意那些用=defun 定义出来的"函数"，因为它们的真实身份是宏，所以不能作为参数传给apply 或funcall。
+解决这个问题的方法类似于第 8.2 节上提到的技巧。
+也就是把调用包装在另一个=lambda 里面：
+
+> (=defun add1 (x)
+  (=values (1+ x)))
+ADD1
+> (let ((fn (=lambda (n) (add1 n))))
+  (=bind (y) (=funcall fn 9)
+    (format nil "9 + 1 = ~A" y)))
+"9 + 1 = 10"
+
+[示例代码 20.5] 总结了所有因续延传递宏而引入的限制。
+如果有函数既不保存续延，也不调用其他保存续延的函数，那它就没有必要使用这些特殊的宏。
+比如像list 这样的内置函数就没有这个需要。
+
+[示例代码 20.6] 中把来自[示例代码 20.3] 的代码⁴ 从Scheme 翻译成了Common Lisp，并且用续延传递宏代替了Scheme 续延。
+以同一棵树为例，dft2 和之前一样工作正常：
+
+⁴译者注：这段代码与原书有一些出入：首先 (setq saved nil) 被改为 (defvar saved nil)；
+其次将restart 改为re-start 以避免和Common Lisp 已有的符号冲突，
+并且将re-start 的定义放在dft-node 的定义之前以确保后者在编译时可以找到re-start 的定义。
+
+一个用=defun 定义的函数的参数列表必须完全由参数名组成。
+
+使用续延，或者调用其他做这件事的函数的函数，必须用=lambda 或=defun 来定义。
+
+这些函数必须终结于用=values 来返回值，或者调用其他遵守该约束的函数。
+
+如果一个=bind ，=values ，或者=funcall 表达式出现在一段代码里，它必须是一个尾调用。
+任何在=bind 之后求值的代码必须放在其代码体里。
+所以如果我们想要依次有几个=bind ，它们必须被嵌套：
+
+[示例代码 20.5] 续延传递宏的限制
+
+(=defun foo (x)
+  (=bind (y) (bar x)
+    (format t "Ho ")
+    (=bind (z) (baz x)
+      (format t "Hum.")
+      (=values x y z))))
+
+[示例代码 20.6] 使用续延传递宏的树遍历
+
+(defun dft (tree)
+  (cond ((null tree) nil)
+    ((atom tree) (princ tree))
+    (t (dft (car tree))
+      (dft (cdr tree)))))
+
+(defvar *saved* nil)
+
+(=defun re-start ()
+  (if *saved*
+    (funcall (pop *saved*))
+    (=values 'done)))
+
+(=defun dft-node (tree)
+  (cond ((null tree) (re-start))
+    ((atom tree) (=values tree))
+    (t (push #'(lambda () (dft-node (cdr tree)))
+        *saved*)
+      (dft-node (car tree)))))
+
+(=defun dft2 (tree)
+  (setq *saved* nil)
+  (=bind (node) (dft-node tree)
+    (cond ((eq node 'done) (=values nil))
+      (t (princ node)
+        (re-start)))))
+> (setq t1 '(a (b (d h)) (c e (f i) g))
+  t2 '(1 (2 (3 6 7) 4 5)))
+(1 (2 (3 6 7) 4 5))
+> (dft2 t1)
+ABDHCEFIG
+NIL
+
+和 Scheme 里一样，我们仍然可以保存多路遍历的状态，尽管这个例子会显得有些冗长：
+
+> (=bind (node1) (dft-node t1)
+  (if (eq node1 'done)
+    'done
+    (=bind (node2) (dft-node t2)
+      (list node1 node2))))
+(A 1)
+> (re-start)
+(A 2)
+.
+.
+.
+> (re-start)
+(B 1)
+.
+.
+.
+
+通过把词法闭包编结成串，Common Lisp 程序得以构造自己的续延。
+幸运的是，这些闭包是由 [示例代码 20.4] 中血汗工厂给出的宏编织而成的，用户可以不用关心它们的出处，而直接享用劳动成果。
+
+第21–24 章都以某种方式依赖于续延。
+这些章节将显示续延是一种能力非凡的抽象。
+它可能不会很快，如果是在语言层面之上，用宏实现的话，其性能可能会更会大打折扣。
+但是，我们基于续延构造的抽象层可以大大加快某些程序的编写速度，而且提高编程效率也有着其实际意义。
+
+20.3 Code-Walker 和 CPS Conversion
+
+从前一节里描述的宏，我们看到了一种折衷。
+只有用特定的方式编写程序，我们才能施展续延的威力。
+
+[示例代码 20.5] 的第 4 条规则意味着我们必须把代码写成
+
+(=bind (x) (fn y)
+  (list 'a x))
+
+而不能是
+
+(list 'a ; wrong
+  (=bind (x) (fn y) x))
+
+真正的 call/cc 就不会把这种限制强加于程序员。
+call/cc 可以捕捉到所有程序中任意地方的续延。
+尽管我们也能实现具有 call/cc 所有功能的操作符，但那还要做很多工作。
+本节会大略提一下，如果真要这样做的话，还有哪些事有待完成。
+
+Lisp 程序可以转换成一种称为 "continuation-passingstyle" (续延传递风格) 的形式。
+经过完全的  转换的程序是不可读的，但我们可以通过观察被部分转换了的代码来体会这个过程的思想。
+下面这个用于求逆列表的函数：
+
+(defun rev (x)
+  (if (null x)
+    nil
+    (append (rev (cdr x)) (list (car x)))))
+
+产生的等价续延传递版本：
+
+(defun rev2 (x)
+  (revc x #'identity))
+
+(defun revc (x k)
+  (if (null x)
+    (funcall k nil)
+    (revc (cdr x)
+      #'(lambda (w)
+        (funcall k (append w (list (car x))))))))
+
+在 continuation-passingstyle 里，函数得到了一个附加的形参(这里是k)，其值将是当前的续延。
+这个续延是个闭包，它代表了对函数的当前值应该做些什么。
+在第一次递归时，续延是 identity；此时函数的任务就是返回其当前的值。
+在第二次递归时，续延将等价于
+
+#'(lambda (w)
+  (identity (append w (list (car x)))))
+
+也就是说要做的事就是追加一个列表的 car 到当前的值上，然后返回它。
+
+一旦可以进行 CPS 转换，实现 call/cc 就易如反掌了。
+在带有  转换的程序里，当前的整个续延总是存在的，
+这样 call/cc 就可以实现成一个简单的宏，将一些函数作为一个参数来和它一起调用就好了。
+
+为了做 CPS 转换，我们需要 code-walker，它是一种能够遍历程序源代码树的程序。
+为 Common Lisp 编写 code-walker 并非易事。
+要真正能有用，code-walker 的功能不能仅限于简单地遍历表达式。
+它还需要相当了解表达式的作用。
+例如，code-walker 不能只是在符号的层面上思考。
+比如，符号至少可以代表，它本身，一个函数，变量，代码块名称，或是一个 go 标签。
+code-walker 必须根据上下文，分辨出符号的种类，并进行相应的操作。
+
+由于编写code-walker 超出了本书的范围，所以本章里描述的宏只是最现实的替代品。
+本章中的宏将用户跟构建续延的工作分离开了。
+如果有用户编写了相当接近于  的程序，这些宏可以做其余的事情。
+第4 条规则实际上说的是：如果紧接着=bind 表达式的每样东西都在其代码体里，
+那么在 *cont* 的值和=bind 主体中的代码之间，程序有足够的信息用来构造当前的续延。
+
+=bind 宏故意写成这样以使得这种编程风格看起来自然些。
+在实践中由续延传递宏所引入的各种限制还是可以容忍的。
+
+备注：
+
+【注2】由=defun 产生的函数被有意地赋予了intern 了的名字，好让这些函数能够被 trace 。
+如果没有必要做trace 的话，用gensym 来作为它们的名字应该会更安全些。
+
+【注3】译者注：原文是 "*cont* 的值是 identity"，这是错误的。
+并且原书勘误修正了[示例代码 20.4] 中对应的 *cont* 定义，这里译文也随之做了修改。
+
+【注4】译者注：原书中在这里还有一句话：
+"at's why *cont* is given its initial value in a setq instead of a defvar： 
+the latter would also proclaim it to be special." 
+原作者假设*cont* 全局变量是词法作用域的，但这违反了Common Lisp 标准。
+为了能在现代Common Lisp 实现上运行这些代码，译文采纳了C 上给出的一个解决方案，使用符号宏来模拟词法变量。
+具体参见[示例代码 20.4] 中修改过的代码。
