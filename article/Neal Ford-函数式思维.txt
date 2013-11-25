@@ -1,8 +1,11 @@
-﻿函数式思维
+﻿Neal Ford-函数式思维
 
 函数式思维: 以函数式的方式思考，第 1 部分
 学习如何像函数式程序员一样思考
 http://www.ibm.com/developerworks/cn/java/j-ft1/index.html
+Neal Ford, 软件架构师, ThoughtWorks Inc.
+2011 年 7 月 25 日
+
 Functional thinking: Thinking functionally, Part 1
 http://www.ibm.com/developerworks/java/library/j-ft1/index.html
 

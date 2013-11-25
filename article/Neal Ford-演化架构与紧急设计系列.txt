@@ -1,4 +1,4 @@
-﻿演化架构与紧急设计系列
+﻿Neal Ford-演化架构与紧急设计系列
 
 http://www.ibm.com/developerworks/cn/java/j-eaed/
 
