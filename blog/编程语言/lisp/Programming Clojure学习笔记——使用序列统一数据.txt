@@ -1,0 +1,537 @@
+Programming Clojure学习笔记——使用序列统一数据
+
+http://blog.csdn.net/zh2qiang/article/details/7234413
+
+seq是一种逻辑列表。可以通过序列来访问的集合被称为可序列。
+
+=======
+4.1 一切皆序列
+
+每一个聚集数据结构都可以看作序列，序列有三个核心操作：
+
+1. 取序列的第一个元素：
+(first aseq)
+如果参数为空或nil则返回nil
+
+2. 取第一个元素后的所有元素：
+(rest aseq)
+如果没有，则返回空，而不是nil
+
+3.在序列的头部添加一个元素构成一个新的序列：
+(cons elem aseq)
+
+
+seq函数将可序列集合转换成序列：
+(seq coll)
+如果集合coll为空或nil，则返回nil。
+
+next函数返回第一个元素后所有元素组成的序列：
+(next aseq)
+等价于(seq (rest aseq)) 。
+
+注意：序列函数返回结果始终是序列，不管输入是什么类型。
+
+map可以看作序列，每个键值对就是序列的一个元素:
+(first {:fname "Stu" :lname "Halloway"})
+返回[:fname "Stu"]
+
+set也可以看作序列：
+(first #{:the :quick :brown :fox})
+返回[:brown]
+
+Map和set中元素有一个稳定的顺序，该顺序依赖具体的实现（Clojure内部实现），
+后放进的元素不一定放在后面，因此我们不能依赖该顺序。
+如果想要一个可信赖的顺序，可以使用sorted-set和sorted-map，
+sorted-set按字符顺序排列，sorted-set依据key值按字符顺序排列，如：
+
+set排序
+user=> (sorted-set :the :quick :brown :fox)
+#{:brown :fox :quick :the}
+
+map排序
+user=> (sorted-map :c 3 :b 2 :a 1)
+{:a 1, :b 2, :c 3}
+
+----
+seq的另外两个核心操作：
+(1) conj
+(conj coll element & elements)
+conj添加一个或多个元素到集合。
+
+(2) into 
+(into to-coll form-coll)
+into添加一个集合中所有元素到另一个集合。
+
+注意：
+(a) 对于list，conj和into在头部添加；而对于向量，则在末尾添加。
+
+user=> (conj '(1 2 3) :a)
+(:a 1 2 3)
+user=> (conj [1 2 3] :a)
+[1 2 3 :a]
+
+(b) conj和into不改变输入类型，即输入什么类型，返回什么类型：
+
+user=> (class (conj (seq '(1 2 3)) :a))
+clojure.lang.PersistentList
+
+序列是不可变的。
+
+==========
+4.2 使用序列库
+
+序列库函数可以分为以下四大类：
+1. 创建序列函数
+2. 过滤序列函数
+3. 序列谓词
+4. 序列转换函数
+
+这种分类很粗糙，由于序列不可改变，因此大部分序列函数都创建新的序列，一些序列函数既有过滤也有转换功能。
+
+1. 序列创建
+
+(1) (range start? end step?) 创建一个从start到end，步长为step的序列，start默认为0，step默认为1.
+(2) (repeat n x) 创建一个有n个x组成的序列
+     (repeat x) 创建一个由无穷个x组成的无限序列
+
+
+(3) (iterate f x) 通过不断迭代调用函数f，创建一个无限大的序列，如
+user=> (take 10 (iterate inc 1))
+(1 2 3 4 5 6 7 8 9 10)
+
+说明：
+(iterate inc 1) 创建一个从1开始直到无限大的序列
+(take n sequence) 函数返回一个无限序列sequence的前n个元素
+
+
+(4) (cycle coll) 创建一个由无限个集合coll组成的序列，序列的元素为集合coll中的元素。
+user=> (take 10 (cycle (range 3)))
+(0 1 2 0 1 2 0 1 2 0)
+
+(5) (interleave & colls) 依次从多个集合中取出元素，直到其中一个集合所有元素都被取完，生成一个新的集合。
+user=> (interleave '(1 2 3 4) ["a" "b"] '(A B C))
+(1 "a" A 2 "b" B)
+
+(6) (interpose separator coll) 创建一个由separator将集合coll中每两个元素隔开的序列。
+user=> (interpose "," ["apples" "bananas" "grapes"])
+("apples" "," "bananas" "," "grapes")
+
+(7) 对于Clojure中的每一个集合类型，都有一个对应的函数可以接受任意多个参数创建一个对应类型的集合。
+
+(list & elements)
+(vector & elements)
+(hash-set & elements)
+(hash-map key-1 val-1 ...)
+
+另外，
+hash-set有一个兄弟set，它接受一个集合参数，返回一个set。
+(set [1 2 3]) 与(hash-set 1 2 3) 等同。
+vector也有一个兄弟vec，它也接受一个集合参数，返回一个vector。
+(vec [0 1 2]) 与(vector 0 1 2) 等同。
+
+2. 序列过滤
+
+(1) (filter pred coll) 返回集合中使得pred谓词返回true的元素组成的序列。
+user=> (filter even? [1 2 3 4 5])
+[2 4]
+
+(2) (take-while pred coll) 返回一个从集合元素开始，
+直到第一个使得pred为false的元素（不包括该元素）为止的所有元素组成的集合。
+
+user=> (take-while even? [2 4 1 5 6])
+(2 4)
+
+说明：
+从第一个元素开始2，4都满足even?条件，但第三个不满足，因此就终止从集合中取元素，
+虽然第5个元素6也满足条件但只取到第三个就不继续取了，因此返回(2 4)。
+
+(3) (drop-while pred coll) 与take-while相反，
+去掉从头开始连续使得pred返回true的元素，然后返回剩下元素组成的集合。
+
+user=> (drop-while even? [2 4 1 5 6])
+(1 5 6)
+
+(4) (split-at index coll) 返回一个由集合coll从index位置分割成的两个集合组成的向量：
+user=> (split-at 5 (range 10))
+[(0 1 2 3 4) (5 6 7 8 9)]
+
+(5) (split-with pred coll) 与split-at类似，
+返回一个以集合coll中“满足pred条件的元素组成的集合”，和“不满足pred条件的元素组成的集合”为元素的向量。
+
+user=> (split-with #(<= % 10) (range 0 20 2))
+[(0 2 4 6 8 10) (12 14 16 18)]
+
+说明：take-,split-和drop-函数均返回懒序列。
+
+
+3. 序列谓词
+
+序列谓词判断其他谓词应用于序列每一个元素的结果。
+
+(1) (every? pred coll) 判断是否集合中每个元素都使pred返回true。
+
+user=> (every? odd? [1 3 5]) 返回true
+user=> (every? odd? [1 3 5 8]) 返回false
+
+(2) (some? pred coll) 返回第一个非false值，或者返回nil如果没有元素匹配。
+
+user=> (some even? [1 2 3]) 返回true
+user=> (some even? [1 3 5]) 返回nil
+
+说明：some不是谓词，它返回第一个匹配的实际值，不一定是true。
+
+(3) (not-every? pred coll) 判断是否不是所有的元素都使pred返回true。
+
+(4) (not-any? pred coll) 判断是否所有的元素都使pred返回false。
+
+
+4. 序列转换
+
+转换函数转换序列中的值。
+
+(1) (map f coll) 
+返回以集合coll中每一个元素为参数调用函数f的结果组成的序列，
+集合的个数与函数f的参数个数一致，返回结果集合大小与最小集合大小一致。
+
+user=> (map #(format "<%s>%s" %1 %2 %1) ["h1" "h2" "h3" "h1"] ["the" "quick" "brown" "fox"])
+("<h1>the</h1>" "<h2>quick</h2>" "<h3>brown</h3>" "<h1>fox</h1>")
+
+(2) (reduce f coll) 
+f是一个两个参数的函数，reduce以集合coll开头两个元素为参数调用f函数，
+然后以函数结果及第三个元素为参数继续调用函数f，
+依次类推，直到最后一个元素，并返回最后依次函数的返回值。
+
+user=> (reduce + (range 1 11)) 等同1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10
+55
+
+(3) (sort comp? coll)和(sort-by a-fn comp? coll)
+
+sort没有比较函数comp则按自然顺序排列集合元素，sort-by则对每一个元素调用函数a-fn，然后对函数执行结果进行排序。
+
+sort和sort-by如果有比较函数参数，则按函数指定的方式进行排序。
+
+user=> (sort > [42 1 7 11])
+(42 11 7 1)
+
+user=> (sort < [42 1 7 11])
+(1 7 11 42)
+
+------------
+列表解析
+
+Clojure中列表解析使用for宏：
+(for [binding-form coll-expr filter-expr? ...] expr)
+
+user=> (for [word ["the" "quick" "brown" "fox"]]
+              (format "<p>%s</p>" word))
+("<p>the</p>" "<p>quick</p>" "<p>brown</p>" "<p>fox</p>")
+
+使用:when语句可以模拟filter函数：
+
+user=> (defn whole-numbers [] (iterate inc 1))
+#'user/whole-numbers
+
+user=> (take 10 (for [n (whole-numbers) :when (even? n)] n))
+(2 4 6 8 10 12 14 16 18 20)
+
+使用:while语句可以模拟take-while函数：
+user=> (for [n (whole-numbers) :while (odd? n)] n)
+(1)
+
+for宏还能有多个绑定表达式，解析时针对多个表达式的笛卡尔乘积进行。
+如：
+
+user=> (for [rank (range 1 4) file "ABCD"] (format "%c%d" file rank))
+("A1" "B1" "C1" "D1" "A2" "B2" "C2" "D2" "A3" "B3" "C3" "D3")
+
+==============
+4.3 延迟和无限序列
+
+大部分Clojure序列都是延迟的，即元素值直到使用时才计算。使用延迟序列有如下好处：
+1. 推迟可能不需要的昂贵计算，
+2. 可以处理内存中无法存储的大数据集，
+3. 可以延迟I/O操作，直到真正需要时。
+
+延迟序列是Clojure函数编程的关键。
+
+强迫序列（forcing sequences)
+强迫延迟序列计算出所有序列元素值。
+
+可以使用doall函数来强迫计算：
+(doall coll)
+
+也可以使用dorun函数：
+(dorun coll)
+
+说明：
+两个函数都能强迫延迟序列计算所有元素值，
+但doall返回所有元素组成的序列，而dorun不在内存中保留已经计算过的元素值，返回nil。
+
+user=> (def x (for [i (range 1 3)] (do (println i) i)))
+#'user/x
+
+user=> (doall x)
+1
+2
+(1 2)
+
+user=> (def x (for [i (range 1 3)] (do (println i) i)))
+#'user/x
+
+user=> (dorun x)
+1
+2
+nil
+
+=========
+4.4 Clojure使Java可序列化
+
+1. 序列访问Java集合
+
+集合可以像序列一样操作称为可序列。
+
+数组可序列：
+user=> (first (.getBytes "hello"))
+104
+
+Hashtable和Map也可序列：
+user=> (first (System/getProperties))
+#<Entry java.runtime.name=Java(TM) SE Runtime Environment>
+
+Clojure自动将集合包装成序列，但不会自动将集合还原为它们原来的类型。
+
+2. 序列访问正则表达式
+
+(re-seq regexp string) 将正则表达式regex应用到string上，由匹配结果生成序列，如：
+user=> (re-seq #"\w+" "the quick brown fox")
+("the" "quick" "brown" "fox")
+
+3. 序列访问文件系统
+
+user=> (import '(java.io File))
+java.io.File
+
+列出当前目录下所有文件及文件夹：
+user=> (.listFiles (File. "."))
+#<File[] [Ljava.io.File;@1b4a74b>
+
+序列当前目录下所有文件及文件夹列表：
+
+user=> (seq (.listFiles (File. ".")))
+(#<File .\.gitignore> #<File .\bin> #<File .\book> #<File .\classes> #<File .\cm> #<File .\examples> #<File .\lancet> #<File .\lib> #<File .\LICENSE> #<File .output> #<File .\public> #<File .\Rakefile> #<File .\reader> #<File .\snippets>
+#<File .\test> #<File .\user.clj>)
+
+Clojure提供一种深度优先遍历目录树的方法file-seq：
+
+user=> (count (file-seq (File. ".")))
+193
+
+输出当前目录下所有文件及文件夹个数。
+
+4. 序列访问流
+
+可以使用line-seq序列任何Java Reader的行：
+
+user=> (use '[clojure.contrib.duck-streams :only (reader)])
+user=> (with-open [rdr (reader "../code/user.clj")] (count (line-seq rdr)))
+2
+
+计算文件code/user.clj的行数。
+
+5. 序列访问XML
+
+函数clojure.xml.parse解析Xml文件，流或URI，以Clojure Map形式返回XML数据树：
+
+(for [x (xml-seq
+  (parse (java.io.File. "examples/sequences/compositions.xml")))
+    :when (= :composition (:tag x))]
+   (:composer (:attrs x)))
+
+以上代码从compositions.xml中抽取出composer。
+
+==========
+4.5 调用特定结构函数
+
+Clojure包含一些专门针对列表lists，向量vectors，映射maps，结构structs和集合sets的函数。
+
+1. 针对列表Lists的函数
+
+(peek coll) 获取列表第一个元素，(peek '(1 2 3)) 返回1
+(pop coll) 获取除第一个元素外的其他元素，(pop '(1 2 3))返回(2 3)
+
+说明：如果列表coll为空，则pop抛出异常。
+
+
+2. 针对向量vector的函数
+
+(1) peek 获取向量最后一个元素，(peek [1 2 3]) 返回3
+
+(2) pop 获取除最后一个元素外的其他元素，(pop [1 2 3]) 返回[1 2]
+
+(3) get 获取指定索引位置的元素，如果索引超出范围，则返回nil，(get [:a :b :c] 1) 返回:b
+
+(4) assoc 给指定索引赋值
+(assoc [0 1 2 3 4] 2 :two) 返回[0 1 :two 3 4]
+
+(5) subvec 返回向量的子向量
+(subvec avec start end?) 如果end没指定则默认为向量结尾，(subvec [1 2 3 4 5] 3) 返回[4 5]
+
+向量本身即函数，以索引为参数，返回指定位置的元素，
+如果索引参数超出返回，则抛出异常，如：
+
+user=> ([:a :b :c] 5)
+java.lang.ArrayIndexOutOfBoundsException: 5 (NO_SOURCE_FILE:0)
+
+
+3. 针对Map的函数
+
+(1) (keys map) 返回map的key序列，
+(keys  {:sundance "spaniel", :darwin "beagle"})，返回(:sundance :darwin)
+
+(2) (vals map) 返回map的值序列，
+(vals {:sundance "spaniel", :darwin "beagle"})，返回("spaniel" "beagle")
+
+(3) (get map key value-if-not-found?) 返回指定key对应的value，
+如果没有则返回nil或value-if-not-found。
+    (get {:sundance "spaniel", :darwin "beagle"} :darwin) 返回"beagle"
+
+(4) Map是它们key的函数，返回指定key对应的value值，类似get函数。
+    ({:sundance "spaniel", :darwin "beagle"} :darwin) 返回"beagle"
+
+(5) 关键字Keywords 也是函数，以Map为参数，返回Map中Keywords对应的值。
+    (:darwin {:sundance "spaniel", :darwin "beagle"}) 返回"beagle"
+
+(6) (contains? map key) 判断map是否包含键为key的键值对元素。
+user=> (def score {:stu nil :joey 100})
+user=> (:stu score) 返回nil
+user=> (contains score :stu) 返回true
+
+(7) Clojure还提供了几个创建新Map的函数：
+
+assoc 返回一个添加新key/value对的map。
+dissoc 返回一个删除指定key对应的元素的map。
+select-keys 返回一个只包含传入key对应元素的map。
+merge 合并多个map。
+
+以下举例说明：
+
+user=> (def song {:name "Agnus Dei"
+               :artist "Krzysztof Penderecki"
+               :album "Polish Requiem"
+               :genre "Classical"})
+#'user/song
+
+user=> (assoc song :kind "MPEG Audio File")
+{:kind "MPEG Audio File", :name "Agnus Dei", :artist "Krzysztof Penderecki", :al
+bum "Polish Requiem", :genre "Classical"}
+
+user=> (dissoc song :genre)
+{:name "Agnus Dei", :artist "Krzysztof Penderecki", :album "Polish Requiem"}
+
+user=> (select-keys song [:name :artist])
+{:artist "Krzysztof Penderecki", :name "Agnus Dei"}
+
+user=> (merge song {:size 8118166, :time 507245})
+{:time 507245, :size 8118166, :name "Agnus Dei", :artist "Krzysztof Penderecki", :album "Polish Requiem", :genre "Classical"}
+
+(8) (merge-with merge-fn & maps) 类似merge，但是针对相同key的元素值，通过函数merge-fn进行合并，如：
+
+user=> (merge-with concat {:rubble ["Barney"], :flintstone ["Fred"]} {:rubble ["Betty"], :flintstone ["Wilma"]}
+               {:rubble ["Bam-Bam"], :flintstone ["Pebbles"]})
+{:rubble ("Barney" "Betty" "Bam-Bam"), :flintstone ("Fred" "Wilma" "Pebbles")}
+
+
+4. 针对Sets的函数
+
+Clojure提供的针对sets的函数都在clojure.set命名空间中。
+
+(1) 第一组函数来自集合理论中的运算
+
+union 返回多个集合的并集。
+intersection 返回多个集合的交集。
+defference 返回集合的差集。
+select 返回满足谓词条件的元素组成的子集。
+
+下面举例说明：
+
+user=> (def languages #{"java" "c" "d" "clojure"})
+user=> (def letters #{"a" "b" "c" "d" "e"})
+user=> (def beverages #{"java" "chai" "pop"})
+user=> (use 'clojure.set)
+
+user=> (union languages beverages)
+#{"java" "c" "d" "clojure" "chai" "pop"}
+
+user=> (difference languages beverages)
+#{"c" "d" "clojure"}
+
+user=> (intersection languages beverages)
+#{"java"}
+
+user=> (select #(= 1 (.length %)) languages)
+#{"c" "d"}
+
+关系代数，数据库和clojure数据类型直接的对应关系如下表所示：
+关系代数    数据库    clojure数据类型
+关系        表        类似set的类型
+元组        行        类似map的类型
+
+关系代数包含六种基本的运算：并集，差集，选择，重命名，投影，交叉乘积。
+前三种上面已经介绍，下面看后三种。
+
+(1) 重命名(rename relation rename-map)，指重命令map的key（即数据库表的列名）。
+
+(2) 投影(project relation keys)，类似SQL查询指定列子集，返回指定的key的key/value对。
+
+(3) 交叉乘积
+
+通过for宏可以计算多个关系（即集合）的笛卡尔积。
+
+通过(join relation-1 relation-2 keymap?)中共同的key关联两个关系组成一个新的关系（类似数据库的自然连接），
+如果两个关系的key都不一致，可以通过keymap将relation-1中key名称与relation-2中对应key名称进行关联。
+
+下面举例说明：
+
+定义关系（即map集合）
+user=> (def compositions
+  #{{:name "The Art of the Fugue" :composer "J. S. Bach"}
+    {:name "Musical Offering" :composer "J. S. Bach"}
+    {:name "Requiem" :composer "Giuseppe Verdi"}
+    {:name "Requiem" :composer "W. A. Mozart"}})
+
+user=> (def composers
+  #{{:composer "J. S. Bach" :country "Germany"}
+    {:composer "W. A. Mozart" :country "Austria"}
+    {:composer "Giuseppe Verdi" :country "Italy"}})
+
+user=> (def nations
+  #{{:nation "Germany" :language "German"}
+    {:nation "Austria" :language "German"}
+    {:nation "Italy" :language "Italian"}})
+
+重命名：
+
+user=> (rename compositions {:name :title})
+#{{:title "The Art of the Fugue", :composer "J. S. Bach"} 
+  {:title "Requiem", :composer "W. A. Mozart"} 
+  {:title "Requiem", :composer "Giuseppe Verdi"} 
+  {:title "Musical Offering", :composer "J. S. Bach"}}
+
+投影：
+
+user=> (project compositions [:name])
+#{{:name "Requiem"} {:name "The Art of the Fugue"} {:name "Musical Offering"}}
+
+注意："Requiem"重复，只保留一个。
+
+笛卡尔积：
+
+(for [m compositions c composers] (concat m c))
+
+交叉乘积：
+
+user=> (join compositions composers)
+#{{:name "Requiem", :composer "Giuseppe Verdi", :country "Italy"} 
+    {:name "Musical Offering", :composer "J. S. Bach", :country "Germany"} 
+    {:name "Requiem", :composer "W. A. Mozart", :country "Austria"} 
+    {:name "The Art of the Fugue", :composer "J. S. Bach", :country "Germany"}}

@@ -1,0 +1,285 @@
+Programming Clojure学习笔记——多重方法
+
+http://blog.csdn.net/zh2qiang/article/details/7303638
+
+=========
+hxzon学习笔记：
+
+1，定义多重方法：(defmulti nameXX dispatch-fnYY)
+定义多重方法实现：(defmethod nameXX dispatch-val & [param1,...] (...))
+
+2，多重方法的默认实现。
+
+3，解决分发冲突：
+
+(prefer-method multi-name loved-dispatchXX dissed-dispatchYY)
+当你调用prefer-method的时候，你在告诉它匹配loved-dispatchXX值胜过dissed-dispatchYY值，不管是否有冲突。
+
+4，创建非正式类别。
+
+使用derive可以定义任意的父子关系:
+(derive child parent)
+
+此时可以使用isa?来进行判断继承关系：
+(isa? ::acc/Savings ::acc/Account)
+
+Java的继承关系在你定义一个类时就固定了，而derived关系在需要的时候，可以应用到存在的内容不清楚的对象上。
+因此当你发现存在的对象之间存在“继承”关系时，可以通过derived来建立，
+而不需要知道原始对象的源代码，也不需要创建任何包装类。
+
+5，何时使用多重方法
+
+从Clojure的几个开源项目可以看出：
+-1. 多重方法使用极少，
+-2. 很多多重方法都是基于类型(class)来分发。
+
+使用以下一个通用原则来决定创建函数很是多重方法:
+
+-1. 如果一个函数分支基于一种或多种类型，使用多重方法
+-2. 不管它是什么，当你发现它是类别，而又不是Java类或数据标签时，使用多重方法
+-3. 使用多重方法时，必须能够在没有多重方法定义的情况下，解释其实现方法的分发值
+-4. 不要用多重方法来处理可选的参数或可能的重复情况。
+
+当你有疑问的时候，试着用两种方式来编写，然后挑选看起来更易读的那个。
+
+========
+8.1 没有多重方法的生活
+
+假定Clojure没有提供print和println方法，打印任何对象，println比print方法多输出一个换行符。
+我们自己构建一个通用的打印机制。
+为了输出字符串，空，向量我们需要如下编写代码：
+
+(use '[clojure.contrib.str-utils:only(str-join)])
+(defn my-print-vector [ob]
+(.write *out* "[")
+(.write *out* (str-join""ob))
+(.write *out* "]"))
+(defnmy-print [ob]
+(cond
+    (vector? ob) (my-print-vector ob)
+    (nil? ob) (.write *out* "nil")
+    (string? ob) (.write *out* ob)))
+(defn my-println [ob] (my-print ob) (.write *out* "\n"))
+
+如果需要在添加一种类型，则需要添加一个cond分支和一种实现。
+但我们真正想要的方式是添加一种新特性时，只需要在一个地方添加新的代码而不必修改已有的代码。
+多重方法可以帮助我们实现。
+
+==========
+8.2 定义多重方法
+
+定义多重方法使用defmulti:
+(defmulti name dispatch-fn)
+
+name为多重方法的名字，Clojure将针对方法的参数调用dispatch-fn来选择多重方法的一个特定的方法（实现）。
+
+考虑前一节的my-print函数，它只有一个参数，即需要打印的东西，可以基于参数的类型选择特定的实现。
+因此dispatch-fn必须是一个能返回参数类型的函数，Clojure内置函数class刚好满足条件。
+使用class函数来创建一个名为my-print的多重方法：
+(defmulti my-print class)
+
+这时还得为多重函数my-print提供特定的方法实现，可以通过defmethod来为其添加特定方法实现：
+(defmethod name dispatch-val & fn-tail)
+
+name为特定实现所属多重方法的名称，Clojure通过dispatch函数返回值与dispatch-val进行匹配来选择特定方法，
+fn-tail包含参数和函数体。
+
+创建一个匹配字符串的my-print方法实现：
+(defmethod my-print String [s] (.write *out* s))
+
+创建一个匹配nil的my-print方法实现：
+(defmethod my-print nil [s] (.write *out* "ni"))
+
+多重方法的方法实现可以在代码的任何地方出现，也可以在不修改原来代码的情况下，随时添加新的方法实现
+
+----
+Dispatch能自动识别继承
+
+多重方法dispatch能够识别Java继承。
+举例说明创建my-print的一个实现处理Number类型的参数：
+(defmethod my-print Number [n] (.write *out* (.toString n)))
+
+该方法对integer类型的参数，同样有效：
+user=> (my-println 42) # 输出42
+
+Clojure内部使用isa函数来识别继承关系：
+(isa? child parent)
+它直到integer是一个Number：
+(isa? Integer Number) # 输出true
+
+----
+多重方法默认实现方法
+
+可以使用:default作为dispatch值来处理不与任何实现方法匹配的方法调用。
+
+如下使用:default创建一个my-print方法，打印Java对象toString值，并使用#<>括起来：
+(defmethod my-print :default [s] 
+     (.write *out* "#<")
+     (.write *out* (.toString s))
+     (.write *out* ">"))
+
+如果不幸:default在领域里已经有某些特殊的含义，你可以使用下面的方式创建多重方法，指定默认方法实现：
+(defmulti name dispatch-fn :default default-value)
+
+然后通过default-value来标识你自己的默认实现方法，如：
+(defmulti my-print class :default :everything-else)
+(defmulti my-print String [s] (.write *out* s))
+(defmethod my-print :everything-else [_] (.write *out* "Not implemented yet..."))
+
+多重方法依赖第一个参数的类型进行分发处理，是最常见的分发，
+在其他面向对象语言中，这是唯一的一种动态分发，名为多态。
+但是Clojure的分发比这要普通的多。
+
+==========
+8.3 超越简单的分发
+
+定义一个打印集合的方法实现：
+(use '[clojure.contrib.str-utils :only (str-join)])
+(defmethod my-print java.util.Collection [c]
+     (.write *out* "(")
+     (.write *out* (str-join " " c))
+     (.write *out* ")”))
+
+尝试打印各种序列：
+(my-println (take 6 (cycle [1 2 3])))
+输出：(1 2 3 1 2 3)
+(my-println [1 2 3])
+输出：(1 2 3)
+
+该方法很好，但打印向量时，不能像向量的定义那样，用方括号将输出包围。
+因此需要在添加一个实现方法，因为所有向量都实现IPersistentVector，因此可以这样定义该实现方法：
+
+(defmethod my-print clojure.lang.IPersistentVector [c]
+     (.write *out* "[")
+     (.write *out* (str-join " " c))
+     (.write *out* "]"))
+
+但是它不能正常工作，而是抛出异常：
+(my-println [1 2 3])
+java.lang.IllegalArgumentException: Multiplemethodsmatch
+dispatch value: class clojure.lang.LazilyPersistentVector->
+interface clojure.lang.IPersistentVectorand
+interface java.util.Collection,
+and neither ispreferred
+
+问题是现在有两个dispatch值与向量匹配，Collection和IPersistentVector。
+很多语言限制方法分发来保证这种冲突不会出现，如禁止多继承。
+Clojure采用一种不同的方法来处理，允许出现冲突，然后通过prefer-method来解决：
+
+(prefer-method multi-name loved-dispatch dissed-dispatch)
+当你调用prefer-method的时候，你在告诉它匹配loved-dispatch值胜过dissed-dispatch值，不管是否有冲突。
+
+因此针对上面的问题，我们可以告诉多重方法my-print你更喜欢IPersistentVector：
+(prefer-method my-print clojue.lang.IPersistentVector java.util.Collection)
+
+这时，你可以得到你想要的结果了：
+(my-println (take 6 (cycle [1 2 3])))
+输出：(1 2 3 1 2 3)
+(my-println [1 2 3])
+输出: [1 2 3]
+
+========
+8.4 创建非正式类别
+
+多重方法让你可以创建非正式类别。
+
+举例说明，考虑一个财务应用，处理活期存款帐户和储蓄存款账户。
+为帐户定义一个Clojure结构，通过tag为标识这两种账户：
+(ns examples.multimethods.account)
+(defstruct account :id :tag :balance)
+
+接下来创建两种不同的账户，由::Checking和::Savings标识，大写名称是Clojure的惯例，用来表示类别的关键字。
+双冒号::将关键字限定当前命名空间，在其他命名空间中使用，需要加上限定，如：
+(struct account 1 ::examples.multimethods.account/Savings 100M)
+
+表空间全名称太冗长，可以使用alias为它指定一个简单的别名：
+(alias short-name-symbol namespace-symbol)
+
+为examples.multimethods.account创建别名acc：
+(alias 'acc 'examples.multimethods.account)
+
+创建两个测试对象，一个活期存款账户和一个储蓄存款帐户：
+(def test-savings (struct account 1 ::acc/Savings 100M))
+(def test-checking (strutct account 2 ::acc/Checking 250M))
+
+活期存款帐户利率为0，储蓄存款帐户利率为5%, 
+创建一个多重方法interest-rate基于:tag来分发：
+
+(defmulti interest-rate :tag)
+(defmethod interest-rate ::acc/Checking [_] 0M)
+(defmethod interest-rate ::acc/Savings [_] 0.05M)
+
+账户有年度服务费，其计算规则如下:
+普通活期存款账户为25$
+普通储蓄存款帐户为10$
+高级账户服务费为0$
+活期存款账户有5000$及以上存款时为高级账户
+储蓄存款账户有1000$及以上存款时为高级账户
+
+你可以使用大量的判断逻辑来实现service-charge，
+但是高级账户看起来像是一种类别，虽然账户没有明显的”高级“关键字，
+创建一个account-level多重方法，返回::Premium或::Basic:
+
+(defmulti account-level :tag)
+(defmethod account-level ::acc/Checking [acct]
+        (if (>= (:balance acct) 5000) ::acc/Premium ::acc/Basic))
+(defmethod account-level ::acc/Savings [acct]
+        (if (>= (:balance acct) 1000) ::acc/Premium ::acc/Basic))
+
+接下来可以写一个service-charge多重方法，由account-level和:tag进行分发：
+
+(defmulti service-charge (fn [acct] [(account-level acct) (:tag acct)]))
+(defmethod service-charge [::acc/Basic ::acc/Checking] [_] 25)
+(defmethod service-charge [::acc/Basic ::acc/Savings] [_] 25)
+(defmethod service-charge [::acc/Premium ::acc/Checking] [_] 0)
+(defmethod service-charge [::acc/Premium ::acc/Savings] [_] 0)
+
+测试结果：
+(service-charge {:tag ::acc/Checking :balance 1000})
+输出：25
+(service-charge {:tag ::acc/Savings :balance 1000})
+输出：0
+
+----
+给非正式类别添加继承关系
+
+Clojure使用derive可以定义任意的父子关系:
+(derive child parent)
+
+如savings和cheking都是account:
+(derive ::acc/Savings ::acc/Account)
+(derive ::acc/Checking ::acc/Account)
+
+此时可以使用isa?来进行判断继承关系：
+(isa? ::acc/Savings ::acc/Account)
+输出：true
+
+既然Clojure能识别Savings和Checking都是Account，那么上面的service-charge多重方法可以改写为：
+
+(defmulti service-charge (fn [acct] [(account-level acct) (:tag acct)]))
+(defmethod service-charge [::acc/Basic ::acc/Checking] [_] 25)
+(defmethod service-charge [::acc/Basic ::acc/Savings] [_] 25)
+(defmethod service-charge [::acc/Premium ::acc/Account] [_] 0)
+
+----
+derived关系与Java继承关系的区别：
+
+Java的继承关系在你定义一个类时就固定了，而derived关系在需要的时候，可以应用到存在的内容不清楚的对象上。
+因此当你发现存在的对象之间存在“继承”关系时，可以通过derived来建立，
+而不需要知道原始对象的源代码，也不需要创建任何包装类。
+
+=========
+8.5 何时使用多重方法
+
+从Clojure的几个开源项目可以看出：
+1. 多重方法使用极少
+2. 很多多重方法都是基于类型(class)来分发
+
+使用以下一个通用原则来决定创建函数很是多重方法:
+
+1. 如果一个函数分支基于一种或多种类型，使用多重方法
+2. 不管它是什么，当你发现它是类别，而又不是Java类或数据标签时，使用多重方法
+3. 使用多重方法时，必须能够在没有多重方法定义的情况下，解释其实现方法的分发值
+4. 不要用多重方法来处理可选的参数或可能的重复情况。
+
+当你有疑问的时候，试着用两种方式来编写，然后挑选看起来更易读的那个。
