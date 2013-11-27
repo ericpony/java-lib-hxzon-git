@@ -14,13 +14,13 @@ BlockingDeque<E>
 A Deque that additionally supports blocking operations that wait for the deque to become non-empty when retrieving an element, 
 and wait for space to become available in the deque when storing an element.
 
-阻塞双向队列，在没有空间可插入，及没有元素可取出时阻塞。
+阻塞双向队列，在“没有空间可插入”，及“没有元素可取出”时阻塞。
 
 BlockingQueue<E>	
 A Queue that additionally supports operations that wait for the queue to become non-empty when retrieving an element, 
 and wait for space to become available in the queue when storing an element.
 
-阻塞队列，在没有空间可插入，及没有元素可取出时阻塞。
+阻塞队列，在“没有空间可插入”，及“没有元素可取出”时阻塞。
 
 Callable<V>	
 A task that returns a result and may throw an exception.
@@ -41,6 +41,7 @@ ConcurrentNavigableMap<K,V>
 A ConcurrentMap supporting NavigableMap operations, and recursively so for its navigable sub-maps.
 
 并发的可导航的映射。
+可导航的映射指键是有序的，所以可以获得最大键、最小键，及指定键范围的子映射。
 
 Delayed	
 A mix-in style interface for marking objects that should be acted upon after a given delay.
@@ -105,7 +106,7 @@ An object that creates new threads on demand.
 TransferQueue<E>	
 A BlockingQueue in which producers may wait for consumers to receive elements.
 
-传递队列，一种阻塞队列，生产者等待直到消费者取走元素。
+传输队列，一种阻塞队列，生产者等待直到消费者取走元素。
 
 ----
 类
@@ -374,7 +375,7 @@ The different classes cover the most common usage contexts for producer-consumer
 
 Extended interface TransferQueue, and implementation LinkedTransferQueue introduce a synchronous transfer method (along with related features) in which a producer may optionally block awaiting its consumer.
 
-TransferQueue接口（传递队列），及实现类LinkedTransferQueue，提供同步传递方法，使得生产者可选的阻塞它的消费者。
+TransferQueue接口（传输队列），及实现类LinkedTransferQueue，提供同步传递方法，使得生产者可选的阻塞它的消费者。
 
 The BlockingDeque interface extends BlockingQueue to support both FIFO and LIFO (stack-based) operations. 
 Class LinkedBlockingDeque provides an implementation.

@@ -1,3 +1,5 @@
+《java7并发编程指南》6，并发集合（5）使用线程安全的、带有延迟元素的队列（DelayedQueue）
+
 并发集合（五）使用线程安全的、带有延迟元素的队列（DelayedQueue）
 http://ifeve.com/concurrent-collections-5/
 

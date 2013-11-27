@@ -1,3 +1,5 @@
+《java7并发编程指南》2，基本线程同步（7）修改Lock的公平性
+
 基本线程同步（七）修改Lock的公平性
 http://ifeve.com/basic-thread-synchronization-7/
 

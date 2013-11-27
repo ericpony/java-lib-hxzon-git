@@ -1,3 +1,5 @@
+《java7并发编程指南》2，基本线程同步（4）在同步代码中使用条件（synchronized和wait）
+
 基本线程同步（四）在同步代码中使用条件（synchronized和wait）
 http://ifeve.com/basic-thread-synchronization-4/
 

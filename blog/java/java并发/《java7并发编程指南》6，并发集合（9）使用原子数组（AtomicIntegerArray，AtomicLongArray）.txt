@@ -1,3 +1,5 @@
+《java7并发编程指南》6，并发集合（9）使用原子数组（AtomicIntegerArray，AtomicLongArray）
+
 并发集合（九）使用原子数组（AtomicIntegerArray，AtomicLongArray）
 http://ifeve.com/concurrent-collections-9/
 

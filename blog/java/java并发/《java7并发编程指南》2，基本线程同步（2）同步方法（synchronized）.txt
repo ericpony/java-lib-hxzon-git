@@ -1,3 +1,5 @@
+《java7并发编程指南》2，基本线程同步（2）同步方法（synchronized）
+
 基本线程同步（二）同步方法（synchronized）
 http://ifeve.com/basic-thread-synchroinzation-2/
 

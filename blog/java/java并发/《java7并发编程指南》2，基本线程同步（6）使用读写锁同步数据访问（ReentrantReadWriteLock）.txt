@@ -1,3 +1,5 @@
+《java7并发编程指南》2，基本线程同步（6）使用读写锁同步数据访问（ReentrantReadWriteLock）
+
 基本线程同步（六）使用读写锁同步数据访问（ReentrantReadWriteLock）
 http://ifeve.com/basic-thread-synchronization-6/
 

@@ -1,4 +1,4 @@
-Java虚拟机并发编程样章
+《Java虚拟机并发编程》样章
 http://ifeve.com/jvm-concurrency/
 
 声明：本文是《Java虚拟机并发编程》的样章目录，感谢华章出版社授权并发编程网站发布样章。

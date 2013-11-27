@@ -1,3 +1,5 @@
+《java7并发编程指南》2，基本线程同步（3）在同步的类里安排独立属性（synchronized obj）
+
 基本线程同步（三）在同步的类里安排独立属性（synchronized obj）
 http://ifeve.com/basic-thread-synchronization-3/
 

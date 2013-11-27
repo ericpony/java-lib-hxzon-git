@@ -1,4 +1,4 @@
-Java 7 并发编程指南中文版
+《Java7并发编程指南》中文版
 http://ifeve.com/java-7-concurrency-cookbook/
 
 hxzon修订。

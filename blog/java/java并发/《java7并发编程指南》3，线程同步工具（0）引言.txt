@@ -1,4 +1,4 @@
-线程同步工具（第三章-引言）
+《java7并发编程指南》3，线程同步工具（0）引言
 
 第三章-线程同步工具（引言）
 http://ifeve.com/thread-synchronization-utilities-1/

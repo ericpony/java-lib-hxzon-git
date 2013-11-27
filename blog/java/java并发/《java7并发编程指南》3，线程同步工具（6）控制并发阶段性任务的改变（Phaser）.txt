@@ -1,3 +1,5 @@
+《java7并发编程指南》3，线程同步工具（6）控制并发阶段性任务的改变（Phaser）
+
 线程同步工具（六）控制并发阶段性任务的改变（Phaser）
 http://ifeve.com/thread-synchronization-utilities-7/
 

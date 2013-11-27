@@ -1,3 +1,5 @@
+《java7并发编程指南》6，并发集合（6）使用线程安全的NavigableMap（ConcurrentNavigableMap）
+
 并发集合（六）使用线程安全的NavigableMap（ConcurrentNavigableMap）
 http://ifeve.com/concurrent-collections-6/
 

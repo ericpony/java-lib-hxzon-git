@@ -1,3 +1,5 @@
+《java7并发编程指南》3，线程同步工具（7）在并发任务间交换数据（Exchanger）
+
 线程同步工具（七）在并发任务间交换数据（Exchanger）
 http://ifeve.com/thread-synchronization-utilities-8/
 

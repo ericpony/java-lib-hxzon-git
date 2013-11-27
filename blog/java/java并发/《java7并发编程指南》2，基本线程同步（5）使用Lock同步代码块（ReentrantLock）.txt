@@ -1,3 +1,5 @@
+《java7并发编程指南》2，基本线程同步（5）使用Lock同步代码块（ReentrantLock）
+
 基本线程同步（五）使用Lock同步代码块（ReentrantLock）
 http://ifeve.com/basic-thread-synchronization-5/
 

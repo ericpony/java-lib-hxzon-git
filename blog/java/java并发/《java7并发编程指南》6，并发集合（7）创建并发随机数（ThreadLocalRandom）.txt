@@ -1,3 +1,5 @@
+《java7并发编程指南》6，并发集合（7）创建并发随机数（ThreadLocalRandom）
+
 并发集合（七）创建并发随机数（ThreadLocalRandom）
 http://ifeve.com/concurrent-collections-7/
 

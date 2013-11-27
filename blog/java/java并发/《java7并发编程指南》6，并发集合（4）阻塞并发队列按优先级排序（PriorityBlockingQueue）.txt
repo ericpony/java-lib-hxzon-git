@@ -1,4 +1,4 @@
-并发集合（四）阻塞并发队列按优先级排序（PriorityBlockingQueue）
+《java7并发编程指南》6，并发集合（4）阻塞并发队列按优先级排序（PriorityBlockingQueue）
 
 并发集合（四）用优先级对使用阻塞线程安全的列表排序（PriorityBlockingQueue）
 http://ifeve.com/concurrent-collections-4/

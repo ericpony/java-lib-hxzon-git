@@ -1,3 +1,5 @@
+《java7并发编程指南》6，并发集合（1）引言
+
 并发集合（一）引言
 http://ifeve.com/concurrent-collections-1/
 

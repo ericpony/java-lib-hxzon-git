@@ -1,3 +1,5 @@
+《java7并发编程指南》6，并发集合（2）使用非阻塞并发队列（ConcurrentLinkedDeque）
+
 并发集合（二）使用非阻塞并发队列（ConcurrentLinkedDeque）
 
 

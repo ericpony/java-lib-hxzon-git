@@ -1,3 +1,5 @@
+《java7并发编程指南》3，线程同步工具（2）控制并发访问多个资源（Semaphore）
+
 线程同步工具（二）控制并发访问多个资源（Semaphore）
 http://ifeve.com/thread-synchronization-utilities-3/
 
