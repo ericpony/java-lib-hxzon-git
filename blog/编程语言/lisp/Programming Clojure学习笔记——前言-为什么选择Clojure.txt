@@ -1,0 +1,91 @@
+Programming Clojure学习笔记——前言-为什么选择Clojure
+
+http://blog.csdn.net/zh2qiang/article/details/7080411
+
+=======
+Clojure是一种JVM上运行的动态编程语言，具有一下特性：
+
+1. 优雅
+Clojure的精心设计让你可以只关注解决问题本身。
+
+2. 是Lisp的一种实现，继承了Lisp的强大功能，但不被Lisp语言的限制。
+
+3. 是一种函数编程语言
+Clojure的数据结构都是不可变的，并且绝大部分函数都没有副作用。
+
+4. 简化了并行编程
+Clojure提供了多种可选的锁：软件事务性存贮，代理，原子和动态变量。
+
+5. 拥抱Java
+Clojure中可以快速直接的调用Java类，没有转换层。
+
+6. Clojure很快，在现代JVM的性能达到最优
+
+========
+1.1 为什么选择Clojure？
+
+1. Clojure是优雅的
+
+相对其他语言，实现相同的功能，Clojure程序更短。
+因此Clojure程序更加容易构建发布和维护。
+
+如以下分别为Java和Clojure实现判断字符串是否为空白字符串的函数：
+
+Java代码：
+
+public class StringUtils {
+	public static boolean isBlank(String str) {
+		int strLen;
+		if (str == null || (strLen = str.length()) == 0) {
+			return true;
+		}
+		for (int i = 0; i < strLen; i++) {
+			if ((Character.isWhitespace(str.charAt(i)) == false)) {
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
+Clojure代码：
+
+(defn blank? [s] (every? #(Character/isWhitespace %) s))
+
+
+2. Clojure是一种Lisp实现
+
+为什么实现Lisp？
+
+(1) Lisp的核心很小，几乎没有语法，但有功能强大的宏技术。
+在Clojure中，你可以利用宏添加自定义语言特性。
+
+(2) 代码也是数据。
+
+(3) Lisp的语法消除了操作符的优先级和关联性。完全的括号表达式，绝对不会有歧义。
+
+
+3. Clojure是一种函数编程语言
+
+函数语言特性：
+
+(1) 函数是一流对象，可以像其他数据类型一样使用，可以运行时创建，传递，返回等。
+
+(2) 数据不可改变。
+
+(3) 纯粹的函数，没有副作用。
+
+对于很多任务，函数编程更容易理解，更不容易出错，更容易重用。
+
+
+4. 简化并行编程
+
+Clojure提供比其他函数编程语言更好的并行性。
+Clojure通过软件事务性存贮（STM）来访问可变数据。
+STM比Java锁机制更高级的线程安全方法。
+
+5. Clojure拥抱Java虚拟机
+
+Clojure让你可以直接简洁地访问Java，可以直接调用任意Java API。
+
+

@@ -1,0 +1,363 @@
+Programming Clojure学习笔记——并发
+
+http://blog.csdn.net/zh2qiang/article/details/7234518
+
+
+Clojure提供强大的并发库，由四个API组成，增强不同并发模型：
+
+引用(refs): 管理对共享状态的并发同步修改；
+原子(atoms): 管理对共享状态的非并发同步修改；
+代理(agents): 管理对共享状态的异步修改；
+变量(vars): 管理线程本地状态。
+
+=========
+6.1 锁的问题
+
+选择在什么上和在哪里加锁是一件很难的事。
+如果加锁出现问题，会带来一系列问题：
+
+(1) 线程之间竞争导致数据毁坏
+(2) 死锁导致正常程序功能不能正常使用
+
+
+============
+6.2 引用和软件事务存贮
+
+在Clojure中，大部分对象都是不可变的。
+当你真的需要可变数据时，你必须明确说明，如创建一个可变的引用指向可变对象：
+(ref initial-state)
+
+如：(def current-track (ref "Mars, the Bringer of War")) 定义引用current-track。
+
+ref包装并保护它内部的状态，控制对它内部状态的访问。
+可以使用deref查看引用内容：
+(deref reference)
+
+deref函数可以缩写为读者宏@。如：
+
+user=> (deref current-track)
+"Mars, the Bringer of War"
+
+user=> @current-track
+"Mars, the Bringer of War"
+
+----
+ref-set
+使用ref-set修改引用指向：
+(ref-set reference new-value)
+
+因为引用refs是可变的，必须保护对它们的修改；
+在Clojure中，使用事务来保护，事务通过dosync进行包装：
+(dosync & exprs)
+
+因此修改current-track指向另一首歌曲，可以写成：
+(dosync (ref-set current-track "Venus, the Bringer of Peace"))
+
+
+事务的特性：
+
+类似数据库事务，STM事务满足以下一些特性：
+
+(1) 更新是原子的
+在一个事务中更新多个引用refs，对外界来说都是一起完成的，而不是一个一个完成的。
+
+(2) 更新是一致的
+如果事务中有一个更新失败，则事务中所有更新都将失败。
+
+(3) 更新是隔离的
+其他事务看不到运行事务中部分更新的结果。
+由于Clojure的事务在内存中执行结果不保存到物理存储上，所以不具有持久化特性。
+
+----
+alter
+在事务中，修改引用执行的对象：
+(alter ref update-fn & args...)
+
+举例说明：
+
+定义一个消息结构
+(defstruct message :sender :text)
+
+定义一个存放消息的列表，初始为空：
+(def messages (ref ()))
+
+向列表中添加消息则可以写成:
+(defn add-message [msg] (dosync (alter messages conj msg)))
+
+函数add-message向列表message中添加消息，如：
+user=> (add-message (struct message "user 1" "hello"))
+({:sender "user 1", :text "hello"})
+
+----
+STM如何工作：MVCC
+
+Clojure的STM使用一种在多个主要数据库中使用的称为Multiversion Concurrency Control(MVCC)的技术。
+在Clojure中，MVCC是如下工作的：
+
+事务A开始时，获取一个类似唯一时戳的数字。
+然后获取需要更新的引用的一个有效拷贝，这些拷贝与那个类似时戳的数字关联。
+
+如果在任何点，STM检测到其他事务已经修改了事务A要修改的引用，则事务A被强制重试。
+如果在dosync块抛出异常，则事务A终止不再重试。
+
+如果并当事务A提交后，它所做的修改将与事务时间线的一个点关联暴露给外部。
+
+----
+commute
+
+commute是alter的一个变体，允许更多的并发：
+(commute ref update-fn & args...)
+
+commute所执行的修改与顺序无关，即STM可以自由调整commute中修改操作的顺序。
+
+如果其他事务在commute中修改commute将要修改的引用ref，则STM不会重新执行整个事务，而只是重新执行该修改操作。
+
+----
+偏好alter
+
+尽量少用commute，除非你明确知道事务中的各操作与顺序无关。
+
+----
+给引用Refs添加验证
+
+创建引用时，可以指定一个验证函数：
+(ref initial-state options*)
+
+这里选项options包括：
+(1) :validator validate-fn
+(2) :meta metadata-map
+验证函数可以抛出异常阻止事务完成。
+
+示例：
+
+定义验证函数
+(def validate-message-list
+   (partial every? #(and (:sender %) (:text %))))
+
+给引用指定验证函数
+(def messages (ref () :validator validate-message-list))
+user=> (add-message "not a valid message") 
+  java.lang.IllegalStateException: Invalid reference state
+数据格式不对抛出异常。
+
+=========
+6.3 使用Atoms进行非并发同步修改
+
+原子(Atoms)是一种比引用轻量的同步机制。
+
+创建原子语法：
+(atom initial-state options?)
+
+这里的选项options与引用refs的选项一样。
+
+示例：
+
+使用atom存贮当前曲目代替引用ref：
+(def current-track (atom "Venus, the Bringer of Pease"))
+
+同样的也可以通过deref和@读者宏查看atom的值：
+
+user=> (deref current-track)
+"Venus, the Bringer of Peace"
+
+user=> @current-track
+"Venus, the Bringer of Peace"
+
+原子(atoms)不参与事务，因此修改atoms的值时，不需要dosync，直接调用reset!:
+(reset! an-atom newval)
+
+如修改current-track为“Credo”：
+(reset! current-track "Credo")
+
+使用reset!不能直接同时修改current-track和current-composer在一个原子中。
+但是可以通过将current-track和current-composer存贮到一个map中，然后通过atom来同时修改：
+
+user=> (def current-track (atom {:title "Credo" :composer "Byrd"}))
+#'user/current-track
+
+user=> (reset! current-track {:title "Spem in Alium" :composer "Tallis"})
+{:title "Spem in Alium", :composer "Tallis"}
+
+如果要部分修改上述map，则可以使用swap!:
+(swap! an-atom f & args)
+
+swap更新atom的值通过函数f及其参数args，如只修改上述current-track的标题：
+
+user=> (swap! current-track assoc :title "Sancte Deus")
+{:title "Sancte Deus", :composer "Tallis"}
+
+
+=========
+6.4 使用Agents进行异步更新
+
+类似引用，可以使用代理(agent)包装初始状态。
+(agent initial-state)
+
+如创建counter代理包装初始计数0：
+(def counter (agent 0))
+
+可以send一个函数到agent修改agent的状态，该函数不会立即执行，
+而是存放到线程池的send队列中，稍后执行：
+
+(send agent update-fn & args)
+
+如counter加一：
+(send counter inc)
+
+同样地，可以通过deref和@查看agent的当前值：
+@counter #返回 1
+
+如果你想确保send到agent的函数被执行，可以调用await或await-for:
+(await & agents)
+(await-for timeout-millis  & agents)
+
+它们将阻塞线程，直到agent完成函数执行。 
+await-for等待超时后将返回nil，而await就一直等待直到agent完成函数执行，因此要谨慎使用。
+
+----
+代理验证和错误处理
+
+与refs类似，agent创建时也可以指定验证函数：
+(agent initial-state options*)
+
+这里选项options包括
+(1) :validator validate-fn
+(2) :meta metadata-map
+
+可以通过agent-errors获取agent执行过程中的异常，如：
+(agent-errors counter)
+
+一旦agent有错误，所有后续的查询都将返回错误，可以通过clear-agent-errors是agent变得可用：
+(clear-agent-errors counter)
+
+----
+在事务中使用代理Agent
+
+如果在事务中send一个操作到代理agent，则当且仅当事务成功时，该操作仅被执行一次。
+
+举例说明：
+
+定义聊天信息备份代理
+(def backup-agent (agent "output/message-backup.clj"))
+
+重新改写添加消息函数
+(use '[clojure.contrib.duck-streams :only (split)])
+(defn add-message-with-backup [msg]
+  (dosync
+    (let [snapshot (commute messages conj msg)]
+    (send-off backup-agent (fn [filename](spit filename snapshot) filename))
+     snapshot)))
+
+这里使用了send-off代替send，send-off是send的一个变体将阻塞线程，就像写文件操作一样。
+
+----
+统一更新模型
+
+引用(refs)，原子(atoms)和代理(agents)都是通过应用函数到它们之前的状态来更新它们的状态，
+这种处理共享状态的统一模型是Clojure的一种核心概念。
+这种统一模型和各种辅助函数如下表所示：
+
+Update Mechanism        Ref Function    Atom Function    Agent Function
+Function application    alter           swap!            send-off
+Function(commutative)   commute         N/A              N/A
+Function(nonbocking)    N/A             N/A              send
+Simple setter           ref-set         reset!           N/A
+
+=========
+6.5 使用Vars管理线程本地状态
+
+当你调用def或defn创建一个动态变量时，只是创建了一个变量。
+
+当你传一个初始值给def时，该初始值就成了def创建变量的根绑定(root binding)，如：
+(def foo 10)
+
+变量foo的根绑定被所有线程共享，验证如下：
+
+当前线程中
+user=> foo
+10
+
+新起的线程中
+user=> (.start (Thread. (fn [] (println foo))))
+user=> 10
+
+你也可以通过binding宏为变量创建一个线程本地（thread-local)绑定：
+(binding [bindings] & body)
+
+绑定有动态作业域，换句话说，
+就是一个绑定在执行它的线程中从绑定的地方开始直到退出线程为止都可见，但对其他线程不可见。
+
+举例说明：
+
+(binding [foo 42] foo)
+
+为了说明binding和let的不同创建一个简单的输出foo值的函数
+user=> (defn print-foo [] (println foo))
+#'user/print-foo
+
+然后分别通过let和binding来调用print-foo
+user=> (let [foo "let foo"] (print-foo))
+10
+user=> (binding [foo "bound foo"] (print-foo))
+bound foo
+
+从执行结果可以看出，let在let形式外就不起作用，因此还是输出10；
+而binding则从binding形式开始的任何向下调用链中都有效，因此输出"bound foo"。
+
+----
+远距离操作
+
+动态绑定的变量有时被称为特殊变量，它们的名字以星号(*)开始和结尾，如标准输入输出流*in*,*out*和*err*。
+动态绑定可以实现远距离操作，当你改变动态绑定时，你在没有改变任何函数参数的情况下改变了远处函数的行为。
+
+有一种远距离操作临时增强了函数的行为，在某些语言中被归为面向切面编程，
+但在Clojure中，只是动态绑定的一个副作用而已。
+
+举例说明：
+
+定义一个翻倍函数
+
+user=>(defn slow-double [n]
+   (Thread/sleep 100)
+   (* n 2))
+#'user/slow-double
+
+user=> (defn calls-slow-double []
+(map slow-double [1 2 1 2 1 2]))
+#'user/calls-slow-double
+
+统计计算用时
+user=> (time (dorun (calls-slow-double)))
+"Elapsed time: 600.298606 msecs"
+
+下面对slow-double函数进行缓存
+(defn demo-memoize []
+   (time
+     (dorun
+         (binding [slow-double (memoize slow-double)]
+            (calls-slow-double)))))
+
+然后执行demo-memoize函数
+user=> (demo-memoize)
+"Elapsed time: 201.821212 msecs"
+
+这个例子说明了远距离操作的强大功能和危险，通过动态绑定改变了calls-slow-double函数的行为。
+
+----
+与Java回调API一起工作
+
+一些Java API依赖与回调事件处理，如GUI框架和XML解析器SAX。
+这些回调处理都是用可变对象写的，并且倾向于单线程。
+在Clojure中，实现回到处理的最好折中方式是动态绑定，引入类似变量的可变引用，
+又因为它们在但线程环境使用，因此不会出现并发问题。
+
+
+最后总结以下Clojure的并发模型，如下：
+
+模型        作用                函数类型
+
+Refs和STM   并发同步更新        纯函数
+Atoms       非并发同步更新      纯函数
+Agents      非并发异步更新      任意
+Vars        线程本地动态作业域  任意
+Java锁      并发同步更新        任意

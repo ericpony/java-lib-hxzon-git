@@ -1,0 +1,628 @@
+《On Lisp》-第 12 章 广义变量
+
+http://www.ituring.com.cn/article/53771
+
+==========
+第 12 章 广义变量 . . . . . . . 111
+
+12.1 概念 . . . . . . . . . . . . . 111
+12.2 多重求值问题 . . . . . . . . . . . . . . . . 112
+12.3 新的实用工具 . . . . . . . . . . . . . . . . 113
+12.4 更复杂的实用工具 . . . . . . . . . . . . . 115
+12.5 定义逆 . . . . . . . . . . . 119
+
+==========
+
+第 8 章曾提到，宏的长处之一是其变换参数的能力。
+setf 就是这类宏中的一员。
+本章将着重分析 setf 的内涵，然后以几个宏为例，它们将建立在 setf 的基础之上。
+
+要在 setf 上编写正确无误的宏并非易事，其难度让人咋舌。
+为了介绍这个主题，第一节会先给出一个有点小问题的简单例子。
+接下来的小节将解释该宏的错误之处，然后展示如何改正它。
+第三和第四节会介绍一些基于 setf 的实用工具的例子，
+而最后一节则会说明如何定义你自己的 setf 逆变换。
+
+
+12.1 概念
+
+内置宏 setf 是 setq 的推广形式。
+setf 的第一个参数可以是个函数调用而非简单的变量：
+
+> (setq lst '(a b c))
+(A B C)
+> (setf (car lst) 480)
+480
+> lst
+(480 B C)
+
+一般而言，(setf x y) 可以理解成 "务必让 x 的求值结果为 y"。
+作为一个宏，setf 得以深入到参数内部，弄清需要做哪些工作，才能满足这个要求。
+如果第一个参数(在宏展开以后) 是个符号，那么 setf 就只会展开成 setq。
+但如果第一个参数是个查询语句，那么 setf 则会展开到对应的断言上。
+由于第二个参数是常量，所以前面的例子可以展开成：
+
+(progn (rplaca lst 480) 480)
+
+这种从查询到断言的变换被称为逆变换。
+Common Lisp 中所有最常用的访问函数都有预定义的逆，
+包括 car、cdr、nth、aref、get、gethash，以及那些由 defstruct 创建的访问函数。
+( 完整的名单见 CLTL2 的第 125 页。)
+
+能充当 setf 第一个参数的表达式被称为广义变量。
+广义变量已经成为了一种强有力的抽象机制。
+宏调用和广义变量的相似之处在于：
+一个宏调用，只要能展开成可逆引用，那么其本身就一定是可逆的。
+
+当我们也加入这个行列，基于 setf 编写自己的宏时，这种组合可以产生显而易见更清爽的程序。
+我们可以在 setf 上面定义的宏有很多，其中一个是 toggle：【注1】
+
+(defmacro toggle (obj)
+  '(setf ,obj (not ,obj)))
+它可以反转一个广义变量的值：
+
+> (let ((lst '(a b c)))
+  (toggle (car lst))
+  lst)
+(NIL B C)
+
+现在考虑下面的应用。
+假设有个人，他可能是个肥皂剧作者、精力充沛的好事者，或是居委会大妈，想要维护一个数据库。
+其中记录着小镇上所有居民之间的种种恩怨情仇。
+在数据库里的表里，其中有一张便是用来保存朋友关系的：
+
+(defvar *friends* (make-hash-table))
+这个哈希表的表项本身也是哈希表，其中，潜在的朋友被映射到 t 或者 nil ：
+
+(setf (gethash 'mary *friends*) (make-hash-table))
+为了使 John 成为 Mary 的朋友，我们可以说：
+
+(setf (gethash 'john (gethash 'mary *friends*)) t)
+
+这个镇被分为两派。
+正如帮派的传统，每个人都声称 "凡人非友即敌"，所以镇上所有人都被迫加入一方或者另一方。
+这样当某人转变立场时，他所有的朋友都变成敌人，而所有的敌人则变成朋友。
+
+如果只用内置的操作符来切换 x 和 y 的敌友关系，我们必须这样说：
+
+(setf (gethash x (gethash y *friends*))
+  (not (gethash x (gethash y *friends*))))
+尽管去掉 setf 后要简单许多，这个表达式还是相当复杂。
+倘若我们为数据库定义了一个访问宏，如下：
+
+(defmacro friend-of (p q)
+  '(gethash ,p (gethash ,q *friends*)))
+
+那么在这个宏和 toggle 的协助下，我们就得以更方便地修改数据库的数据。
+前面那个更新数据库的语句可以简化成：
+
+(toggle (friend-of x y))
+
+广义变量就像是美味的健康食品。
+它们能让你的程序良好地模块化，同时变得更为优雅。
+如果你给出宏或者可逆函数，用来访问你的数据结构，
+那么其他模块就可以使用 setf 来修改你的数据结构而无需了解其内部细节。
+
+
+12.2 多重求值问题
+
+上一节曾警告说，我们最初的 toggle 定义是不正确的：
+
+(defmacro toggle (obj) ; wrong
+  '(setf ,obj (not ,obj)))
+它会碰到第 10.1 节里提到的多重求值问题。
+如果它的参数有副作用，那麻烦就来了。
+比如说，若 lst 是一个对象列表，我们这样写：
+
+(toggle (nth (incf i) lst))
+并期待它能反转第 (i+1) 个元素。
+事与愿违，如果使用 toggle 现在的定义，这个调用将展开成：
+
+(setf (nth (incf i) lst)
+  (not (nth (incf i) lst)))
+这会使 i 递增两次，并且将第 (i+1) 个元素设置成第 (i+2) 个元素的反。
+所以在本例中:
+
+> (let ((lst '(t nil t))
+    (i -1))
+  (toggle (nth (incf i) lst))
+  lst)
+(T NIL T)
+调用 toggle 毫无效果。
+
+仅仅把作为 toggle 参数给出的表达式插入到 setf 的第一个参数的位置上还不够。
+我们必须深入到表达式内部，看看它到底做了什么：
+如果它含有 subform ，而且这些 subform 有副作用的话，我们就需要把它们分开，并单独求值。
+一般而言，这件事情并不那么简单。
+
+为了让问题容易些，Common Lisp 提供了一个宏，
+它可以帮助我们自动定义一些基于 setf 的宏，不过适用范围有限。
+宏的名字叫 define-modify-macro ，它接受三个参数：
+被定义宏的宏名，它的附加参数（出现在广义变量之后），以及一个函数名，这个函数将为广义变量产生新值。【注2】【注3】
+
+使用 define-modify-macro ，我们可以像下面这样定义 toggle ：
+
+(define-modify-macro toggle () not)
+具体说，就是 "若要求值形如 (toggle place) 的表达式，应该先找到 place 指定的位置，
+并且，如果保存在那里的值是 val，将其替换成 (not val) 的值"。
+下面把这个新宏用在原来的例子里：
+
+> (let ((lst '(t nil t))
+    (i -1))
+  (toggle (nth (incf i) lst))
+  lst)
+(NIL NIL T)
+虽然这个版本正确无误地给出了结果，但它本可以写得更通用些。
+由于 setf 和 setq 两者对其参数数量都没有限制，toggle 也应如此。
+我们可以通过在修改宏 (modify-macro) 的基础上定义另一个宏，来赋予它这种能力，如 [示例代码 12.1]所示。
+
+[示例代码 12.1]：操作在广义变量上的宏
+
+(defmacro allf (val &rest args)
+  (with-gensyms (gval)
+    '(let ((,gval ,val))
+      (setf ,@(mapcan #'(lambda (a) (list a gval))
+          args)))))
+
+(defmacro nilf (&rest args) '(allf nil ,@args))
+
+(defmacro tf (&rest args) '(allf t ,@args))
+
+(defmacro toggle (&rest args)
+  '(progn
+    ,@(mapcar #'(lambda (a) '(toggle2 ,a))
+      args)))
+
+(define-modify-macro toggle2 () not)
+
+
+12.3 新的实用工具
+
+本节将给出一些新的实用工具为例，我们用它们对广义变量进行操作。
+这些实用工具必须是宏，以便将参数原封不动地传给 setf。
+
+[示例代码 12.1] 中有四个基于 setf 的新宏。
+第一个是 allf ，它被用来将同一值赋给多个广义变量。
+nilf 和 tf 就是基于它实现的，它们分别将参数设置 为 nil 和 t 。
+虽然这些宏很简单，但是方便实用。
+
+和 setq 一样，setf 也可以接受多个参数 -- 即交替出现的变量和对应的值：
+
+(setf x 1 y 2)
+这些新的实用工具同样有这个能力，而且只用传原来一半的参数就可以了。
+如果你想要把多个变量初始化为 nil ，那么可以不再使用：
+
+(setf x nil y nil z nil)
+而改成说：
+
+(nilf x y z)
+就行了。
+最后一个宏是前一节曾介绍过的 toggle ：它和 nilf 差不多，但给每个参数设置的是真值的反。
+
+这四个宏说明了关于赋值操作符的一个要点。
+就算我们只需要对普通变量使用一个操作符，而把这个操作符号展开成 setf 而非 setq ，这样做，有百利而无一害。
+如果第一个参数是符号，setf 将直接展开到 setq。
+由于不费吹灰之力，就能拥有 setf 的一般性，所以很少有必要在展开式里使用 setq。
+
+[示例代码 12.2] 广义变量上的列表操作
+
+(define-modify-macro concf (obj) nconc)
+
+(defun conc1f/function (place obj)
+  (nconc place (list obj)))
+
+(define-modify-macro conc1f (obj) conc1f/function)
+
+(defun concnew/function (place obj &rest args)
+  (unless (apply #'member obj place args)
+    (nconc place (list obj))))
+
+(define-modify-macro concnew (obj &rest args)
+  concnew/function)
+[示例代码 12.2] 【注4】包含三个破坏性修改列表结尾的宏。
+第 3.1 节提到依赖
+
+(nconc x y)
+的副作用是不可靠的，并且必须改成：【注5】
+
+(setq x (nconc x y))
+这一习惯用法被嵌入在 concf 中了。
+更特殊的 conc1f 和 concnew 就像是用于列表另一端的 push 和 pushnew，
+conc1f 在列表结尾追加一个元素，而 concnew 的功能相同，但只有当这个元素不在列表中时才会动作。
+
+第 2.2 节曾提到，函数的名字既可以是符号，也可以是–表达式。
+因此，把整个λ表达式作为第三个参数传给 define-modify-macro 也是可行的，正如 conc1f 的定义。
+【注6】 如果用第 4.3 节上的 conc1 的话，这个宏也可以写成：
+
+(define-modify-macro conc1f (obj) conc1)
+在一种情况下，[示例代码 12.2] 中的宏应该限制使用。
+如果你正准备通过在结尾处追加元素的方式来构造列表，那么最好用 push ，最后再 nreverse 这个列表。
+在列表的开头处理数据比在结尾要方便些，因为在结尾处处理数据的话，你首先得到那里。
+Common Lisp 有许多用于前者的操作符，而适用于后者的操作符则屈指可数，
+这很可能是为了鼓励程序员设计更高效率的程序。
+
+
+12.4 更复杂的实用工具
+
+并非所有基于 setf 的宏都可以用 define-modify-macro 定义。
+比如说，假设我们想要定义一个宏 _f ，让它破坏性把函数应用于一个广义变量。
+内置宏 incf 就相当于使用了 + 的 setf 的缩写。
+把：
+
+(setf x (+ x y))
+取而代之，我们只需说：
+
+(incf x y)
+新的宏 _f 就是上述思路的推广：
+incf 能展开成对 + 的调用，而 _f 则会展开成对由第一个参数给出操作符的调用。
+例如，在第 8.3 节 scale-objs 的定义里，我们必须这样写：
+
+(setf (obj-dx o) (* (obj-dx o) factor))
+改用 _f 的话，将变成：
+
+(_f * (obj-dx o) factor)
+_f 可能会被错写成：
+
+(defmacro _f (op place &rest args) ; wrong
+  '(setf ,place (,op ,place ,@args)))
+不幸的是，我们无法用 define-modify-macro 正确无误地定义 _f ，因为应用到广义变量上的操作符是由参数给定的。
+
+这类更复杂的宏必须由手工编写。
+为了让这种宏的编写方便些，Common Lisp 提供了函数 get-setf-expansion 【注7】，
+它接受一个广义变量并返回所有用于获取和设置其值的必要信息。
+通过为下面表达式手工生成展开式，我们将了解如何使用这些信息：
+
+(incf (aref a (incf i)))
+
+当我们对广义变量调用 get-setf-expansion 时，可以得到五个值用作宏展开式的原材料：
+
+> (get-setf-expansion '(aref a (incf i)))
+(#:G4 #:G5)
+(A (INCF I))
+(#:G6)
+(SYSTEM:SET-AREF #:G6 #:G4 #:G5)
+(AREF #:G4 #:G5)
+最开始的两个值分别是临时变量列表，以及应该给它们赋的值。
+因此，我们可以这样开始展开式：
+
+(let* ((#:g4 a)
+    (#:g5 (incf i)))
+  ...)
+这些绑定应该在 let* 里创建。
+因为一般来说，这些值 form 可能会引用到前面的变量。
+第三【注8】和第五个值是另一个临时变量和将返回广义变量初值的 form。
+由于我们想要在这个值上加 1，所以把后者包在对 1+ 的调用里：
+
+(let* ((#:g4 a)
+    (#:g5 (incf i))
+    (#:g6 (1+ (aref #:g4 #:g5))))
+  ...)
+最后，get-setf-expansion 返回的第四个值是一个赋值的表达式，该赋值必须在新绑定环境下进行：
+
+(let* ((#:g4 a)
+    (#:g5 (incf i))
+    (#:g6 (1+ (aref #:g4 #:g5))))
+  (system:set-aref #:g6 #:g4 #:g5))
+不过，这个 form 多半会引用一些内部函数，而这些内部函数不属于 Common Lisp 标准。
+通常 setf 掩盖了这些函数的存在，但它们必须存在于某处。
+因为关于它们的所有东西都依赖于具体的实现，
+所以注重可移植性的代码应该使用由 get-setf-expansion 返回的这些 form，
+而不是直接引用诸如 system:set-aref 这样的函数。
+
+现在为实现 _f 而编写的宏，所要完成的工作，几乎和我们刚才手工展开 incf 时做的事情完全一样。
+唯一的区别就是，不再把 let* 里的最后一个 form 包装在 1+ 调用里，而是将它包装在来自 _f 参数的一个表达式里。
+[示例代码 12.3] 给出了 _f 的定义。
+
+[示例代码 12.3] setf 上更复杂的宏
+
+(defmacro _f (op place &rest args)
+  (multiple-value-bind (vars forms var set access)
+    (get-setf-expansion place)
+    '(let* (,@(mapcar #'list vars forms)
+        (,(car var) (,op ,access ,@args)))
+      ,set)))
+
+(defmethod pull (obj place &rest args)
+  (multiple-value-bind (vars forms var set access)
+    (get-setf-expansion place)
+    (let ((g (gensym)))
+      '(let* ((,g ,obj)
+          ,@(mapcar #'list vars forms)
+          (,(car var) (delete ,g ,access ,@args)))
+        ,set))))
+
+(defmacro pull-if (test place &rest args)
+  (multiple-value-bind (vars forms var set access)
+    (get-setf-expansion place)
+    (let ((g (gensym)))
+      '(let* ((,g ,test)
+          ,@(mapcar #'list vars forms)
+          (,(car var) (delete-if ,g ,access ,@args)))
+        ,set))))
+
+(defmacro popn (n place)
+  (multiple-value-bind (vars forms var set access)
+    (get-setf-expansion place)
+    (with-gensyms (gn glst)
+      '(let* ((,gn ,n)
+          ,@(mapcar #'list vars forms)
+          (,glst ,access)
+          (,(car var) (nthcdr ,gn ,glst)))
+        (prog1 (subseq ,glst 0 ,gn)
+          ,set)))))
+这是个很有用的实用工具。
+举个例子，现在在它的帮助下，我们就可以轻易地将任意有名函数替换成其记忆化（第5.3 节）的等价函数。【注9】
+要对 foo 进行记忆化的处理，可以用：
+
+(_f memoize (symbol-function 'foo))
+使用 _f ，也有助于简化其他基于 setf 的宏的定义。
+例如，我们现在可以把 conc1f （[示例代码 12.2]）定义成：
+
+(defmacro conc1f (lst obj)
+  '(_f nconc ,lst (list ,obj)))
+[示例代码 12.3] 中还有其他一些有用的宏，它们同样基于 setf。
+下一个是 pull ，它是内置的 pushnew 的逆操作。
+
+这对操作符，就像是给 push 和 pop 赋予了一定的鉴别能力。
+如果给定的新元素不是列表的成员，pushnew 就把它加入到这个列表里面，而 pull 则是破坏性地从列表里删除给定的元素。
+pull 定义中的 &rest 参数使 pull 可以接受和 delete 相同的关键字参数：
+
+> (setq x '(1 2 (a b) 3))
+(1 2 (A B) 3)
+> (pull 2 x)
+(1 (A B) 3)
+> (pull '(a b) x :test #'equal)
+(1 3)
+> x
+(1 3)
+你几乎可以把这个宏当成这样定义的：
+
+(defmacro pull (obj seq &rest args) ; wrong
+  '(setf ,seq (delete ,obj ,seq ,@args)))
+不过，如果它真的这样定义，它将同时碰到求值顺序和求值次数方面的问题。
+我们也可以把 pull 定义成简单的修改宏：
+
+(define-modify-macro pull (obj &rest args)
+  (lambda (seq obj &rest args)
+    (apply #'delete obj seq args)))
+但由于修改宏必须将广义变量作为第一个参数，所以我们只得以相反的次序给出前两个参数，这样显得有些不自然。
+
+更通用的 pull-if 接受一个初始的函数参数，并且会展开成 delete-if 而非 delete ：
+
+> (let ((lst '(1 2 3 4 5 6)))
+  (pull-if #'oddp lst)
+  lst)
+(2 4 6)
+这两个宏说明了另一个有普遍意义的要点。
+如果下层函数接受可选参数，建立在其上的宏也应该这样做。
+
+pull 和 pull-if 都把可选参数传给了它们的 delete 。
+
+[示例代码 12.3] 中最后一个宏是 popn ，它是 pop 的推广形式。
+其功能不再是仅仅从列表里弹出一个元素，而是能弹出并返回任意长度的子序列：
+
+> (setq x '(a b c d e f))
+(A B C D E F)
+> (popn 3 x)
+(A B C)
+> x
+(D E F)
+[示例代码 12.4] 中的宏能对它的参数排序。
+如果 x 和 y 是变量，而且我们想要确保x 的值不是两个值中较小的那个，那么我们可以写：
+
+(if (> y x) (rotatef x y))
+但如果我们想对三个或者数量更多的变量做这个操作，所需的代码量就会迅速膨胀。
+与其手工编写这样的代码，不妨让 sortf 来为我们代劳。
+这个宏接受一个比较操作符，还有任意数量的广义变量，然后不断交换它们的值，直到这些广义变量的顺序符合操作符的要求。
+在最简单的情形，参数可以是普通变量：
+
+[示例代码 12.4] 一个排序其参数的宏
+
+(defmacro sortf (op &rest places)
+  (let* ((meths (mapcar #'(lambda (p)
+            (multiple-value-list
+              (get-setf-expansion p)))
+          places))
+      (temps (apply #'append (mapcar #'third meths))))
+    '(let* ,(mapcar #'list
+        (mapcan #'(lambda (m)
+            (append (first m)
+              (third m)))
+          meths)
+        (mapcan #'(lambda (m)
+            (append (second m)
+              (list (fifth m))))
+          meths))
+      ,@(mapcon #'(lambda (rest)
+          (mapcar
+            #'(lambda (arg)
+              '(unless (,op ,(car rest) ,arg)
+                (rotated ,(car rest) ,arg)))
+            (cdr rest)))
+        temps)
+      ,@(mapcar #'fourth meths))))
+> (setq x 1 y 2 z 3)
+3
+> (sortf > x y z)
+3
+> (list x y z)
+(3 2 1)
+一般情况下，它们可以是任何可逆的表达式。
+假设 cake 是一个可逆函数，它能返回某人的蛋糕，而 bigger 是个针对蛋糕的比较函数。
+如果我们想要推行一个规定，要求 moe 的 cake 不得小于 larry 的 cake ，而后者的 cake 也不得小于 curly 的，我们写成：
+
+(sortf bigger (cake 'moe) (cake 'larry) (cake 'curly))
+sortf 的定义的大致结构和 _f 差不多。它以一个 let* 开始，
+在这个 let* 表达式中，由 get-setf-expansion 返回的临时变量被绑定到广义变量的初始值上。
+sortf 的核心是中间的 mapcon 表达式，该表达式生成的代码将被用来对这些临时变量进行排序。
+宏的这部分生成的代码量会随着参数个数以指数速度增长。
+在排序之后，广义变量会被用那些由 get-setf-expansion 返回的 form 重新赋值。
+这里使用的算法是 的冒泡排序，但如果调用的时候参数非常多的话，这个宏就不适用了。
+
+[示例代码 12.5] 给出的是对 sortf 调用的展开式。
+在最前面的 let* 中，参数和它们的 subform 按照从左到右的顺序小心地求值。
+之后出现的三个表达式分别比较几个临时变量的值，有可能还会交换它们：
+先是比较第一个和第二个，接着是第一个和第三个，然后第二个和第三个。
+最后广义变量从左到右被重新赋值。
+尽管很少需要注意这个问题，但还是提一下：通常，宏参数应该按从左到右的顺序进行赋值，这和它们求值的顺序是一致的。
+
+有些操作符，如 _f 和 sortf ，它们与接受函数型参数的函数之间确实有相似之处。
+不过也应该认识到它们是完全不同的东西。
+类似 find-if 的函数接受一个函数并调用它；
+而类似 _f 的宏接受的则是一个名字，这些宏会让它成为一个表达式的 car。
+让 _f 和 sortf 都接受函数型参数也不无可能。
+例如，_f 可以这样实现：
+
+(sortf > x (aref ar (incf i)) (car lst))
+展开(在某个可能的实现里) 成：
+
+[示例代码 12.5] 一个 sortf 调用的展开式
+
+(let* ((#:g1 x)
+    (#:g4 ar)
+    (#:g3 (incf i))
+    (#:g2 (aref #:g4 #:g3))
+    (#:g6 lst)
+    (#:g5 (car #:g6)))
+  (unless (> #:g1 #:g2)
+    (rotatef #:g1 #:g2))
+  (unless (> #:g1 #:g5)
+    (rotatef #:g1 #:g5))
+  (unless (> #:g2 #:g5)
+    (rotatef #:g2 #:g5))
+  (setq x #:g1)
+  (system:set-aref #:g2 #:g4 #:g3)
+  (system:set-car #:g6 #:g5))
+(defmacro _f (op place &rest args)
+  (let ((g (gensym)))
+    (multiple-value-bind (vars forms var set access)
+      (get-setf-expansion place)
+      '(let* ((,g ,op)
+          ,@(mapcar #'list vars forms)
+          (,(car var) (funcall ,g ,access ,@args)))
+        ,set))))
+然后调用 (_f #'+ x 1)。
+但是 _f 原来的版本不但拥有这个版本的所有功能，而且由于它处理的是名字，所以它还可以接受宏或者 special form 的名字。
+就像 + 那样，比如说，你还可以调用 nif （102页）：
+
+> (let ((x 2))
+  (_f nif x 'p 'z 'n)
+  x)
+P
+
+
+12.5 定义逆
+
+12.1 节说明了一个道理：如果一个宏调用能展开成可逆引用，那么它本身应该也是可逆的。
+不过，你也用不着只是为了可逆，就把操作符定义成宏。
+通过使用 defsetf ，你可以告诉 Lisp 如何对任意的函数或宏调用求逆。
+
+使用这个宏的方法有两种。
+在最简单的情况下，它的参数是两个符号：
+
+(defsetf symbol-value set)
+如果用更复杂的方法，那么 defsetf 的调用和 defmacro 调用会有几分相似，它另外带有一个参数用于更新值 form。
+例如，下式可以为 car 定义一种可能的逆：
+
+(defsetf car (lst) (new-car)
+  '(progn (rplaca ,lst ,new-car)
+    ,new-car))
+defmacro 和 defsetf 之间有一个重要的区别：
+后者会自动为其参数创建生成符号(gensym)。
+通过上面给出的定义，(setf (car x) y) 将展开成：
+
+(let* ((#:g2 x)
+    (#:g1 y))
+  (progn (rplaca #:g2 #:g1)
+    #:g1))
+这样，我们写 defsetf 展开器时就没有后顾之忧，不用担心诸如变量捕捉，或者求值的次数和顺序之类的问题了。
+
+在 CLTL2 的 Common Lisp 中，也可以直接用 defun 定义 setf 的逆。
+因而前面的示例也可以写成：
+
+(defun (setf car) (new-car lst)
+  (rplaca lst new-car)
+  new-car)
+新的值应该作为这个函数的第一个参数。
+同样按照习惯，也应该把这个值作为函数的返回值。
+
+目前为止的示例都认为，广义变量应该指向数据结构中的某个位置。
+不法之徒把人质带进地牢，而见义勇为之士则让她重见天日；他们移动的路径相同，但方向相反。
+所以，如果人们觉得 setf 的工作方式也只能是这样，那不足为奇，因为所有预定义的逆看上去都是如此；
+确实，习惯上，将被求逆的参数也常会使用 place 作为其参数名。
+
+从理论上说，setf 可以更一般化：accessform 和它的逆的操作对象甚至可以不是同种数据结构。
+假设在某个应用里，我们想要把数据库的更新缓存起来。
+这可能是迫不得已的，举例来说，倘若每次修改数据，都即时完成真正的更新操作，就有可能会降低效率，
+或者，如果要求所有的更新都必须在提交之前验证一致性，那就必须引入缓存的机制。
+
+[示例代码 12.6] 一个非对称的逆转换
+
+(defvar *cache* (make-hash-table))
+
+(defun retrieve (key)
+  (multiple-value-bind (x y) (gethash key *cache*)
+    (if y
+      (values x y)
+      (cdr (assoc key *world*)))))
+
+(defsetf retrieve (key) (val)
+  '(setf (gethash ,key *cache*) ,val))
+
+假设 \*world\* 是实际的数据库。
+为简单起见，我们将它做成一个元素为 (key . val) 形式的关联表（assoc-list）。
+[示例代码 12.6] 显示了一个称为 retrieve 的查询函数。
+如果 \*world\* 是:
+
+((a . 2) (b . 16) (c . 50) (d . 20) (f . 12))
+那么:
+
+> (retrieve 'c)
+50
+和 car 的调用不同，retrieve 调用并不指向一个数据结构中的特定位置。
+返回值可能来自两个位置里的一个。
+而 retrieve 的逆，同样定义在 [示例代码 12.6] 中，仅指向它们中的一个：
+
+> (setf (retrieve 'n) 77)
+77
+> (retrieve 'n)
+77
+T
+该查询返回第二个值 t ，以表明在缓存中找到了答案。
+
+就像宏一样，广义变量是一种威力非凡的抽象机制。
+这里肯定还有更多的东西有待发掘。
+当然，有的用户很可能已经发现了一些使用广义变量的方法，使用这些方法能得到更优雅和强大的程序。
+但也不排除以全新的方式使用 setf 逆的可能性，或者发现其它类似的有用的变换技术。
+
+备注：
+
+【注1】这个定义是错误的，下一节将给出解释。
+
+【注2】一般意义上的函数名：1+ 或者 (lambda (x) (+ x 1)) 都可以。
+
+【注3】译者注：现行 Common Lisp 标准 (CLHS) 
+事实上要求 define-modify-macro 和 define-compiler-macro 的第三个参数的类型必须是符号。
+
+【注4】译者注：这里根据现行 Common Lisp 标准对源代码加以修改，
+我们额外定义了两个辅助函数以确保 define-modify-macro 的第三个参数只能是符号。
+
+【注5】译者注：当作为 nconc 第一个参数的变量为空列表，也就是 nil 时，
+该变量在 nconc 执行之后将仍是 nil ，而不是整个 nconc 表达式的那个相当于其第二个参数的值。
+
+【注6】译者注：正如前面两个脚注里提到的那样，
+Common Lisp 标准并没有定义 define-modify-macro 的第三个参数可以是符号之外的其他东西，
+尽管λ表达式出现在一个函数调用形式的函数位置上确实是合法的。
+原书作者试图通过类比来说明 λ表达式用在 define-modify-macro 中的合法性，这是不恰当的，请读者注意。
+
+【注7】译者注：原书中给出的函数实际上是 get-setf-method ，但这个函数已经不在现行 Common Lisp 标准中了，
+参见 X3J13 Issue 308：SETF-METHOD-VS-SETF-METHOD 取代它的是 get-setf-expansion ，
+这个函数接受两个参数，place 以及可选的 environment 环境参数。
+本书后面对于所有采用 get-setf-method 的地方一律直接改用 get-setf-expansion ，不再另行说明。
+
+【注8】第三个值当前总是一个单元素列表。
+它被返回成一个列表来提供（目前为止还不可能）在广义变量中保存多值的可能性。
+
+【注9】然而，内置函数是个例外，它们不应该以这种方式被记忆化。
+Common Lisp 禁止重定义内置函数。
+

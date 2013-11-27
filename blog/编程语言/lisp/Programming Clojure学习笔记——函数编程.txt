@@ -1,0 +1,320 @@
+Programming Clojure学习笔记——函数编程
+
+http://blog.csdn.net/zh2qiang/article/details/7234486
+
+
+5.1 函数编程概念
+
+1. 纯函数
+
+函数式程序由纯函数构成。
+纯函数没有副作用，它只依赖与函数参数，只能通过函数返回值影响函数外部。
+纯函数常常与不可变数据一起工作。
+如：
+(defn mystery [input]
+    (if input data-1 data-2))
+如果data-1和data-2是可变的，则它们可能被外界改变，对相同的input参数，可能输出不同，这与纯函数的特性不符。
+
+2.持久化数据结构
+
+所有Clojure数据结构都是持久的，即Clojure数据结构保持原版数据的同时最大程度与新版本的数据共享结构。
+
+如给列表a
+(def a ’(1 2))
+添加元素0，得到列表b
+(def b (cons 0 a))
+此时列表a没有改变，列表b由元素0和a的元素组成，并没有再重复构建元素1和2，及b直接共享a的元素。
+
+3.延迟(Laziness)和递归(Recursion)
+
+函数编程大量使用递归和延迟。
+递归：一个函数直接或间接地调用自己；
+延迟：一个表达式的值直到真正使用时才计算。计算延迟表达式的值称为实现表达式。
+
+Clojure中，函数和表达式都不是延迟的，但序列通常都是延迟的。
+
+4.引用透明（Referential Transparency)
+
+延迟依赖一种特性，这种特性是在任何时候都可以直接将函数调用替换为函数返回值。
+拥有这种特性的函数被认为是引用透明的，因为注意的函数调用可以被替换但不影响程序的行为。
+
+引用透明受益于：
+(1) 缓存，自动缓存函数结果；
+(2) 自动并行移动函数结果到其他进程或机器。
+
+所有的纯函数都是引用透明的。
+
+5. 函数编程（FP）的好处
+
+(1) 易于阅读和编写，因为函数只与输入参数有关；
+(2) 提高复用；
+(3) 可组织，纯函数是真正封装的和可组织的。
+
+6. 六个原则
+
+Clojure中函数编程有六个原则：
+
+(1) 避免直接递归；
+(2) 使用recur生成标量值或小的固定序列；
+(3) 生成大的可变序列一定要延迟；
+(4) 只实现延迟序列中需要的那一部分数据；
+(5) 使用序列库，避免直接使用recur和延迟相关API；
+(6) 细分。
+
+这六条原则都是指导性的，并不是绝对的。只要有足够的理由就可以不遵守它们。
+
+
+=======
+5.2 如何延迟
+
+函数编程大量使用递归定义，递归定义由两部分组成：
+
+(1) 基础，明确列出序列的一些元素；
+(2) 归纳，提供规则利用序列元素，生成更多的元素。
+
+Clojure中有多种方法实现递归：
+
+(1) 简单递归，使用函数调用自己实现归纳步；
+(2) 尾部递归，只在函数末尾调用函数自己实现归纳步；
+(3) 延迟序列，消除实际的递归，延后直到需要时再计算值。
+
+在Clojure中，采用延迟序列实现递归通常是最合适的方法。
+
+示例：
+
+--
+简单递归
+
+(defn stack-consuming-fibo [n]
+    (cond
+        (= n 0) 0
+        (= n 1) 1
+        :else (+ (stack-consuming-fibo (- n 1))
+                    (stack-consuming-fibo (- n 2)))))
+使用这种方法计算很大的Fibonacci数时堆栈异常。
+
+--
+尾部递归
+
+(defn tail-fibo [n]
+     (letfn [(fib [current next n] (if (zero? n) current (fib next (+ current next) (dec n))))]
+     (fib 0 1 n)))
+其中letfn宏
+(letfn fnspecs & body)
+; fnspecs ==> (fname [params*] exprs)+
+
+leftn像let但是用来定义局部函数，
+使用这种方法计算很大的Fibonacci数时堆栈异常。
+
+--
+使用recur自递归
+
+在Clojure中，可以将尾部调用自己的函数转换为使用recur的自递归函数。
+
+上面的程序可以修改为：
+(defn recur-fibo [n]
+     (letfn [(fib [current next n] (if (zero? n) current (recur next (+ current next) (dec n))))]
+     (fib 0 1 n)))
+使用这种方法可以计算很大的Fibonacci数，但如果计算多个时，将多次计算非常浪费资源。
+
+----
+延迟序列
+
+延迟序列通过lazy-seq宏构造：
+(lazy-seq & body)
+
+延迟序列只在需要时才调用它的body，不管序列是直接还是间接被调用，然后延迟序列将结果进行缓存为子序列调用做预备。
+
+使用延迟序列上面的程序可以修改为：
+(defn lazy-seq-fibo
+     ([] (concat [0 1] (lazy-seq-fibo 0 1)))
+     ([a b] (let [n (+ a b)] (lazy-seq (cons n (lazy-seq-fibo b n))))))
+
+
+通过iterate实现
+(defn fibo []
+     (map first (iterate (fn [[a b]] [b (+ a b)]) [0 1])))
+
+
+实现（取延迟序列元素）
+
+通过take获取前n个元素序列，如：
+(def lots-o-fibs (take 10000000 (bibo)))
+
+通过nth获取序列第n个元素：
+(nth lots-o-fibs 100)
+
+为了方便，可以设置参数*print-length*,指定打印原色个数：
+user=> (set! *print-length* 10)
+10
+
+设置后，只输出前10个元素，如下：
+user=> (take 1000000000 (fibo))
+(0 1 1 2 3 5 8 13 21 34 ...)
+
+说明：
+(1) 如果需要实现整个序列，可以使用doall或dorun。
+(2) 将延迟序列作为函数形式暴露，返回一个需要的序列；
+而不要延迟序列作为一个变量来使用
+（这会导致延迟序列中已经访问过的变量不能被垃圾回收器自动收回，导致内存溢出）。
+
+=======
+5.3 进一步延迟
+
+通过组合已有的序列函数，可以找到不需要显式序列的更加延迟的办法。
+
+举例说明，解决如下问题：
+统计硬币投掷结果序列中，连续两次出现正面的次数，其中:h表示正面，:t表示反面。如：
+[:h :t :t :h :h :h]
+第4、5连续两次，第5、6连续两次，一共出现2次
+
+第一种计算方法：
+
+使用loop/recur实现方式:
+(defn count-heads-pairs [coll]
+    (loop [cnt 0 coll coll]
+         (if (empty? coll)
+             cnt
+            (recur (if (= :h (first coll) (second coll)) (inc cnt) cnt)
+        (rest coll)))))
+user=> (count-heads-pairs [:h :h :h :t :h]) #返回 2
+
+这种方法虽然能计算出正确的结果，但是语义上不是很明确，不好理解。
+该问题针对序列[:h :t :t :h :h :h]，实际上是要计算每个元素及其邻居是否都是:h，
+可以将该序列转换为
+[[:h :t] [:t :t] [:t :h] [:h :h] [:h :h]]，计算其中元素都是:h的对的个数。
+可以通过如下函数进行转换：
+(defn by-pairs [coll]
+    (let [take-pair (fn [c] (when (next c) (take 2 c)))]
+        (lazy-seq 
+            (when-let [pair (seq (take-pair coll))]
+            (cons pair (by-pairs (rest coll)))))))
+
+
+也可以通过Clojure提供的函数partition来实现转换：
+(partition size step? coll)
+
+按size大小分割集合coll，step默认为size. 如：
+user=> (partition 2 1 [:h :t :t :h :h :h])
+((:h :t) (:t :t) (:t :h) (:h :h) (:h :h))
+user=> (by-pairs [:h :t :t :h :h :h])
+((:h :t) (:t :t) (:t :h) (:h :h) (:h :h))
+
+另一个改进是使用count/filter组合计算，定义函数count-if封装这两者的组合：
+(use '[clojure.contrib.def :only (defvar)])
+(defvar count-if (comp count filter) "Count items matching a filter")
+
+其中comp用来组合两个及两个以上函数：
+(comp f & fs)
+组合后的函数是一个新函数，它将参数传入最右边函数，然后将计算结果传入倒数第二最右的函数，依次类推。
+
+
+第二种计算方法：
+
+(defn count-runs
+    "Count runs of length n where pred is true in coll."
+    [n pred coll]
+    (count-if #(every? pred %) (partition n 1 coll)))
+user=> (count-runs 2 #(= % :h) [:h :t :t :h :h :h]) #返回 2
+
+还可以很方便的利用该函数计算反面连续出现两次的次数：
+user=> (count-runs 2 #(= % :t) [:h :t :t :h :h :h]) #返回 1
+
+利用partial可以创建一个新版本的count-heads-pairs函数：
+(defvar count-heads-pairs (partial count-runs 2 #(= % :h))
+     "Count runs of length two that are both heads")
+
+其中partial函数
+(partial f & partial-args)
+执行函数的部分应用，指定要执行的函数f和部分参数列表，
+剩余参数在partial创建的函数执行时再指定。
+如上例中
+(partial count-runs 2 #(= % :h))
+只保留了函数count-runs需要的前两个参数，等同于
+(fn [coll] (count-runs 2 #(= % :h) coll))
+
+----
+Curry和Partial应用
+
+当curry一个函数时，得到一个新函数，该函数带一个参数并返回原函数其中那个参数固定。
+Clojure中没有curry函数。
+
+
+=======
+5.4 再谈递归
+
+相互递归：两个或两个以上函数之间互相调用。如：
+
+(declare my-odd? my-even?)
+(defn my-odd? [n]
+     (if (= n 0)
+         false
+         (my-even? (dec n))))
+(defn my-even? [n]
+     (if (= n 0)
+         true
+         (my-odd? (dec n))))
+
+有四种方法解决这种互相调用递归计算问题：
+
+(1) 转换为自递归，即函数自己调用自己。
+找出各个函数之间的共性，定义一个公共的递归函数，被各个函数调用得到各自返回值。
+
+(2) 利用Clojure的trampoline函数执行递归计算：
+(trampoline f & partial-args)
+
+如果返回值不是函数，则直接像调用函数一样执行，如：
+(trampoline + 1 2) # 返回 3
+
+如果返回值是函数，则递归调用函数直到返回值不是函数为止。
+
+说明：对于相互调用的递归函数内部调用其他函数的语句前需要加#号，标识为匿名函数。
+
+如上面的函数修改为：
+(declare my-odd? my-even?)
+(defn my-odd? [n]
+     (if (= n 0)
+         false
+         #(my-even? (dec n))))
+(defn my-even? [n]
+     (if (= n 0)
+         true
+         #(my-odd? (dec n))))
+
+通过trampoline函数计算值：
+user=> (trampoline my-even? 1000000) 
+true
+
+(3) 使用延迟替换递归。
+
+(4) 通过缓存加快递归。
+
+解决如下问题：
+F(0) = 1; M(0) =0;
+F(n) = n - M(F(n-1)), n > 0
+M(n) = n - F(M(n-1)), n > 0
+计算M(10000)
+
+定义函数：
+(declare m f)
+(defn m [n]
+     (if (zero? n) 0 (- n (f (m (dec n))))))
+(defn f [n]
+     (if (zero? n) 1 (- n (m (f (dec n))))))
+
+直接计算M(10000)会出现堆栈溢出
+
+利用Clojure的memorize函数，将m和f函数变成带缓存版本：
+(def m (memoize m))
+(def f    (memoize f))
+此时直接计算M(10000)也会出现堆栈溢出。
+
+以序列代替函数：
+(def m-seq (map m (iterate inc 0)))
+(def f-seq    (map f (iterate inc 0)))
+
+此时计算M(10000)，即取序列m-seq的第10000个元素:
+(nth m-seq 10000) 返回 6180
+
+
+

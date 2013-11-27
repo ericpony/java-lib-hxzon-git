@@ -1,0 +1,281 @@
+Programming Clojure学习笔记——探索Clojure-2.1  形式
+
+http://blog.csdn.net/zh2qiang/article/details/7080433
+
+========
+2.1  形式
+
+----
+形式
+
+Clojure代码即数据。
+Clojure程序由读者（readers）和形式（forms)组成。
+当你运行Clojure程序时，读者读入形式并将之转换为Clojure数据结构。
+然后Clojure编译并执行该数据结构。
+
+以下为Clojure形式：
+Form   Example(s)
+
+Boolean   true,  false
+Character   \a
+Keyword   :tag,  :doc
+List   (1  2  3),  (println  "foo")
+Map   {:name  "Bill",  :age  42}
+Nil   nil
+Number   1,  4.2
+Set   #{:snap  :crackle  :pop}
+String   "hello"
+Symbol   user/foo,  java.lang.String
+Vector   [1  2  3]
+
+----
+使用数值类型
+1.  数值文字是形式
+2.  数字向量是形式
+3.  列表是形式
+
+列表是数据，但也被用来调用函数。
+调用函数时，将函数名作为列表第一个元素，其余元素皆为函数调用参数。
+这种写法被称为前缀表示法。
+该写法很方便可以将函数参数个数扩展到任意个，甚至没有参数。
+
+Clojure中将数学运算符也按函数来处理。如：
+
+user=>  (+  1  2)
+3
+user=>  (+  1  2  3)
+6
+user=>  (+)
+0
+
+很多数学运算符和比较运算符的符号和语义与其他语言相同，如+,-,*,>,>=,<,<=,<,=等。如：
+
+user=>  (-  10  5  1)
+4
+user=>  (*  3  10  10)
+300
+user=>  (>  5  2)
+true
+user=>  (>=  5  5)
+true
+user=>  (=  5  3)
+false
+user=>  (<  5  2)
+false
+
+但是除法/与其他语言不同，Clojure的除法返回一个Ratio对象，如：
+user=>  (class  (/  5  2))
+clojure.lang.Ratio
+
+如果要做数值除法，需要以浮点数形式相除，如：
+user=>  (/  5.0  2)
+2.5
+
+如果想整除和求余，可以使用quot和rem函数：
+user=>  (quot  22  7)
+3
+user=>  (rem  22  7)
+1
+
+如果想做任意精度的运算，需要在其中一个数值后加M创建一个BigDecimal数值：
+
+user=>  (+  1  (/  0.00001  10000000000000000000000))
+1.0
+
+user=>  (+  1  (/  0.00001M  10000000000000000000000))
+1.000000000000000000000000001M
+
+说明：Clojure依赖Java的BigDecimal类来做表示任意精度的数值。
+
+对于整型数，当数值超过Integer范围时，Clojure会自动升级为BigInteger：
+
+user=>  (class  (*  1000  10000))
+java.lang.Integer
+
+user=>  (class  (*  1000  10000  100000))
+java.lang.Long
+
+user=>  (class  (*  1000  10000  100000  100000000000))
+java.math.BigInteger
+
+类似地，Clojure依赖于Java的BigInteger类来表示任意大小整型。
+
+----
+符号（Symbols）
+
+Clojure中符号用来命名：
+
+1.  函数
+2.  运算
+3.  Java类
+4.  命名空间和Java包
+5.  数据结构和引用
+
+符号不能以数字开头，由字母、数字及+，-，*，/,!,?,.和_组成。
+其中/和.比较特殊，用来支持命名空间。
+
+----
+字符串和字符
+
+字符串也是形式。
+Clojure字符串也是Java字符串，被双引号包围，并可以跨越多行。
+
+user=>  "This  is  also
+a  multiline  String"
+"This  is  also\na  multiline  String"
+
+Clojure中可以直接使用Java方法：
+user=>  (.toUpperCase  "hello")
+"HELLO"
+
+说明：该程序调用Java中String的toUpperCase方法，方法toUpperCase前面的点(.)告诉Clojure将该方法当作Java的方法处理。
+
+--
+str函数(str  &  args)  
+
+str函数类似Java的toString方法，但有两点不同：
+1.  它能接受多个参数，并将多个参数转换为字符串连接到一起
+2.  忽略nil
+
+示例：
+user=>  (str  1  2  nil  3)
+"123"
+
+Clojure字符是Java字符。它们的语法为\{letter},  
+这里的letter可以是字母也可以是字符的名称如：
+backspace（退格），formfeed，newline（换行），return（回车），space（空格），tab（制表符）。
+
+user=>  (str  \h  \e  \y  \space  \y  \o  \u)
+"hey  you"
+
+类似字符串，可以直接调用Java的字符方法对Clojure字符进行操作，如：
+user=>  (Character/toUpperCase  \s)
+\S
+
+----
+Booleans和Nil
+
+Clojure布尔规则:
+1.  true是true，false是false
+2.  在boolean环境，nil为false
+3.  在boolean环境，除了false和nil，其他皆为true
+
+谓语是一种返回ture和false的函数。
+在Clojure中，谓语名称习惯以?结尾，例如：
+
+(true?  expr)
+(false?  expr)
+(ni?  expr)
+(zero?  expr)
+
+对于谓语true?,  false?,  nil?,  只有当表达式为ture,false,nil时才返回true。
+但是zero?不是：
+
+user=>  (zero?  0.0)
+true
+
+user=>  (zero?  0)
+true
+
+user=>  (zero?  (*  3  0))
+true
+
+说明：查看更多谓语，在REPL输入  (find-doc  #"\?$")
+
+----
+映射，关键字和结构
+
+Clojure映射是键值对集合。
+集合的字面形式被一对花括号包围。
+如：
+user=>  (def  inventors  {"Lisp"  "McCarthy"  "Clojure"  "Hickey"})
+#'user/inventors
+
+为了方便阅读，也可以用逗号分割键值对：
+user=>  (def  inventors  {"Lisp"  "McCarthy","Clojure"  "Hickey"})
+#'user/inventors
+
+映射也是函数，参数为键，返回键对应的值，如果没有则返回nil。如：
+user=>  (inventors  "Lisp")
+"McCarthy"
+user=>  (inventors  "Foo")
+nil
+
+也可以使用get函数获取映射值，get函数语法：
+(get  a-map  key  not-found-val?)
+
+其中not-found-val可以没有，当没有键对应的值时返回。如：
+
+user=>  (get  inventors  "Lisp"  "I  dunno!")
+"McCarthy"
+
+user=>  (get  inventors  "Foo"  "I  dunno!")
+"I  dunno!"
+
+说明：因为Clojure的数据都是不可变的并且实现了hashCode，因此任何Clojure数据都可以作为映射的键。
+
+----
+关键字
+
+关键字像符号，但以冒号开头(:)，它与引用不同，
+它们代表自己，不指向别的东西。如：
+user=>  :foo
+:foo
+
+因此它们是映射键的最佳选择，如：
+user=>  (def  inventors  {:Lisp  "McCarthy"  :Clojure  "Hickey"})
+#'user/inventors
+
+关键字也是函数，接受一个映射作为参数，返回自己在映射中对应的键值。如：
+
+user=>  (:Clojure  inventors)
+"Hickey"
+
+与
+user=>  (inventors  :Clojure)
+"Hickey"
+
+结果相同。
+
+--
+如果几个Map有共同的Key，你可以使用defstruct创建一个结构来记录这个：
+(defstruct  name  &  keys)
+
+其中的keys被称为结构(struct)的基。
+说明：strut与C语言的结构有些类似，keys相当C语言结构的字段。
+
+
+创建一个book结构：
+user=>  (defstruct  book  :title  :author)
+#'user/book
+
+可以用struct来初始化一个结构，语法如下：
+(struct  name  &  vals)
+
+示例：
+user=>  (def  b  (struct  book  "Anathem"  "Neal  Stephenson"))
+#'user/b
+
+结构初始化后就像普通映射：
+user=>  b
+{:title  "Anathem",  :author  "Neal  Stephenson"}
+user=>  (:title  b)
+"Anathem"
+
+利用struct创建结构对象时，如果参数个数少于基键个数时，没有对应参数的基键对应的值为nil。如：
+
+user=>  (def  c  (struct  book  "Anathem"))
+#'user/c
+
+user=>  c
+{:title  "Anathem",  :author  nil}
+
+还可以通过struct-map创建结构对象，此时可以忽略部分基键值，甚至可以添加基键以外的键值，struct-map语法：
+(struct-map  name  &  inits)
+其中inits为初始化结构指定的键和值。如：
+
+user=>  (struct-map  book  :copyright  2008  :title  "Anathem")
+{:title  "Anathem",  :author  nil,  :copyright  2008}
+
+没有指定值的基键对应的值为nil。
+

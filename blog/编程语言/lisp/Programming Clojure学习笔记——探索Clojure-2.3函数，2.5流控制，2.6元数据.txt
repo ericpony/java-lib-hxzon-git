@@ -1,0 +1,337 @@
+Programming Clojure学习笔记——探索Clojure-2.3函数，2.5流控制，2.6元数据
+
+
+http://blog.csdn.net/zh2qiang/article/details/7080457
+http://blog.csdn.net/zh2qiang/article/details/7080472
+http://blog.csdn.net/zh2qiang/article/details/7080479
+
+==========
+2.3  函数
+
+在Clojure中，函数调用是一个列表，其第一个元素为函数名。如：
+
+user=>  (str  "hello"  "  "  "world")
+"hello  world"
+
+在Clojure中，函数名习惯用连字符(-)连接个部分，如clear-agent-errors。
+如果一个函数是谓语，那么它的名字习惯性以问号(?)结尾。如：
+
+user=>  (string?  "hello")
+
+----
+函数定义
+
+定义函数使用defn关键字：
+(defn  name  doc-string?  attr-map?  [params*]  body)
+
+如：
+user=>  (defn  greeting
+                  "Returns  a  greeting  of  the  form  'Hello,  username.'"
+                  [username]
+                  (str  "Hello,  "  username))
+#'user/greeting
+
+调用函数greeting:
+user=>  (greeting  "Tom")
+"Hello,  Tom"
+
+查看函数doc:
+user=>  (doc  greeting)
+-------------------------
+user/greeting
+([username])
+    Returns  a  greeting  of  the  form  'Hello,  username.'
+
+说明：调用Clojure函数时，传入参数必须与函数定义参数个数一致，否则抛出IllegalArgumentException异常：
+
+user=>  (greeting)
+java.lang.IllegalArgumentException:  Wrong  number  of  args  passed  to
+g  (NO_SOURCE_FILE:0)
+
+user=>  (greeting  "a"  "b")
+java.lang.IllegalArgumentException:  Wrong  number  of  args  passed  to
+g  (NO_SOURCE_FILE:0)
+
+----
+多参数形式函数
+
+为了让函数可以适用各种参数情况，可以用定义含多个参数列表和方法体的函数：
+(defn  name  doc-string?  attr-map?  ([params*]  body)+  )
+
+不同参数的方法体可以互相调用。如：
+user=>  (defn  greeting
+                    "Returns  a  greeting  of  the  form  'Hello,  username.'
+                      Default  username  is  'world'."
+                ([]  (greeting  "world"))
+                ([username]  (str  "Hello,  "  username)))
+#'user/greeting
+
+user=>  (greeting)
+"Hello,  world"
+
+----
+可变参数函数
+
+可以创建可变个数参数函数，在函数参数列表中使用&连接最后一个参数；
+Clojure调用函数时，将剩余的所有参数序列绑定到&连接的参数上。
+
+user=>  (defn  date  [person-1  person-2  &  chaperones]
+                    (println  person-1  "and"  person-2
+                                        "went  out  with"  (count  chaperones)  "chaperones."))
+#'user/date
+
+user=>  (date  "Romeo"  "Juliet"  "Friar  Lawrence"  "Nurse")
+Romeo  and  Juliet  went  out  with  2  chaperones.
+
+----
+匿名函数
+
+defn用来定义一级函数，如果想在函数中定义函数，则需要使用匿名函数。
+匿名函数用fn形式定义：
+(fn  [params*]  body)
+
+示例：
+user=>  (use  '[clojure.contrib.str-utils  :only  (re-split)])
+nil
+
+user=>  (filter  (fn  [w]  (>  (count  w)  2))  (re-split  #"\W+"  "A  fine  day"))
+("fine"  "day")
+
+--
+还有一种更简洁的匿名函数，使用隐式参数，参数名依次为%1,  %2等等。
+可以用%代替第一个参数，语法如下：
+(#body)
+
+示例：
+user=>  (filter  #(>  (count  %)  2)  (re-split  #"\W+"  "A  fine  day  it  is"))
+("fine"  "day")
+
+--
+可以使用let在函数内给匿名函数命名，如：
+user=>  (defn  indexable-words  [text]
+                  (let  [indexable-word?  (fn  [w]  (>  (count  w)  2))]
+                        (filter  indexable-word?  (re-split  #"\W+"  text))))
+#'user/indexable-words
+
+user=>  (indexable-words  "a  fine  day  it  is")
+("fine"  "day")
+
+--
+可以动态创建匿名函数
+
+user=>  (defn  make-greeter  [greeting-prefix]
+                    (fn  [username]  (str  greeting-prefix  ",  "  username)))
+#'user/make-greeter
+
+每调用依次make-greeter函数就生成一个函数。
+可以通过def给生成的函数命名：
+user=>  (def  hello-greeting  (make-greeter  "Hello"))
+#'user/hello-greeting
+
+也可以直接调用生成的函数：
+user=>  ((make-greeter  "Howdy")  "pardner")
+"Howdy,  pardner"
+
+========
+2.5  流控制
+
+----
+if
+
+Clojure的if计算第一个参数值，如果第一个参数值为true，则返回第二个参数值；
+如果为false，则返回nil或第三个参数值（如果有第三个参数）。
+
+user=> (defn is-small? [number]
+              (if (< number 100) "yes"))
+#'user/is-small?
+
+user=> (is-small? 50)
+"yes"
+
+user=> (is-small? 500)
+nil
+
+user=>  (defn is-small? [number]
+                (if (< number 100) "yes" "no"))
+#'user/is-small?
+
+user=> (is-small? 500)
+"no"
+
+说明：if每个分支只能有一个form。
+
+----
+do
+
+do后面能跟多个form，返回最后一个。如：
+
+user=> (defn is-small? [number]
+               (if (< number 100)
+                  "yes"
+                  (do
+                      (println "Saw a big number" number)
+                      "no")))
+#'user/is-small?
+
+user=> (is-small? 200)
+Saw a big number 200
+"no"
+
+----
+loop/recur
+
+loop语法：
+(loop [bindings *] exprs*)
+
+loop形式像let一样，建立绑定(bindings)，然后计算表达式(exprs)值，但是它可以使用recur形式设置循环点：
+(recur exprs*)
+
+recur给loop的绑定赋予新值，然后返回loop开头。如：
+
+user=> (loop [result [] x 5]
+              (if (zero? x)
+                  result
+                  (recur (conj result x) (dec x))))
+[5 4 3 2 1]
+
+recur也可以返回到函数开头，实现函数体循环：
+user=> (defn countdown [result x]
+               (if (zero? x)
+                 result
+                 (recur (conj result x) (dec x))))
+#'user/countdown
+
+user=> (countdown [] 5)
+[5 4 3 2 1]
+
+--
+for循环在哪里？
+
+Clojure没有for循环和直接的可变变量。
+Clojure的for不是循环而是序列映射。
+
+user=> (defn indexed [coll] (map vector (iterate inc 0) coll))
+#'user/indexed
+
+user=> (defn index-filter [pred coll]
+              (when pred
+                 (for [[idx elt] (indexed coll) :when (pred elt)] idx)))
+#'user/index-filter
+
+user=> (index-filter #{\a \b} "abcdbbb")
+(0 1 4 5 6)
+
+========
+2.6  元数据
+
+在Clojure中，元数据(metadata) 是与对象逻辑值正交的数据。
+
+如person的firstname 和 lastname是普通旧数据。
+而person对象可以被序列化到XML文件的信息就是元数据。
+同样person对象被更改需要保存到数据库的信息也是元数据。
+
+可以使用with-meta给集合(collection)和符号(symbol)添加元数据：
+(with-meta object metadata)
+
+如：
+(def stu {:name "Stu" :email "stu@thinkrelevance.com"})
+(def serializable-stu (with-meta stu {:serializable true}))
+
+说明：
+(with-meta stu {:serializable true})给stu添加元数据，说明stu可序列化。
+
+metadata不会对改变原对象依赖对象值的操作结果，即添加元数据前和后的对象是相等的：
+user=> (= stu serializable-stu)
+true
+
+=判断值是否相等，类似Java的equals。
+如果要判断是否同一个对象，需要使用identical?谓语:
+(identical? obj1 obj2)
+
+identical?类似Java的==，可以用identical?判断stu和serializable-stu是不同的对象：
+
+user=> (identical? stu serializable-stu)
+false
+
+--
+可以使用meta宏访问元数据，如：
+
+user=> (meta stu)
+nil
+
+user=> (meta serializable-stu)
+{:serializable true}
+
+meta宏对应的读者宏为^:
+
+user=> ^stu
+nil
+
+user=> ^serializable-stu
+{:serializable true}
+
+--
+元数据可以被继承，在已有对象的基础上创建新对象，则新对象拥有已有对象的元数据。
+
+user=> (def stu-with-address (assoc serializable-stu :state "NC"))
+#'user/stu-with-address
+
+user=> ^stu-with-address
+{:serializable true}
+
+说明：assoc函数给map添加key/value对象，然后返回新map。
+
+----
+读者元数据
+
+给变量var添加key/value对，使用元数据读者宏：
+#^metadata form
+
+创建shout函数，将字符串变大写，然后使用:tag关键字说明只能接受字符串参数并返回字符串值：
+user=> (defn #^{:tag String} shout [#^{:tag String} s] (.toUpperCase s))
+#'user/shout
+
+如果试图传入非字符串参数，则抛出异常：
+user=> (shout 1)
+java.lang.ClassCastException: java.lang.Integer cannot be cast to java.lang.String (NO_SOURCE_FILE:0)
+
+:tag元数据有一个简写形式：
+#^Classname 等同 #^{:tag Classname}
+
+shout函数可以重写为：
+user=> (defn #^String shout [#^String s] (.toUpperCase s))
+#'user/shout
+
+为了便于阅读函数定义，还可以将元数据放到函数定义最后：
+user=> (defn shout
+              ([s] (.toUpperCase s))
+              {:tag String})
+#'user/shout
+
+----
+常见元数据key如下表所示：
+MetadataKey      Used For
+
+:arglists Parameter info used by doc
+:doc Documentation used by doc
+:file Source file
+:line Source line number
+:macro True for macros
+:name Local name
+:ns Namespace
+:tag Expected argument or return type
+
+说明：
+元数据读者宏与with-meta不同，元数据读者宏给编译器添加元数据，而with-meta给自定义的数据添加元数据。
+
+user=> (def #^{:testdata true} foo (with-meta [1 2 3] {:order :ascending}))
+#'user/foo
+
+user=> (meta #'foo)
+{:ns #, :name foo, :file "NO_SOURCE_PATH", :line 29, :testdata true}
+
+user=> (meta foo)
+{:order :ascending}
+
+说明：一般来说，给变量和参数添加元数据使用元数据读者宏，给数据添加元数据使用with-meta。
+

@@ -1,0 +1,245 @@
+Programming Clojure学习笔记——宏
+
+http://blog.csdn.net/zh2qiang/article/details/7234538
+
+========
+7.1 什么时候使用宏
+
+使用宏的两个原则和一个例外：
+
+原则1：不要写宏。宏很复杂而且需要仔细考虑宏展开时间和编译时间的相互影响。
+如果你能用一个函数替代就不要用宏。
+
+原则2：只在当且仅当只有宏可以封装你的模式时才使用宏。
+
+例外：如果相比等效的函数，宏能使你的调用者生活变得更简单，那就用吧。
+
+=======
+7.2 编写控制流宏
+
+实现unless功能，与if相反，条件不成立时执行unless后代码。
+
+先编写函数来实现：
+user=> (defn unless [expr form] (if expr nil form))
+
+验证一下，当表达式expr为false时正确执行
+user=> (unless false (println "this should print"))
+this should print
+
+但是当expr为true时，也会执行unless后的代码
+user=> (unless true (println "this should not print"))
+this should not print
+
+原因分析：
+Clojure在将参数传递给函数之前，先计算所有参数值，因此就在判断前就执行了println函数。
+
+宏可以解决这个问题，它们不会立即计算参数值。
+当Clojure遇到宏时，它分两步进行处理：
+(1) 首先展开（或者说是执行）宏，将结果替换到原程序中，这个阶段被称为“宏展开期”。
+(2) 然后进行正常的编译，这个阶段被称为“编译期”。
+
+----
+宏的定义通过defmacro关键字：
+(defmacro name doc-string? attr-map? [params*] body)
+
+使用宏实现unless功能：
+user=> (defmacro unless [expr form] (list 'if expr nil form))
+
+验证一下：
+user=> (unless false (println "this should print"))
+this should print
+
+说明：执行过程中，Clojure会自动将unless形式展开为：
+(if false nil (println "this should print"))
+user=> (unless true (println "this should not print"))
+nil
+
+完全实现了unless功能。
+
+----
+特殊形式，设计模式和宏
+
+Clojure在代码上没有特殊语法，它的代码有数据结构组成，也就是说数据即代码。
+而Java中有很多特殊形式，如在Java中实现unless功能，我们只能通过下面的语句来模拟：
+if (!something) ...
+
+Java中将一些常用的解决办法称为设计模式，然而设计模式不是一个完成的设计不能直接转换为代码。
+而Clojure的宏提供了一个间接的层可以自动完成重复出现模式的公共部分，
+与代码即数据的特性一起，使得你可以重写你的语言从而在运行中封装模式。
+
+----
+展开宏
+
+函数macroexpand-1将显示宏展开的结果：
+(macroexpand-1 form)，如：
+
+user=> (macroexpand-1 '(unless false (println "this should print")))
+(if false nil (println "this should print"))
+
+有时宏展开后还是宏，此时Clojure将继续展开直到只有正常代码为止。
+使用macroexpand函数可以查看递归展开结果:
+(macroexpand form)，如：
+
+user=> (macroexpand '(.. arm getHand getFinger))
+(. (. arm getHand) getFinger)
+
+----
+when和when-not
+
+(when test & body)
+(when-not test & body)
+
+when-not宏的定义为：
+(defmacro when-not [test & body]
+   (list 'if test nil (cons 'do body)))
+
+示例：
+user=> (when-not false (println "this") (println "and also this"))
+this
+and also this
+
+
+======
+7.3 使宏简单化
+
+Clojure为宏作者提供的支持。
+
+形式                描述
+
+foo#                在语法上被引号引起的区域内，创建一个以foo为前缀的唯一名称。
+(gensym prefix?)            以可选的前缀prefix创建唯一名称。
+(macroexpand form)        使用macroexpand-1递归展开form，直到没有宏为止。
+(macroexpand-1 form)        显示form如何展开。
+(list-frag? ~@form list-frag?)    拼接引用: 在语法引用中将引用列表拼接到模板中。
+`form                语法引用(Syntax quote): 引用形式, 允许form内部结束引用从而实现模板功能。form中的符号在解析时不会出现无意的符号捕获。
+~form                引用结束(Unquote): 在语法引用中用来替代结束引用的值。
+
+说明：符号捕获指的是在宏展开时，如果允许使用非限制的符号，
+如果这些符号已经绑定其他的值，宏将捕获这些符号，然后将它们绑定到其他值上，从而出现怪诞的结果。
+
+----
+语法引用(Syntax Quote), 结束引用(Unquote)和拼接结束引用(Splicing Unquote)
+
+语法引用字符(`)作用类似普通引号，
+但是在语法引用的列表中，结束引用字符(~)可以多次结束引用，它们一起实现模板功能，如下：
+
+user=> (defmacro chain [x form]
+     `(. ~x ~form))
+
+对于单个方法调用可以正确生成：
+user=> (macroexpand '(chain arm getHand))
+(. arm getHand)
+
+但是对于有多个参数的变体chain，不能正确展开:
+user=> (defmacro chain
+([x form] `(. ~x ~form))
+([x form & more] `(chain (. ~x ~form) ~more)))
+#'user/chain
+
+user=> (macroexpand '(chain are getHand getFinger))
+(. (. are getHand) (getFinger))
+
+说明：由于chain的最后一个参数more是一个列表，因此代入模板时被括号包围。
+
+通过拼接引用(~@)宏可以正确的实现上述功能：
+
+user=> (defmacro chain
+([x form] `(. ~x ~form))
+([x form & more] `(chain (. ~x ~form) ~@more)))
+
+user=> (macroexpand '(chain arm getHand getFinger))
+(. (. arm getHand) getFinger)
+
+----
+在宏中创建命名
+
+Clojure提供一个读者形式创建唯一的局部名称。
+在语法引用形式中，可以在非限定名称后添加一个井号(#)，
+Clojure将自动创建一个符号：由非限定名称+下划线+唯一ID组成。如：
+
+(defmacro bench [expr]
+    `(let [start# (System/nanoTime)
+    result# ~expr]
+    {:result result# :elapsed (- (System/nanoTime) start#)}))
+
+user=> (bench (str "a" "b"))
+{:result "ab", :elapsed 88822}
+
+======
+7.4 宏的分类
+
+Clojure的特殊形式通常只能通过宏来实现，满足使用宏的第二个原则，因此宏的第二个原则也称为特殊形式原则。
+
+特殊形式有一些特殊的功能：
+
+(1) 特殊形式提供了大部分基本的流控制结构，如if和recur等。
+(2) 特殊形式提供了直接访问Java的途径。
+(3) 命名的创建和绑定都是通过特殊形式，
+不管是通过def定义的变量，还是通过let创建一个词法绑定，或者是通过binding创建一个动态绑定。
+
+但是特殊形式不是函数，因此也不具备某些函数的功能：
+
+(1) 不能对特殊形式应用apply函数。
+(2) 不能将特殊形式赋给一个变量。
+(3) 不能使用特殊形式作为一个序列库的过滤器。
+
+使用宏编写特殊形式通常很困难，但回报也最大。
+
+----
+宏按功能可以分为以下几类：
+
+1. 条件判断(Conditional Evaluation)
+
+因为宏不会立即计算参数值，因此可以用来创建自定义的控制结构，如之前的unless等。
+
+另外注释宏（comment）一般放在源代码文件末尾，用来举例说明API的使用方法，其语法如下：
+(comment & exprs)
+
+示例如下：
+(comment
+(load-file "src/inspector.clj")
+(refer 'inspector)
+(inspect-tree {:a 1 :b 2 :c [1 2 3 {:d 4 :e 5 :f [6 7 8]}]})
+(inspect-table [[1 2 3][4 5 6]]])
+)
+
+2. 创建变量（vars）
+
+Clojure的变量都是通过def特殊形式创建的，所有其他东西的创建最后都要调用def。
+由def衍生出很多其他的特殊形式，如defn，defmacro，defstruct，declare等。
+
+3. 与Java交互
+
+Clojure程序通过.(点), new和set!特殊形式来调用Java，Clojure代码习惯使用宏如..和doto来简化调用Java的形式。
+
+4. 延迟计算
+
+跟延迟有关的宏有lazy-seq, delay, force等。
+
+5. 包装计算
+
+一些宏包装形式集合的计算，在形式的计算之前或之后添加以下特殊的语义，如：
+
+(1) time 启动计时器，计算形式值，然后报告执行时间。
+(2) let和binding 建立绑定，然后计算某些形式的值，最后解除绑定。
+(3) with-open 打开文件（或其他资源），然后执行某些操作，最后释放资源。
+
+6. 避免匿名函数（Lambdas）
+
+由于历史原因，匿名函数常常被称为Lambdas。
+有时候宏可以被函数调用替代，函数参数为匿名函数。
+
+举例说明实现time功能，用函数实现如下：
+
+(defn bench-fn [f]
+     (let [start (System/nanoTime) result (f)]
+            {:result result :elapsed (- System/nanoTime) start)}))
+
+要计算某个形式的执行时间，需要编写一个函数包装该形式，然后作为参数传入bench-fn函数，如：
+(bench-fn (fn []> (+ 1 2)))
+
+如果通过宏来实现，则不需要新建匿名函数，如：
+(bench (+ 1 2))
+
+这里的bench为宏。
+

@@ -1,0 +1,92 @@
+goose，mms和asn.1解析库clojure版设计
+
+by hxzon
+===========
+读入报文文件
+
+bytes解析成报文数据结构
+
+bytes解析成asn.1数据结构
+
+===========
+java版数据结构
+
+“报文域”类型:
+ProtocolAsciiStringField
+ProtocolBitField
+ProtocolByteArrayField
+ProtocolField
+ProtocolHexStringField
+ProtocolInt31Field
+ProtocolInt31HexField
+ProtocolInt63Field
+ProtocolIntBigField
+ProtocolIpField
+ProtocolMacField
+
+“报文域”字段：
+	private Packet _packet;
+    private int _offset;
+    private int _len;
+    private String _id;
+    private String _name;
+    private String _displayString;
+    private int _miss = State_Right;
+    public static final int State_Right = 0;
+    public static final int State_WrongOffset = 1;
+    public static final int State_WrongLen = 2;
+
+“报文”字段：
+	//负载通用（偏移，长度）：
+	protected byte[] _srcData;
+    protected int _offset = 0;
+    protected int _len = 0;
+    protected IPacket _srcPacket;
+    protected boolean _miss;
+	//报文（头部长度，头部域，负载）：
+    protected int _headerLength;
+    protected List<ProtocolField> _headerFields;
+    protected IPacketPayload _payload;
+    protected IPacketPayload _lastPayload;
+
+
+========
+java版解析流程：
+
+利用继承实现策略模式。
+父类定义解析流程，子类通过覆盖来定制部分步骤：
+
+-1，
+protocol.common.IPacketPayload和protocol.common.IPacket是主要的两个接口，
+IPacketPayload定义了报文负载的特征信息，如底层报文信息，自身长度，在整个报文二进制中的偏移量。
+IPacket继承了IPacketPayload，因为报文也可以作为另外一种报文的负载，
+IPacket添加了报文的特征信息，如头部长度，头部字段，负载信息。
+protocol.common.PayloadHelper和protocol.common.PacketHelper作为辅助类分别实现上述两个接口。
+
+-2，
+protocol.packet.Packet继承自PacketHelper,是protocol.packet下所有报文类型的父类。
+
+Packet的expectHeaderFields()方法留给子类创建它们的头部字段。
+
+Packet的私有方法parsePayload()定义了整个负载的解析流程，
+其中调用了exceptPayload()和findBinding()方法。
+
+exceptPayload()用于让子类根据自身特殊情况定义它的负载，
+如Ip4Packet和CotpPacket用于处理它们的负载为分片时的情况。
+
+findBinding()从ProtocolBindingList中查找合适的报文负载。
+protocol.packet下的报文类型，会在静态初始化方法中，向ProtocolBindingList注册自己可能作为哪些报文的负载，
+以及如何判定负载为自身类型。
+如Ip4Packet在静态初始化方法中，注册自己可能作为EthernetPacket和VlanPacket的负载，
+判定方法是这两种报文的头部的type字段值为0x0800时。
+
+-3，
+protocol.parse包下的Ip4PacketGroup，Ip4PacketCache，CotpPacketGroup，CotpPacketCache用于处理ip4和cotp负载分片的情况。
+
+========
+clojure版数据结构：用map。
+
+clojure版解析流程：用多重方法来实现分发。
+
+
+
