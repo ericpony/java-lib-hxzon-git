@@ -1,0 +1,667 @@
+《On Lisp》-第 11 章 经典宏
+
+http://www.ituring.com.cn/article/53767
+
+本章介绍如何定义几种最常用的宏。它们可以大致归为三类 带有一定重叠。第一组宏创建上下文(context)。任何令其参数在一个新的上下文环境里求值的操作符都必须被定义成宏。本章的前两节描述两种基本类型的上下文，并且展示如何定义它们。
+
+接下来的三个小节将描述带有条件和重复求值的宏。一个操作符，如果其参数求值的次数少于一次或者多于一次，那么也同样必须被定义成宏。在做条件求值和重复求值的操作符之间没有明显区别：在本章中，有些例子兼具这两项功能(绑定操作也是如此)。最后一节解释了条件求值和重复求值之间的另一种相似性：
+
+在某些场合，它们都可以用函数来完成。
+
+11.1 创建上下文
+
+这里的上下文有两层意思。一类上下文指的是词法环境。special form let 创建一个新的词法环境；let 主体中的表达式将在一个可能包含新变量的环境中被求值。如果在 toplevel 下，把 x 设置成 a ，那么:
+
+(let ((x 'b)) (list x))
+将必定返回 (b) ，因为对 list 的调用被放在一个新环境里，它包含一个新的 x ，其值为 b 。
+
+通常会把带有表达式体的操作符定义成宏。除了类似 prog1 和 progn 的情况外，这类操作符的目地通常都是让它的主体在某个新的上下文环境中被求值。如果要用创建上下文的代码把主体包裹起来，就需要用到宏，即使这个上下文环境里不包含新的词法变量。
+
+[示例代码 11.1] let 的宏实现
+
+(defmacro our-let (binds &body body)
+  '((lambda ,(mapcar #'(lambda (x)
+          (if (consp x) (car x) x))
+        binds)
+      ,@body)
+    ,@(mapcar #'(lambda (x)
+        (if (consp x) (cadr x) nil))
+      binds)))
+[示例代码 11.1] 显示了如何通过 lambda 将 let 定义为一个宏。一个 our-let 展开到一个函数应用:
+
+(our-let ((x 1) (y 2))
+  (+ x y))
+展开成:
+
+((lambda (x y) (+ x y)) 1 2)
+[示例代码 11.2] 包含三个新的创建词法环境的宏。第 7.5 节使用了 when-bind 作为参数列表解构的示例，所以这个宏已经在第 7.5 节介绍过了。更一般的 when-bind* 接受一个由成对的 (symbol expression) form 所组成的列表 就和 let 的第一个参数的形式相同。如果任何expression返回nil，那么整个when-bind*表达式就返回nil。同样，它的主体在每个符号像在let*` 里那样被绑定的情况下求值：
+
+[示例代码 11.2] 绑定变量的宏
+
+(defmacro when-bind ((var expr) &body body)
+  '(let ((,var ,expr))
+    (when ,var
+      ,@body)))
+
+(defmacro when-bind* (binds &body body)
+  (if (null binds)
+    '(progn ,@body)
+    '(let (,(car binds))
+      (if ,(caar binds)
+        (when-bind* ,(cdr binds) ,@body)))))
+
+(defmacro with-gensyms (syms &body body)
+  '(let ,(mapcar #'(lambda (s)
+        '(,s (gensym)))
+      syms)
+    ,@body))
+> (when-bind* ((x (find-if #'consp '(a (1 2) b)))
+    (y (find-if #'oddp x)))
+  (+ y 10))
+11
+最后，宏 with-gensyms 本身就是用来编写宏的。许多宏在定义的开头就会用 gensym 生成一些符号，有时需要生成符号的数量还比较多。宏 with-redraw (第 8.3 节) 就必须生成五个：
+
+(defmacro with-redraw ((var objs) &body body)
+  (let ((gob (gensym))
+      (x0 (gensym)) (y0 (gensym))
+      (x1 (gensym)) (y1 (gensym)))
+    ...))
+这样的定义可以通过使用 with-gensyms 得以简化，后者将整个变量列表绑定到 gensym 上。借助这个新的宏，我们只需写成：
+
+(defmacro with-redraw ((var objs) &body body)
+  (with-gensyms (gob x0 y0 x1 y1)
+    ...))
+这个新的宏将被广泛用于后续的章节中。
+
+如果我们需要绑定某些变量，然后依据某些条件，来求值一组表达式中的一个，我们只需在 let 里使用一个条件判断：
+
+(let ((sun-place 'park) (rain-place 'library))
+  (if (sunny)
+    (visit sun-place)
+    (visit rain-place)))
+不幸的是，对于相反的情形没有简便的写法，就是说我们总是想要求值相同的代码，但在绑定的那里必须随某些条件而变。
+
+[示例代码 11.3] 包含一个处理类似情况的宏。从它的名字就能看出，condlet 行为就好像它是 cond 和 let 的后代一样。它接受一个绑定语句的列表，接着是一个代码主体。每个绑定语句是否生效都要视其对应的测试表达式而定；第一个测试表达式为真的绑定语句所构造的绑定环境将会胜出，代码主体将在这个绑定环境中被求值。有的变量只出现在某些语句中，却在其它语句里没有出现，如果最后被选中的语句里没有为它们指定绑定的话，它们将会被绑定到 nil 上：
+
+[示例代码 11.3] cond 与 let 的组合
+
+(defmacro condlet (clauses &body body)
+  (let ((bodfn (gensym))
+      (vars (mapcar #'(lambda (v) (cons v (gensym)))
+          (remove-duplicates
+            (mapcar #'car
+              (mappend #'cdr clauses))))))
+    '(labels ((,bodfn ,(mapcar #'car vars)
+          ,@body))
+      (cond ,@(mapcar #'(lambda (cl)
+            (condlet-clause vars cl bodfn))
+          clauses)))))
+
+(defun condlet-clause (vars cl bodfn)
+  '(,(car cl) (let ,(mapcar #'cdr vars)
+      (let ,(condlet-binds vars cl)
+        (,bodfn ,@(mapcar #'cdr vars))))))
+
+(defun condlet-binds (vars cl)
+  (mapcar #'(lambda (bindform)
+      (if (consp bindform)
+        (cons (cdr (assoc (car bindform) vars))
+          (cdr bindform))))
+    (cdr cl)))
+> (condlet (((= 1 2) (x (princ 'a)) (y (princ 'b)))
+    ((= 1 1) (y (princ 'c)) (x (princ 'd)))
+    (t (x (princ 'e)) (z (princ 'f))))
+  (list x y z))
+CD
+(D C NIL)
+可以把 condlet 的定义理解成为 our-let 定义的一般化。后者将其主体做成一个函数，然后被应用到初值 (initial value) 形式的求值结果上。condlet 展开后的代码用 labels 定义了一个本地函数，然后一个 cond 语句来决定哪一组初值将被求值并传给该函数。
+
+注意到展开器使用 mappend 代替 mapcan 来从绑定语句中解出变量名。这是因为 mapcan 是破坏性的，根据第 10.3 节里的警告，它比较危险，会修改参数列表结构。
+
+11.2 with- 宏
+
+除了词法环境以外还有另一种上下文。广义上来讲，上下文是世界的状态，包括特殊变量的值，数据结构的内容，以及 Lisp 之外事物的状态。构造这种类型上下文的操作符也必须被定义成宏，除非它们的代码主体要被打包进闭包里。
+
+构造上下文的宏的名字经常以 with- 开始。这类宏中，用得最多恐怕要算 with-open-file 了。它的主体和一个新打开的文件一起求值，其时，该文件已经绑定到了用户给定的变量：
+
+(with-open-file (s "dump" :direction :output)
+  (princ 99 s))
+该表达式求值完毕以后，文件 "dump" 将自动关闭，它的内容将是两个字符 "99"。
+
+很明显，这个操作符应该定义成宏，因为它绑定了 s 。其实，只要一个操作符需要让 form 在新的上下文中进行求值，那就应当把它定义为宏。在 CLTL2 中新加入的 ignore-errors 宏，使它的参数就像在一个 progn 里求值一样。不管什么地方出了错，整个 ignore-errors form 会直接返回 nil 。(在读取用户的输入时，可能就有这种需要。所以这还是有点用的。) 尽管 ignore-errors 没有创建任何变量，但它还是必须定义成宏，因为它的参数是在一个新的上下文里求值的。
+
+一般而言，创建上下文的宏将被展开成一个代码块；附加的表达式可能被放在主体之前、之后，或者前后都有。如果是出现在主体之后，其目的可能是为了在结束时，让系统的状态保持一致 去做某些清理工作。
+
+例如，with-open-file 必须关闭它打开的文件。在这种情况下，典型的方法是将上下文创建的宏展开进一个 unwind-protect 里。unwind-protect 的目的是确保特定表达式被求值，甚至当执行被中断时。它接受一个或更多参数，这些参数按顺序执行。如果一切正常的话它将返回第一个参数的值，就像 prog1 。区别在于，即使当出现错误，或者抛出的异常中断了第一个参数的求值，其余的参数也一样会被求值。
+
+> (setq x 'a)
+A
+> (unwind-protect
+  (progn (princ "What error?")
+    (error "This error."))
+  (setq x 'b))
+What error?
+>>Error: This error.
+unwind-protect 产生了一个错误。但是在返回到 toplevel 之后，我们注意到它的第二个参作为整体，form toplevel 数仍然被求值了：
+
+> x
+B
+因为 with-open-file 展开成了一个 unwind-protect ，所以即使对 with-open-file 的 body 求值时发生了错误，它打开的文件还是会一如既往地被关闭。
+
+上下文创建宏多数是为特定应用而写的。举个例子，假设我们在写一个程序，它会和多个远程数据库打交道。程序在同一时刻只和一个数据库通信，这个数据库由全局变量 *db* 指定。在使用数据库之前，我们必须对它加锁，以确保没有其他程序能同时使用它。完成操作后需要对其解锁。如果想对数据库 db 查询 q 的值，或许会这样说：
+
+(let ((temp *db*))
+  (setq *db* db)
+  (lock *db*)
+  (prog1 (eval-query q)
+    (release *db*)
+    (setq *db* temp)))
+我们可以通过宏把所有这些维护操作都藏起来。[示例代码 11.4] 定义了一个宏，它让我们在更高的抽象层面上管理数据库。使用 with-db ，我们只需说：
+
+(with-db db
+  (eval-query q))
+而且调用 with-db 也更安全，因为它会展开成 unwind-protect 而不是简单的 prog1 。
+
+[示例代码 11.4] 中的两个定义阐述了编写此类宏的两种可能方式。第一种是完全用宏，第二种把函数和宏结合起来。当 with- 宏变得愈发复杂时，第二种方法更有实践意义。
+
+在 CLTL2 Common Lisp 中，dynamic-extent 声明使得在为含主体的闭包分配空间时，可以更高效一些( CLTL1 实现会忽略该声明)。我们只有在 with-db-fn 调用期间才需要这个闭包，该声明也正合乎这个要求，它允许编译器从栈上为其分配空间。这些空间将在let 表达式退出时自动回收，而不是之后由垃圾收集器回收。
+
+[示例代码 11.4] 一个典型的 with- 宏
+
+完全使用宏：
+
+(defmacro with-db (db &body body)
+  (let ((temp (gensym)))
+    '(let ((,temp *db*))
+      (unwind-protect
+        (progn
+          (setq *db* ,db)
+          (lock *db*)
+          ,@body)
+        (progn
+          (release *db*)
+          (setq *db* ,temp))))))
+宏和函数结合使用：
+
+(defmacro with-db (db &body body)
+  (let ((gbod (gensym)))
+    '(let ((,gbod #'(lambda () ,@body)))
+      (declare (dynamic-extent ,gbod))
+      (with-db-fn *db* ,db ,gbod))))
+
+(defun with-db-fn (old-db new-db body)
+  (unwind-protect
+    (progn
+      (setq *db* new-db)
+      (lock *db*)
+      (funcall body))
+    (progn
+      (release *db*)
+      (setq *db* old-db))))
+11.3 条件求值
+
+有时我们需要让宏调用中的某个参数仅在特定条件下才被求值。这超出了函数的能力，因为函数总是会对它所有的参数进行求值。不过诸如 if、and 和 cond 这样内置的操作符能够使某些参数免于求值，除非其它参数返回某些特定的值。例如在下式中
+
+(if t
+  'phew
+  (/ x 0))
+第三个参数如果被求值的话将导致一个除零错误。但由于只有前两个参数将被求值，if 从整体上将总是安全地返回 phew 。
+
+我们可以通过编写宏，将调用展开到已有的操作符上来创造这类新操作符。[示例代码 11.5] 中的两个宏是许多可能的 if 变形中的两个。if3 的定义显示了应如何定义一个三值逻辑的条件选择。这个宏不再将 nil 当成假，把除此之外的都作为真，而是考虑了三种真值类型：真，假，以及不确定，表示为 ?。它可能用于下面关于五岁小孩的描述：
+
+(while (not sick)
+  (if3 (cake-permitted)
+    (eat-cake)
+    (throw 'tantrum nil)
+    (plead-insistently)))
+** [示例代码 11.5] 做条件求值的宏**
+
+(defmacro if3 (test t-case nil-case ?-case)
+  '(case ,test
+    ((nil) ,nil-case)
+    (? ,?-case)
+    (t ,t-case)))
+
+(defmacro nif (expr pos zero neg)
+  (let ((g (gensym)))
+    '(let ((,g ,expr))
+      (cond ((plusp ,g) ,pos)
+        ((zerop ,g) ,zero)
+        (t ,neg)))))
+这个新的条件选择展开成一个 case。(那个 nil 键必须封装在列表里，原因是单独的 nil 键会有歧义。)
+
+最后三个参数中只有一个会被求值，至于是哪一个，这取决于第一个参数的值。
+
+nif 的意思是 "numericif" 。该宏的另一种实现出现在 7.2 节上。它接受数值表达式作为第一个参数，并根据这个表达式的符号来求值接下来三个参数中的一个。
+
+> (mapcar #'(lambda (x)
+    (nif x 'p 'z 'n))
+  '(0 1 -1))
+(Z P N)
+[示例代码 11.6] 包含了另外几个使用条件求值的宏。宏 in 用来高效地测试集合的成员关系。要是你想要测试一个对象是否属于某备选对象的集合，可以把这个查询表达式表示成逻辑或：
+
+(let ((x (foo)))
+  (or (eql x (bar)) (eql x (baz))))
+或者你也可以用集合的成员关系来表达：
+
+(member (foo) (list (bar) (baz)))
+后者更抽象，但效率要差些。该 member 表达式在两个地方导致了毫无必要的开销。它需要构造点对，因为它必须将所有备选对象连结成一个列表以便 member 进行查找。并且为了把备选项做成列表形式它们全都要被求值，尽管某些值可能根本不需要。如果 (foo) 和 (bar) 的值相等，那么就不需要求值 (baz) 了。不管它在建模上多么抽象，使用 member 都不是好方法。我们可以通过宏来得到更有效率的抽象：in 把 member 的抽象与 or 的效率结合在了一起。等价的 in 表达式:
+
+(in (foo) (bar) (baz))
+跟 member 表达式的形态相同，但却可以展开成：
+
+(let ((#:g25 (foo)))
+  (or (eql #:g25 (bar))
+    (eql #:g25 (baz))))
+情况经常是这样，当需要在简洁和高效两种习惯用法之间择一而从时，我们取中庸之道，方法是编写宏将前者变换成为后者。
+
+发音为 "inqueue" 的 inq 是 in 的引用变形，类似 setq 之于 set。表达式：
+
+(inq operator + - *)
+展开成：
+
+(in operator '+ '- '*)
+[示例代码 11.6] 使用条件求值的宏
+
+(defmacro in (obj &rest choices)
+  (let ((insym (gensym)))
+    '(let ((,insym ,obj))
+      (or ,@(mapcar #'(lambda (c) '(eql ,insym ,c))
+          choices)))))
+
+(defmacro inq (obj &rest args)
+  '(in ,obj ,@(mapcar #'(lambda (a)
+        '',a)
+      args)))
+
+(defmacro in-if (fn &rest choices)
+  (let ((fnsym (gensym)))
+    '(let ((,fnsym ,fn))
+      (or ,@(mapcar #'(lambda (c)
+            '(funcall ,fnsym ,c))
+          choices)))))
+
+(defmacro >case (expr &rest clauses)
+  (let ((g (gensym)))
+    '(let ((,g ,expr))
+      (cond ,@(mapcar #'(lambda (cl) (>casex g cl))
+          clauses)))))
+
+(defmacro >casex (g cl)
+  (let ((key (car cl)) (rest (cdr cl)))
+    (cond ((consp key) '((in ,g ,@key) ,@rest))
+      ((inq key t otherwise) '(t ,@rest))
+      (t (error "bad >case clause")))))
+和 member 的缺省行为一样，in 和 inq 用 eql 来测试等价性。如果你想要使用其他的测试条件，或者某个一元函数来进行测试，那么可以改用更一般的 in-if。in-if 之于 same 好比是 in 对 member 的关系。表达式:
+
+(member x (list a b) :test #'equal)
+也可以写作:
+
+(in-if #'(lambda (y) (equal x y)) a b)
+而:
+
+(some #'oddp (list a b))
+就变成:
+
+(in-if #'oddp a b)
+把 cond 和 in 一起用的话，我们还能定义出一个有用的 case 变形。Common Lisp 的 case 宏假定它的键值都是常量。但有时可能需要 case 的行为，同时又希望求值其中的键。针对这类情况我们定义了 >case ，除了它会在比较之前先对每个子句里的键进行求值以外，其行为和 case 相同。(名字中的 > 意指通常用来表示求值过程的那个箭头符号。) 因为 >case 使用了 in，只有它需要的那个键才会被求值。
+
+由于键可以是 Lisp 表达式，无法判断 (x y) 到底是个函数调用还是由两个键组成的列表。为了避免这种二义性，键 (除了 t 和 otherwise ) 必须总是放在列表里给出，哪怕是只有一个。在 case 表达式里，由于会产生歧义，nil 不能作为子句的 car 出现。在 >case 表达式里，nil 作为子句的 car 就不再有歧义了，但它的含义是该子句的其余部分将不会被求值。
+
+为清晰起见，生成每一个 >case 子句展开式的代码被定义在一个单独的函数 >casex 里。注意到 >casex 本身还用到了 inq。
+
+11.4 迭代
+
+有时，函数的麻烦之处并非在于它们的参数总是被求值，而是它们只能求值一次。因为函数的每个参数都将被求值刚好一次，如果我们想要定义一个操作符，它接受一些表达式体，并且在这些表达式上进行迭代操作，那唯一的办法就是把它定义成宏。
+
+最简单的例子就是一个能够按顺序永无休止地求值其参数的宏：
+
+(defmacro forever (&body body)
+  '(do ()
+    (nil)
+    ,@body))
+这不过是当你不给它任何循环关键字时，loop 宏的本分。你可能认为无限循环毫无用处(或者说用处不大)。但当它和 block 和 return-from 组合起来使用时，这类宏就变成了表达某种循环最自然的方式。这种循环只会在一些突发情况下才停下来。
+
+[示例代码 11.7] 简单的迭代宏
+
+(defmacro while (test &body body)
+  '(do ()
+    ((not ,test))
+    ,@body))
+
+(defmacro till (test &body body)
+  '(do ()
+    (,test)
+    ,@body))
+
+(defmacro for ((var start stop) &body body)
+  (let ((gstop (gensym)))
+    '(do ((,var ,start (1+ ,var))
+        (,gstop ,stop))
+      ((> ,var ,gstop))
+      ,@body)))
+[示例代码 11.7] 中给出了一些最简单的迭代宏。其中，while 我们之前已经见过了 (7.4 节)，其主体将在测试表达式返回真时求值。与之对应的是 till ，它是在测试表达式返回假时求值。最后是for ，同样，在前面也有过一面之缘( 9.6 节)，它在给定的数字区间上做迭代操作。
+
+我们定义这些宏，让它们展开成 do ，用这个办法，使得在宏的主体里能使用 go 和 return 。正如 do 从 block 和 tagbody 那里继承了这些权力，do 也把这种权利传给了 while、till 和 for。正如 9.7 节上解释的，do 内部隐含 block 里的 nil 标签将被 [示例代码 11.7] 中的宏所捕捉。虽然与其说这是个 bug，不如说它是个特性，但至少应该明确提出来。
+
+当你需要定义更强大的迭代结构时，宏是必不可少的。[示例代码 11.8] 里包括了两个 dolist 的一般化；两者都在求值主体时绑定一组变量到一个列表中相继的子序列上。例如，给定两个参数，do-tuples/o 将成对迭代：
+
+> (do-tuples/o (x y) '(a b c d)
+  (princ (list x y)))
+(A B)(B C)(C D)
+NIL
+给定相同的参数，do-tuples/c 将会做同样的事，然后折回到列表的开头：
+
+[示例代码 11.8] 迭代子序列的宏
+
+(defmacro do-tuples/o (parms source &body body)
+  (if parms
+    (let ((src (gensym)))
+      '(prog ((,src ,source))
+        (mapc #'(lambda ,parms ,@body)
+          ,@(map0-n #'(lambda (n)
+              '(nthcdr ,n ,src))
+            (- (length source)
+              (length parms))))))))
+
+(defmacro do-tuples/c (parms source &body body)
+  (if parms
+    (with-gensyms (src rest bodfn)
+      (let ((len (length parms)))
+        '(let ((,src ,source))
+          (when (nthcdr ,(1- len) ,src)
+            (labels ((,bodfn ,parms ,@body))
+              (do ((,rest ,src (cdr ,rest)))
+                ((not (nthcdr ,(1- len) ,rest))
+                  ,@(mapcar #'(lambda (args)
+                      '(,bodfn ,@args))
+                    (dt-args len rest src))
+                  nil)
+                (,bodfn ,@(map1-n #'(lambda (n)
+                      '(nth ,(1- n)
+                        ,rest))
+                    len))))))))))
+
+(defun dt-args (len rest src)
+  (map0-n #'(lambda (m)
+      (map1-n #'(lambda (n)
+          (let ((x (+ m n)))
+            (if (>= x len)
+              '(nth ,(- x len) ,src)
+              '(nth ,(1- x) ,rest))))
+        len))
+    (- len 2)))
+> (do-tuples/c (x y) '(a b c d)
+  (princ (list x y)))
+(A B)(B C)(C D)(D A)
+NIL
+两个宏都返回 nil ，除非在主体中有显式的 return 。
+
+在需要处理某种路径表示的程序里，会经常用到这类迭代结构。后缀 /o 和 /c 被用来表明这两个版本的迭代控制结构是分别用于遍历开放和封闭的路径的。举个例子，如果points 是一个点的列表而 (drawline x y) 在 x 和 y 之间画线，那么画一条从起点到终点的路径我们写成:
+
+(do-tuples/o (x y) points (drawline x y))
+假如 points 是一个多边形的节点列表，为了画出它的轮廓，我们这样写:
+
+(do-tuples/c (x y) points (drawline x y))
+作为第一个实参给出的形参列表的长度是任意的，相应的迭代就会按照那个长度的组合进行。如果只给一个参数，两者都会退化成 dolist ：
+
+> (do-tuples/o (x) '(a b c) (princ x))
+ABC
+NIL
+> (do-tuples/c (x) '(a b c) (princ x))
+ABC
+NIL
+do-tuples/c 的定义比 do-tuples/o 更复杂一些，因为它要在搜索到列表结尾时折返回来。如果有 n 个参数，do-tuples/c 必须在返回之前多做 n-1 次迭代：
+
+> (do-tuples/c (x y z) '(a b c d)
+  (princ (list x y z)))
+(A B C)(B C D)(C D A)(D A B)
+NIL
+> (do-tuples/c (w x y z) '(a b c d)
+  (princ (list w x y z)))
+(A B C D)(B C D A)(C D A B)(D A B C)
+NIL
+前一个对 do-tuples/c 调用的展开式显示在 [示例代码 11.9] 中。生成过程的困难之处是那些展示折返到列表开头的调用序列。这些调用 (在本例中有两个) 由 dt-args 生成。
+
+[示例代码 11.9] 一个 do-tuples/c 调用的展开
+
+(do-tuples/c (x y z) '(a b c d)
+  (princ (list x y z)))
+展开成：
+
+(let ((#:g2 '(a b c d)))
+  (when (nthcdr 2 #:g2)
+    (labels ((#:g4 (x y z)
+          (princ (list x y z))))
+      (do ((#:g3 #:g2 (cdr #:g3)))
+        ((not (nthcdr 2 #:g3))
+          (#:g4 (nth 0 #:g3)
+            (nth 1 #:g3)
+            (nth 0 #:g2))
+          (#:g4 (nth 1 #:g3)
+            (nth 0 #:g2)
+            (nth 1 #:g2))
+          nil)
+        (#:g4 (nth 0 #:g3)
+          (nth 1 #:g3)
+          (nth 2 #:g3))))))
+11.5 多值迭代
+
+内置 do 宏早在多重返回值之前就已经有了。幸运的是，do 可以继续进化以适应新的形势，因为 Lisp 的进化掌握在程序员的手中。[示例代码 11.10] 包含一个支持多值的 do* 版本。在 mvdo* 里，每个初值语句可绑定多个变量：
+
+> (mvdo* ((x 1 (1+ x))
+    ((y z) (values 0 0) (values z x)))
+  ((> x 5) (list x y z))
+  (princ (list x y z)))
+
+(1 0 0)(2 0 2)(3 2 3)(4 3 4)(5 4 5)
+(6 5 6)
+这类迭代非常有用，例如，在交互式图形程序里经常需要处理诸如坐标和区域这样的多值数据。
+
+[示例代码 11.10] do* 的多值绑定版本
+
+(defmacro mvdo* (parm-cl test-cl &body body)
+  (mvdo-gen parm-cl parm-cl test-cl body))
+
+(defun mvdo-gen (binds rebinds test body)
+  (if (null binds)
+    (let ((label (gensym)))
+      '(prog nil
+        ,label
+        (if ,(car test)
+          (return (progn ,@(cdr test))))
+        ,@body
+        ,@(mvdo-rebind-gen rebinds)
+        (go ,label)))
+    (let ((rec (mvdo-gen (cdr binds) rebinds test body)))
+      (let ((var/s (caar binds)) (expr (cadar binds)))
+        (if (atom var/s)
+          '(let ((,var/s ,expr)) ,rec)
+          '(multiple-value-bind ,var/s ,expr ,rec))))))
+
+(defun mvdo-rebind-gen (rebinds)
+  (cond ((null rebinds) nil)
+    ((< (length (car rebinds)) 3)
+      (mvdo-rebind-gen (cdr rebinds)))
+    (t
+      (cons (list (if (atom (caar rebinds))
+            'setq
+            'multiple-value-setq)
+          (caar rebinds)
+          (third (car rebinds)))
+        (mvdo-rebind-gen (cdr rebinds))))))
+假设我们想要写一个简单的交互式游戏，游戏的目标是避免被两个追踪者挤成碎片。如果两个追踪者同时碰到你，那么你就输了；如果它们自己撞到一起，你就是赢家。[示例代码 11.11] 显示了该游戏的主循环是如何用 mvdo* 写成的。
+
+也有可能写出一个 mvdo ，并行绑定其局部变量：
+
+> (mvdo ((x 1 (1+ x))
+    ((y z) (values 0 0) (values z x)))
+  ((> x 5) (list x y z))
+  (princ (list x y z)))
+(1 0 0)(2 0 1)(3 1 2)(4 2 3)(5 3 4)
+(6 4 5)
+do 的定义中需要用到 psetq 的原因在第 7.7 节里曾解释过。为了定义 mvdo ，需要一个多值版本的 psetq 。
+
+由于 Common Lisp 没有提供这种操作符，所以我们必须自己写一个，如 [示例代码 11.12] 所示。新的宏的工作方式如下：
+
+[示例代码 11.11]：一个碰撞游戏
+
+> (let ((w 0) (x 1) (y 2) (z 3))
+  (mvpsetq (w x) (values 'a 'b) (y z) (values w x))
+  (list w x y z))
+(A B 0 1)
+(mvdo* (((px py) (pos player) (move player mx my))
+    ((x1 y1) (pos obj1) (move obj1 (- px x1)
+        (- py y1)))
+    ((x2 y2) (pos obj2) (move obj2 (- px x2)
+        (- py y2)))
+    ((mx my) (mouse-vector) (mouse-vector))
+    (win nil (touch obj1 obj2))
+    (lose nil (and (touch obj1 player)
+        (touch obj2 player))))
+  ((or win lose) (if win 'win 'lose))
+  (clear)
+  (draw obj1)
+  (draw obj2)
+  (draw player))
+(pos obj) 返回代表 obj 位置的两个值 x ，y 。开始的时候三个对象的位置是随机的。
+
+(move obj dx dy) 根据类型和向量 <dx, dy> 来移动对象 obj。返回的两个值 x ，y 代表其新位置。
+
+(mouse-vector) 返回代表当前鼠标移动位置的两个值 mx，my 。
+
+(touch obj1 obj2) 返回真，如果 obj1 碰上了 obj2。
+
+(clear) 清空游戏区域。
+
+(draw obj) 在当前位置绘制 obj。
+
+mvpsetq 的定义依赖于三个工具函数：mklist ( 4.3 节)，group (4.3 节)，以及在这里定义的 shuffle ，用来交错两个列表：
+
+> (shuffle '(a b c) '(1 2 3 4))
+(A 1 B 2 C 3 4)
+借助 mvpsetq ，我们就可以定义 mvdo 了，如 [示例代码 11.13] 所示。和 condlet 一样，这个宏使用了 mappend 来代替 mapcan 以避免修改最初的宏调用。【注 1】这种 mappend-mklist 写法可以把一棵树压扁一层：
+
+> (mappend #'mklist '((a b c) d (e (f g) h) ((i)) j))
+(A B C D E (F G) H (I) J)
+为了有助于理解这个相当长的宏，[示例代码 11.14] 中含有一个展开示例。
+
+11.6 需要宏的原因
+
+宏并不是保护参数免于求值的唯一方式。另一种方法是把它封装在闭包里。条件求值和重复求值的相似之处在于这两个问题在本质上都不需要宏。例如，我们可以将 if 写成函数：
+
+(defun fnif (test then &optional else)
+  (if test
+    (funcall then)
+    (if else (funcall else))))
+我们可以把 then 和 else 参数表达成闭包，通过这种方式来保护它们，所以下面的表达式：
+
+(if (rich) (go-sailing) (rob-bank))
+可以改成：
+
+(fnif (rich)
+  #'(lambda () (go-sailing))
+  #'(lambda () (rob-bank)))
+[示例代码 11.12] psetq 的多值版本
+
+(defmacro mvpsetq (&rest args)
+  (let* ((pairs (group args 2))
+      (syms (mapcar #'(lambda (p)
+            (mapcar #'(lambda (x) (gensym))
+              (mklist (car p))))
+          pairs)))
+    (labels ((rec (ps ss)
+          (if (null ps)
+            '(setq
+              ,@(mapcan #'(lambda (p s)
+                  (shuffle (mklist (car p))
+                    s))
+                pairs syms))
+            (let ((body (rec (cdr ps) (cdr ss))))
+              (let ((var/s (caar ps))
+                  (expr (cadar ps)))
+                (if (consp var/s)
+                  '(multiple-value-bind ,(car ss)
+                    ,expr
+                    ,body)
+                  '(let ((,@(car ss) ,expr))
+                    ,body)))))))
+      (rec pairs syms))))
+
+(defun shuffle (x y)
+  (cond ((null x) y)
+    ((null y) x)
+    (t (list* (car x) (car y)
+        (shuffle (cdr x) (cdr y))))))
+如果我们要的只是条件求值，那么不用宏也一样可以。它们只是让程序更清晰罢了。不过，当我们需要拆开参数 form，或者为作为参数传入的变量绑定值时，就只能靠宏了。
+
+同样的道理也适用于那些用于迭代的宏。尽管只有宏才提供唯一的手段，可以用来定义带有表达式体的迭代控制结构，其实用函数来做迭代也是可能的，只要循环体被包装在那个函数里。【注 2】例如内置函数 mapc 就是与 dolist 对应的函数式版本。表达式:
+
+(dolist (b bananas)
+  (peel b)
+  (eat b))
+和:
+
+(mapc #'(lambda (b)
+    (peel b)
+    (eat b))
+    bananas)
+有相同的副作用。(尽管前者返回 nil ，而后者返回 bananas 列表)。或者，我们也可以把 forever 实现成函数:
+
+(defun forever (fn)
+  (do ()
+    (nil)
+    (funcall fn)))
+[示例代码 11.13] do 的多值绑定版本
+
+(defmacro mvdo (binds (test &rest result) &body body)
+  (let ((label (gensym))
+      (temps (mapcar #'(lambda (b)
+            (if (listp (car b))
+              (mapcar #'(lambda (x)
+                  (gensym))
+                (car b))
+              (gensym)))
+          binds)))
+    '(let ,(mappend #'mklist temps)
+      (mvpsetq ,@(mapcan #'(lambda (b var)
+            (list var (cadr b)))
+          binds
+          temps))
+      (prog ,(mapcar #'(lambda (b var) (list b var))
+          (mappend #'mklist (mapcar #'car binds))
+          (mappend #'mklist temps))
+        ,label
+        (if ,test
+          (return (progn ,@result)))
+        ,@body
+        (mvpsetq ,@(mapcan #'(lambda (b)
+              (if (third b)
+                (list (car b)
+                  (third b))))
+            binds))
+        (go ,label)))))
+[示例代码 11.14] mvdo 调用的展开 (mvdo ((x 1 (1+ x)) ((y z) (values 0 0) (values z x))) ((> x 5) (list x y z)) (princ (list x y z)))
+
+展开成：
+
+(let (#:g2 #:g3 #:g4)
+  (mvpsetq #:g2 1
+    (#:g3 #:g4) (values 0 0))
+  (prog ((x #:g2) (y #:g3) (z #:g4))
+    #:g1
+    (if (> x 5)
+      (return (progn (list x y z))))
+    (princ (list x y z))
+    (mvpsetq x (1+ x)
+      (y z) (values z x))
+    (go #:g1)))
+不过，前提是我们愿意传给它闭包而非表达式体。
+
+然而，迭代控制结构通常要做的工作会比简单的迭代更多，也就是比 forever 更复杂：它们通常会把绑定和迭代合二为一。使用函数的话，绑定操作会很有局限。如果想把变量绑定到列表的后继元素上，那么用某种映射函数就可以。但如果需求比这个更复杂，你就不得不写一个宏了。
+
+备注：
+
+【注1】译者注：原文为 mapcar，按照 condlet 来看应该是一个错误。
+
+【注2】写一个不需要其参数封装在函数里的迭代函数也并非不可能。我们可以写一个函数在作为其参数传递的表达式上调用 eval 。对于 "为什么调用 eval 通常是有问题的"，可参见 21.2 节的解释。

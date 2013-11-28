@@ -1,0 +1,500 @@
+《On Lisp》-第 19 章 一个查询编译器
+
+http://www.ituring.com.cn/article/53792
+
+hxzon修订。
+参见《<实用Common Lisp编程>-ch03简单的数据库》。
+
+=======
+第 19 章 一个查询编译器 . . . . . . . . . . . . 169
+
+19.1 数据库 . . . . . . . . . . . 169
+19.2 模式匹配查询 . . . . . . . . . . . . . . . . 170
+19.3 一个查询解释器. . . . . . . . . . . . . . . 171
+19.4 绑定上的限制 . . . . . . . . . . . . . . . . 173
+19.5 一个查询编译器. . . . . . . . . . . . . . . 174
+
+========
+在前面章节里定义的有些宏很长。
+为了生成展开式，if-match 需要用到图 18.7 和18.8 中的所有代码，以及 [示例代码 18.1] 中的 destruc 。
+如此之长的宏自然而然地将我们带入最后一个主题：嵌入式语言。
+如果说短小的宏是Lisp 的扩展，那么大的宏就是在其中定义子语言——可能带有它们自己的语法或者控制结构。
+我们在 if-match 中看出了些端倪，在这个宏里，它有自己的一套表达变量的方式。
+
+我们把实现在 Lisp 中的语言称为嵌入式语言。
+和 "实用工具" 一样，这个术语并没有严格的定义；
+if-match 可能仍算是实用工具，但它已经开始有一点嵌入式语言的意思了。
+
+嵌入式语言和那些用传统的编译器或解释器实现的语言截然不同。
+它是用某种现有的语言实现的，实现的方式通常是采用转换。
+没有必要在基语言和它的扩展之间制造人为的隔阂：可以将两者自由地混用在一起。
+对于实现者来说，这意味着可以省下大量精力。
+你可以让你想要的部分实现成嵌入的，而让其余的部分使用基语言。
+
+转换，在 Lisp 里，意味着使用宏。
+在某种程度上，你可以用预处理器来实现嵌入式语言。
+但预处理器通常只能操作文本，而宏却可以利用 Lisp 的一个独一无二的特性：
+在读取器和编译器之间，你的 Lisp 程序被表达成 Lisp 对象的列表。
+在这个阶段进行转换要更自如一些。
+
+最著名的嵌入式语言例子是 CLOS，即 Common Lisp Object System。
+如果你想要把一个普通的语言改造成面向对象的版本，那只能写一个新的编译器。
+在Lisp 里就不是这样了。
+调整编译器将使 CLOS 跑得更快，而在理论上，编译器不需要有丝毫改变。
+这一整套系统都可以用Lisp 写出来。
+
+接下来的章节会给出几个嵌入式语言的例子。
+本章将描述如何将一个回答数据库查询的程序嵌入到 Lisp 中。
+(你将会注意到这个程序和 if-match 有一系列相通的地方。) 
+
+第一节将介绍如何写一个系统，该系统用于解释查询语句。
+之后，这个程序被重新实现成一个查询编译器，实质上，
+是实现成了一个巨大的宏, 这既使程序更加高效，也让它能更好地与 Lisp 集成。
+
+========
+19.1 数据库
+
+鉴于当前的目的，数据库的形式并不是关键。
+所以，这里出于方便起见把信息保存在列表里。
+例如，我们将 "Joshua Reynolds 是一位生活于 1723 至 1792 年的英国画家" 这个事实表示成：
+
+(painter reynolds joshua english)
+(dates reynolds 1723 1792)
+
+把信息压缩表示成列表，并无标准办法可循。
+我们可以依法炮制，也干脆用一个大列表：
+
+(painter reynolds joshua 1723 1792 english)
+
+组织数据库表项的方式由用户来决定。
+唯一的限制是这些项目(事实) 将用其第一个元素(谓词) 来索引。
+
+在这些约束下，任何一致的形式都可以工作，尽管某些形式的查询速度更快些。
+
+任何数据库系统都至少要支持两种操作：修改数据库，和查询数据库。
+[示例代码 19.1] 中给出的代码以一个基本的形式提供了这些操作。
+数据库由一张哈希表表示，表项则是一个个事实，事实的谓词作为哈希表的键值。
+
+尽管图 19.1 中定义的数据库函数支持多个数据库，但它们默认的操作对象都是 \*default-db\*。
+作为 Common Lisp 里的包，那些不需要操作多个数据库的程序甚至不需要关心它们。
+在本章所有的例子将 只用到 \*default-db\*。
+
+[示例代码 19.1]：基本的数据库函数
+
+(defun make-db (&optional (size 100))
+  (make-hash-table :size size))
+
+(defvar *default-db* (make-db))
+
+(defun clear-db (&optional (db *default-db*))
+  (clrhash db))
+
+(defmacro db-query (key &optional (db '*default-db*))
+  '(gethash ,key ,db))
+
+(defun db-push (key val &optional (db *default-db*))
+  (push val (db-query key db)))
+
+(defmacro fact (pred &rest args)
+  '(progn (db-push ',pred ',args)
+    ',args))
+
+我们调用 clear-db ，初始化系统，这个命令会清空当前数据库。
+我们通过给db-query 一个谓词来查询事实，并用 db-push 将新事实插入到一个数据库项里。
+
+正如第 12.1 节里解释的那样，一个展开成可逆引用的宏其自身也将是可逆的。
+由于 db-query 就是以这种方式定义的，所以我们可以简单地在谓词的 db-query 上 push 新事实。
+在 Common Lisp 里，除非特别指定，哈希表中的项被初始化为 nil ，
+这样任何key 在初始时都会有一个空列表与之关联。
+最后，fact 宏用来给数据库加入新事实。
+
+> (fact painter reynolds joshua english)
+(REYNOLDS JOSHUA ENGLISH)
+> (fact painter canale antonio venetian)
+(CANALE ANTONIO VENETIAN)
+> (db-query 'painter)
+((CANALE ANTONIO VENETIAN)
+  (REYNOLDS JOSHUA ENGLISH))
+T
+
+其中，t 是 db-query 返回的第二个值。
+而 db-query 会展开成 gethash ，后者则把它返回的第二个值作为标记，
+以区别两种情况：即没有发现项目，和发现了一个值为 nil 的项目。
+
+=========
+19.2 模式匹配查询
+
+之前用 db-query 来查询数据库中的数据，其实这种方式不是很灵活。
+通常用户会想要问的问题不会单单依赖事实的第一个元素。
+所谓查询语言就是一种用来表达更复杂查询的语言。
+
+在一个典型的查询语言里，用户可以询问所有满足某些约束组合的值——例如，所有生于 1697 年的画家的姓氏。
+
+我们的程序将提供一种声明式的查询语言。
+在这种查询语言中，由用户指定答案必须满足的约束，而把如何生成答案的麻烦事留给系统。
+这样表达查询和人们日常会话中的方式很类似。
+
+对于我们的程序，我们可以要求系统找出所有这样的：
+存在一个 (painter ...) 形式的事实，以及一个 (dates 1697 ...) 形式的事实，以此来表达这个例子查询。
+如此，就能通过下面这个查询来引用所有生于 1697 年的画家：
+
+(and (painter ?x ?y ?z)
+  (dates ?x 1697 ?w))
+
+我们的程序不但接受由谓词和一些参数组成的简单查询，
+还将能够回答由 and 和 or 这些逻辑操作符连接而成的任意复杂查询。
+图 19.2 中给出了查询语言的语法。
+
+[示例代码 19.2] 查询语法
+
+<query> : (<symbol> <argument>*)
+: (not <query>)
+: (and <query>*)
+: (or <query>*)
+<argument> : ?<symbol>
+: <symbol>
+: <number>
+
+由于事实是用它们的谓词来索引的，所以变量不能出现在谓词的位置上。
+如果你愿意放弃索引带来的好处，你可以通过总是使用相同的谓词，并且使第一个参数成为事实上的标准谓词来绕过这个限制。
+
+和许多类似的系统一样，这个程序对于真值采取怀疑论的观点：除了已知的事实之外，其他所有陈述都是错误的。
+如果问题中的事实不在数据库里，not 操作符就会成功。
+某种程度上，你可以使用 Wayne's World【注1】 的方式显式地表达逻辑假：
+
+(edible motor-oil not)
+
+就算这样，not 操作符也不会对这些事实另眼相待。
+
+在编程语言里，解释性和编译性的程序之间有着根本的区别。
+在本章实现查询的时候，我们也将体会到这一点。
+查询解释器接受查询，并根据它从数据库里生成答案。
+而查询编译器接受查询，然后生成一个程序，当这个程序运行时，会得出相同的结果。
+接下来几节里，会先描述一个查询解释器，然后再实现一个查询编译器。
+
+【注1】译者注：Wayne's World 是上世纪 90 年代 NBC 拍摄的系列短剧，后被改编为电影，中文名为《反斗智多星》。
+其中的角色经常用类似"这是历史的巧合，才怪！" 的方式表达否定和挖苦的情绪。
+该剧让这种故意搞怪的表达方式在北美变得流行起来。
+
+========
+19.3 一个查询解释器
+
+为了实现一个声明式的查询语言，我们将使用在第 18.4 节定义的模式匹配工具。
+[示例代码 19.3] 中的函数可以解释 [示例代码 19.2] 那种形式的查询。
+这段代码里的核心函数是 interpret-query，它递归地对复杂查询的数据结构进行处理，在这个过程中生成绑定。
+复杂查询的求值按从左到右的顺序进行，就像 Common Lisp 本身那样。
+
+当递归进行到代表事实的模式上时，interpret-query 调用 lookup。
+这里正是模式匹配发生的地方。
+函数 lookup 接受一个由谓词及其参数列表所组成的模式，然后返回一个能够使模式匹配到数据库中某个事实的所有绑定的列表。
+它首先获取所有该谓词的数据库表项，然后调用match (18.5 节) 把它们和模式逐一比较。
+每当匹配成功，就返回一个绑定列表，然后 lookup 返回一个含有所有这些列表的列表。
+
+> (lookup 'painter '(?x ?y english))
+(((?Y . JOSHUA) (?X . REYNOLDS)))
+
+然后，这些结果会根据旁边的逻辑操作符或被滤除，或被组合。
+最终的结果将以列表的形式返回，其中，列表的元素是绑定的集合。
+如果用[示例代码 19.4] 中所给出的断言，那么下面是本章先前例子对应的结果：
+
+> (interpret-query '(and (painter ?x ?y ?z)
+    (dates ?x 1697 ?w)))
+(((?W . 1768) (?Z . VENETIAN) (?Y . ANTONIO) (?X . CANALE))
+  ((?W . 1772) (?Z . ENGLISH) (?Y . WILLIAM) (?X . HOGARTH)))
+
+这是一个普适的原则，即查询可以无限制地组合和嵌套。
+在少数情况下，查询语法会有一些细微的限制，但分析完一些例子，了解了这部分代码的用法之后，我们就能很从容地处理这些问题了。
+
+
+[示例代码 19.3]：查询解释器
+
+(defmacro with-answer (query &body body)
+  (let ((binds (gensym)))
+    '(dolist (,binds (interpret-query ',query))
+      (let ,(mapcar #'(lambda (v)
+            '(,v (binding ',v ,binds)))
+          (vars-in query #'atom))
+        ,@body))))
+
+(defun interpret-query (expr &optional binds)
+  (case (car expr)
+    (and (interpret-and (reverse (cdr expr)) binds))
+    (or (interpret-or (cdr expr) binds))
+    (not (interpret-not (cadr expr) binds))
+    (t (lookup (car expr) (cdr expr) binds))))
+
+(defun interpret-and (clauses binds)
+  (if (null clauses)
+    (list binds)
+    (mapcan #'(lambda (b)
+        (interpret-query (car clauses) b))
+      (interpret-and (cdr clauses) binds))))
+
+(defun interpret-or (clauses binds)
+  (mapcan #'(lambda (c)
+      (interpret-query c binds))
+    clauses))
+
+(defun interpret-not (clause binds)
+  (if (interpret-query clause binds)
+    nil
+    (list binds)))
+
+(defun lookup (pred args &optional binds)
+  (mapcan #'(lambda (x)
+      (aif2 (match x args binds) (list it)))
+    (db-query pred)))
+
+
+[示例代码 19.4]：一些作为示例的事实断言
+
+(clear-db)
+(fact painter hogarth william english)
+(fact painter canale antonio venetian)
+(fact painter reynolds joshua english)
+(fact dates hogarth 1697 1772)
+(fact dates canale 1697 1768)
+(fact dates reynolds 1723 1792)
+
+
+宏 with-answer 提供了一个在 Lisp 程序里使用这个查询解释器的清爽简洁的方法。
+它的第一个参数可以是任意合法的查询；其余参数被视为一个代码体。
+with-answer 会展开成这样的代码，它收集由查询生成的所有绑定的集合，然后用每个绑定集合所指定的变量来迭代整个代码体。
+出现在一个 with-answer 的查询里的变量(通常) 可以在其代码体里使用。
+当查询成功但却不含有变量时，with-answer 只求值代码体一次。
+
+--
+[示例代码 19.5] 使用查询解释器
+
+每一个名字叫 Hogarth 的画家的姓氏和国籍。
+
+> (with-answer (painter hogarth ?x ?y)
+  (princ (list ?x ?y)))
+(WILLIAM ENGLISH)
+NIL
+
+每一个生于 1697 年的画家的姓氏。(我们最初的例子)
+
+> (with-answer (and (painter ?x _ _)
+    (dates ?x 1697 _))
+  (princ (list ?x)))
+(CANALE)(HOGARTH)
+NIL
+
+每一个卒于 1772 年或者 1792 年的人的姓氏和出生年份。
+
+> (with-answer (or (dates ?x ?y 1772)
+    (dates ?x ?y 1792))
+  (princ (list ?x ?y)))
+(HOGARTH 1697)(REYNOLDS 1723)
+NIL
+
+每一个不和某个威尼斯画家生于同年的英国画家的姓氏。
+
+> (with-answer (and (painter ?x _ english)
+(dates ?x ?b _)
+(not (and (painter ?x2 _ venetian)
+(dates ?x2 ?b _))))
+(princ ?x))
+REYNOLDS
+NIL
+
+
+--
+根据定义在 [示例代码 19.4] 中的数据库，[示例代码 19.5] 中罗列了一些带中文翻译的查询作例子。
+因为模式匹配是由 match 完成的，因此在模式中可以使用下划线作为通配符。
+
+为了让这些例子不至于太长，查询的代码体中的代码仅仅打印了查询结果。
+一般而言，with-answer 的代码体中可以由任何 Lisp 表达式构成。
+
+=========
+19.4 绑定上的限制
+
+对于哪些变量将会被一个查询所绑定这个问题上存在一些限制。
+例如，为什么下列查询
+
+(not (painter ?x ?y ?z))
+应该将任何绑定赋值给 ?x 和 ?y 呢？
+存在无限多种不是某个画家名字的 ?x 和 ?y 的组合。
+因此我们加了一个限制：not 操作符将过滤掉那些已生成的绑定，例如这里
+
+(and (painter ?x ?y ?z) (not (dates ?x 1772 ?d)))
+但你不能指望它会全自动地生成绑定。
+我们在生成绑定集合的时候，必须先找出所有的画家，然后再排除那些没有生于 1772 年的。
+
+要是我们写子句的顺序相反：
+
+(and (not (dates ?x 1772 ?d)) (painter ?x ?y ?z)) ; wrong
+那么，只要存在任何生于 1772 年的画家，结果将是 nil 。
+即使在第一个例子里，我们也不该认为可以在 with-answer 表达式的代码体里使用 ?d 的值。
+
+同样，形如 (or q1 ... qn) 的表达式只保证可以实际生成那些出现在所有 qi里的变量的绑定。
+如果一个 with-answer 包含了查询
+
+(or (painter ?x ?y ?z) (dates ?x ?b ?d))
+你可以预期?x 的绑定是可用的，因为无论哪一个子查询成功了，它都会生成一个 ?x 的绑定。
+但不管是 ?y 还是 ?b 都不保证可以从查询中得到绑定，尽管它其中一个子查询可以。
+没有被查询绑定的模式变量在迭代时将是 nil 。
+
+=======
+19.5 一个查询编译器
+
+[示例代码 19.3] 中的代码实现了我们想要的功能，但效率不彰。
+首先，尽管查询结构在编译期就是已知的，程序还是把分析工作放在了运行期完成。
+其次，程序通过构造列表来保存变量绑定，其实，本可以用变量来保存它们自己的值的。
+我们不妨换一种方式定义 with-answer ，同时解决这两个问题。
+
+[示例代码 19.6] 定义了一个新版的 with-answer 。
+这个新的实现秉承了一个传统，它始于 avg (13.1 节)，在 if-match (18.4 节) 继承了下来：
+新的实现在编译期完成了原来旧版本在运行期的大部分工作。
+[示例代码 19.6] 和 [示例代码 19.3] 中的代码貌似一模一样，但前者中的函数无一是在运行期调用的。
+这些函数不再生成绑定，它们直接生成代码，而这些生成的代码将成为 with-answer 展开式的一部分。
+在运行期，这些代码将根据当前数据库的状态，产生满足查询要求的绑定。
+
+从效果上来看，这个程序是一个巨大的宏。
+[示例代码 19.7] 中显示了 with-answer 宏展开后的模样。
+大多数的工作是由 pat-match (18.4 节) 完成的，它本身也是一个宏。
+现在，运行期需要的新函数就只有[示例代码 19.1] 中给出的基本的数据库函数了。
+
+虽然在 toplevel 下调用 with-answer ，对查询进行编译处理几乎没什么好处。
+表示查询的代码被生成，求值，然后就被扔在一边。
+但是当with-answer 表达式出现在Lisp 程序里的时候，表示查询的代码就成为了其宏展开的一部分。
+这样，当编译包含查询的程序时，所有的查询代码都将在这个过程中被内联(inline) 编译。
+
+尽管这个新方法的主要优势是性能，但它也让 with-answer 表达式更好地融入了它所在的代码。
+这具体表现在两个改进上。
+首先，查询中的参数现在被求值了，所以我们可以说：
+
+> (setq my-favorite-year 1723)
+1723
+> (with-answer (dates ?x my-favorite-year ?d)
+  (format t "~A was born in my favorite year.~%" ?x))
+REYNOLDS was born in my favorite year.
+NIL
+
+虽然在查询解释器里同样可以做到这点，但代价是必须显式调用 eval。
+而且即便如此，在查询参数中还是无法引用词法变量。
+
+由于现在查询中的参数都会被求值，
+所以任何不会求值到其自身的字面参数(例如 english ) 都应该被引用起来。(见[示例代码 19.8])
+
+新方法的第二个优点是：它现在可以更容易地在查询中包含普通的 Lisp 表达式。
+查询编译器增加了一个 lisp 操作符，它可以跟任意 Lisp 表达式。
+就像 not 操作符那样，它不会生成任何绑定，但它将排除那些使表达式返回nil 的绑定。
+在需要使用诸如> 的内置谓词时，lisp 操作符就能帮上忙：
+
+> (with-answer (and (dates ?x ?b ?d)
+    (lisp (> (- ?d ?b) 70)))
+  (format t "~A lived over 70 years.~%" ?x))
+CANALE lived over 70 years.
+HOGARTH lived over 70 years.
+
+一个实现良好的嵌入式语言可以跟基语言在这两方面都结合得天衣无缝。
+
+除了这两个附加特性以外 ——参数的求值以及新的lisp操作符 ——查询编译器和查询解释器支持的查询语言是完全相同的。
+[示例代码 19.8]显示了有查询编译器用 [示例代码 19.4] 中定义的数据库所生成的示例结果。
+
+--
+[示例代码 19.6] 查询编译器
+
+(defmacro with-answer (query &body body)
+  '(with-gensyms ,(vars-in query #'simple?)
+    ,(compile-query query '(progn ,@body))))
+
+(defun compile-query (q body)
+  (case (car q)
+    (and (compile-and (cdr q) body))
+    (or (compile-or (cdr q) body))
+    (not (compile-not (cadr q) body))
+    (lisp '(if ,(cadr q) ,body))
+    (t (compile-simple q body))))
+
+(defun compile-simple (q body)
+  (let ((fact (gensym)))
+    '(dolist (,fact (db-query ',(car q)))
+      (pat-match ,(cdr q) ,fact ,body nil))))
+
+(defun compile-and (clauses body)
+  (if (null clauses)
+    body
+    (compile-query (car clauses)
+      (compile-and (cdr clauses) body))))
+
+(defun compile-or (clauses body)
+  (if (null clauses)
+    nil
+    (let ((gbod (gensym))
+        (vars (vars-in body #'simple?)))
+      '(labels ((,gbod ,vars ,body))
+        ,@(mapcar #'(lambda (cl)
+            (compile-query cl '(,gbod ,@vars)))
+          clauses)))))
+
+(defun compile-not (q body)
+  (let ((tag (gensym)))
+    '(if (block ,tag
+        ,(compile-query q '(return-from ,tag nil))
+        t)
+      ,body)))
+
+
+我们曾提到，把表达式编译后再求值，比将其作为列表送给 eval 更胜一筹。
+第 17.2 节对个中原委解释了两点。
+前者更快，而且允许表达式在外围的词法上下文中进行求值。
+对查询加以编译的优点与之非常相似。
+通常要在运行期做的事现在在编译期就完成了。
+而且因为这些查询在编译后和周围的 Lisp 代码成为了一体，所以它们得以利用词法上下文。
+
+
+[示例代码 19.7] 同一查询的两个展开式
+
+(with-answer (painter ?x ?y ?z)
+  (format t "~A ~A is a painter.~%" ?y ?x))
+
+被解释器展开成：
+
+(dolist (#:g1 (interpret-query '(painter ?x ?y ?z)))
+  (let ((?x (binding '?x #:g1))
+      (?y (binding '?y #:g1))
+      (?z (binding '?z #:g1)))
+    (format t "~A ~A is a painter.~%" ?y ?x)))
+
+而被编译器展开成：
+
+(with-gensyms (?x ?y ?z)
+  (dolist (#:g1 (db-query 'painter))
+    (pat-match (?x ?y ?z) #:g1
+      (progn
+        (format t "~A ~A is a painter.~%" ?y ?x))
+      nil)))
+
+
+[示例代码 19.8] 使用查询编译器
+
+每一个名字叫 Hogarth 的画家的姓氏和国籍。
+
+> (with-answer (painter 'hogarth ?x ?y)
+  (princ (list ?x ?y)))
+(WILLIAM ENGLISH)
+NIL
+
+每一个不跟某个威尼斯画家生于同年的英国画家的姓氏。
+
+> (with-answer (and (painter ?x _ 'english)
+    (dates ?x ?b _)
+    (not (and (painter ?x2 _ 'venetian)
+        (dates ?x2 ?b _))))
+  (princ ?x))
+REYNOLDS
+NIL
+
+每一个死于 1770 年到 1800 年开区间的画家的姓氏和死亡年份。
+
+> (with-answer (and (painter ?x _ _)
+(dates ?x _ ?d)
+(lisp (< 1770 ?d 1800)))
+(princ (list ?x ?d)))
+(REYNOLDS 1792)(HOGARTH 1772)
+NIL
+
+

@@ -1,0 +1,257 @@
+《On Lisp》-第 17 章 读取宏（read-macro）
+
+http://www.ituring.com.cn/article/53790
+
+hxzon修订。
+
+=======
+第 17 章 读取宏 (read-macro) . . . . . . . . . 153
+
+17.1 宏字符 . . . . . . . . . . . 153
+17.2 dispatching 宏字符 . . . . . . . . . . . . . 154
+17.3 定界符 . . . . . . . . . . . 155
+17.4 这些发生于何时. . . . . . . . . . . . . . . 156
+
+========
+在 Lisp 表达式的一生中，有三个最重要的时刻，
+分别是读取期（read-time），编译期（compile-time） 和运行期（runtime）。
+运行期由函数左右。
+宏给了我们在编译期对程序做转换的机会。
+本章讨论读取宏（read-macro），它们在读取期发挥作用。
+
+======
+17.1 宏字符
+
+按照 Lisp 的一般哲学，你可以在很大程度上控制 reader 。
+它的行为是由那些可随时改变的属性和变量控制的。
+Reader 可以在几个层面上编程。
+若要改变其行为，最简单的方式就是定义新的宏字符。
+
+宏字符（macro character） 是一种被 Lisp reader 特殊对待的字符。
+举个例子，小写字母 a 的处理方式和小写字母 b 是一样的，它们都由常规的处理方式处理。
+但左括号就有些不同：它告诉 Lisp 开始读取一个列表。
+
+每个这样的字符都有一个与之关联的函数，告诉 Lisp reader 当遇到该字符的时候做什么。
+你可以改变一个已有的宏字符的关联函数，或者定义你自己的新的宏字符。
+
+内置函数 set-macro-character 提供了一种定义读取宏的方式。
+它接受一个字符和一个函数，以后当 read 遇到这个字符时，它就返回调用该函数的结果。
+
+[示例代码 17.1] '(引号)的可能定义
+
+(set-macro-character #\'
+  #'(lambda (stream char)
+    (declare (ignore char))
+    (list 'quote (read stream t nil t))))
+
+Lisp 中最古老的读取宏之一是单引号 ' ，即引用。
+你也可以不用 '，而总是将 'a 写成 (quote a)，但这将会非常烦人, 而且会降低代码的可读性。
+引用读取宏使 (quote a) 可以简写成 'a。
+我们可以用 [示例代码 17.1] 中的方法实现它。
+当 read 在一个普通的上下文中（例如，不在 "a'b" 或 |a'b| 中） 遇到 ' 时，
+它将返回在当前流和字符上调用这个函数的结果。
+（该函数忽略了它的第二个形参，因为它总是那个引用字符。） 
+所以当 read 看到 'a 时，它将返回 (quote a)。
+
+read 的最后三个参数分别控制：
+是否在碰到 end-of-file 时报错，
+如果不报错的话返回什么值，
+以及这个 read 调用是否是发生在 read 调用中的
+（译者注：关于 read 的最后一个参数（recursive-p），详见 CLTL 中对 read 的解释。) 。
+在几乎所有的读取宏里，第二和第四个参数都应该是 t ，所以第三个参数也就无关紧要了。
+
+读取宏和常规宏一样，其实质都是函数。
+和生成宏展开的函数一样，和宏字符相关的函数，除了作用于它读取的流以外，不应该再有其他副作用。
+Common Lisp 明确声明：一个与宏字符相关联的函数何时被执行，或者被执行几次 Common Lisp 对其将不给予保证。
+（见 CLTL2 的 543 页。）
+
+宏和读取宏在不同的阶段分析和观察你的程序。
+宏在程序中发生作用时，它已经被 reader 解析成了 Lisp 对象，
+而读取宏在程序还是文本的阶段时，就对它施加影响了。
+尽管如此，通过在这些文本上调用 read ，一个读取宏，如果它愿意的话，同样可以得到解析后的 Lisp 对象。
+这样说来，读取宏至少和常规宏一样强有力。
+
+事实上，读取宏至少在两方面比常规宏更为强大。
+读取宏可以影响 Lisp 读取的每一样东西，而宏只是在代码里被展开。
+并且，由于读取宏通常递归地调用 read，一个类似：
+
+''a
+的表达式将变成：
+
+(quote (quote a))
+
+而如果我们试图用一个普通的宏来为 quote 定义缩略语的话：
+
+(defmacro q (obj)
+  '(quote ,obj))
+
+它在某些情况下可以正常工作：
+
+> (eq 'a (q a))
+T
+
+但在被嵌套使用时就不行了。
+例如：
+(q (q a))
+将展开成：
+(quote (q a))
+
+译者注：解决这个问题的正确方法是定义一个编译器宏（compiler-macro）。
+Common Lisp 内置的 define-compiler-macro 用于定义编译器宏，详见 CLHS 中关于此操作符的说明。
+
+===========
+17.2 dispatching 宏字符
+
+#' 和其他 # 开头的读取宏一样，是一种称为 dispatching 读取宏的实例。
+这些读取宏以两个字符出现，其中第一个字符称为 dispatch 字符。
+这类宏的目的，简单说就是尽可能地充分利用ASCII 字符集；
+如果只有单字符读取宏的话，那么读取宏的数量就会受限于字符集的大小。
+
+你可以（通过使用 make-dispatch-macro-character） 来定义你自己的 dispatching 宏字符，
+但由于 # 已经定义了，所以你也可以直接用它。
+一些 # 打头的组合就是特意为你保留的；
+其他的那些，如果 Common Lisp 还没有给它们赋予含义的话，也可以拿来用。
+完整的列表可见 CLTL2 的第 531 页。
+
+[示例代码17.2] 一个用于常数函数的读取宏
+
+(set-dispatch-macro-character #\# #\?
+  #'(lambda (stream char1 char2)
+    (declare (ignore char1 char2))
+    '#'(lambda (&rest ,(gensym))
+      ,(read stream t nil t))))
+
+新的 dispatching 宏字符组合可以通过调用 set-dispatch-macro-character 函数定义，
+除了接受两个字符参数以外和 set-macro-character 的用法差不多。
+一个预留给程序员的组合是 #? 。
+[示例代码 17.2] 显示了如何将这个组合定义成一个用于常数函数的读取宏。
+现在 #?2 将被读取为一个函数，其接受任意数量的参数，并且返回 2。
+
+例如：
+
+> (mapcar #?2 '(a b c))
+(2 2 2)
+
+这个例子里定义的新操作符看起来相当无聊，但在使用了很多函数型参数的程序里，常常会用到常数函数。
+
+事实上，有些方言提供了一个名叫 always 的内置函数，专门用来定义它们。
+
+注意到在这个宏字符的定义中使用宏字符是完全没有问题的：
+和任何 Lisp 表达式一样，当这个定义被读取以后这些宏字符就都消失了。
+在 #? 的后面使用宏字符也是可以的。
+因为 #? 的定义调用了 read ，所以诸如 ' 和 #' 此类宏字符也可以正常使用：
+
+> (eq (funcall #?'a) 'a)
+T
+> (eq (funcall #?#'oddp) (symbol-function 'oddp))
+T
+
+=========
+17.3 定界符
+
+[示例代码 17.3] 一个定义定界符的读取宏
+
+(set-macro-character #\] (get-macro-character #\)))
+  (set-dispatch-macro-character #\# #\[
+   #'(lambda (stream char1 char2)
+     (declare (ignore char1 char2))
+     (let ((accum nil)
+        (pair (read-delimited-list #\] stream t)))
+      (do ((i (ceiling (car pair)) (1+ i)))
+        ((> i (floor (cadr pair)))
+           (list 'quote (nreverse accum)))
+          (push i accum)))))
+
+除了简单的宏字符，定义得最多的宏字符要算列表定界符了。
+另一个为用户预留的组合字符是 #[ 。
+[示例代码 17.3] 给出的例子，显示了把这个字符定义成一个更复杂的左括号的方法。
+它定义形如 #[x y] 的表达式，使得这样的表达式被读取为在 x 到 y 的闭区间上所有整数的列表：
+
+> #[2 7]
+(2 3 4 5 6 7)
+
+这个读取宏里，唯一的新东西是对 read-delimited-list 的调用，
+这个函数是一个完全为这种情况度身定制的内置函数。
+它的第一个参数是那个被当作列表结尾的字符。
+有其名才能行其实，为了把 ] 识别成定界符，程序在开始的地方调用了 set-macro-character。
+
+[示例代码17.4] 一个用于定义定界符读取宏的宏
+
+(defmacro defdelim (left right parms &body body)
+  '(ddfn ,left ,right #'(lambda ,parms ,@body)))
+
+(let ((rpar (get-macro-character #\))))
+(defun ddfn (left right fn)
+  (set-macro-character right rpar)
+  (set-dispatch-macro-character #\# left
+    #'(lambda (stream char1 char2)
+      (declare (ignore char1 char2))
+      (apply fn
+        (read-delimited-list right stream t))))))
+
+多数潜在的定界符读取宏都将在很大程度上重复 [示例代码 17.3] 中的代码。
+或许可以写个宏，让它从这些机制中提炼出更抽象的接口，以简化代码。
+[ 示例代码 17.4] 就是一个实现，我们可以像它那样定义一个实用工具，用其定义定界符读取宏。
+宏 defdelim 接受两个字符，一个参数列表，以及一个代码主体。
+参数列表和代码主体隐式地定义了一个函数。
+一个对 defdelim 的调用将首个字符定义为 dispatching 读取宏，
+它读取到第二个字符为止，然后将这个函数应用到它读到的东西，并返回其结果。
+
+无独有偶，[示例代码 17.3] 中的函数体也迫切需要一个实用工具，
+事实上，这个实用工具已经定义过了：见 4.5 节的 mapa-b 。
+使用 defdelim 和 mapa-b ，[示例代码 17.3] 中定义的读取宏现在只需写成：
+
+(defdelim #\[ #\] (x y)
+  (list 'quote (mapa-b #'identity (ceiling x) (floor y))))
+
+定界符读取宏也可以用来做函数复合。
+第5.4 节定义了一个用于函数复合的操作符：
+
+> (let ((f1 (compose #'list #'1+))
+    (f2 #'(lambda (x) (list (1+ x)))))
+  (equal (funcall f1 7) (funcall f2 7)))
+T
+
+
+当我们复合像 list 和 1+ 这样的内置函数时，没有理由等到运行期才去对 compose 的调用求值。
+第 5.7 节建议一个替代方案；通过给一个 compose 表达式前缀 sharp-dot 读取宏:
+
+#.(compose  #'list  #'1+)
+
+我们可以令其在读取期就被求值。
+
+
+[示例代码 17.5]：一个用于函数型复合的读取宏
+
+(defdelim  #\{ #\}  (&rest args)
+  '(fn  (compose  ,@args)))
+
+这里我们给出一个与之类似但更清晰的解决方案。
+[示例代码 17.5] 中定义的读取宏定义了一个 #{ } 形式的表达式，这个表达式将被读取成 的复合。
+
+这样：
+> (funcall #{list 1+} 7)
+(8)
+它生成一个对 fn （15.1 节） 的调用，该调用在编译期创建函数。
+
+===========
+17.4 这些发生于何时
+
+最后，澄清一个可能造成困惑的问题应该会有所帮助。
+如果读取宏是在常规宏之前作用的话，那么宏是怎样展开成含有读取宏的表达式的呢？
+
+例如，这个宏：
+
+(defmacro quotable ()
+  '(list 'able))
+会生成一个带有引用的展开式。
+还是说它没有生成？
+事实上，真相是：这个宏定义中的两个引用在这个 defmacro 表达式被读取时，就都被展开了，
+展开结果如下：
+
+(defmacro quotable ()
+  (quote (list (quote able))))
+
+通常，在宏展开式里包含读取宏是没有什么问题的。
+因为一个读取宏的定义在读取期和编译期之间将不会（或者说不应该） 发生变化。
+

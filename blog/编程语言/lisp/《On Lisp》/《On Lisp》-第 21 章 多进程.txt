@@ -1,0 +1,285 @@
+《On Lisp》-第 21 章 多进程
+
+http://www.ituring.com.cn/article/53794
+
+上一章展示了续延是如何使运行中的程序获知自己的状态，并且把它保存起来以便之后重新执行的。这一章将讨论一种计算模型，在这种模型中，计算机运行的不是单个程序，而是一组独立的进程。进程的概念和程序状态这一概念相当接近。通过在前一章的宏的基础上再写一层宏，我们就可以把多进程的机制融入到 Common Lisp 程序中。
+
+21.1 进程抽象
+
+多进程这种表现形式，可以很方便地表示并行处理多个任务的程序。传统的处理器同时只能执行一条指令。我们称多进程能同时处理多件事情，并不是说它通过某种方式克服了硬件的限制，它真正的含义是：它使得我们可以在一个新的抽象层面上进行思考，在这个层面上我们不需要明确地指定计算机在任何给定的时间在做什么。就像虚拟内存给我们制造了一个错觉，似乎计算机的可用内存比它的物理内存还要大，同样的道理，多进程的概念使得我们可以假设计算机可以一次运行多个程序。
+
+从传统上说，对进程的研究属于操作系统领域的范畴。但进程抽象带来的进步并不局限于操作系统。它们在其他实时的应用程序和计算机仿真中一样能大展身手。
+
+有很多对于多进程的研究，它们的目的都是为了避免出现某些特定类型的问题。死锁是多进程的一个经典问题：两个进程同时停下等待另一个做某些事情，就像两个人都拒绝在另一个人之前跨过门槛。另一个问题是查询有可能碰到系统中数据不一致的状态 例如，一个余额查询正好在系统将资金从一个账户转移到另一个账户时发生。这一章只讨论进程抽象本身；这里展示的代码可以用来测试避免死锁和不一致状态的算法，但代码本身没有对这些问题提供任何保护。
+
+这一章中的实现遵循了本书所有程序默默恪守的一条准则：尽可能少的扰乱Lisp。在本质上来说，程序应该尽可能多的让自己像是对语言的修改，而不是用语言写就的一个独立的应用程序。使程序与Lisp 协调一致可以使得程序更为健壮，好比部件配合良好的机器。这样做也能事半功倍；有时你可以让Lisp 为你代劳数量惊人的工作。
+
+这一章的目标是构建一个支持多进程的的语言。我们的策略是通过添加一些操作符，将Lisp 变成这样的语言。我们语言的基本构成元素如下：
+
+函数 由前一章的 =defun 或者 =lambda 宏定义。
+
+进程 由函数调用实例化。活动进程的数量和一个函数能够实例化的进程数量都没有限制。每个进程有一个优先级，初始值由创建时给出的参数指定。
+
+等待表达式(Waitexpressions) 等待表达式接受一个变量，一个测试表达式和一段代码体。如果进程遇到等待表达式，进程将在这一点被挂起，直到测试表达式返回真。一旦进程重新开始执行，代码体会被求值，变量则被绑定到测试表达式的值。测试表达式通常不应该有副作用，因为它被求值的时间和频率没有任何保证。
+
+调度 通过优先级来完成。在所有能够重新开始执行的进程中，系统会运行优先级最高的进程。
+
+默认进程 在其他进程都不能执行时运行。它是一个 read-eval-print 循环。
+
+创建和删除 绝大多数对象的操作可以即时进行。正在运行中的进程可以定义新的函数，实例化或者杀死进程。
+
+续延使得保存 Lisp 程序的状态成为可能。能够同时保存多个状态离实现多进程也不太远了。有了前一章定义的宏做基础，我们只要不到 60 行的代码就可以实现多进程。
+
+21.2 实现
+
+[示例代码 21.1] 进程结构及实例化
+
+(defstruct proc pri state wait)
+
+(proclaim '(special *procs* *proc*))
+
+(defvar *halt* (gensym))
+
+(defvar *default-proc*
+  (make-proc :state #'(lambda (x)
+      (format t "~%>> ")
+      (princ (eval (read)))
+      (pick-process))))
+
+(defmacro fork (expr pri)
+  '(prog1 ',expr
+    (push (make-proc
+        :state #'(lambda (,(gensym))
+          ,expr
+          (pick-process))
+        :pri ,pri)
+      *procs*)))
+
+(defmacro program (name args &body body)
+  '(=defun ,name ,args
+    (setq *procs* nil)
+    ,@body
+    (catch *halt* (loop (pick-process)))))
+[示例代码 21.1] 和图 21.2 包含了所有用来支持多进程的代码。[示例代码 21.1] 包含了基本数据结构、默认进程、初始化、进程实例化的代码。进程，或者说procs，具有如下结构：
+
+pri : 进程的优先级，它应该是一个正数。
+
+state : 是一个续延，它用来表示一个挂起进程的状态。我们可以 funcall 一个进程的 state 来重新启动它。
+
+wait : 通常是一个函数，如果要让进程重新执行，它必须返回真，但刚创建的进程的 wait 为 nil 。wait 为空的进程总是可以被重新执行。
+
+程序使用三个全局变量：*procs* ，当前被挂起的进程列表；*proc* ，正在运行的进程；还有 *default-proc* ，默认进程。
+
+默认进程仅当没有其他进程可以运行时才会运行。它模拟 Lisp 的 toplevel 循环。在这个循环中，用户可以终止程序，或者输入让挂起进程恢复执行的表达式。请注意，默认进程显式地调用了 eval。这是少数几个合理使用 eval 的情形之一。一般来说，我们不赞成在运行时调用 eval ，这有两个原因：
+
+效率低下：eval 直接处理原始列表，要么当场进行编译，要么在解释器中进行求值。不管哪种方式都比先编译再调用来得慢。
+
+功能不够强大，因为表达式不在词法上下文中进行求值。举个例子，这就意味着你不能引用在被求值表达式之外可见的普通变量。
+
+通常来说，显式调用eval 就像在机场礼品店买东西一样。已经是最后关头，你只得高价购买选择有限的劣质商品。
+
+像本例这样两条理由都不适用的情况是很少见的。我们没法提前将表达式编译好。直到读取它们的时候才知道表达式是什么，所以没法事先知道。同样的，表达式无法引用它周遭的词法环境，因为在toplevel 输入的表达式处于空的词法环境中。事实上，这个函数的定义直接反映了它的英语描述：它读取并求值用户的输入。
+
+宏 fork 使用一个函数调用来实例化进程。函数像平时一样由 =defun 定义：
+
+(=defun foo (x)
+  (format t "Foo was called with ~A.~%" x)
+  (=values (1+ x)))
+现在当我们以一个函数调用和优先级数值作为参数调用 fork 时：
+
+(fork (foo 2) 25)
+一个新进程被加入到了 *procs* 里面。新进程的优先级为 25，因为它还没有执行，所以 proc-wait 为 nil ，而 proc-state 包含了以 2 为参数的对 foo 的调用。
+
+宏 program 使我们可以创建一组进程并一起执行它们。下面的定义：
+
+(program two-foos (a b)
+  (fork (foo a) 99)
+  (fork (foo b) 99))
+宏展开成了两个 fork 表达式，被夹在负责清除挂起进程的代码，以及不断选择进程来运行的代码中间。在这个循环外面，program 宏设置了一个 tag，把控制流抛(throw) 到这个 tag 的话，就会终止这个程序(program)。因为这个 tag 是个生成符号，所以它不会与用户设置的 tag 冲突。定义成 program 的一组进程不返回任何值，而且它们只应该在 toplevel 被调用。
+
+进程实例化之后，进程调度代码开始执行。它的代码见 [示例代码 21.2]。函数 pick-process 在可以继续执行的进程中，选出优先级最高的一个，然后运行它。把这个进程找出来是 most-urgent-process 的工作。如果一个挂起的进程没有 wait 函数或者它的 wait 函数返回真，那么它就被允许运行。在所有被允许运行的进程中，具有最高优先级的被选中。胜出的进程和它的 wait 函数(如果有的话) 返回的值被返回给 pick-process 。获胜进程总是存在，因为默认进程总是想要执行。
+
+[示例代码 21.2] 中其余的代码定义了用于在进程间切换控制权的操作符。标准的等待表达式是wait ，就像[示例代码 21.3] 中函数 pedestrian 使用的那样。在这个例子中，进程一直等到列表 *open-doors* 中有东西为止，然后打印一条消息：
+
+> (ped)
+>> (push 'door2 *open-doors*)
+Entering DOOR2
+>> (halt)
+NIL
+一个 wait 在实质上来说与 =bind (第 20.2 节) 相似，而且有着一样的限制，那就是它必须在最后被求值。任何我们希望在wait 之后执行的东西必须被放在它的代码体中。因此如果我们想要让一个进程等待多次，那等待表达式必须被嵌套。通过声明互相针对的事实，进程可以相互配合以达到某个目标，就像在 [示例代码 21.4] 中一样。
+
+【】译者注：即 (eval (read)) 【】译者注：catch 操作符的用法可见CLHS 中的Special Operator CATCH 一节。
+
+[示例代码 21.2] 进程调度
+
+(defun pick-process ()
+  (multiple-value-bind (p val) (most-urgent-process)
+    (setq *proc* p
+      *procs* (delete p *procs*))
+    (funcall (proc-state p) val)))
+
+(defun most-urgent-process ()
+  (let ((proc1 *default-proc*) (max -1) (val1 t))
+    (dolist (p *procs*)
+      (let ((pri (proc-pri p)))
+        (if (> pri max)
+          (let ((val (or (not (proc-wait p))
+                  (funcall (proc-wait p)))))
+            (when val
+              (setq proc1 p
+                max pri
+                val1 val))))))
+    (values proc1 val1)))
+
+(defun arbitrator (test cont)
+  (setf (proc-state *proc*) cont
+    (proc-wait *proc*) test)
+  (push *proc* *procs*)
+  (pick-process))
+
+(defmacro wait (parm test &body body)
+  '(arbitrator #'(lambda () ,test)
+    #'(lambda (,parm) ,@body)))
+
+(defmacro yield (&body body)
+  '(arbitrator nil #'(lambda (,(gensym)) ,@body)))
+
+(defun setpri (n) (setf (proc-pri *proc*) n))
+
+(defun halt (&optional val) (throw *halt* val))
+
+(defun kill (&optional obj &rest args)
+  (if obj
+    (setq *procs* (apply #'delete obj *procs* args))
+    (pick-process)))
+[示例代码 21.3] 有一个等待的进程
+
+(defvar *open-doors* nil)
+
+(=defun pedestrian ()
+  (wait d (car *open-doors*)
+    (format t "Entering ~A~%" d)))
+
+(program ped ()
+  (fork (pedestrian) 1))
+如果被给予相同的 door ，从 visitor 和 host 实例化的进程会通过黑板上的消息互相交换控制权：
+
+> (ballet)
+[示例代码 21.4]： 利用黑板进行同步
+
+(defvar *bboard* nil)
+
+(defun claim (&rest f) (push f *bboard*))
+
+(defun unclaim (&rest f) (pull f *bboard* :test #'equal))
+
+(defun check (&rest f) (find f *bboard* :test #'equal))
+
+(=defun visitor (door)
+  (format t "Approach ~A. " door)
+  (claim 'knock door)
+  (wait d (check 'open door)
+    (format t "Enter ~A. " door)
+    (unclaim 'knock door)
+    (claim 'inside door)))
+
+(=defun host (door)
+  (wait k (check 'knock door)
+    (format t "Open ~A. " door)
+    (claim 'open door)
+    (wait g (check 'inside door)
+      (format t "Close ~A.~%" door)
+      (unclaim 'open door))))
+
+(program ballet ()
+  (fork (visitor 'door1) 1)
+  (fork (host 'door1) 1)
+  (fork (visitor 'door2) 1)
+  (fork (host 'door2) 1))
+Approach DOOR2. Open DOOR2. Enter DOOR2. Close DOOR2.
+Approach DOOR1. Open DOOR1. Enter DOOR1. Close DOOR1.
+>>
+还有另外一类更简单的等待表达式：yield ，它的唯一目的是让其他更高优先级的进程有机会运行。
+
+setpri 重置当前进程的优先级，一个进程可能在执行 setpri 表达式后想要让出控制权。就像 wait 一样，在 yield 之后执行的代码都必须被放在它的代码体中。
+
+[示例代码 21.5] 中的程序说明了这两个操作符如何相互工作。开始时，野蛮人有两个目的：占领罗马和掠夺它。占领城市有着(稍微) 高一些的优先级，因此会先执行。然而，在城市沦陷之后，capture 进程的优先级减小到 1 。之后会有一次投票，而 plunder ，作为最高优先级的进程开始运行。
+
+> (barbarians)
+Liberating ROME.
+Nationalizing ROME.
+Refinancing ROME.
+Rebuilding ROME.
+>>
+只有在蛮族掠夺了罗马的宫殿，并勒索了贵族之后，capture 进程才会恢复执行，此时他们开始为其领地建筑防御工事。
+
+等待表达式的背后是一个更通用的 arbitrator。这个函数保存当前进程，然后调用 pick-process 来再次执行某个进程(有可能与当前进程为同一个)。它有两个参数：一个测试函数和一个续延。前者会被存储为挂起进程的 proc-wait ，在以后被调用来检查它是否可以被重新执行。
+
+宏 wait 和 yield 通过简单的把它们的代码体包在 --表达式中来建立这个续延函数。例如：
+
+[示例代码 21.5] 改变进程优先级的效果
+
+(=defun capture (city)
+  (take city)
+  (setpri 1)
+  (yield
+    (fortify city)))
+
+(=defun plunder (city)
+  (loot city)
+  (ransom city))
+
+(defun take (c) (format t "Liberating ~A.~%" c))
+
+(defun fortify (c) (format t "Rebuilding ~A.~%" c))
+
+(defun loot (c) (format t "Nationalizing ~A.~%" c))
+
+(defun ransom (c) (format t "Refinancing ~A.~%" c))
+
+(program barbarians ()
+  (fork (capture 'rome) 100)
+  (fork (plunder 'rome) 98))
+(wait d (car *bboard*) (=values d))
+被展开成：
+
+(arbitrator #'(lambda () (car *bboard*))
+  #'(lambda (d) (=values d)))
+如果代码遵循了 [示例代码 20.5] 列出的限制，构造一个 wait 代码体的闭包就可以保存当前的整个续延。随着它的 =values 被展开，第二个参数变成：
+
+#'(lambda (d) (funcall *cont* d))
+由于这个闭包中有一个指向 *cont* 的引用，被这个等待函数挂起的进程将会拥有一个句柄(handle)，通过它，这个进程就能回到它当初被挂起的那一刻。
+
+halt 操作符通过将控制权抛回program 展开式建立的标签终止整个进程组。它接受一个可选参数，该参数的值会被作为这个进程组的值返回。因为默认进程始终想要执行，所以终止整个程序的唯一的方法是显式的调用halt 。halt 后面是什么代码并没有关系，因为这些代码不会被求值。
+
+单个进程可以通过调用 kill 来杀死。如果没有参数，这个操作符杀死当前进程。这种情况下，kill 就像是一个不保存当前进程的等待表达式。如果 kill 给定了参数，它们将成为进程列表上的 delete 操作的参数。在现在的代码中，kill 表达式没有什么好说的，因为进程没有许多的属性来被引用。然而，更复杂的系统会为它的进程附加更多的信息 时间戳、拥有者等等。默认进程不能被杀死，因为它并没有被保存在procs 中。
+
+21.3 不那么快速的原型
+
+通过续延模拟的进程，其性能远不及真实操作系统的进程。那么，这一章中的程序又有什么用处呢？
+
+这些程序的用处类似于草图。不管在探索式编程还是快速原型开发中，这些程序其自身并不是最终目的，更多的是作为实现人们想法的手段。在许多其他领域，为这个目的服务的东西被称为草图。在理论上，建译者注：可以认为宏program 建立的由一组同时执行的进程组成的程序，但为与 "程序" 相区别，这里把 program 翻译成 "进程组"。
+
+筑师可以在他的脑海里构思出整栋大楼。但多数建筑师似乎在手里握着笔的时候能想得更周详一些：一栋大楼的设计通常在一系列草图中成型。
+
+快速原型开发就是给软件作草图。就像建筑师的第一张草图，软件原型往往也会由草草几笔一挥而就。在最初把想法付诸实现的时候，开销和效率的问题根本就没有纳入考量。结果是，在这一阶段得到的往往就是无法施工的设计图，或是低效得不可救药的软件。但无论如何，草图依然有它的价值，因为
+
+它们简明的传达了信息
+
+它们提供了试验的机会
+
+像后续章节中的程序一样，这一章描述的程序还只是初步的设计。它仅用寥寥几笔就勾勒出了多进程大略
+
+的模样。而且，尽管它可能因为不够高效，不能使用在产品软件中，但是它对于在多进程的其他方面作一些尝试还是很有用的，比如用来进行调度算法方面的试验。
+
+第 22--24 章展示了其他使用续延的例子。它们都不够高效而不能使用在产品级的软件中。因为Lisp 和快速原型开发一同演化，Lisp 包含了很多专为原型开发打造的特性：低效但是方便的功能如属性列表，关键字参数；推而广之，列表也是这类特性之一。续延可以说属于这一类特性。它们保存了程序通常所需要的更多的状态。所以我们基于续延的Prolog 实现就是一个例子，通过这个实现我们能很好地理解这门语言，但是它的实现方式却是低效的。
+
+本书更多的关注使用 Lisp 可以建立的抽象而不是效率问题。重要的是要意识到，Lisp 既是一个适合写产品软件的语言也是一个适合写原型的语言。如果 Lisp 有着低效的名声，那大部分是因为程序员止步于原型。
+
+用Lisp 写出快速的程序很容易。不幸的是，用它写出低效的程序更是容易。最初版本的 Lisp 程序可以像钻石一样：娇小玲珑，清澈透明，而又笨重昂贵。也许有很大的诱惑使人们就让它保留原状。
+
+在其他的语言中，一旦你大功告成，程序能够运行，那时程序的效率可能就已经可以接受了。如果你用指甲盖大小的瓷砖来铺地板，自然是不会浪费多少的。习惯用这种原则来开发软件的人可能会发现，克服 "程序能工作就完工" 这样的思维有些困难。"虽然用 Lisp 你轻而易举就能把程序写出来，" 他可能会想，"但哥们，这些程序跑得太慢了。" 事实上，两种看法都有问题。你可以写出快速的程序，但你得为此付出努力。
+
+从这角度上说，使用 Lisp 就像生活在一个富裕而非贫穷的国度：似乎人们不得不通过工作来保持身材是种不幸，但这肯定比为了活下去而工作，自然只得消瘦下来要好。
+
+在使用抽象能力较差的语言的时候，你想方设法实现的是功能。而在用 Lisp 的时候，你努力改进的则是程序的运行速度。幸运的是，提升速度更容易一些；大多数程序只在少数几个关键的地方才会关心速度。

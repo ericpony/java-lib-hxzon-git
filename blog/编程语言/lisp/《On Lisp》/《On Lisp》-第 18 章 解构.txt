@@ -1,0 +1,478 @@
+《On Lisp》-第 18 章 解构
+
+http://www.ituring.com.cn/article/53791
+
+解构(destructuring) 是赋值的一般形式。操作符 setq 和 setf 的赋值对象只是独立的变量。而解构把赋值和访问操作合二为一：在这里，我们不再只是把单个变量作为第一个参数，而是给出一个关于变量的模式，在这个模式中，赋给每个变量的值将来自某个结构中对应的位置。
+
+18.1 列表上的解构
+
+从 CLTL2 开始，Common Lisp 包括了一个名为 destructuring-bind 的新宏。这个宏在第 7 章里简单介绍过。这里将更仔细地了解它。假设 lst 是一个三元素列表，而我们想要绑定 x 到第一个元素，y 到第二个，z 到第三个。在原始 **CLTL1** 的 Common Lisp 里，只能这样表达：
+
+(let ((x (first lst))
+    (y (second lst))
+    (z (third lst)))
+  ...)
+借助新宏我们只需说：
+
+(destructuring-bind (x y z) lst
+    ...)
+这样处理，既短小，又清楚。读者对于视觉形象的感受力比单纯的文字要敏锐很多。使用后一种形式，x ，y 和 z 之间的关系可以一览无余；而在前一种形式下，我们必须稍作思考才看得出来。
+
+如果这样简单的情形都能通过使用解构而变得更清晰，试想一下它在更复杂情况下会带来什么样的改观吧。destrucuring-bind 的第一个参数可以是任意复杂的一棵树。想象
+
+(destructuring-bind ((first last) (month day year) . notes)
+  birthday
+  ...)
+如果用 let 和列表访问函数来写将会是什么样子。这引出了另一个要点：解构使得程序更容易写也更容易读。
+
+解构在 CLTL1 的 Common Lisp 里确实也有过。如果上例中的模式看起来眼熟的话，那是因为它们和宏的参数列表具有相同的形式。事实上，destructuring 就是就是用来处理宏参数列表的代码，只不过现在拿出来单卖了。任何可以放进宏参数列表里的东西，你都可以把它置于这个匹配模式中，不过有个无关紧要的例外(那个 &environment 关键字)。
+
+建立各种绑定总的来说是一个很有吸引力的想法。接下来的几个小节会介绍这个主题的几个变化。
+
+18.2 其他结构
+
+没有理由把解构仅限于列表。解构同样适用于各种复杂对象。本节展示如何编写用于其他类型对象的类似 destructuring-bind 的宏。
+
+下一步，自然是去处理一般性的序列。[示例代码 18.1] 中定义了一个名为 dbind 的宏，它和 destrucuring-bind 类似，不过可以用在任何种类的序列上。第二个参数可以是列表，向量或者它们的任意组合：
+
+[示例代码 18.1]：通用序列解构操作符
+
+(defmacro dbind (pat seq &body body)
+  (let ((gseq (gensym)))
+    '(let ((,gseq ,seq))
+      ,(dbind-ex (destruc pat gseq #'atom) body))))
+
+(defun destruc (pat seq &optional (atom? #'atom) (n 0))
+  (if (null pat)
+    nil
+    (let ((rest (cond ((funcall atom? pat) pat)
+            ((eq (car pat) '&rest) (cadr pat))
+            ((eq (car pat) '&body) (cadr pat))
+            (t nil))))
+      (if rest
+        '((,rest (subseq ,seq ,n)))
+        (let ((p (car pat))
+            (rec (destruc (cdr pat) seq atom? (1+ n))))
+          (if (funcall atom? p)
+            (cons '(,p (elt ,seq ,n))
+              rec)
+            (let ((var (gensym)))
+              (cons (cons '(,var (elt ,seq ,n))
+                  (destruc p var atom?))
+                rec))))))))
+
+(defun dbind-ex (binds body)
+  (if (null binds)
+    '(progn ,@body)
+    '(let ,(mapcar #'(lambda (b)
+          (if (consp (car b))
+            (car b)
+            b))
+        binds)
+      ,(dbind-ex (mapcan #'(lambda (b)
+            (if (consp (car b))
+              (cdr b)))
+          binds)
+        body))))
+> (dbind (a b c) #(1 2 3)
+  (list a b c))
+(1 2 3)
+> (dbind (a (b c) d) '(1 #(2 3) 4)
+  (list a b c d))
+(1 2 3 4)
+> (dbind (a (b . c) &rest d) '(1 "fribble" 2 3 4)
+  (list a b c d))
+(1 #\f "ribble" (2 3 4))
+#( 读取宏用于表示向量，而 #\ 则用于表示字符。由于 "abc" = #(#\a #\b #\c)，所以 "fribble" 的第一个元素是字符 #f 。为了简单起见，dbind 只支持 &rest 和 &body 关键字。
+
+和迄今为止见过的大多数宏相比，dbind 俨然是个庞然大物。这个宏的实现之所以值得好好研究一番，原因不仅仅是为了理解它的工作方式，更是为了它能给我们上一课，课的内容对于 Lisp 编程是通用的。正如第 3.4 节提到的，我们在编写 Lisp 程序时，可以有意识地让它们更易于测试。在多数代码里，我们必须要权衡这一诉求和代码速度上的需求。幸运的是，如第 7.8 节所述，速度对于展开器代码来说不是那么要紧。当编写用来生成宏展开式的代码时，我们可以让自己放轻松一些。dbind 的展开式由两个函数生成，destruc 和 dbind-ex 。也许它们两个可以被合并成一个函数，一步到位。但是何苦呢？作为两个独立的函数，它们将更容易测试。为什么要牺牲这个优势，换来我们并不需要的速度呢？
+
+第一个函数是 destruc ，它遍历匹配模式，将每个变量和运行期对应对象的位置关联在一起：
+
+(destruc '(a b c) 'seq #'atom) ((A (ELT SEQ 0)) (B (ELT SEQ 1)) (C (ELT SEQ 2)))
+
+可选的第三个参数是个谓词，它用来把模式的结构和模式的内容区分开。
+
+为了使访问更有效率，一个新的变量(生成符号) 将被绑定到每个子序列上：
+
+> (destruc '(a (b . c) &rest d) 'seq)
+((A (ELT SEQ 0))
+  ((#:G2 (ELT SEQ 1)) (B (ELT #:G2 0)) (C (SUBSEQ #:G2 1)))
+  (D (SUBSEQ SEQ 2)))
+destruc 的输出被发送给 dbind-ex ，后者被用来生成宏展开代码。它将 destruc 产生的树转化成一系列嵌套的 let ：
+
+> (dbind-ex (destruc '(a (b . c) &rest d) 'seq) '(body))
+(LET ((A (ELT SEQ 0))
+    (#:G4 (ELT SEQ 1))
+    (D (SUBSEQ SEQ 2)))
+  (LET ((B (ELT #:G4 0))
+      (C (SUBSEQ #:G4 1)))
+    (PROGN BODY)))
+注意到 dbind ，和 destructuring-bind 一样，假设它将发现所有它寻找的列表结构。最后剩下的变量并不是简单地绑定到nil ，就像 multiple-value-bind 那样。如果运行期给出的序列里没有包含所有期待的元素，解构操作符将产生一个错误：
+
+> (dbind (a b c) (list 1 2))
+>>Error: 2 is not a valid index for the sequence (1 2)
+其他有内部结构的对象该怎么处理呢？通常还有数组，它和向量的区别在于其维数可以大于一。如果我们为数组定义解构宏，我们怎样表达匹配模式呢？对于两维数组，用列表还是比较实际的。[示例代码 18.2] 含有一个宏【注1】，with-matrix ，用于解构两维数组。
+
+> (setq ar (make-array '(3 3)))
+#<Simple-Array T (3 3) C2D39E>
+> (for (r 0 2)
+  (for (c 0 2)
+    (setf (aref ar r c) (+ (* r 10) c))))
+NIL
+> (with-matrix ((a b c)
+    (d e f)
+    (g h i)) ar
+  (list a b c d e f g h i))
+(0 1 2 10 11 12 20 21 22)
+对于大型数组，或者维数是3 或更高的数组来说，我们就需要另辟奚径。我们不大可能把一个大数组里的每一个元素都绑定到变量上。将匹配模式做成数组的稀疏表达将会更实际一些 只包含用于少数元素的变量，加上用来标识它们的坐标。[示例代码 18.2] 中的第二个宏就采用了这个思路。这里我们用它来得到前一个数组在对角线上的元素：
+
+;; [示例代码 18.2]：数组上的解构
+(defmacro with-matrix (pats ar &body body)
+  (let ((gar (gensym)))
+    '(let ((,gar ,ar))
+      (let ,(let ((row -1))
+          (mapcan
+            #'(lambda (pat)
+              (incf row)
+              (let ((col -1))
+                (mapcar #'(lambda (p)
+                    '(,p (aref ,gar
+                        ,row
+                        ,(incf col))))
+                  pat)))
+            pats))
+        ,@body))))
+
+(defmacro with-array (pat ar &body body)
+  (let ((gar (gensym)))
+    '(let ((,gar ,ar))
+      (let ,(mapcar #'(lambda (p)
+            '(,(car p) (aref ,gar ,@(cdr p))))
+          pat)
+        ,@body))))
+> (with-array ((a 0 0) (d 1 1) (i 2 2)) ar
+  (values a d i))
+0
+11
+22
+[示例代码 18.3]：结构体上的解构
+
+(defmacro with-struct ((name . fields) struct &body body)
+  (let ((gs (gensym)))
+    '(let ((,gs ,struct))
+      (let ,(mapcar #'(lambda (f)
+            '(,f (,(symb name f) ,gs)))
+          fields)
+        ,@body))))
+通过这个新宏，我们开始逐渐跳出那些认为元素必须以固定顺序出现的思维模式。我们可以做出一个类似形式的宏，用它来绑定变量到 defstruct 所建立的结构体字段上。[示例代码 18.3] 中就这样定义一个宏。模式中的第一个参数被接受为与结构体相关联的前缀，其余的都是字段名。为了建立访问调用，这个宏使用了 symb (第 4.7 节)。
+
+> (defstruct visitor name title firm)
+VISITOR
+> (setq theo (make-visitor :name "Theodebert"
+    :title 'king
+    :firm 'franks))
+#S(VISITOR NAME "Theodebert" TITLE KING FIRM FRANKS)
+> (with-struct (visitor- name firm title) theo
+  (list name firm title))
+("Theodebert" FRANKS KING)
+18.3 引用
+
+CLTL 自带了一个用于解构实例的宏。假设 tree 是一个带有三个 slot 的类：species、age 和 height ，而 my-tree 是一 个 tree 的实例。在
+
+(with-slots (species age height) my-tree
+  ...)
+的里面我们可以像常规变量那样引用 my-tree 的这些 slot。在 with-slots 的主体中，符号 height 指向 height slot。height 并不是简单地绑定到了对应 slot 里的变量，而是直接引用到那个 slot 上。所以，如果我们写：
+
+(setq height 72)
+那么也将给 my-tree 的 height 这个 slot 一个 72 的值。这个宏的工作原理是将 height 定义为一个展开到 slot 引用的符号宏(第 7.11 节)。事实上，symbol-macrolet 就是为了支持像 with-slots 这样的宏才被加入到 Common Lisp 中的。
+
+无论 with-slots 事实上是不是一个解构宏，它在实际编程中所起的作用和d estructuring-bind 是一样的。虽然通常的解构都是按值调用(call-by-value)，这种新型解构却是按名调用(call-by-name)。无论我们如何调用它，它对我们都是有用的。还有其他什么宏，我们可以依法炮制呢？
+
+[示例代码 18.4] 序列上的引用解构
+
+(defmacro with-places (pat seq &body body)
+  (let ((gseq (gensym)))
+    '(let ((,gseq ,seq))
+      ,(wplac-ex (destruc pat gseq #'atom) body))))
+
+(defun wplac-ex (binds body)
+  (if (null binds)
+    '(progn ,@body)
+    '(symbol-macrolet ,(mapcar #'(lambda (b)
+          (if (consp (car b))
+            (car b)
+            b))
+        binds)
+      ,(wplac-ex (mapcan #'(lambda (b)
+            (if (consp (car b))
+              (cdr b)))
+          binds)
+        body))))
+我们可以这样做：将解构宏展开成 symbol-macrolet 而不是 let ，这样，就可以为任何解构宏创建出与之对应的按名调用版本。[示例代码 18.4] 给出了一个被修改成与 with-slots 行为类似的 dbind 版本。我们可以像使用 dbind 一样来使用 with-places ：
+
+> (with-places (a b c) #(1 2 3)
+  (list a b c))
+(1 2 3)
+但这个新宏还给我们 setf 序列位置的选项，就像我们在 with-slots 里所做的那样：
+
+> (let ((lst '(1 (2 3) 4)))
+  (with-places (a (b . c) d) lst
+    (setf a 'uno)
+    (setf c '(tre)))
+  lst)
+(UNO (2 TRE) 4)
+就像在 with-slots 里那样，这些变量现在都指向了序列中的对应位置。尽管如此，这里还有一个重要的区别：你必须使用 setf 而不是 setq 来设置这些伪变量。with-slots 宏必须引入一个 code-walker(第 20.3 节) 来将其体内的 setq 转化成 setf。这里，写一个 code-walker 将需要写很多代码，但是带来的好处却不大。
+
+如果 with-places 比 dbind 更通用，为什么不干脆只用它呢？dbind 将一个变量关联一个值上，而 with-places 却是将变量关联到一组用来找到一个值的指令集合上。每一个引用都需要进行一次查询。
+
+当 dbind 把 c 绑定到 (elt x 2) 的值上时，with-places 将使 c 成为一个展开成 (elt x 2) 的符号宏。
+
+所以如果c 在宏体中被求值了 次，那将会产生 次对elt 的调用。除非你真的想要 setf 那些由解构创建的变量，否则dbind 将会更快一些。
+
+with-places 的定义和 dbind ([示例代码 18.1]) 相比仅有轻微的变化。在 wplac-ex (之前的dbind-ex) 中那些 let 变成了 symbol-macrolet 。通过类似的改动，我们也可以为任何正常的解构宏做出一个按名调用的版本。
+
+18.4 匹配
+
+正如解构是赋值的泛化，模式匹配是解构的泛化。"模式匹配" 这个术语有许多含义。在这里的语境中，它指的是这样的操作：比较两个结构，结构中可能含有变量，判断是否存在某种给变量赋值的方式使得它们俩相等。例如，如果 ?x 和 ?y 是变量，那么这两个列表
+
+(p ?x ?y c ?x)
+(p a b c a)
+当 ?x = a 并且 ?y = b 时匹配。而列表
+
+(p ?x b ?y a)
+(p ?y b c a)
+当 ?x = ?y = c 时匹配。
+
+假设一个程序通过跟外部数据源交换信息的方式工作。为了回复一个消息，程序必须首先知道消息的类型，并且还要取出它的特定内容。通过一个匹配操作符我们可以将这两步并成一步。
+
+要写出这种操作符，必须先想出一种区分变量的办法。我们不能直接把所有符号都当成变量，因为需要让符号在模式中以参数的形式出现。这里我们规定：模式变量是以问号开始的符号。如果将来觉得不方便了，只要重定义谓词var? 就可以改变这个约定。
+
+[示例代码 18.5] 包含一个模式匹配的函数，它跟一些 Lisp 入门读物里的匹配函数样子差不多。我们传给 match 两个列表，如果它们可以匹配，将得到另一个列表，该列表会显示它们是如何匹配的：
+
+> (match '(p a b c a) '(p ?x ?y c ?x))
+((?Y . B) (?X . A))
+T
+> (match '(p ?x b ?y a) '(p ?y b c a))
+((?Y . C) (?X . ?Y))
+T
+> (match '(a b c) '(a a a))
+NIL
+NIL
+在 match 逐个元素地比较它的参数时，它建立起来了一系列值和变量之间的赋值关系，这种关系被称为绑定。这些变量是由参数 binds 给出的。若匹配成功，match 返回其生成的绑定，否则返回 nil 。由于并非所有成功的匹配都能生成绑定，所以和 gethash 一样，match 用第二个返回值来表示匹配成功与否：
+
+> (match '(p ?x) '(p ?x))
+NIL
+T
+[示例代码 18.5] 匹配函数
+
+(defun match (x y &optional binds)
+  (acond2
+    ((or (eql x y) (eql x '_) (eql y '_)) (values binds t))
+    ((binding x binds) (match it y binds))
+    ((binding y binds) (match x it binds))
+    ((varsym? x) (values (cons (cons x y) binds) t))
+    ((varsym? y) (values (cons (cons y x) binds) t))
+    ((and (consp x) (consp y) (match (car x) (car y) binds))
+      (match (cdr x) (cdr y) it))
+    (t (values nil nil))))
+
+(defun varsym? (x)
+  (and (symbolp x) (eq (char (symbol-name x) 0) #\?)))
+
+(defun binding (x binds)
+  (labels ((recbind (x binds)
+        (aif (assoc x binds)
+          (or (recbind (cdr it) binds)
+            it))))
+    (let ((b (recbind x binds)))
+      (values (cdr b) b))))
+当 match 像上面那样返回 nil 和 t 时，它表示一个没有产生任何绑定的成功的匹配。
+
+和 Prolog 一样，match 也把 _ (下划线) 用作通配符。它可以匹配任何东西，并且对绑定没有任何影响：
+
+[示例代码 18.6]：慢的匹配操作符
+
+> (match '(a ?x b) '(_ 1 _))
+((?X . 1))
+T
+
+(defmacro if-match (pat seq then &optional else)
+  '(aif2 (match ',pat ,seq)
+    (let ,(mapcar #'(lambda (v)
+          '(,v (binding ',v it)))
+        (vars-in then #'atom))
+      ,then)
+    ,else))
+
+(defun vars-in (expr &optional (atom? #'atom))
+  (if (funcall atom? expr)
+    (if (var? expr) (list expr))
+    (union (vars-in (car expr) atom?)
+      (vars-in (cdr expr) atom?))))
+
+(defun var? (x)
+  (and (symbolp x) (eq (char (symbol-name x) 0) #\?)))
+有了 match ，可以很容易地写出一个模式匹配版本的 dbind 。[示例代码 18.6] 中含有一个称为 if-match 的宏。
+
+像 dbind 那样，它的前两个参数是一个模式和一个序列，然后它通过比较模式跟序列来建立绑定。不过，它用另外两个参数取代了代码主体：一个 then 子句，在新绑定下被求值，如果匹配成功的话；以及一个 else 子句在匹配失败时被求值。这里有一个简单的使用 if-match 的函数：
+
+(defun abab (seq)
+  (if-match (?x ?y ?x ?y) seq
+    (values ?x ?y)
+    nil))
+如果匹配成功了，它将建立 ?x 和 ?y 的值，然后返回它们：
+
+> (abab '(hi ho hi ho)
+  HI
+  HO
+函数 vars-in 返回一个表达式中的所有匹配变量。它调用 var? 来测试是否某个东西是一个变量。目前，var? 和用来检测绑定列表中变量的 varsym? ([示例代码 18.5]) 是相同的，之所以使用独立的两个函数是考虑到我们可能想要给这两类变量采用不同的表示方法。
+
+像在 [示例代码 18.6] 里定义的那样，if-match 很短，但并不是非常高效。它在运行期做的事情太多了。我们在运行期把两个序列都遍历了，尽管第一个序列在编译期就是已知的。更糟糕的是，在进行匹配的过程中，我们构造列表来存放变量绑定。如果充分利用编译期已知的信息，就能写出一个既不做任何不必要的比较，也不做任何 cons 的 if-match 版本来。
+
+如果其中一个序列在编译期已知，并且只有这个序列里含有变量，那么就要另做打算了。在一次对 match 的调用中，两个参数都可能含有变量。通过将变量限制在 if-match 的第一个参数上，就有可能在编译期知道哪些变量将会参与匹配。这里，我们不再创建变量绑定的列表，而是将变量的值保存进这些变量本身。
+
+[示例代码 18.7] 快速匹配操作符
+
+(defmacro if-match (pat seq then &optional else)
+  '(let ,(mapcar #'(lambda (v) '(,v ',(gensym)))
+      (vars-in pat #'simple?))
+    (pat-match ,pat ,seq ,then ,else)))
+
+(defmacro pat-match (pat seq then else)
+  (if (simple? pat)
+    (match1 '((,pat ,seq)) then else)
+    (with-gensyms (gseq gelse)
+      '(labels ((,gelse () ,else))
+        ,(gen-match (cons (list gseq seq)
+            (destruc pat gseq #'simple?))
+          then
+          '(,gelse))))))
+
+(defun simple? (x) (or (atom x) (eq (car x) 'quote)))
+
+(defun gen-match (refs then else)
+  (if (null refs)
+    then
+    (let ((then (gen-match (cdr refs) then else)))
+      (if (simple? (caar refs))
+        (match1 refs then else)
+        (gen-match (car refs) then else)))))
+在 [示例代码 18.7] 和 18.8 中是 if-match 的新版本。如果能预见到哪部分代码会在运行期求值，我们不妨就直接在编译期生成它。这里，我们生成的代码仅仅完成需要的那些比较操作，而不是展开成对 match 的调用。
+
+如果我们打算使用变量 ?x 来包含 ?x 的绑定的话，怎样表达一个尚未被匹配过程建立绑定的变量呢？这里，我们将通过将一个模式变量绑定到一个生成符号以表明其未绑定。所以 if-match 一开始会生成代码将所有模式中的变量绑定到生成符号上。在这种情况下，代替了展开成一个 with-gensyms ，在编译期做一次符号生成，然后将它们直接插入进展开式是安全的。
+
+[示例代码 18.8] 快速匹配操作符(续)
+
+(defun match1 (refs then else)
+  (dbind ((pat expr) . rest) refs
+    (cond ((gensym? pat)
+        '(let ((,pat ,expr))
+          (if (and (typep ,pat 'sequence)
+              ,(length-test pat rest))
+            ,then
+            ,else)))
+      ((eq pat '_) then)
+      ((var? pat)
+        (let ((ge (gensym)))
+          '(let ((,ge ,expr))
+            (if (or (gensym? ,pat) (equal ,pat ,ge))
+              (let ((,pat ,ge)) ,then)
+              ,else))))
+      (t '(if (equal ,pat ,expr) ,then ,else)))))
+
+(defun gensym? (s)
+  (and (symbolp s) (not (symbol-package s))))
+
+(defun length-test (pat rest)
+  (let ((fin (caadar (last rest))))
+    (if (or (consp fin) (eq fin 'elt))
+      '(= (length ,pat) ,(length rest))
+      '(> (length ,pat) ,(- (length rest) 2)))))
+其余的展开由 pat-match 完成。这个宏接受和 if-match 相同的参数；唯一的区别是它不为模式变量建立任何新绑定。在某些情况下这是一个优点，第 19 章将把 pat-match 作为一个独立的操作符来使用。
+
+在新的匹配操作符里，模式内容和模式结构之间的差别将用函数 simple? 定义。如果我们想要在模式里使用字面引用，那么解构代码(以及 vars-in) 必须被告知不要进入那些第一个元素是 quote 的列表。在新的匹配操作符下，我们将可以使用列表作为模式元素，只需简单地将它们引用起来。
+
+与 dbind 相似，pat-match 调用 destruc 来得到一个将要在运行期参与其参数调用的列表。这个列表被传给 gen-match 来为嵌套的模式递归生成匹配代码，然后再传给 match1 ，以生成模式树上每个叶子的匹配代码。
+
+最后出现在一个 if-match 展开式中的多数代码都来自 match1 ，如 [示例代码 18.8], 这个函数分四种情况处理。如果模式参数是一个生成符号，那么它是一个由 destruc 创建用于保存子列表的不可见变量，并且所有我们需要在运行期做的就是测试它是否具有正确的长度。如果模式元素是一个通配符 (_)，那么不需要生成任何代码。如果模式元素是一个变量，那么 match1 会生成代码去匹配，或者将其设置成，运行期给出的序列的对应部分。否则，模式元素被看作一个字面上的值，而 match1 会生成代码去比较它和序列中的对应部分。
+
+让我们通过例子来了解一下展开式中的某些部分的生成过程。假设我们从下面的表达式开始
+
+(if-match (?x 'a) seq
+  (print ?x)
+  nil)
+这个模式将被传给 destruc ，同时带着一些生成符号(不妨简称为 g ) 来代表那个序列：
+
+(destruc '(?x 'a) 'g #'simple?)
+得到：
+
+((?x (elt g 0)) ((quote a) (elt g 1)))
+在这个列表的开头我们接上 (g seq)：
+
+((g seq) (?x (elt g 0)) ((quote a) (elt g 1)))
+然后把结果整个地发给 gen-match 。就像 length (第 2.8 节) 的原生实现那样，gen-match 首先一路递归到列表的结尾，然后在回来的路上构造其返回值。当gen-match 走完所有元素时，它就返回其 then 参数，也就是 (print ?x)【注2】。在递归回来的路上，这个返回值将作为 then 参数传给 match1 。现在我们将得到一个像这样的调用：
+
+(match1 '(((quote a) (elt g 1))) '(print ?x) '<else function>)
+得到：
+
+(if (equal (quote a) (elt g 1))
+  (print ?x)
+
+<else function>)
+然后这些将成为另一个 match1 调用的 then 参数，得到的值将成为最后的 match1 调用的 then 参数。这个 if-match 的完整展开式显示在[示例代码 18.9] 【注3】中。
+
+[示例代码 18.9] 一个 if-match 的展开式
+
+(if-match (?x 'a) seq
+  (print ?x))
+展开成：
+
+(let ((?x '#:g1))
+  (labels ((#:g3 nil nil))
+    (let ((#:g2 seq))
+      (if (and (typep #:g2 'sequence)
+          (= (length #:g2) 2))
+        (let ((#:g5 (elt #:g2 0)))
+          (if (or (gensym? ?x) (equal ?x #:g5))
+            (let ((?x #:g5))
+              (if (equal 'a (elt #:g2 1))
+                (print ?x)
+                (#:g3)))
+            (#:g3)))
+        (#:g3)))))
+在这个展开式里有两个地方用到了 gensym (生成符号)，这两个地方的用意各不相同。在运行时，一些变量被用来保存树的一部分，这些变量的名字是用 gensym 生成的，目的是为了避免捕捉。而变量 ?x 在开始的◦ 时候被绑定到了一个 gensym，以表明它尚未被匹配操作赋给一个值。
+
+在新的 if-match 中，模式元素现在是被求值而不再是被隐式引用了。这意味着 Lisp 变量可以被用于模式中，和被引用的表达式一样：
+
+> (let ((n 3))
+  (if-match (?x n 'n '(a b)) '(1 3 n (a b))
+    ?x))
+1
+还有两个进一步的改进，是因为新版本调用了 destruc ([示例代码 18.1]) 而出现。现在模式中可以包含 &rest 或者 &body 关键字(match 是不管这一套的)。并且因为 destruc 使用了一般的序列操作符 elt 和 subseq ，
+
+新的 if-match 将工作在任何类型的序列上。如果 abab 采用新版本来定义，它也可以被用于向量和字符串：
+
+> (abab "abab")
+#\a
+#\b
+> (abab #(1 2 1 2))
+1
+2
+事实上，模式可以像 dbind 的模式那样复杂：
+
+> (if-match (?x (1 . ?y) . ?x) '((a b) #(1 2 3) a b)
+  (values ?x ?y))
+(A B)
+#(2 3)
+注意到，在第二个返回值里，向量的元素被显示出来了。要想使向量以这种方式被输出，需要将 \*print-array\* 设置为 t 。
+
+在本章，我们开始逐步走进一个崭新的编程领域。以一个简单的用于解构的宏作开端。在 if-match 的最终版本中，我们有了某种看起来更像是它自己的语言的东西。接下来的章节将要介绍一整类程序，它们秉承的都是相同的理念。
+
+备注:
+
+【注1】译者注：这里稍微修改了一下原书的代码，原书中没有定义 col 变量就直接使用了 (setq col -1)，这里仿照 row 的处理方法用 let 建立了一个 col 的局部绑定。
+
+【注2】译者注：原文中说返回的 then 参数是 ?x ，这应该是个笔误。
+
+【注3】译者注：原书里有一个笔误，展开式代码中的 (gensym? x) 应为 (gensym? ?x)。

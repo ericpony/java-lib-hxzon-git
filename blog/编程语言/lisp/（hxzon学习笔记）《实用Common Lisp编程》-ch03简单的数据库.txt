@@ -3,6 +3,8 @@
 by hxzon
 
 《第3 章 实践：简单的数据库》
+参见《<On Lisp>-第 19 章 一个查询编译器》。
+
 ======
 定义条件函数：
 (defmacro where (&rest clauses)

@@ -1,0 +1,302 @@
+Java 7 SDP：一次编写，到处运行，有时还运行得超炫！
+
+http://www.infoq.com/cn/articles/Java-7-Sockets-Direct-Protocol
+作者 Ben Cotton ，译者 王丽娟 发布于 十一月 27, 2013
+
+=====
+本文将简单介绍Java 7 SDK里引入的Java套接字直接协议（Sockets Direct Protocol，SDP），
+这项新技术是个非常激动人心的突破。
+如果要对InfiniBand的远程直接内存存取（Remote Direct Memory Access，RDMA）进行native访问，
+SDP就能让超高性能计算（Ultra High Performance Computing，UHPC）社区在这种不常见的场景下使用Java通用的特性和优势。
+RDMA为低延迟应用提供了一种协议，可以直接访问其他计算机的内存，而不需要操作系统的参与。
+UHPC社区对低延迟和高吞吐量的要求最为严格，而且不容妥协，UHPC自然就需要使用最好的RDMA。
+随着Java 7引入SDP，UHPC社区就可以利用Java平台编写能直接利用InfiniBand RDMA功能的应用代码了。
+
+在深入了解新的Java SDP之前，让我们简要回顾一下Java网络编程和套接字API的历史。
+
+Sun Microsystems于1995年推出Java，并宣扬Java能“一次编写，到处运行”，这句口号现在已然广为人知。
+我们都知道这背后的思想其实很简单：
+用C++代码编写的应用要在所有环境下构建/部署是极其困难的，追求接近“到处运行”的可移植性就更难了，
+但现在你可以用一种叫Java的语言编写应用代码，应用可以在虚拟机（并不是底层的操作系统执行环境）上构建/部署。
+这极大地减少了Java应用程序员对可移植性的关注，而是把可移植性完全交给Java虚拟机（JVM）去处理。
+JVM承诺：如果你的Java代码可以在针对某个特定底层操作系统的JVM上构建/部署，
+只要其他操作系统有可用、兼容的JVM，平台就能确保完全相同的代码可以在上面运行。
+而不需要额外的编译和预处理器宏指令。
+（有人记得C++里的#ifdef么？JVM可以让应用程序员摆脱这种痛苦。）
+
+这种思想非常有用，得到了应用编程社区的广泛认可。
+正如我们所知，Java非常迅速地流行起来
+——以前所未有的速度被全面接受，计算机历史上的很多编程语言平台都没有这么迅速地普及过。
+
+Sun一开始提供的JVM只能运行在三个操作系统上：1、Solaris，2、Linux，3、Windows。
+微软在1993年发布的Windows就带有WinSOCK协议栈，所以Windows可以做TCP/IP网络编程，而且完全支持API。
+各种*nix系统从二十世纪七十年代起就一直在支持TCP/IP。
+微软引入WinSOCK对Java的成形来说绝对必要。
+没有WinSOCK，就不能发布支持java.net.*和java.io.*这些APIs的Windows VM。
+没有WinSOCK，Java构建的VM在垄断世界桌面的操作系统上就不具备完整的网络功能了。
+随着Windows完全支持TCP/IP，运行Java的桌面数量可能增加了上千倍。
+
+事情发生了变化
+
+当然，Java仍然是“一次编写，到处运行”。
+可移植性仍然是首要任务。但现在用Java 7和SDP，JVM能做更多的事情。
+可移植性不再是唯一的重点；对JVM来说，满足超高性能用例的需求也是很重要的任务。
+借助SDP，JVM不需要修改网络、套接字API，就可以直接利用InfiniBand天生的能力。
+InfiniBand要比以太网快很多。
+UHPC社区往往会选择InfiniBand作为物理网络层的提供者。
+
+后面我们会介绍InfiniBand是什么，以及Java 7 VM怎么让应用利用InfiniBand原生的功能。
+
+有件有趣的事情要注意（特别是从历史的角度来看）：
+Java决定在两个操作系统上提供SDP支持，而微软Windows并不在其中。
+Java 7 SDP支持的两个操作系统是Solaris和Linux。
+Solaris从版本10开始就对SDP提供了规范的支持。
+只要你有物理InfiniBand网卡，Java 7 SDP就可以立即工作。
+Linux则通过Open Fabrics Enterprise Distribution（OFED）包支持SDP。
+要确认Linux版本有没有配置OFED设备驱动器，只需要在安装物理InfiniBand网卡适配器之后简单键入下面的命令：
+
+egrep "^[ \t]+ib" /proc/net/dev
+
+如果命令有输出，就表明你可以在这个操作系统上使用Java 7 SDP。
+
+所有的java.net.*和java.io.*应用代码仍然能在微软Windows上用Java 7 VM运行……
+但它用不了SDP，运行时的物理层提供者仍然是以太网。
+即使你在通过WinSOCK Direct子系统提供InfiniBand支持的Windows Server版本上运行，也用不了SDP。
+所有的内容仍然能在Windows上运行，但速度会比在非Windows（即*nix）上运行得慢。
+
+=========
+事情确实发生了变化
+
+现在让我们谈谈Java里面连接操作系统网络协议栈的API。
+首先，下表显示了网络层标准的开放系统互连（OSI）模型。
+
+#
+
+层
+
+协议
+
+Java SDK的核心APIs
+
+7.
+
+应用层
+
+HTTP、FTP、SSL等
+
+java.net.HttpURLConnection、javax.servlet.HttpServlet
+
+6.
+
+表示层
+
+ 	
+# 在Java里，OSI应用层和表示层没有真正区别
+
+5.
+
+会话层
+
+NetBios、RCP
+
+# Java SDK核心对OSI会话层没有支持
+
+4.
+
+传输层
+
+TCP、UDP
+
+java.net.Socket、java.net.ServerSocket、java.net.Datagram
+
+3.
+
+网络层
+
+IP
+
+Java.net.InetAddress
+
+2.
+
+数据链路层
+
+PPP
+
+# Java SDK核心对OSI数据链路层没有支持
+
+1.
+
+物理层
+
+以太网、InfiniBand
+
+# Java SDK核心对OSI物理层没有支持
+
+
+----
+不过……
+
+现在有了Java 7 SDP（VM连接InfiniBand和java.net.*、java.io.*核心APIs的桥梁）
+
+从OSI网络层的视角看，Java 7 SDP能让Java应用代码“更接近金属”（物理层）。
+Java SDP提供了一种直接（SDP里的D）的方式，借助VM就可以连接应用代码和native、物理的InfiniBand。
+Java 7对SDP的支持不需要应用修改使用java.net.*和java.io.* APIs的代码。
+此外，只要配置好JVM到InfiniBand操作系统设备和库（即InfiniBand的VERBs层API）的特定连接点，
+使用java.net.*和java.io.*的应用代码就能绕过传统的网络协议栈“直接”访问InfiniBand
+（也就是使用Java针对OSI第四层传输层的API，就可以绕过OSI第三层网络层和第二层数据链路层，直接访问OSI第一层物理层）。
+对性能的影响和收到的回报都非常显著。
+
+借助Java 7和SDP，Java现在可以支持远程直接内存存取（RDMA）
+
+RDMA是跨网络在两个JVM进程（在*nix用户地址空间中执行）之间移动应用缓冲区的一种方式。
+RDMA不同于传统的网络接口，因为它绕过了操作系统。
+这允许Java SDP通过RDMA提供：
+1、绝对最低的延迟，2、最高的吞吐量，3、最少的CPU占用率。
+
+借助Java到RDMA的连接点，SDP也能让Java具备非常有力的“零拷贝”能力。
+“零拷贝”操作指CPU不用将一个内存区域的数据拷贝到另一个内存区域。
+网络协议栈的零拷贝版本大大提升了特定应用程序的性能，也能更有效地利用系统资源。
+CPU可以继续处理其他任务，数据拷贝则由机器的另一部分并行处理，这样就提升了性能。
+此外，零拷贝操作减少了在用户空间和内核空间之间切换所消耗的时间。
+零拷贝也能更有效地利用系统资源，因为大量的拷贝操作是相对简单的任务，
+如果其他简单的系统组件就能做拷贝，那让复杂的CPU去执行就太浪费了。
+
+需要注意的是，我们讨论的零拷贝并不是指java.nio.channels.FileChannel的transferTo()实现的零拷贝。
+这里的零拷贝性能更高。
+借助Java 7 SDP，你可以直接使用原生的InfiniBand零拷贝协议实现。
+
+在典型的Java部署情况下，SDP直观上是什么样的？
+
+下图中，Node 1（java.net.Socket写入者）和Node 2（java.net.ServerSocket监听器）部署在配置支持了SDP的Java 7 VM上，
+两个JVMs可以跨InfiniBand网络互相交换应用数据缓冲区，而不需要任何OS系统调用或服务调用。
+令人难以置信的是，Java数据传输完全绕过了两个操作系统。
+
+
+
+Java 7应用Node 1（JVM启动时使用SDP）使用java.net.Socket API把应用数据块跨网络写给java.net.ServerSocket监听器。
+JVM启动时使用SDP，所以会完全绕过操作系统的TCP/IP栈——应用数据会直接写到InfiniBand的RDMA（要求网卡的物理提供者是InfiniBand）。
+
+Java 7应用Node 2（JVM启动时也使用SDP）使用java.net.ServerSocket API监听应用数据块，
+应用数据块由java.net.Socket写入者经RDMA跨网络写入。（要求网卡的物理提供者是InfiniBand）
+数据会直接写入Java 7 VM的应用缓冲区！
+不需要操作系统或服务调用——既不需要Node 1的操作系统，也不需要Node 2的操作系统。
+这就是Java 7 SDP的功能。
+
+同样的应用运行在支持SDP的Java 7上和运行在Java 6上，为什么会有性能差异？
+
+下图深入、详细地解释了上图里的Node 2在两种场景下的情形：
+
+使用配置了SDP的Java 7（下图左边）：
+Node 2要接收Node 1传输的数据，经过InfiniBand的VERBS/RDMA协议栈、到达Java应用需要几个步骤？
+只需要一个！
+（这对UHPC Java应用来说是个好消息；
+UHPC社区现在可以用Java 7完成他们需要的功能了）。
+
+使用没有SDP的Java 6（下图右边）：
+Node 2要接收Node 1传输的数据，是怎样经过OSI网络层协议栈、到达Java应用的呢？又需要几步呢？
+需要五步。
+（这是我们熟悉的TCP/IP协议栈，而不是SDP。它适用于大多数情景，
+但不能解决UHPC社区的问题。UHPC社区使用Java 6可是枉然）。
+
+
+ 
+=========
+怎样管理、配置Java 7 VM，让它支持SDP？
+
+下面的配置部分摘取自Oracle介绍Java 7 SDP的教程。
+
+SDP配置文件是个文本文件，JVM启动时会从本地文件系统读取该文件。
+SDP配置文件有两种不同类型的条目。
+不论哪种类型，每个条目都写成一行：
+
+一种是SDP配置注释行
+一种是SDP配置规则行
+注释行以#字符开头，#字符后面的所有内容都会被忽略。
+
+至于规则行，有两种类型：
+
+bind规则
+connect规则
+
+bind规则表示，只要TCP套接字绑定到与规则匹配的地址和端口，就会使用SDP协议进行传输。
+connect规则则表示，没有绑定的TCP套接字尝试连接匹配规则的地址和端口时，就会使用SDP协议进行传输。
+
+在SDP配置文件里指定规则后，JVM就能明确知道什么时候用InfiniBand的VERBS/RDMA协议栈去替换普通的TCP/IP协议栈。
+
+第一个关键字用来表明规则是bind还是connect。
+第二部分指定主机名或IP地址。
+当指定为IP地址时，你也可以指定表示IP地址范围的前缀。
+第三部分即最后一个部分是端口号或端口号范围。
+
+我们看看示例配置文件里的如下部分：
+
+# 绑定到192.0.2.1时使用SDP
+
+bind 192.0.2.1 *
+
+# 连接到192.0.2.*上的所有应用服务时都使用SDP
+
+connect 192.0.2.0/24 1024-*
+
+示例文件里的第一条规则指定，本地IP地址192.0.2.1上的所有端口（*）都会使用SDP。
+你应该为分配到InfiniBand适配器的每个本地地址都添加一条bind规则，其中InfiniBand适配器相当于支持InfiniBand的网卡。
+如果你有多个InfiniBand适配器，你应该为分配到这些适配器的每个地址都指定一条bind规则。
+
+示例文件里的第二条规则表明，只要连接到192.0.2.*，而且目标端口大于等于1024，就会使用SDP。
+IP地址里的前缀/24表示，32位IP地址的前24位都符合指定的地址。
+IP地址的每一部分都占8位，所以24位就表明IP地址应该符合192.0.2，而且最后一个字节可以是任意值。
+端口部分的-*表示“及以上”。
+端口范围（比如1024-2056）也是有效的，而且指定的范围是闭区间。
+
+
+如何启动使用SDP的Java 7 VM？
+
+&> java \
+-Dcom.sun.sdp.conf=sdp.conf \
+-Djava.net.preferIPv4Stack=true \
+Application.class
+
+需要注意的是，启动时要指定网络格式为IPv4Stack。
+尽管Java 7和InfiniBand都支持IPv6网络格式，但Solaris和Linux都不支持两者之间的映射。
+所以启动支持SDP的Java 7 VM时，还是要使用基础、可靠的IPv4网络格式。
+
+在支持SDP的Java 7 VM上运行应用，预计性能能提升多少？
+
+这才是终极问题！使用Java 7 SDP到底能收获什么？
+本文显然给不出确定的答案。
+性能的提升取决于多方面的因素。
+在本文快结束的时候，让我们了解一下确定的内容：
+
+InfiniBand要比以太网快很多。
+高性能计算咨询委员会发布的研究给出了具体的指标，
+这些指标表明InfiniBand在低延迟方面比10G以太网好6倍，在吞吐量性能上也是10G以太网的3.7倍。
+
+此外，Java 7 SDP使用RDMS和最好的零拷贝实现。
+数据传输完全绕过了操作系统的TCP/IP栈和上下文切换，数据传输如果经过TCP/IP栈，
+就需要在内核地址空间里的系统调用和用户地址空间里的应用代码缓冲区之间进行上下文切换。
+
+所有这些，Java SDK API都做到了百分百的透明。
+使用java.net.*和java.io.*的Java应用代码不需要修改任何内容。
+
+尽管事情已经发生了很大的变化，但Java的核心精神仍然没有变。
+最开始的时候，JVM负责将应用代码和可移植性隔离开来，
+一如往昔，JVM再次独自交付了重要功能：这次是SDP。
+事实上，Java原先的口号仍然适用，我们稍作修改就能体现现在令人激动的内容：
+Java 7 SDP——一次编写，到处运行，有时还运行得超炫！
+
+=======
+作者简介
+
+Ben D. Cotton三世是摩根大通的IT顾问，
+主要工作是在UHPC Linux平台上用Java数据网格技术呈现、汇总实时的流动性风险数据。
+他还是JCP（Java Community Process）成员，目前主要参与两个JCP专家组，
+参与定义Java缓存API（JSR-107）和分布式数据网格（JSR-347）。
+Ben于1985年5月毕业于美国罗格斯大学，获得计算机科学学士学位。
+毕业后的前十一年，他在AT&T贝尔实验室编写支持大量专有通信网络分析和配置协议的C++代码；
+接下来的十四年，他开始用Java代码编写支持低延迟和有事务处理的固定收入/衍生电子交易、清算、定价和风险系统。
+
+ 
+查看英文原文：Java 7 Sockets Direct Protocol – Write Once, Run Everywhere …. and Run (Some Places) Blazingly
+http://www.infoq.com/articles/Java-7-Sockets-Direct-Protocol
+

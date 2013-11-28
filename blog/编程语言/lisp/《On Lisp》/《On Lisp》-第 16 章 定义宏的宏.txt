@@ -1,0 +1,315 @@
+《On Lisp》-第 16 章 定义宏的宏
+
+http://www.ituring.com.cn/article/53780
+
+代码中的模式通常预示着需要新的抽象。这一规则对于宏代码本身也一样适用。如果几个宏的定义在形式上比较相似，我们就可能写一个编写宏的宏来产生它们。本章展示三个宏定义宏的例子：一个用来定义缩略语，另一个用来定义访问宏，第三个则用来定义在 14.1 节中介绍的那种指代宏。
+
+16.1 缩略语
+
+宏最简单的用法就是作为缩略语。一些 Common Lisp 操作符的名字相当之长。它们中最典型的 (尽管不是最长的) 是 destructuring-bind ，长达 18 个字符。Steele 原则(4.3 节) 的一个直接推论是，常用的操作符应该取个简短的名字。("我们认为加法的成本较低，部分原因是由于我们只要用一个字符 '+' 就可以表示它。") 内置的 destructuring-bind 宏引入了一个新的抽象层，但它在简洁上作出的贡献被它的长名字抹杀了：
+
+(let ((a (car x)) (b (cdr x))) ...)
+(destructuring-bind (a . b) x ...)
+和打印出来的文本相似，程序在每行的字符数不超过 70 的时候，是最容易阅读的。当单个名字的长度达到这个长度的四分之一时，我们就开始觉得不便了。
+
+幸运的是，在像 Lisp 这样的语言里你完全没有必要逆来顺受设计者的每个决定。只要定义了:
+
+(defmacro dbind (&rest args)
+  '(destructuring-bind ,@args))
+你就再也不没必要用那个长长的名字了。对于名字更长也更常用的multiple-value-bind 也是一样的道理。
+
+(defmacro mvbind (&rest args)
+  '(multiple-value-bind ,@args))
+注意到 dbind 和 mvbind 的定义是何等的相似。确实，使用这种 rest 和逗号-at 的惯用法，就已经能为任意一个函数【注1】、宏，或者 special form 定义其缩略语了。既然我们可以让一个宏帮我们代劳，为什么还老是照着 mvbind 的模样写出一个又一个的定义呢？
+
+为了定义一个定义宏的宏，我们通常会要用到嵌套的反引用。嵌套反引用的难以理解是出了名的。尽管最终我们会对那些常见的情况了如指掌，但你不能指望随便挑一个反引用表达式，都能看一眼，就能立即说出它可以产生什么。这不能归罪于 Lisp。就像一个复杂的积分，没人能看一眼就得出积分的结果，但是我们不能因为这个就把问题归咎于积分的表示方法。道理是一样的。难点在于问题本身，而非表示问题的方法。
+
+尽管如此，正如在我们在做积分的时候，我们同样也可以把对反引用的分析拆成多个小一些的步骤，让每一步都可以很容易地完成。假设我们想要写一个 abbrev 宏，它允许我们仅用:
+
+(abbrev mvbind multiple-value-bind)
+[示例代码 16.1] 自动定义缩略语
+
+(defmacro abbrev (short long)
+  '(defmacro ,short (&rest args)
+    '(,',long ,@args)))
+
+(defmacro abbrevs (&rest names)
+  '(progn
+    ,@(mapcar #'(lambda (pair)
+        '(abbrev ,@pair))
+      (group names 2))))
+来定义 mvbind 。[示例代码 16.1] 给出了一个这个宏的定义。它是怎样写出来的呢？这个宏的定义可以从一个示例展开式开始。一个展开式是：
+
+(defmacro mvbind (&rest args)
+  '(multiple-value-bind ,@args))
+如果我们把 multiple-value-bind 从反引用里拉出来的话，就会让推导变得更容易些，因为我们知道它将成为最终要得到的那个宏的参数。这样就得到了等价的定义:
+
+(defmacro mvbind (&rest args)
+  (let ((name 'multiple-value-bind))
+    '(,name ,@args)))
+现在我们将这个展开式转化成一个模板。我们先把反引用放在前面，然后把可变的表达式替换成变量。
+
+'(defmacro ,short (&rest args)
+  (let ((name ',long))
+    '(,name ,@args)))
+最后一步是通过把代表 name 的 ',long 从内层反引用中消去，来简化表达式：
+
+'(defmacro ,short (&rest args)
+  '(,',long ,@args))
+这就得到了 [示例代码 16.1] 中定义的宏的主体。
+
+[示例代码 16.1] 中还有一个 abbrevs ，它用于我们想要一次性定义多个缩略语的场合.
+
+(abbrevs dbind destructuring-bind
+  mvbind multiple-value-bind
+  mvsetq multiple-value-setq)
+abbrevs 的用户无需插入多余的括号，因为 abbrevs 通过调用 group (4.3 节) 来将其参数两两分组。对于宏来说，为用户节省逻辑上不必要的括号是件好事，而 group 对于多数这样的宏来说都是有用的。
+
+16.2 属性
+
+Lisp 提供多种方式将属性和对象关联在一起。如果问题中的对象可以表示成符号，那么最便利(尽管可能最低效) 的方式之一是使用符号的属性表。为了描述对象 -- 具有值为 的属性 -- 的这一事实，我们修改的属性表：
+
+(setf (get o p) v)
+所以如果说 ball1 的 color 为 red ，我们用：
+
+(setf (get 'ball1 'color) 'red)
+如果我们打算经常引用对象的某些属性，我们可以定义一个宏来得到它：
+
+(defmacro color (obj)
+  '(get ,obj 'color))
+然后在 get 的位置上使用 color 就可以了：
+
+> (color 'ball1)
+RED
+由于宏调用对 setf 是透明的(见第 12 章)，我们也可以用：
+
+> (setf (color 'ball1) 'green)
+GREEN
+这种宏会有如下优势：它能把程序表示对象颜色的方式隐藏起来。属性表的访问速度比较慢；程序在将来的版本里，可能会出于速度考虑，将颜色表示成结构体的一个字段，或者哈希表中的一个表项。如果通过类似 color 宏这样的外部接口访问数据，我们可以很轻易地对底层代码做翻天覆地的改动，就算是已经成形的程序也不在话下。如果一个程序从属性表改成用结构体，那么在访问宏的外部接口以上的程序可以原封不动；甚至使用这个接口的代码可以根本就对背后的重构过程毫无察觉。
+
+对于重量这个属性，我们可以定义一个宏，它和为 color 写的那个宏差不多：
+
+(defmacro weight (obj)
+  '(get ,obj 'weight))
+和上节的情况相似，color 和 weight 的定义几乎一模一样。在这里 propmacro ([示例代码 16.2]) 扮演了和 abbrev 相同的角色。
+
+[示例代码 16.2] 自动定义访问宏
+
+(defmacro propmacro (propname)
+  '(defmacro ,propname (obj)
+    '(get ,obj ',',propname)))
+
+(defmacro propmacros (&rest props)
+  '(progn
+    ,@(mapcar #'(lambda (p) '(propmacro ,p)
+        props))))
+一个用来定义宏的宏可以采用和任何其他宏相同的设计过程：先理解宏调用，然后分析预期的展开式，再想出来如何将前者转化成后者。我们想要
+
+(propmacro color)
+被展开成
+
+(defmacro color (obj)
+  '(get ,obj 'color))
+尽管这个展开式本身也是一个 defmacro ，我们仍然能够为它做一个模板，先把它放到反引用里，然后把加了逗号的参数名放在color 的实例的位置上。如同前一节那样，我们首先通过转化，让展开式已有的反引 用里面没有 color 实例：
+
+(defmacro color (obj)
+  (let ((p 'color))
+    '(get ,obj ',p)))
+然后我们接下来构造这个模板：
+
+'(defmacro ,propname (obj)
+  (let ((p ',propname))
+    '(get ,obj ',p)))
+再简化成：
+
+'(defmacro ,propname (obj)
+  '(get ,obj ',',propname))
+对于需要把一组属性名全部定义成宏的场合，还有 propmacros ([示例代码 16.2])，它展开到一系列单独的对 propmacro 的调用。就像 abbrevs ，这段不长的代码事实上是一个定义定义宏的宏的宏。
+
+虽然本章针对的是属性表，但这里的技术是通用的。对于以任何形式保存的数据，我们都可以用它定义适用的数据访问宏。
+
+16.3 指代宏
+
+第14.1节已经给出了几种指代宏的定义。当你使用类似 aif 或者 aand 这样的宏时，在一些参数求值的过程中，符号 it 将被绑定到其他参数返回的值上。所以，无需再用:
+
+(let ((res (complicated-query)))
+  (if res
+    (foo res)))
+只要说
+
+(aif (complicated-query)
+  (foo it))
+就可以了，而:
+
+(let ((o (owner x)))
+  (and o (let ((a (address o)))
+      (and a (city a)))))
+则可以简化成:
+
+(aand (owner x) (address it) (city it))
+第 14.1 节给出了七个指代宏：aif ，awhen ，awhile ，acond ，alambda ，ablock 和 aand。这七个绝不是唯一有用的这种类型的指代宏。事实上，我们可以为任何 Common Lisp 函数或宏定义出对应的指代变形。这些宏中有许多的情况会和 mapcon 很像：很少用到，可一旦需要就是不可替代的。
+
+例如，我们可以定义 a+ ，让它和 aand 一样，使 it 总是绑定到上个参数返回的值上。下面的函数用来计算 在Massachusetts 的晚餐开销：
+
+(defun mass-cost (menu-price)
+  (a+ menu-price (* it .05) (* it 3)))
+Massachusetts 的餐饮税是 5%，而顾客经常按照这个税的三倍来计算小费。按照这个公式计算的话，
+
+在 Dolphin 海鲜餐厅吃烤鳕鱼的费用共计：
+
+> (mass-cost 7.95)
+9.54
+不过这里还包括了沙拉和一份烤土豆。
+
+[示例代码 16.3] a+ 和 alist 的定义
+
+(defmacro a+ (&rest args)
+  (a+expand args nil))
+
+(defun a+expand (args syms)
+  (if args
+    (let ((sym (gensym)))
+      '(let* ((,sym ,(car args))
+          (it ,sym))
+        ,(a+expand (cdr args)
+          (append syms (list sym)))))
+    '(+ ,@syms)))
+
+(defmacro alist (&rest args)
+  (alist-expand args nil))
+
+(defun alist-expand (args syms)
+  (if args
+    (let ((sym (gensym)))
+      '(let* ((,sym ,(car args))
+          (it ,sym))
+        ,(alist-expand (cdr args)
+          (append syms (list sym)))))
+    '(list ,@syms)))
+[示例代码 16.3] 中定义的 a+ ，依赖于一个递归函数 a+expand ，来生成其展开式。a+expand 的一般策略是对宏调用中的参数列表不断地求 cdr，同时生成一系列嵌套的 let 表达式；每一个 let 都将 it 绑定到不同的参数上，但同时也把每个参数绑定到一个不同的生成符号上。展开函数聚集出一个这些生成符号的列表，并且当到达参数列表的结尾时，它就返回一个以这些生成符号作为参数的+ 表达式。所以表达式:
+
+(a+ menu-price (* it .05) (* it 3))
+得到了展开式：
+
+(let* ((#:g2 menu-price) (it #:g2))
+  (let* ((#:g3 (* it 0.05)) (it #:g3))
+    (let* ((#:g4 (* it 3)) (it #:g4))
+      (+ #:g2 #:g3 #:g4))))
+[示例代码 16.3] 中还定义了一个类似的 alist ：
+
+> (alist 1 (+ 2 it) (+ 2 it))
+(1 3 5)
+历史重演了，a+ 和 alist 的定义几乎完全一样。如果我们想要定义更多像它们那样的宏，这些宏也将在很大程度上大同小异。为什么不写一个程序，让它帮助我们产生这些宏呢？[示例代码 16.4] 中的 defanaph 将达到这个目的。借助defanaph ，宏 a+ 和alist 的定义过程可以简化成:
+
+(defanaph a+)
+(defanaph alist)
+这样定义出的 a+ 和 alist 展开式将和 [示例代码 16.3] 中的代码产生的展开式相同。这个用来定义宏的defanaph 宏将为任何其参数按照正常函数求值规则来求值的东西创建出指代变形来。这就是说，defanaph 将适用于任何参数全部被求值，并且是从左到右求值的东西上。所以你不能用这个版本的 defanaph 来定义 aand 或 awhile ，但你可以用它给任何函数定义出其指代版本。
+
+正如 a+ 调用 a+expand 来生成其展开式，defanaph 所定义的宏也调用 anaphex 来做这个事情。通用展开器 anaphex 跟 a+expand 的唯一不同之处在于其接受作为参数的函数名使其出现在最终的展开式里。事实上，a+ 现在可以定义成：
+
+[示例代码 16.4] 自动定义指代宏
+
+(defmacro a+ (&rest args)
+  (anaphex args '(+)))
+
+(defmacro defanaph (name &optional calls)
+  (let ((calls (or calls (pop-symbol name))))
+    '(defmacro ,name (&rest args)
+      (anaphex args (list ',calls)))))
+
+(defun anaphex (args expr)
+  (if args
+    (let ((sym (gensym)))
+      '(let* ((,sym ,(car args))
+          (it ,sym))
+        ,(anaphex (cdr args)
+          (append expr (list sym)))))
+    expr))
+
+(defun pop-symbol (sym)
+  (intern (subseq (symbol-name sym) 1)))
+无论 anaphex 还是 a+expand 都不需要被定义成单独的函数：anaphex 可以用 labels 或 alambda 定义在 defanaph 里面。这里把展开式生成器拆成分开的函数只是出于澄清的理由。
+
+默认情况下，defanaph 通过将其参数前面的第一个字母(假设是一个 a ) 拉出来以决定在最后的展开式里调用什么。(这个操作是由 pop-symbol 完成的。) 如果用户更喜欢另外指定一个名字，它可以作为一个可选参数。尽管defanaph 可以为所有函数和某些宏定义出其 anaphoric 变形，但它有一些令人讨厌的局限：
+
+它只能工作在其参数全部求值的操作符上。
+
+在宏展开中，it 总被绑定在前一个参数上。在某些场合, 例如 awhen 我们想要 it 始终绑在第一个参数的值上。
+
+它无法工作在像 setf 这种期望其第一个参数是广义变量的宏上。
+
+让我们考虑一下如何在一定程度上打破这些局限。第一个问题的一部分可以通过解决第二个问题来解决。
+
+为了给类似 aif 的宏生成展开式，我们需要对 anaphex 加以修改，让它在宏调用中只替换第一个参数：
+
+(defun anaphex2 (op args)
+  '(let ((it ,(car args)))
+    (,op it ,@(cdr args))))
+这个非递归版本的 anaphex 不需要确保宏展开式将 it 绑定到当前参数前面的那个参数上，所以它可以生成的展开式没有必要对宏调用中的所有参数求值。只有第一个参数是必须被求值的，以便将 it 绑定到它的值上。所以 aif 可以被定义成：
+
+(defmacro aif (&rest args)
+  (anaphex2 'if args))
+这个定义和 14.1 节上原来的定义相比，唯一的区别在于: 之前那个版本里，如果你传给 aif 参数的个数不对的话，那程序会报错；如果调用宏的方法是正确的话，这两个版本将生成相同的展开式。
+
+至于第三个问题，也就是 defanaph 无法工作在广义变量上的问题，可以通过在展开式中使用 _f (12.4 节) 来解决。像 setf 这样的操作符可以被下面定义的 anaphex2 的变种来处理：
+
+(defun anaphex3 (op args)
+  '(_f (lambda (it) (,op it ,@(cdr args))) ,(car args)))
+这个展开器假设宏调用必须带有一个以上的参数，其中第一个参数将是一个广义变量。使用它我们可以这样定义 asetf：【注2】【注3】
+
+[示例代码 16.5] 更一般的 defanaph
+
+(defmacro asetf (&rest args)
+  (anaphex3 '(lambda (x y) (declare (ignore x)) y) args))
+
+(defmacro defanaph (name &key calls (rule :all))
+  (let* ((opname (or calls (pop-symbol name)))
+      (body (case rule
+          (:all '(anaphex1 args '(,opname)))
+          (:first '(anaphex2 ',opname args))
+          (:place '(anaphex3 ',opname args)))))
+    '(defmacro ,name (&rest args)
+      ,body)))
+
+(defun anaphex1 (args call)
+  (if args
+    (let ((sym (gensym)))
+      '(let* ((,sym ,(car args))
+          (it ,sym))
+        ,(anaphex1 (cdr args)
+          (append call (list sym)))))
+    call))
+
+(defun anaphex2 (op args)
+  '(let ((it ,(car args))) (,op it ,@(cdr args))))
+
+(defun anaphex3 (op args)
+  '(_f (lambda (it) (,op it ,@(cdr args))) ,(car args)))
+[示例代码 16.5] 显示了所有三个展开器函数在单独一个宏 defanaph 的控制下拼接在一起的结果。用户可以通过可选的 rule 关键字参数来设置目标宏展开的类型，这个参数指定了在宏调用中参数所采用的求值规则。如果这个参数是：
+
+：all (默认值) 宏展开将采用alist 模型。宏调用中所有参数都将被求值，同时it 总是被绑定在前一个参数的值上。
+
+：first 宏展开将采用aif 模型。只有第一个参数是必须求值的，并且it 将被绑定在这个值上。
+
+：place 宏展开将采用asetf 模型。第一个参数被按照广义变量来对待，而it 将被绑定在它的初始值上。
+
+使用新的 defanaph ，前面的一些例子将被定义成下面这样：
+
+(defanaph alist)
+(defanaph aif :rule first)
+(defanaph asetf :rule :place)
+asetf 的一大优势是它可以定义出一大类基于广义变量而不必担心多重求值问题的宏。例如，我们可以将incf 定义成：
+
+(defmacro incf (place &optional (val 1))
+  '(asetf ,place (+ it ,val)))
+再比如说 pull ( 12.4 节)：
+
+(defmacro pull (obj place &rest args)
+  '(asetf ,place (delete ,obj it ,@args)))
+备注：
+
+【注1】尽管这种缩略语不能传递给 apply 或者funcall。
+
+【注2】译者注：这里给出的 asetf 采用了原书勘误中给出的形式。未勘误的版本里用 'setf 代替了 '(lambda (x y) (declare (ignore x) y))。这个版本也是有效的,但其中的 setf 是不必要的,真正的广义变量赋值操作是由背后的 _f 宏完成的。比较一下后面给出 incf 宏在一个普通调用 (incf a 1) 下两种 asetf 产生的展开式就可以了解这点了。
+
+【注3】译者注：本书中所有忽略了某些形参的函数定义都由译者添加了类似 (declare (ignore char)) 的声明以免编译器报警。

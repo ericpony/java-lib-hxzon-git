@@ -1,0 +1,210 @@
+Java SE 8 标准库增强
+
+http://www.infoq.com/cn/articles/java-se8-standard-library-enhancements
+
+作者 成富 发布于 十一月 27, 2013
+
+========
+Lambda表达式是Java SE 8的核心功能，大部分的改进都围绕lambda表达式展开。
+（Jigsaw项目已经被推迟到Java SE 9。）
+关于lambda表达式的内容，已经在上一篇文章中进行了说明。
+这篇文章主要介绍Java SE 8中包含的其他Java标准库的增强。
+
+=======
+并行排序
+
+随着多核CPU的流行，Java平台的标准库实现也尽可能利用底层硬件平台的能力来提高性能。
+Java SE 7中引入了Fork/Join框架作为一个轻量级的并行任务执行引擎。
+Java SE 8把Fork/Join框架用到了标准库的一些方法的实现中。
+比较典型的是java.utils.Arrays类中新增的parallelSort方法。
+与已有的sort方法不同的是，parallelSort方法使用Fork/Join框架来实现。
+在多核CPU平台上的性能更好。
+下面的代码对包含1亿个整数的数组分别使用parallelSort和sort进行排序。
+
+Random random = new Random();
+int count = 100000000;
+int[] array = new int[count];
+Arrays.parallelSetAll(array, (index) -> random.nextInt());
+int[] copy = new int[count];
+System.arraycopy(array, 0, copy, 0, array.length);
+Arrays.parallelSort(array);
+Arrays.sort(copy);
+
+在本人的4核CPU的平台上，parallelSort和sort方法的耗时分别是7112毫秒和16777毫秒。
+所以parallelSort方法的性能要好不少。
+不过parallelSort方法只在数据量较大时有比较明显的性能提升。
+当数据量较小时，Fork/Join框架本身所带来的额外开销足以抵消它带来的性能提升。
+
+=========
+集合批量数据操作
+
+在Java应用的开发中，对集合的操作是比较常见的。
+不过在Java SE 8之前的Java标准库中，对集合所能进行的操作比较有限，基本上都围绕集合遍历来展开。
+相对于其他编程语言来说，Java标准库在这一块是比较弱的。
+Java SE 8中lambda表达式的引入以及标准库的增强改进了这种状况。
+具体来说体现在两个方面上的改进：
+
+第一个方面是对集合的操作方式上。
+得益于默认方法的引入，Java集合框架中的接口可以进行更新，添加了更多有用的操作方式，即通常所说的“filter/map/reduce”等操作。
+
+第二个方面是对集合的操作逻辑的表示方式上。
+新添加的操作方式使用了java.util.function包中的新的函数式接口，可以很方便地使用lambda表达式来表示对集合的处理逻辑。
+这两个方面结合起来，得到的是更加直观和简洁的代码。
+
+新的集合批量处理操作的核心是新增的java.util.stream包，其中最重要的是java.util.stream.Stream接口。
+Stream接口的概念类似于Java I/O库中的流，表示的是一个支持顺序和并行操作的元素的序列。
+在该序列上可以进行不同的转换操作。
+序列中包含的元素也可以被消费以产生所需的结果。
+Stream接口所表示的只是操作层面上的抽象，与底层的数据存储并没有关系。
+通常的使用方式是从集合中创建出Stream接口的对象，再进行各种不同的转换操作，最后消费操作执行的结果。
+
+Stream接口中包含的操作分成两类：
+
+第一类是对序列中元素进行转换的中间操作，如filter和map等。
+这类中间操作是延迟进行的，可以级联起来。
+
+第二类是消费序列中元素的终止操作，如forEach和count等。
+当对一个Stream接口的对象执行了终止操作之后，该对象无法被再次处理。
+这点符合一般意义上对于“流”的理解。
+
+下面的代码给出了Stream接口中的filter、map和reduce操作的基本使用方式。
+Stream接口中的方法大量使用了函数式接口，可以用lambda表达式很方便地进行操作。
+
+IntStream.range(1,10).filter(i -> i % 2 == 0).findFirst().ifPresent(System.out::println); 
+//保留偶数并输出第一个元素
+ 
+IntStream.range(1,10).map(i -> i * 2).forEach(System.out::println); 
+//所有元素乘以2并输出
+
+int value = IntStream.range(1, 10).reduce(0, Integer::sum); //求和
+
+Stream接口的reduce操作还支持一种更加复杂的用法，如下面的代码所示：
+
+List<String> fruits = Arrays.asList(new String[] {"apple", "orange", "pear"});
+int totalLength = fruits.stream().reduce(0, (sum, str) -> sum + str.length(), Integer::sum); 
+//字符串长度的总和
+
+这种方式的reduce方法需要3个参数，分别是初始值、累积函数和组合函数。
+初始值是reduce操作的起始值；
+累积函数把部分结果和新的元素累积成新的部分结果组合函数则把两个部分结果组合成新的部分结果，最后产生最终结果。
+这种形式的reduce操作通常可以简化成一个map操作和另外一个简单的reduce操作，
+如下面的代码所示。两种方式的效果是一样的，不过下面的方式更加容易理解一些。
+
+int totalLength = fruits.stream().mapToInt(String::length).reduce(0, Integer::sum);
+
+另外一种特殊的reduce操作是collect操作。
+它与reduce的不同之处在于，collect操作的过程中所进行的是对一个结果对象进行修改操作。
+这样可以避免不必要的对象创建，提高性能。
+下面代码中的结果是一个StringBuilder类的对象。
+
+StringBuilder upperCase = fruits.stream().collect(StringBuilder::new, (builder, str) 
+-> builder.append(str.substring(0, 1).toUpperCase()), StringBuilder::append); 
+//字符串首字母大写并连接
+
+Stream接口中的操作可以是顺序执行或并行执行的。
+这是在Stream接口的对象创建时所确定的。
+比如Collection接口提供了stream和parallelStream方法来创建两种不同执行方式的Stream接口的对象。
+这两种不同的方式是可以切换的，通过Stream接口的sequential和parallel方法就可以完成。
+
+=======
+日期和时间
+
+Java标准库中的日期和时间处理API一直为开发人员所诟病。
+大多数开发人员会选择Joda Time这样的第三方库来进行替代。
+JSR 310作为Java SE 8的一部分，重新定义了新的日期和时间API，借鉴了已有第三方库中的最佳实践。
+I定义在java.time包中的新的日期和时间API基于标准的ISO 8601日历系统。
+
+在新的日期和时间API中，核心的类是LocalDateTime、OffsetDateTime和ZonedDateTime。
+LocalDateTime类表示的是ISO 8601日历系统中不带时区的日期和时间信息。
+OffsetDateTime类在基本的日期和时间基础上增加了与UTC的偏移量。
+ZonedDateTime类则加上了时区的相关信息。
+
+下面的代码给出了日期和时间API的基本用法，包括对日期和时间的修改、输出和解析。
+
+LocalDateTime.now().plusDays(3).minusHours(1).format(DateTimeFormatter
+.ISO_LOCAL_DATE_TIME); //输出日期和时间
+
+ZonedDateTime.now().withZoneSameInstant(ZoneId.of("GMT+08:00")).format
+(DateTimeFormatter.ISO_ZONED_DATE_TIME); //输出日期、时间和时区
+
+DateTimeFormatter.ofPattern("yyyy MM dd").parse("200101 25").
+query(TemporalQuery.localDate()); //日期的解析
+
+除了上述3个类之外，还有几个值得一提的辅助类。
+
+Instant：表示时间线上的一个点。
+当程序中需要记录时间戳时，应该使用该类。
+Instant类表示的时间类似“2013-07-22T23:18:35.743Z“。
+
+Duration：表示精确的基于时间的间隔。
+比如Duration.of(30, ChronoUnit.SECONDS)可以获取30秒的间隔。
+需要注意的是，Duration类的对象只能从精确的时间间隔创建出来，如秒、小时和天等。
+在这里，一天表示精确的24小时。
+而月份和年是不能使用的，因为它们不能表示精确的间隔。
+
+Period：与Duration类相对应的Period类表示的是基于日期的间隔，只能使用年/月/日作为单位。
+Period类在计算时会考虑夏令时等因素，适合于计算展示给最终用户的内容。
+
+Clock：表示包含时区信息的时钟，可以获取当前日期和时间。
+如LocalDateTime.now(Clock.system(ZoneId.of("GMT+08:00")))表示的是当前的北京时间。
+Clock类的一个重要作用是简化测试。在测试时可以指定不同时区的时钟来进行模拟。
+
+其他更新
+
+除了上面提到的几个比较大的更新之前，还有一些小的改动。
+
+Base64编码
+
+Base64编码在Java应用开发中经常会用到，比如在HTTP基本认证中。
+在Java SE 8之前，需要使用第三方库来进行Base64编码与解码。
+Java SE 8增加了java.util.Base64类进行编码和解码。
+
+下面的代码给出了简单的示例。
+
+Base64.Encoder encoder = Base64.getEncoder();
+String encoded = encoder.encodeToString("username:password".getBytes());
+Base64.Decoder decoder = Base64.getDecoder();
+String decoded = new String(decoder.decode(encoded));
+
+===========
+并发处理
+
+Java SE 8进一步增强了并发处理的相关API。
+在java.util.concurrent.atomic中新增了LongAccumulator、LongAdder、DoubleAccumulator和DoubleAdder等几个类。
+这几个类用来在多线程的情况下更新某个Long或Double类型的变量。
+
+下面的代码给出了LongAccumulator类的使用示例。
+
+public class ConcurrentSample {
+    public static void main(String[] args) throws Exception {
+        ConcurrentSample sample = new ConcurrentSample();
+        LongAccumulator accumulator = new LongAccumulator(Long::max, 
+Long.MIN_VALUE);
+        for (int i = 0; i < 100; i++) {
+            sample.newThread("Test thread - " + i, accumulator);
+        }
+        System.out.println(accumulator.longValue());
+    }
+	
+    private void newThread(final String name, final LongAccumulator accumulator)
+ throws Exception {
+        Thread thread = new Thread(() -> {
+            Random random = new Random();
+            int value = random.nextInt(5000);
+            System.out.println(String.format("%s -> %s", Thread.currentThread
+().getName(), value));
+            accumulator.accumulate(value);
+        }, name);
+        thread.start();
+        thread.join();
+    }
+}
+
+当LongAccumulator类的对象上的accumulate方法被调用时，参数中的值会通过Long类的max方法进行比较，
+所得到的结果作为LongAccumulator类的对象的当前值。
+经过多次累积操作之后，最终的结果是所有调用操作中提供的最大值。
+
+ConcurrentHashMap类得到了比较大的更新，添加了很多实用的方法，
+如compute方法用来进行值的计算，merge方法用来进行键值的合并，search方法用来进行查找等。
+这使得ConcurrentHashMap类可以很方便的创建缓存系统。
+

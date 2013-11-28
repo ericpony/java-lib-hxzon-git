@@ -1,0 +1,239 @@
+《On Lisp》-附录： 包(packages)
+
+http://www.ituring.com.cn/article/53785
+
+======
+附录: 包 (packages) . . . . . . . . 263
+
+=========
+包(packages)，是 Common Lisp 把代码组织成模块的方式。
+早期的 Lisp 方言有一张符号表，即 oblist【注1】。
+在这张表里列出了系统中所有已经读取到的符号。
+借助 oblist 里的符号表项，系统得以存取数据，诸如对象的值，以及属性列表等。
+保存在 oblist 里的符号被称为 interned。
+
+【注1】译者注：GNU Emacs 和 XEmacs 使用的是一张名为 obarray 的哈希表。
+
+新一些的 Lisp 方言把 oblist 的概念放到了一个个包里面。
+现在，符号不仅仅是被 intern 了，而是被 intern 在某个包里。
+包之所以支持模块化是因为在一个包里的 intern 的符号只有在其被显式声明为能被其它包访问的时候，
+它才能为外部访问(除非用一些歪门邪道的招数)。
+
+包是一种 Lisp 对象。
+当前包常常被保存在一个名为 \*package\* 的全局变量里面。
+当 Common Lisp 启动时，当前包就是用户包：
+或者叫 user (CLTL1 实现)，或者叫 common-lisp-user (CLTL2 实现)。
+
+包一般用自己的名字相互区别，而这些名字采用的是字符串的形式。
+要知道当前包的包名，可以试试：
+
+> (package-name *package*)
+"COMMON-LISP-USER"
+
+通常，当读入一个符号时，它就被 intern 到当前的包里了。
+要弄清给定符号所 intern 的是哪个包，我们可以用 symbol-package ：
+
+> (symbol-package 'foo)
+#<Package "COMMON-LISP-USER" 4CD15E>
+这个返回值是实际的包对象。
+
+为便于将来使用，我们给 foo 赋一个值：
+> (setq foo 99)
+99
+
+使用 in-package ，我们就可以切换到另一个新的包，若有需要的话这个包会被创建出来【注2】：
+
+【注2】在较早期的 Common Lisp 实现下，请省略掉 :use 参数。
+
+> (in-package 'mine :use 'common-lisp)
+#<Package "MINE" 63390E>
+此时此刻应该会响起诡异的背景音乐，因为我们已经身处另一个世界：在这里 foo 已经不似从前了：
+
+MINE> foo
+>>Error: FOO has no global value.
+
+为什么会这样？因为之前被我们设置成 99 的那个 foo 和现在 mine 里面的这个 foo 是两码事。【注3】
+【注3】有的 Common Lisp 实现会在 toplevel 提示符的前面显示包的名字。这个特性不是必须的，但的确是比较贴心的设计。
+
+要从用户包之外引用原来的这个 foo ，我们必须把包名和两个冒号作为它的前缀：
+
+MINE> common-lisp-user::foo
+99
+
+因此，具有相同打印名称的不同符号得以在不同包中共存。
+这样就可以在名为 common-lisp-user 的包里有一个 foo ，同时在 mine 包里也有一个 foo ，并且它们两个是不一样的符号。
+实际上，这就是 package 的一部分用意所在，即：
+你在为你的函数和变量取名字的同时，就不用担心别人会把一样的名字用在其它东西上。
+现在，就算有重名的情况，重名的符号之间也是互不相干的。
+
+与此同时，包也提供了一种信息隐藏的手段。
+对程序来说，它必须使用名字来引用不同的函数和变量。
+如果你不让一个名字在你的包之外可见的话，那么另一个包中的代码就无法使用或者修改这个名字所引用的对象。
+
+在写程序的时候，把包的名字带上两个冒号做为前缀并不是个好习惯。
+你要是这样做的话，就违背了模块化设计的初衷，而这正是包机制的本意。
+如果你不得不使用双冒号来引用一个符号，这应该就是有人根本就不希望你引用它。
+
+一般来说，你只应该引用那些被 export 了的符号。
+把符号从它所属的包 export 出来，我们就能让这个符号对其它包变得可见。
+要导出一个符号，我们可以调用(你肯定已经猜到了) export ：
+
+MINE> (in-package 'common-lisp-user)
+#<Package "COMMON-LISP-USER" 4CD15E>
+> (export 'bar)
+T
+> (setq bar 5)
+5
+
+现在，如果回到了 mine 包，那么就可以用一个冒号引用 bar ，因为这个名字是外部可见的：
+
+> (in-package 'mine)
+#<Package "MINE" 63390E>
+MINE> common-lisp-user:bar
+5
+如果把 bar import 到 mine 里面，我们就能更进一步，让 mine 能和 user 包共享 bar 这个符号：
+
+MINE> (import 'common-lisp-user:bar)
+T
+MINE> bar
+5
+在导入 bar 之后，我们可以根本不用加任何包的限定符，就能引用它了。
+现在，这两个包共享了同一个符号 -- 再没有一个独立的 mine:bar 了。
+
+万一已经有了一个会怎么样呢？
+在这种情况下，import 调用会导致一个错误，就像下面我们试着 import foo 时造成的错误一样：
+
+MINE> (import 'common-lisp-user::foo)
+>>Error: FOO is already present in MINE.
+
+之前，我们在 mine 里对 foo 进行了一次不成功的求值，这次求值顺带着使得一个名为 foo 的符号被加入了 mine 。
+由于这个符号在全局范围内还没有值，因此产生了一个错误，
+但是输入符号名字的直接后果就是使它被 intern 进了这个包。
+所以，当我们现在想把 foo 引进 mine 的时候，mine 里面已经有一个相同名字的符号了。
+
+通过让一个包使用 (use) 另一个包，我们也能批量的引入符号：
+
+MINE> (use-package 'common-lisp-user)
+T
+
+这样，所有 user package 引出的符号就会自动地被引进到 mine 里面去了。
+(要是 user package 已经引出了 foo 的话，这个函数调用也会出一个错。)
+
+根据 CLTL2，包含内建操作符和变量名字的包被称为 common-lisp 而不是 lisp ，
+因此新一些的包在缺省情况下已不再使用 lisp 包了。
+由于我们通过调用in-package 创建了 mine ，而在这次调用中也 use 了这个包，
+所以所有 Common Lisp 的名字在 mine 中都是可见的：
+
+MINE> #'cons
+#<Compiled-Function CONS 462A3E>
+
+在实际的编程中，你不得不让所有新编写的包使用 common-lisp (或者其他某个含 Lisp 操作符的包)。
+否则你甚至会没办法跳出这个新的包。【注4】
+【注4】译者注：即你不仅没有办法使用cons ，更糟糕的是，你也不能用in-package 切换到其它包。
+
+
+一般来说，在编译后的代码中，不会像刚才这样在顶层进行包的操作。
+更多的时候，这些关于包的函数调用会被包含在源文件中。
+通常，只要把 in-package 和 defpackage 放在源文件的开头就可以了。
+
+(defpackage 宏是 CLTL2 里新引进的，但是有些较老的实现也提供了它。) 
+如果你要编写一个独立的包，下面列出了你可能会放在对应的源文件最开始地方的代码：
+
+(in-package 'my-application :use 'common-lisp)
+(defpackage my-application
+  (:use common-lisp my-utilities)
+  (:nicknames app)
+  (:export win lose draw))
+
+这会使得该文件里所有的代码，或者更准确地说，文件里所有的名字，都纳入了 my-application 这个包。
+
+my-application 同时使用了 common-lisp 和 my-utilities ，
+因此，不用加任何包名作为前缀，所有被引出的符号都可以直接使用。
+
+my-application 本身仅仅引出了三个符号，它们分别是：win、lose 和 draw 。
+由于在调用 in-package 的时候，我们给 my-application 取了一个绰号 app ，
+在其它包里面的代码可以用类似 app:win 的名字来引用这些符号。
+
+像这样的用包来提供的模块化的确有点不自然。
+我们的包里面不是对象，而是一堆名字。
+每个使用 common-lisp 的包都引入了 cons 这个名字，原因在于 common-lisp 包含了一个叫这个名字的函数。
+但是，这样会导致一个名字叫 cons 的变量也在每个使用 common-lisp 的程序里可见。
+这样的事情同样也会在 Common Lisp 的其他名字空间重演。
+
+如果包(package) 这个机制让你头痛，那么这就是一个最主要的原因 -- 包不是基于对象而是基于名字。
+
+和包相关的操作会发生在读取时（read-time），而非运行时。
+这可能会造成一些困扰。我们输入的第二个表达式：
+
+(symbol-package 'foo)
+之所以会返回它返回的那个值是因为：读取这个查询语句的同时，答案就被生成了。
+为了求值这个表达式，Lisp 必须先读入它，这意味着要 intern foo。
+
+再来个例子，看看下面把两个表达式交换顺序的结果，这两个表达式前面曾出现过：
+
+MINE> (in-package 'common-lisp-user)
+#<Package "COMMON-LISP-USER" 4CD15E>
+> (export 'bar)
+
+通常来说，在顶层输入两个表达式的效果等价于把这两个表达式放在一个progn 里面。
+不过这次有些不同。如果我们这样说
+
+MINE> (progn (in-package 'common-lisp-user)
+  (export 'bar))
+>>Error: MINE::BAR is not accessible in COMMON-LISP-USER.
+
+则会得到个错误提示。
+错误的原因在于 progn 表达式在求值之前就已经被 read 处理过了。
+当调用 read 时，当前包还是 mine ，因而 bar 被认为是 mine:bar 。
+运行这个表达式的效果就好像我们想要从 user 包 export 出 mine:bar ，
+而不是从 common-lisp-user export 出 common-lisp-user:bar 一样。
+
+package 被如此定义，使得编写那些把符号当作数据的程序成为一桩麻烦事。
+举个例子，要是像下面那样定义 noise ：
+
+(in-package 'other :use 'common-lisp)
+(defpackage other
+  (:use common-lisp)
+  (:export noise))
+
+(defun noise (animal)
+  (case animal
+    (dog 'woof)
+    (cat 'meow)
+    (pig 'oink)))
+
+这样的话，如果我们从另外一个包调用 noise ，同时传进去的参数是不认识的符号，
+noise 会走到 case 语句的末尾，并返回 nil ：
+
+OTHER> (in-package 'common-lisp-user)
+#<Package "COMMON-LISP-USER" 4CD15E>
+> (other:noise 'pig)
+NIL
+
+这是因为传进去的参数是 common-lisp-user:pig (这没有冒犯阁下的意思)，然而 case 接受 key 是 other:pig 。
+为了让 noise 像我们期望的那样工作，就必须把里面用到的所有六个符号都引出来，再在调用 noise 的包里面引入它们。
+
+在此例中，我们也可以通过使用关键字而不是常规的符号，来绕过这个问题。
+倘若 noise 像下面这样定义:
+
+(defun noise (animal)
+  (case animal
+    (:dog :woof)
+    (:cat :meow)
+    (:pig :oink)))
+的话，我们就能从任意一个包安全地调用这个函数了：
+
+OTHER> (in-package 'common-lisp-user)
+#<Package "COMMON-LISP-USER" 4CD15E>
+> (other:noise :pig)
+:OINK
+
+关键字就像金子：普适而且自身就能表明其价值。
+不论在哪里它们都是可见的，而且它们从不需要被引用。
+
+在编写类似 defanaph ( 16.3 节) 的符号驱动的函数时，基本上应该总是用关键字参数。
+
+包里面有很多地方让人不解。
+这里对这一主题的介绍不过是冰山一角。
+要知道所有的细节，请参考 CLTL2 的第 11 章。
+

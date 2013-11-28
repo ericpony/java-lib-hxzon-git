@@ -1,0 +1,417 @@
+《On Lisp》-第 5 章 函数作为返回值
+
+http://www.ituring.com.cn/article/53356
+
+上一章展示了 Lisp "把函数作为参数传递" 的能力，它开阔了我们进行抽象的思路。我们对函数能做的事情越多，就越能充分利用这些思想方法。如果能定义一种函数，让它产生并返回新的函数，那就可以成倍放大那些以函数作为参数的实用工具的威力。
+
+这一章要介绍的实用工具就被用来操作函数。要是把它们中的多数写成宏，让这些宏来操纵表达式会显得更自然一些，至少在 Common Lisp 里是这样的。在第 15 章会把一层宏加到这些操作符之上。不管怎样，就算最终这些函数仅仅被宏调用，"了解哪些工作能由函数来完成" 这一点也至关重要。
+
+5.1 Common Lisp 的演化
+
+Common Lisp 最初提供了几组互补的函数。remove-if 和 remove-if-not 就是这样的一对。倘若 pred 是一个参数的谓词，那么:
+
+(remove-if-not #'pred lst)
+就和下面语句等价:
+
+(remove-if #'(lambda (x) (not (pred x))) lst)
+只要把其中一个语句的函数参数换一下，就能获得和另一语句完全相同的效果。既然如此，为什么要同时保留两个语句呢?C2 里提供了一个新的函数，它就是为了解决上述问题而生的： complement 需要一个谓词 p 作为参数，它返回一个函数，这个函数的返回值总是和谓词得到的返回值相反。当p 返回真的时候， 它的补（complement） 就返回假，反之亦然。现在我们可以把:
+
+(remove-if-not #'pred lst)
+换成与之等价的:
+
+(remove-if (complement #'pred) lst)
+有了 complement ，就没有什么理由再用那些-if-not 函数了。 事实上， 2（391 页） 提到那些函数现在已经淘汰了。如果它们还在 Common Lisp 里面，那只是为了照顾兼容性。
+
+新的complement 操作符仅是冰山一角： 即一种返回函数的函数。这在很早就是 Scheme 的习惯用法中重要的一部分了。Scheme 是Lisp 家族中第一个能把函数作为词法闭包（lexicalclosures） 的语言，而且正是这一点让"函数作为返回值" 变得有趣起来。
+
+这并不意味着我们不能在动态作用域的Lisp 里返回函数。下面的函数能同时在动态作用域和词法作用域下工作：
+
+(defun joiner (obj)
+ (typecase obj
+  (cons #'append)
+  (number #'+)))
+上面的函数以一个对象作为参数，按照参数的类型，返回相应的函数把这种对象累加起来。通过它，我们可以定义一个多态（polymorphic） 的join 函数，这个函数可以用于一组数字或者列表。
+
+remove-if-not 可能是个例外，它比remove-if 更常用一些。
+
+(defun join (&rest args)
+(apply (joiner (car args)) args))
+然而，"只能返回一个常量函数" 是动态作用域的限制之一。由于这个限制， 我们所无法做到（或者说无法做得好） 的是在运行期构造函数： 尽管joiner 可以返回两个函数之一，但是这两个选择是事先给定的，无法变更。
+
+在第12页，我们见到了另一个用来返回函数的函数，它就依赖于词法作用域：
+
+(defun make-adder (n)
+#'(lambda (x) (+ x n)))
+调用make-adder 后，会得到一个闭包，闭包的行为视当初传入函数的参数值而定：
+
+> (setq add3 (make-adder 3))
+#<Interpreted-Function BF1356>
+> (funcall add3 2)
+5
+在词法作用域下，我们不再仅仅是从一组预先确定的函数中选一个，而是在运行时创造新的闭包。但要是动态作用域的话，这个技术就行不通了。 如果想一想complement 是怎么写的，也可以推知它返回的必定也是一个闭包：
+
+(defun complement (fn)
+#'(lambda (&rest args) (not (apply fn args))))
+complement 返回的函数使用了之前调用complement 时传入的参数值fn。因此，complement 不再只是从几个常量函数里挑一个返回，而是定制了一个函数，让它返回任何函数的反：
+
+> (remove-if (complement #'oddp) '(1 2 3 4 5 6))
+(1 3 5)
+在进行抽象时，把函数作为参数的能力不啻为一个强有力的工具。而能够编写返回函数的函数，让我们可以把这个能力发挥到极致。接下来的几个小节将会展示几个实用工具的例子， 它们都是能返回函数的函数。
+
+5.2 正交性
+
+正交的语言让我们只需运用多种方式对数量有限的操作符加以组合，就能获得强大的表达能力。玩具积木是非常正交的，而套装塑料模型就很难说它是正交的。complement 的主要优点就是它让语言更正交化。在complement 出现之前，Common Lisp 曾有成对的函数，如remove-if 和remove-if-not、subst-if 和subst-if-not ，等等。自从有了complement ，我们可以只用一半数量的函数就完成全部的功能。
+
+同样，setf 宏也增强了Lisp 的正交性。Lisp 的早期方言常会用成对的函数分别实现读数据和写数据的功能。举例来说，对于属性列表（property-list），就用一个函数设置属性，而用另一个函数来查询属性。
+
+在Common Lisp 里面，我们只有后者，即get 。为了加入一个属性，我们把get 和 setf 一同使用：
+
+(setf (get 'ball 'color) 'red)
+我们或许无法让Common Lisp 变得更精简，但是可以作些努力达到差不多的效果，即： 使用这门语言的一个较小的子集。可以定义一些新的操作符，让它们像complement 和setf 那样帮助我们更接近这个目标吗 至少另外还有一种方式让函数成对出现。许多函数都有其破坏性（destructive） 的版本： 像remove-if 和delete-if、reverse 和nreverse、append 和nconc 。定义一个操作符，让它返回一个函数的破坏性版本，这样就可以不直接使用那些破坏性的函数了。
+
+或许在动态作用域里可以写出类似 make-adder 的代码，但是它基本上不会正常工作。由于 的绑定将取决于函数最终被调用时所处的环境，因此我们对这个过程很难有什么控制。
+
+(defvar *!equivs* (make-hash-table))
+
+(defun ! (fn)
+(or (gethash fn *!equivs*) fn))
+
+(defun def! (fn fn!)
+(setf (gethash fn *!equivs*) fn!))
+图5.1： 返回破坏性的等价物
+
+图5.1 中的代码实现了破坏性版本的标记。全局的哈希表!equivs 把函数映射到其对应的破坏性版
+
+本； !返回函数的破坏性版本； 最后，def! 更新和设置它们。之所以用 !（惊叹号） 的原因，是源于Scheme 的一个命名习惯。在Scheme 里面，有副作用的函数名后面都会加上 !。现在，我们一旦定义了
+
+(def! #'remove-if #'delete-if)
+就可以把
+
+(delete-if #'oddp lst)
+取而代之，换成
+
+(funcall (! #'remove-if) #'oddp lst)
+上面的代码中，Common Lisp 有些许尴尬，它模糊了这个思路的良好初衷，要是用Scheme 就明了多了：
+
+((! remove-if) oddp lst)
+除了更强的正交性，!操作符还带来了一系列其它的好处。它让程序更清晰明了，因为我们可以一下子就看出来 （! #'foo）是与foo 对应的破坏性版本。另外，它还让破坏性操作在源代码里总是一目了然。这样的好处在于当我们在找bug 时，会更小心这些地方。
+
+由于函数及其对应的破坏性版本的取舍经常在运行期之前就能确定下来， 因此把!定义成一个宏会是最高效的选择，或者也可以为它提供一个读取宏（readmacro）。
+
+5.3 记住过去
+
+如果某些函数的计算量非常大，而且我们有时会对它们执行相同的调用，这时"记住过去" 就有用了： 就是让函数把所有以往调用的返回值都缓存下来， 以后每次调用时，都先在缓存里找一下，看看返回值是不是以前算过。
+
+(defun memoize (fn)
+(let ((cache (make-hash-table :test #'equal))))
+#'(lambda (&rest args)
+(multiple-value-bind (val win) (gethash args cache)
+(if win
+val
+(setf (gethash args cache)
+(apply fn args))))))
+图5.2： 记忆性的实用工具
+
+图5.2 中展示了一个通用化了的记忆性实用工具。我们传给memoize 一个函数，它就能返回对应的有记忆
+
+的版本 即一个闭包，该闭包含有存储以往调用结果的哈希表。
+
+> (setq slowid (memoize #'(lambda (x) (sleep 5) x)))
+#<Interpreted-Function C38346>
+> (time (funcall slowid 1))
+Elapsed Time = 5.15 seconds
+1
+> (time (funcall slowid 1))
+Elapsed Time = 0.00 seconds
+1
+有了具有记忆的函数，重复的调用就变成哈希表的查找操作。当然，这也带来了每次调用开始时进行查找导致的额外开销，但是既然我们只会把那些计算开销足够大的函数进行记忆化的处理， 那么就可以认为付出这个代价是值得的。
+
+尽管对绝大多数情况来说，这个memoize 实现已经够好了，不过它还是有些局限。它认为只有参数列表equal 的调用才是等同的，这个要求可能对那些有关键字参数的函数过于严格了。而且这个函数仅适用于那些返回单值的函数，因而无法保存多值，更不用说返回了。
+
+5.4 复合函数
+
+函数 的补被记为∼ 。第5.1 节展示了使用闭包可以将∼ 定义为一个Lisp 函数的可能性。另一个常见的函数操作是复合，它被记作◦。如果 和 是两个函数，那么 ◦ 也是函数，并且 ◦ 。同样的，通过使用闭包的方式，也可以把◦ 定义为一个Lisp 函数。
+
+(defun compose (&rest fns)
+(if fns
+(let ((fn1 (car (last fns)))
+(fns (butlast fns)))
+#'(lambda (&rest args)
+(reduce #'funcall fns
+:from-end t
+:initial-value (apply fn1 args))))
+#'identity))
+图5.3： 复合函数的操作符
+
+图5.3 定义了一个名为 compose 的函数，它接受任意数量的函数，并返回它们的复合。比如说
+
+(compose #'list #'1+)
+会返回一个函数，该函数等价于
+
+#'(lambda (x) (list (1+ x)))
+◦ 所有传给compose 作为参数的函数都必须只接受一个参数，不过最后一个函数参数可以例外。它没有这样的限制，不管这个函数接受什么样的参数，都会返回复合后的函数：
+
+> (funcall (compose #'1+ #'find-if) #'oddp '(2 3 4))
+4
+由于not 是一个Lisp 函数，所以complement 是 compose 的特例。它可以这样定义：
+
+(defun complement (pred)
+(compose #'not pred))
+把函数结合在一起使用的方法并不止复合一种。举例来说，我们经常会看到下面这样的表达式
+
+(mapcar #'(lambda (x)
+(if (slave x)
+(owner x)
+(employer x)))
+people)
+也可以定义操作符，借助它来自动地构造这种函数。用图5.4 中定义的fif， 下面的语句一样可以达到这种效果：
+
+(mapcar (fif #'slave #'owner #'employer)
+people)
+
+(defun fif (if then &optional else)
+#'(lambda (x)
+(if (funcall if x)
+(funcall then x)
+(if else (funcall else x)))))
+
+(defun fint (fn &rest fns)
+(if (null fns)
+fn
+(let ((chain (apply #'fint fns)))
+#'(lambda (x)
+(and (funcall fn x) (funcall chain x))))))
+
+(defun fun (fn &rest fns)
+(if (null fns)
+fn
+(let ((chain (apply #'fun fns)))
+#'(lambda (x)
+(or (funcall fn x) (funcall chain x))))))
+图5.4： 更多的函数构造操作符
+
+图5.3 中给出的几种构造函数被用来生成常见的函数类型。其中第二个构造函数是为下面的情形预备的：
+
+(find-if #'(lambda (x)
+(and (signed x) (sealed x) (delivered x)))
+docs)
+作为第二个参数传给find-if 的谓词函数定义了一个由三个谓词确定的交集，这三个谓词将会在这个谓词函数里被调用。fint 的名字取意"functionintersection"， 借助它，可以把代码写成这样：
+
+(find-if (fint #'signed #'sealed #'delivered) docs)
+另外，我们还可以定义类似的操作符，让它返回一组谓词操作的并集。fun 与fint 类似，不过前者用的是or 而非and。
+
+5.5 在cdr 上递归
+
+由于递归函数对于Lisp 程序非常之重要，因此有必要设计一些实用工具来构造它。本节和下一节将会介绍一些函数，它们能构造两种最常用的递归函数。在Common Lisp 里使用这些函数会显得有些不自然。
+
+一旦我们接触到宏的内容，就可以了解如何把这个机制包装得更优雅一些。第15.2 节和 15.3 节将会介绍那些用来生成递归函数的宏。
+
+如果同一个模式在程序里频频出现，这就是一个标志，它意味着这个程序应该用更高层次的抽象改写。
+
+在Lisp 程序里，有什么模式比下面这个函数更常见的呢：
+
+(defun our-length (lst)
+(if (null lst)
+0
+(1+ (our-length (cdr lst)))))
+或者比这个函数更眼熟：
+
+(defun our-every (fn lst)
+(if (null lst)
+t
+(and (funcall fn (car lst))
+(our-every fn (cdr lst)))))
+这两个函数在结构上有颇多共同点。它们两个都递归地在一个列表的cdr 上依次操作，每一步对同一个表达式求值，不过初始条件下除外，初始条件下两个函数都会返回一个特定的值。这种模式在Lisp 程序中屡次出现，使得有经验的程序员能够不假思索地读懂或写出这样的代码。事实上，我们可以从这个例子中迅速吸取教训，即为什么把一个模式封装成新的抽象层的需求迟迟没有出现，其原因就在于习惯成自然。
+
+不管怎么样，它仍然还是一个模式。我们不应再直接手写这些函数，而该转而设计一个新的函数，由它代劳生成函数的工作。图5.5 中的函数构造器名叫lrec （"listrecurser"），它可以满足那些在列表上对其cdr 进行递归操作的绝大多数需要。
+
+(defun lrec (rec &optional base)
+(labels ((self (lst)
+(if (null lst)
+(if (functionp base)
+(funcall base)
+base)
+(funcall rec (car lst)
+#'(lambda ()
+(self (cdr lst)))))))
+#'self))
+图5.5： 用来定义线性列表的递归函数的函数
+
+lrec 的第一个参数必须是一个接受两个参数的函数，一个参数是列表的当前car，另一个参数是个函数，通过调用这个函数，递归得以进行。有了lrec， 可以把our-length 写成：
+
+(lrec #'(lambda (x f) (1+ (funcall f))) 0)
+为了得到列表的长度，我们不需要关心列表中的元素到底是什么，也不会中途停止，因此对象x 的值总是被忽略不用，而函数f 却总是被调用。不过我们需要同时利用这两个可能性才能重写our-every。举例来说， 可以用oddp：
+
+(lrec #'(lambda (x f) (and (oddp x) (funcall f))) t)
+在lrec 的定义里使用了labels 来生成一个局部的递归函数，函数名叫 self。如果要执行递归，会传两个参数给rec 函数，两个参数分别是当前列表的car，和一个含有递归调用的函数。以our-every 为例，是否继续递归由and 决定。如果and 的第一个参数返回的是假，那么就此中止。换句话说，传到递归结构里面的不能是个值，而只能是函数。这样才能获得返回值 （如果有需要的话）。
+
+图5.6 展示了一些用lrec 定义的 Common Lisp 的内建函数。⁴ 用lrec 定义的函数，其效率并不一定会最理想。事实上，用lrec 和其它本章将要定义的其它递归函数生成器的方法来实现函数的办法，是与尾递归的思想背道而驰的。鉴于这个原因，这些生成器最适合在程序的最初版本里使用，或者用在那些速度不太关键的地方。
+
+在一个使用较广的Common Lisp 实现中，functionp 在碰到t 和nil 时都会返回真。在这个实现下，不管把这两个值中哪一个作为第二个参数传给lrec 都无法使程序正常工作。
+
+⁴在一些实现里，如果要显示这些函数，你必须事先把 print-circle 设置成t 。
+
+; copy-list
+(lrec #'(lambda (x f) (cons x (funcall f))))
+
+; remove-duplicates
+(lrec #'(lambda (x f) (adjoin x (funcall f))))
+
+; find-if,for some function fn
+(lrec #'(lambda (x f) (if (fn x) x (funcall f))))
+
+; some,for some function fn
+(lrec #'(lambda (x f) (or (fn x) (funcall f))))
+图5.6： 用lrec 生成的函数
+
+5.6 在子树上递归
+
+在Lisp 程序里还有另外一种常用的递归形式： 即在子树上进行递归。当你开始使用嵌套列表，而且希望递归地访问列表的car 和cdr 之时， 这种递归形式就出现了。
+
+a
+
+b
+
+a nil
+
+b c
+
+a b c nil d nil
+
+(a) (a b) (b) (a b c) (c) (a b (c d))
+图5.7： 用列表表示的树
+
+Lisp 的列表是一种全能型的数据结构。举例来说，列表能表示序列，集合，映射，数组， 以及树。目前有几种不同的方法来用列表表示树。最常用的一种是把列表看作二叉树，二叉树的左子树是car，右子树则是cdr。
+
+（实际上，这往往就是列表的内部实现。） 图5.7 中有三个例子，分别展示了列表以及它们所表示的树。其中，树上的每个内部节点都对应着相应列表的点对表示中的一个点，因而把列表看成下面的形式能更容易理解这种的树型结构：
+
+(a b c) = (a . (b . (c . nil)))
+(a b (c d)) = (a . (b . ((c . (d . nil)) . nil)))
+任意列表都可以看成一颗二叉树。同样的，Common Lisp 里也有其它一些成对的函数，它们之间的区别
+
+与copy-list 和copy-tree 两者的区别类似。前者把列表当作一个序列来处理，即如果碰到列表中含有子列表的情况，那么子列表作为序列里的元素，是不会被复制的：
+
+> (setq x '(a b)
+listx (list x 1))
+((A B) 1)
+> (eq x (car (copy-list listx)))
+T
+与之相对，copy-tree 会把列表当成树来拷贝，即把子列表视为子树， 所以子列表也一样会被复制：
+
+> (eq x (car (copy-tree listx)))
+NIL
+我们可以自己定义一个copy-tree ，见下面的代码：
+
+(defun our-copy-tree (tree)
+(if (atom tree)
+tree
+(cons (our-copy-tree (car tree))
+(if (cdr tree) (our-copy-tree (cdr tree))))))
+可以看出，上面的定义是一种常用模式的特例。（接下来，有些函数的写法会稍显不自然，这是为了让这个模式变得更明显一些。） 不妨看看下面的例子，它能够统计出一棵树里叶子节点的数量：
+
+(defun count-leaves (tree)
+(if (atom tree)
+1
+(1+ (count-leaves (car tree))
+(or (if (cdr tree) (count-leaves (cdr tree)))
+1))))
+一棵树上的叶子数会多于当它被表示成列表的形式时列表中原子的数量。
+
+> (count-leaves '((a b (c d)) (e) f))
+10
+而树用点对的形式来表示时，你可以注意到树上每个叶子都对应一个原子。在点对表示中，（（a b （c d）） （e） f） 中有四个nil 是在列表表示中看不到的（每对括弧都有一个），所以count-leaves 的返回值是10。
+
+在上一章中，我们定义了几个用来操作树的实用工具。比如说，flatten （第32 页） 接受一颗树，并返回一个含有树上所有原子的列表。换句话说，如果你传给flatten 一个嵌套列表，你所得到的返回列表和前面的列表形式相同，不过除了最外面那对之外，其它的括弧都不见了：
+
+> (flatten '((a b (c d)) (e) f ()))
+(A B C D E F)
+这个函数也可以像下面那样定义（尽管效率有点低）：
+
+(defun flatten (tree)
+(if (atom tree)
+(mklist tree)
+(nconc (flatten (car tree))
+(if (cdr tree) (flatten (cdr tree))))))
+最后，看一下rfind-if ，它是find-if 的递归版本。rfind-if 不仅能用在线性的列表上，而且对树也一样适用：
+
+(defun rfind-if (fn tree)
+(if (atom tree)
+(and (funcall fn tree) tree)
+(or (rfind-if fn (car tree))
+(if (cdr tree) (rfind-if fn (cdr tree))))))
+为了让find-if 的应用范围更广，使之能用于树结构，必须在两者中择一： 让它仅仅搜索叶子节点，或是搜◦ 索整个子树。我们的rfind-if 选择了前者，因而调用方就可以认为：作为第一个参数传入的函数只会用在原子上：
+
+> (rfind-if (fint #'numberp #'oddp) '(2 (3 4) 5))
+3
+copy-tree ，count-leaves ，flatten 和 rfind-if ，这四个函数的形式竟然如此相似。实际上，它们都是某个原型函数的特例，这个原型函数被用来进行子树上的递归操作。和之前对待cdr 上递归的态度一样，我们不希望让这个原型默默无闻地埋没在代码当中， 相反，我们要写一个函数来产生这种原型函数的实例。
+
+要得到原型本身，让我们先研究一下这些函数，找出哪些部分是不属于模式的。从根本上来说，our-copy-tree 有两种情形：
+
+基本的情况下，函数直接把参数作为返回值返回
+
+在递归的时候，函数对左子树（car） 的递归结果和右子树（cdr） 的递归结果使用cons
+
+因此，我们肯定可以通过调用一个有两个参数的构造函数，来表示our-copy-tree：
+
+(ttrav #'cons #'identity)
+图5.8 中为ttrav （"treetraverser"） 的一种实现。在递归的情况下，我们传入的不是一个值，而是两个，一个
+
+对应左子树，一个对应右子树。如果base 参数是个函数，那么将把当前叶子节点作为参数传给它。在对线性列表进行递归操作时，基本情况的返回值总是nil ，不过在树结构的递归操作中，基本情况的值有可能是个更有意思的值，而且我们也许会需要用到它。
+
+在ttrav 的帮助下，我们可以重新定义除rfind-if 之外前面提到的所有函数。（这些函数在图5.9 中可以找到。） 要定义rfind-if ，需要更通用的树结构递归操作函数的生成器， 这种函数生成器能让我们控制递归调用发生的时机，以及是否继续递归。我们把一个函数作为传给ttrav 的第一个参数，这个函数的参数将是递归调用的返回值。对于通常的情形， 我们会改用另一个函数，让它接受两个闭包，闭包分别自行表示调用操作。这样，就可以编写那些能自主控制递归过程的递归函数了。
+
+(defun ttrav (rec &optional (base #'identity))
+(labels ((self (tree)
+(if (atom tree)
+(if (functionp base)
+(funcall base tree)
+base)
+(funcall rec (self (car tree))
+(if (cdr tree)
+(self (cdr tree)))))))
+#'self))
+图5.8： 为在树上进行递归操作而设计的函数
+
+; our-copy-tree
+(ttrav #'cons)
+
+; count-leaves
+(ttrav #'(lambda (l r) (+ l (or r 1))) 1)
+
+; flatten
+(ttrav #'nconc #'mklist)
+图5.9： 用ttrav 表示的函数
+
+用ttrav 实现的函数通常会遍历整颗树。这样做对于像 count-leaves 或者flatten 这样的函数是没有问题的， 它们不管如何都会遍历全树。然而，我们需要rfind-if 一发现它所要找的元素就停止遍历。这个函数必须交给更通用的trec 来生成， 见图5.10。trec 的第二个参数应当是一个具有三个参数的函数，三个参数分别是： 当前的对象，以及两个递归调用。后两个参数将是用来表示对左子树和右子树进行递归的两个闭包。使用trec 我们可以这样定义flatten：
+
+(defun trec (rec &optional (base #'identiy))
+(labels
+((self (tree)
+(if (atom tree)
+(if (functionp base)
+(funcall base tree)
+base)
+(funcall rec tree
+#'(lambda ()
+(self (car tree)))
+#'(lambda ()
+(if (cdr tree)
+(self (cdr tree))))))))
+#'self))
+图5.10： 为在树上进行递归操作而设计的函数
+
+(trec #'(lambda (o l r) (nconc (funcall l) (funcall r)))
+现在，我们同样可以把 rfind-if 写成这样（下面的例子用了 oddp）：
+
+(trec #'(lambda (o l r) (or (funcall l) (funcall r)))
+#'(lambda (tree) (and (oddp tree) tree)))
+5.7 何时构造函数
+
+很不幸，如果用构造函数，而非 sharp-quoted 的 lambda 表达式来表示函数会在运行时让程序做一些不必要的工作。虽然sharp-quoted 的--表达式是一个常量，但是对构造函数的调用将会在运行时求值。如果你真的必须在运行时执行这个调用，可能使用构造函数并非上策。不过，至少有的时候我们可以在事前就调用这个构造函数。通过使用#. ，即 sharp-dot 读取宏，我们可以让函数在读取期（read-time） 就被构造出来。
+
+假设compose 和它的参数在下面的表达式被读取时已经被定义了，那么我们可以这样写，举例如下：
+
+(find-if #.(compose #'oddp #'truncate) lst)
+这样做的话，reader 就会对 compose 的调用进行求值，求值得到的函数则被作为常量安插在我们的代码之中。由于oddp 和truncate 两者都是内置函数，所以在读取时对compose 进行估值可以被认为是安全可行的，当然，前提是那个时候compose 自己已经加载了。
+
+一般而言，由宏来完成函数复合或者合并，既简单容易，又提高了程序的性能。这一点对函数拥有具有单独名字空间的 Common Lisp 来说尤其如此。在介绍了宏的相关知识后，我们会在第15章故地重游，再次回到这一章中曾走到过的大多数山山水水，所不同的是，到那时候你会骑上更纯种的宝马，配上更奢华的鞍具。

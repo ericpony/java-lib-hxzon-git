@@ -1,0 +1,572 @@
+《On Lisp》-第 4 章 实用函数
+
+http://www.ituring.com.cn/article/53355
+
+
+Common Lisp 操作符分为三类：可自定义的函数和宏，以及不能自定义的特殊形式 （specialform）。本章将讲述用函数来扩展 Lisp 的技术。但这里的 "技术" 和通常的含义不太一样。关于这些函数，重要的不是知道怎样写，而是要知道它们从何而来。编写 Lisp 扩展所使用的技术和你编写其他任何 Lisp 函数所使用的技术大同小异。编写 Lisp 扩展的难点并不在于代码怎么写，而在于决定写什么。
+
+4.1 实用工具的诞生
+
+自底向上程序设计，简单说，就是程序员满腹牢骚，"到底是谁把我的 Lisp 设计成这个模样"。你一边在编写程序，同时也在为 Lisp 增加那些可以让你程序更容易编写的新操作符。这些新操作符被称为实用工具。
+
+"实用工具" 这一术语并无明确的定义。有那么一段代码，如果把它看成独立的程序，感觉小了点，要是把它作为特定程序的一部分的话，这段代码又太通用了，这时就可以称之为实用工具。举例来说，数据库不能称为实用工具，但是对列表进行单一操作的函数就可以。大多数实用工具和 Lisp 已有的函数和宏很相似。事实上，许多 Common Lisp 内置的操作符就源自实用工具。用于收集列表中所有满足条件元素的 remove-if-not 函数，在它成为 Common Lisp 的一部分以前，就被程序员们私下里各自定义了多年。
+
+学习编写实用工具与其说是学习编写的技术，不如说是养成编写实用工具的习惯。自底向上程序设计意味着在编写程序的同时，也在设计一门编程语言。为了做好这一点，你必须培养出一种能看出程序中缺少何种操作符的洞察力。你必须能够在看到一个程序时说， "啊，其实你真正的意思是这个。"
+
+举个例子，假设 nicknames 是这样一个函数， 它接受一个名字，然后构造出一个列表，列表由这个名字的所有昵称组成。有了这个函数，我们怎样收集一个名字列表对应的所有昵称呢? Lisp 的初学者可能会写出类似的函数：
+
+(defun all-nicknames (names)
+ (if (null names)
+  nil
+  (nconc (nicknames (car names))
+   (all-nicknames (cdr names)))))
+而更有经验的 Lisp 程序员可能一看到这样的函数就会说 "啊，其实你真正想要的是 mapcan"。 然后，不再被迫定义并调用一个新函数来找出一组人的所有昵称，现在只要一个表达式就够了：
+
+(mapcan #'nicknames people)
+定义 all-nicknames 完全是在重复地发明轮子。它的问题还不只于此： 它同时也葬送了一个机会： 本可以用通用操作符来直接完成某件事，却使用了专用的函数来实现它。
+
+对这个例子来说，操作符 mapcan 是现成的。任何知道 mapcan 的人在看到 all-nicknames 时都会觉得有点不太舒服。要想在自底向上程序设计方面做得好，就要在缺少的操作符还没有写出来的时候，同样觉得不舒服。你必须能够在说出 "你真正想要的是 x" 的同时，知道 x 应该是什么。
+
+Lisp 编程的要求之一，就是一旦有需要，就应该构思出新的实用工具。本章的目的就是揭示这些工具是如何从无到有的。假设 towns 是一个附近城镇的列表,按从近到远排序，bookshops 函数返回一个城市中所有书店的列表。如果想要查找最近的一个有书店的城市，以及该城市里的书店,我们可能一开始会这样做：
+
+(let ((town (find-if #'bookshops towns)))
+ (values town (bookshops town)))
+但是这样有点不大合适： 当 find-if 找到一个 bookshops ，返回非空元素时， 这个值被直接丢掉了，然后马上又要重新算一次。如果 bookshops 是一个耗时的函数调用， 那么这个用法将是既丑陋又低效的。为了避免做无用功，我们用下面的函数代替它：
+
+(defun find-books (towns)
+ (if (null towns)
+  nil
+  (let ((shops (bookshops (car towns))))
+   (if shops
+(values (car towns) shops)
+(find-books (cdr towns))))))
+这样，调用 (find-books towns) 至少能得到我们想要的结果，并且免去了不必要的计算。但是别急，我们会不会在以后再做一次类似的搜索呢？这里我们真正想要的是一个实用工具， 它集成了 find-if 和 some 的功能，并且能返回符合要求的元素和判断函数的返回值。这样的一个实用工具可能被定义成：
+
+(defun find2 (fn lst)
+ (if (null lst)
+  nil
+  (let ((val (funcall fn (car lst))))
+   (if val
+(values (car lst) val)
+(find2 fn (cdr lst))))))
+注意到 find-books 和find2 之间的相似程度。的确， 后者可以看作前者提炼后的结果。现在，借助这个新的实用工具，我们就可以用单个表达式达到最初的目标了：
+
+(find2 #'bookshops towns)
+Lisp 编程有一个独一无二的特征，就是函数在作为参数时扮演了一个重要的角色。这也是 Lisp 被广泛采纳用于自底向上程序设计的部分原因。当你能把一个函数的形骸作为函数型参数传进函数时，你就可以更轻易地从这个函数中抽象出它的神髓。
+
+程序设计的入门课程从一开始就教授如何通过这种抽象来减少重复劳动。前几课的内容之一就是： 切忌把程序的行为写死在代码里面。与其定义两个函数，它们几乎完成相同的工作，但其中只有一两个常量不一样，不如定义成一个函数然后把那些常量以参数的形式传给它。在 Lisp 里可以走得更远一些，因为我们可以把整个函数都作为参数传递。在前两个例子里，我们都从一个专用的函数走向了带有函数型参数的更为通用的函数。虽然在第一个例子里我们用的是预定义的 mapcan ，第二个例子里则写了一个新的实用工具 find2 ，但它们遵循的基本原则是一样的： 与其将通用的和专用的混在一起，不如定义一个通用的然后把专用的部分作为参数。
+
+如果慎重使用这个原则，就会得到显然更优雅的程序。它不是驱动自底向上程序设计的唯一方法，但却是主要的一个。本章定义的32 个实用工具里，有18个带有函数型参数。
+
+4.2 投资抽象
+
+如果说简洁是智慧的灵魂，那么它和效率也同是优秀软件的本质特征。编写和维护一个程序的开销与其长 度成正比。同等条件下，程序越短越好。
+
+从这一角度来看，编写实用工具可以被视为一种投资。通过把 find-books 替换成 find2 这个实用工具， 最后得到的程序行数仍然是那么多。但从某种角度来看我们确实缩短了程序， 因为实用工具的长度可以不用算在当前这个程序的帐上。
+
+把对 Lisp 的扩展看作资本支出并不只是会计上的手段。实用工具可以放在单独的文件里；它们既不会在我们编写程序时分散我们的精力，也不会在事后我们修改遗留代码时被牵连进去。
+
+然而，作为一项投资，实用工具还是需要额外的关照。尤其要紧的是它们的质量必须过关。由于它们要被多次使用，所以任何不正确或者低效率之处都将会成倍地偿还。除此之外，还要注意它们的设计： 一个新的实用工具必须为通用场合而作，而不是仅仅着眼于手头的问题。最后，和任何其他资本支出一样， 我们不能急于求成。如果你考虑创造一些新操作符作为程序开发的副产品，但又不敢确定以后在其他场合还能用到它们， 那就先做出来，但只是把它和使用到它的特定程序放在一起。等以后如果在其他程序里也用到这些操作符的时候， 就可以把它们从子程序提升到实用工具的层面，然后将它们通用化。
+
+find2 这个实用工具看来是一次不错的投资。投入7 行代码的本钱，我们立即得到了7 行收益。这一实用工具在首次使用时就已收回成本了。Guy Steele 写道，编程语言应该 "顺应我们追求简洁的自然倾向：" ……我们倾向于相信一种编程构造产生的开销与它所导致的编程者的不适程度成正比 （我这里所说的"相信" 指的是下意识的倾向而非有意的好恶）。确实，对于语言设计者来说，理应把这个心理学原则熟记于心。我们认为加法的成本较低，部分原因是由于我们只要用一个字符 "+" ◦
+
+就可以表示它。即使一种编程构造开销较大，如果我们写代码的时候能比其他更便宜的方法省一半力气的话，也会更喜欢用它。
+
+在任何语言里，除非允许用新的实用工具来表达语言本身，否则这种 "对简洁代码的倾向性" 将引起麻烦。
+
+最简短的表达方式很少是最高效的。如果我们想知道一个列表是否比另一个列表更长，原始的 Lisp 将诱使我们写出
+
+(> (length x) (length y))
+如果我们想把一个函数映射到几个列表上，可能同样会有将这些列表先连接起来的想法：
+
+(mapcar fn (append x y z))
+这些例子说明编写实用工具对于某些情形尤为重要，否则，稍不注意就会误入低效率的歧途。一门语言，一旦装备了趁手好用的实用工具，它将会引领我们写出更抽象的程序。如果这些实用工具的实现精巧合理， 它们更会促使我们写出更加高效的实用工具。
+
+一组实用工具集无疑会使整个编程工作更容易。但它们还有更重要的作用： 让你写出更好的程序。厨师看到对味的食材会忍不住动手烹饪，文人骚客也一样，他们有了合适的题材就会文思如泉涌。这就是为何艺术家们喜欢在他们的工作室里放很多工具和材料。他们知道如果手头有了需要的东西，创作冲动就会更强。同样的现象也出现在自底向上编写的程序中。一旦写好了一个新的实用工具，你可能发现对它的使用往往超乎预想。
+
+接下来的章节将介绍几类实用函数。它们远不能涵盖你可以加入到 Lisp 的全部函数类型。然而，这里作为示例给出的所有实用工具都已经在实践中充分地证明了它们的存在价值。
+
+4.3 列表上的操作
+
+列表最初曾是 Lisp 主要的数据结构。事实上，"Lisp" 这个名字就来自 "LIStProcessing（列表处理）"。不过， 请不要被这个故事误导了。 Lisp 跟列表处理之间的关系并不比 Polo 衬衣和马球（polo）之间的关系更亲近。
+
+一个高度优化的 Common Lisp 程序里可能根本就没有列表的踪影。
+
+尽管如此，至少在编译期它们还是列表。最专业的程序，在运行期很少使用列表， 相反可能会在编译期生成宏展开式时大量使用列表。所以尽管列表的角色在现代 Lisp 方言里被淡化了，但是针对列表的各种操作仍然是 Lisp 程序的重要组成部分。
+
+代码 4.1 和 4.2 里包括了一些构造和检查列表的函数。那些在图4.1 中给出的都是些值得定义的最小实用工具。为了满足效率的需要，应该把它们全部声明成 inline。（见17页）
+
+第一个函数是 last1，它返回列表的最后一个元素。内置的 last 函数其实返回的是列表的最后一个cons， 而非最后一个元素。多数时候，人们都是通过 （car （last ...）） 的方式来得到其最后一个元素的。是否有必要为这种情况写一个新的实用工具呢 是的， 如果它可以有效地替代一个内置操作符，那么答案就是肯定的。
+
+注意到 last1 没有任何错误检查。一般而言，本书中定义的代码都将不做任何错误检查。部分原因只是为了使这些示例代码更加清晰。但是在相对短小的实用工具里不做任何错误检查也合情合理。如果我们试一下这个：
+
+;; 代码 4.1： 操作列表的一些小函数
+(proclaim '(inline last1 single append1 conc1 mklist))
+
+(defun last1 (lst)
+ (car (last lst)))
+
+(defun single (lst)
+ (and (consp lst) (not (cdr lst))))
+
+(defun append1 (lst obj)
+ (append lst (list obj)))
+
+(defun conc1 (lst obj)
+ (nconc lst (list obj)))
+
+(defun mklist (obj)
+ (if (listp obj) obj (list obj)))
+
+
+;; 代码 4.2： 操作列表的一些较大函数
+(defun longer (x y)
+ (labels ((compare (x y)
+       (and (consp x)
+        (or (null y)
+         (compare (cdr x) (cdr y))))))
+  (if (and (listp x) (listp y))
+   (compare x y)
+   (> (length x) (length y)))))
+
+(defun filter (fn lst)
+ (let ((acc nil))
+  (dolist (x lst)
+   (let ((val (funcall fn x)))
+(if val (push val acc))))
+  (nreverse acc)))
+
+(defun group (source n)
+ (if (zerop n) (error "zero length"))
+ (labels ((rec (source acc)
+   (let ((rest (nthcdr n source)))
+    (if (consp rest)
+     (rec rest (cons (subseq source 0 n) acc))
+     (nreverse (cons source acc))))))
+  (if source (rec source nil) nil)))
+
+
+> (last1 "blub")
+>>Error: "blub" is not a list.
+Broken at LAST...
+这一错误将被 last 本身捕捉到。当实用工具规模很小时，它们从开始传递的位置开始形成的抽象层很薄。
+
+正如可以看透的薄冰那样，人们可以一眼看清像 last1 这种实用工具，从而理解从它们底层抛出的错误。
+
+single 函数判断某个东西是否为单元素的列表。Lisp 程序经常需要做这种测试。在一开始实现的时候， 可能会把英语直接翻译过来：
+
+(= (length lst) 1)
+如果写成这个样子，测试操作将会极其低效。其实只要一看完列表的第一个元素，就知道所有我们想知道的事情了。
+
+接下来是 append1 和nconc1 。两个都是在列表结尾处追加一个新元素，只不过后者是破坏性的。这些函数虽然小，但是很常用，所以还是应该定义的。而且在过去的 Lisp 方言里，确实也预定义了append1。
+
+然后是 mklist ，它（至少） 在 Interlisp 里是已经预定义了的。其目的是确保某个东西是列表。很多 Lisp 函数被写成要么返回一个单一的值，要么返回一个由多个值组成的列表。假设lookup 就是这样的函数，同时，data 是一个列表，我们把这个函数依次应用于data 中的所有元素，每次函数都会返回相应的结果，最后要把得到的结果收集在一起。可以这样写：
+
+(mapcan #'(lambda (d) (mklist (lookup d)))
+  data)
+图4.2 有一些更大的列表实用工具的例子。第一个是longer ，不管是从效率，还是从抽象程度上来看，它都可圈可点。它比较两个列表，只有在前一个列表更长的时候才返回真。当比较两个列表的长度时，很容易就直接这样写：
+
+(> (length x) (length y))
+这样的做法之所以低效，是因为它让程序从头到尾遍历两个列表。如果一个列表的长度远远超过另一个， 那么在超出较短列表长度上的进行的所有遍历操作都将是徒劳。像longer 那样做并且并行地遍历两个列表会快一些。
+
+嵌在 longer 里面的是个递归函数，它用于比较两个列表长度。因为longer 是用来比较长度的，所以只要能用length 判断长度的对象，它都能处理。但是并行比较长度的办法只适用于列表，所以这个内部函数只有当两个参数都是列表时才可以调用。
+
+下一个函数是 filter，它和 some 的关系类似于 remove-if-not 和 find-if 之间的关系。内置的 remove-if-not 的返回值和这样操作的结果一样： 即把给定列表的所有 cdr 依次传给 find-if ，同时另一个参数一直用同一个函数，这样得到的所有返回值串起来就是 remove-if-not 的返回值。与之相应，filter 返回的列表由 some 依次作用在列表 cdr 上的返回值构成：
+
+> (filter #'(lambda (x) (if (numberp x) (1+ x)))
+  '(a 1 2 b 3 c d 4))
+(2 3 4 5)
+你传给 filter 一个函数和一个列表，如果这个函数作用在列表元素上返回的值不为空，就把这样的返回值收集起来，构成列表，把它作为 filter 自己的返回值。
+
+注意到 filter 使用了一个累加器，它的工作方式和第 2.8 节描述的尾递归函数一样。实际上，编写尾递归函数的目的就是让编译器能够生成形如filter 那样的代码。对于 filter 来说，这种直接的迭代定义比尾递归的形式来得简单。对于列表的聚积操作来说， filter 定义中的 push 和 nreverse 组合是标准的 Lisp 用法。
+
+示例代码 4.2 中的最后一个函数用来将列表分组成子列表。你给 group 一个列表 和一个数字 ，那它将返回一个新列表，由列表 的元素按长度为 的子列表组成。最后剩余的元素放在最后一个子列表里。这样如果我们给出2 作为第二个参数，我们就得到一个关联表（asso-list）：
+
+> (group '(a b c d e f g) 2)
+((A B) (C D) (E F) (G))
+为了把 group 写成尾递归的（见第2.8 节），这个函数编得有些拐弯抹角。快速原型开发的基本原理可以用
+
+在整个程序的开发上，但它对于单个函数的编写也一样适用。在写像flatten 这样的函数时，从最简单的可能实现方式开始也许不失为上策。然后，一旦这个最简版本可用了，如果有必要的话，你就可以用更有效率的迭代或者尾递归版本来代替它。如果最早的版本足够短小，可以把它以注释的形式留下来用于表述它的复杂替代者的行为。（group 和图 4.1， 4.3 中其他函数的简化版本可参见书后第268 页的附注。）
+
+group 定义的与众不同之处在于它至少检查了一种错误： 如果第二个参数为 0 ，那么这个函数就会陷入无休止的递归。
+
+从某种意义上说，本书的示例也遵循了通常的 Lisp 实践经验： 使章节之间彼此不相互依赖，示例代码尽可能用原始 Lisp 编写。但考虑到在定义宏的时候，group 函数会非常有用，因而它会是个例外，这个函数将再次出现在后续章节的某些地方。
+
+(defun flatten (x)
+ (labels ((rec (x acc)
+       (cond ((null x) acc)
+        ((atom x) (cons x acc))
+        (t (rec (car x) (rec (cdr x) acc))))))
+  (rec x nil)))
+
+(defun prune (test tree)
+ (labels ((rec (tree acc)
+       (cond ((null tree) (nreverse acc))
+        ((consp (car tree))
+         (rec (cdr tree)
+          (cons (rec (car tree) nil) acc)))
+        (t (rec (cdr tree)
+            (if (funcall test (car tree))
+             acc
+             (cons (car tree) acc)))))))
+  (rec tree nil)))
+图4.3： 使用双递归的列表实用工具
+
+图4.2 中的所有函数都是作用在列表的最上层（top–level） 结构上。图 4.3 给出了两个下降到嵌套列表里的函数示例。前一个flatten ，也是Interlisp 预定义的。它返回由一个列表中的所有原子（atom），或者说是元素的元素所组成的列表，即：
+
+> (flatten '(a (b c) ((d e) f)))
+(A B C D E F)
+图4.3 中的另一个函数是 prune ，它对remove-if 的意义就相当于copy-tree 之于copy-list。也就是说，它会向下递归到子列表里：
+
+> (prune #'evenp '(1 2 (3 (4 5) 6) 7 8 (9)))
+(1 (3 (5)) 7 (9))
+所有函数返回值为真的叶子都被删掉了。
+
+4.4 搜索
+
+本节给出一些用于搜索列表的函数示例。尽管 Common Lisp 已经提供了丰富的内置函数可以完成同样的功能， 但对于某些任务来说光靠这些函数仍然有些捉襟见肘 或者说它们至少无法高效地完成功能。我们在第 27 页里虚构的案例说明了这一点。图4.4 中定义的第一个实用工具 find2 ，就是我们为了解决这个问题而做的尝试。
+
+下个实用工具是 before ，其目的和 find2 类似。它告诉你在一个列表中的对象是否在另一个对象的前面：
+
+> (before 'b 'd '(a b c d))
+(B C D)
+这个问题非常容易，用原始 Lisp 可以草草写成：
+
+(< (position 'b '(a b c d)) (position 'd '(a b c d)))
+(defun find2 (fn lst)
+(if (null lst)
+nil
+(let ((val (funcall fn (car lst))))
+(if val
+(values (car lst) val)
+(find2 fn (cdr lst))))))
+
+(defun before (x y lst &key (test #'eql))
+(and lst
+(let ((first (car lst)))
+(cond ((funcall test y first) nil)
+((funcall test x first) lst)
+(t (before x y (cdr lst) :test test))))))
+
+(defun after (x y lst &key (test #'eql))
+(let ((rest (before y x lst :test test)))
+(and rest (member x rest :test test))))
+
+(defun duplicate (obj lst &key (test #'eql))
+(member obj (cdr (member obj lst :test test))
+:test test))
+
+(defun split-if (fn lst)
+ (let ((acc nil))
+  (do ((src lst (cdr src)))
+   ((or (null src) (funcall fn (car src)))
+(values (nreverse acc) src))
+   (push (car src) acc))))
+图4.4： 搜索列表的函数
+
+但是后面这句话既低效又容易错： 效率低是因为我们不需要把两个对象都找到， 只需找到前一个对象即可；
+
+而容易出错是因为，如果两个对象中的任何一个不在列表里，那么position 将会返回nil ，而后者会成为< 的参数。使用before 可以同时解决这两个问题。
+
+由于before 和测试成员关系的本质很相像，所以在定义它的时候，有意模仿了内置的member 函数。就像member ，它带有一个可选的test 参数，其缺省值为eql。同时，它不再简单地返回一个t ，而是试图返回可能有用的信息： 以作为第一个参数给出的对象为首的cdr。
+
+注意到，如果before 在碰到第二个参数之前，就遇到了第一个参数，那么这个函数会直接返回真。这样的话，倘若列表中根本就不存在第二个参数，它同样也会返回真：
+
+> (before 'a 'b '(a))
+(A)
+通过调用after 我们可以做更为细致的测试，要求两个参数都出现在列表里：
+
+> (after 'a 'b '(b a d))
+(A D)
+> (after 'a 'b '(a))
+NIL
+如果 （member ） 在列表 里找到了 ，它会同时返回列表 中以 开头的那个cdr。这一返回值可以被用来，例如，找出列表中的重复元素。如果 在列表 中重复出现，那么用member 就能在返回列表的cdr 中找到它。这一句法被包含在下一个实用工具中，duplicate：
+
+> (duplicate 'a '(a b c a d))
+(A D)
+以相同的思路，可以依法炮制其他用来判断是否重复的实用工具。
+
+很多挑剔的语言设计者为 Common Lisp 使用 nil 同时代表逻辑假和空列表感到不可思议。这有时确实会带来麻烦（见132 页）， 但对于像duplicate 这样的函数来说则非常方便。至于判断元素是否属于一个序列（sequence） 的那些函数，用空序列来表示否定的结果还是比较合理的。
+
+图4.4 的最后一个函数也是 member 的某种泛化。不同之处在于 member 先搜索想要找的元素，然后返回从找到元素开始的列表的 cdr，而 split-if 把原列表的两个部分都返回了。该实用工具主要用于已经按照某种规则排好序的列表：
+
+> (split-if #'(lambda (x) (> x 4))
+'(1 2 3 4 5 6 7 8 9 10))
+(1 2 3 4)
+(5 6 7 8 9 10)
+
+(defun most (fn lst)
+(if (null lst)
+(values nil nil)
+(let* ((wins (car lst))
+(max (funcall fn wins)))
+(dolist (obj (cdr lst))
+(let ((score (funcall fn obj)))
+(when (> score max)
+(setq wins obj
+max score))))
+(values wins max))))
+
+(defun best (fn lst)
+(if (null lst)
+nil
+(let ((wins (car lst)))
+(dolist (obj (cdr lst))
+(if (funcall fn obj wins)
+(setq wins obj)))
+wins)))
+
+(defun mostn (fn lst)
+(if (null lst)
+(values nil nil)
+(let ((result (list (car lst)))
+(max (funcall fn (car lst))))
+(dolist (obj (cdr lst))
+(let ((score (funcall fn obj)))
+(cond ((> score max)
+(setq max score
+result (list obj)))
+((= score max)
+(push obj result)))))
+(values (nreverse result) max))))
+图4.5： 带有元素比较的搜索函数
+
+图4.5 中是另一种类型的搜索函数： 它们在列表元素之间进行比较。第一个函数是 most ，它每次查看一个元素。most 接受一个列表和一个用来打分的函数，其返回值是列表中分数最高的元素。分数相等的时候， 排在前面的元素优先。
+
+> (most #'length '((a b) (a b c) (a) (e f g)))
+(A B C)
+3
+为了方便调用方，most 也返回了获胜元素的分数。
+
+best 提供了一种更通用的搜索方式。该实用工具接受一个函数和一个列表，但这里的函数必须是个两参数谓词。它返回的元素在该谓词下胜过所有其他元素。
+
+> (best #'> '(1 2 3 4 5))
+5
+我们可以认为best 等价于sort 的car， 但前者的效率更高些。函数的调用者有责任提供一个能在列表所
+
+有元素上定义全序的谓词。否则列表中元素的顺序将影响结果； 和之前一样， 在平手的情况下，先出场的元素获胜。
+
+最后，mostn 接受一个函数和一个列表，并返回一个由获得最高分的所有元素组成的列表（以及这个最高分本身）：
+
+> (mostn #'length '((a b) (a b c) (a) (e f g)))
+((A B C) (E F G))
+3
+4.5 映射
+
+还有一类广泛使用的 Lisp 函数是映射函数，它们将一个函数应用到一个参数的序列上。图4.6 展示了一些新的映射函数示例。开始的三个函数用来将一个函数应用到一系列整数，而无需cons 出含有这些数字的列表。前两个是map0-n 和map1-n ，它们工作在正整数区间上：
+
+> (map0-n #'1+ 5)
+(1 2 3 4 5 6)
+它们都是用mapa-b 实现的，而mapa-b 更为通用，它能对任意的等差数列操作：
+
+> (mapa-b #'1+ -2 0 .5)
+(-1 -0.5 0.0 0.5 1.0)
+mapa-b 之后是更通用的map-> ，它可以用于任意类型的对象序列。序列始于第二个参数给出的对象，序
+
+列的结束条件由第三个参数给出的函数规定，而序列的后继元素则由第四个参数给出的函数生成。借助map-> ，不仅能遍历整数序列，还可以遍历任何一种数据结构。我们能用map-> 定义mapa-b ，如下：
+
+(defun mapa-b (fn a b &optional (step 1))
+(map-> fn
+a
+#'(lambda (x) (> x b))
+#'(lambda (x) (+ x step))))
+出于效率考虑，内置的mapcan 是破坏性的，它也可用下列代码表达：
+
+(defun our-mapcan (fn &rest lsts)
+(apply #'nconc (apply #'mapcar fn lsts)))
+由于mapcan 用nconc 把列表拼接在一起，第一个参数返回的列表最好是新创建的，否则等下次看的时候它可能就变样了。这也是为什么 nicknames （第27 页） 被定义成一个根据昵称"生成列表" 的函数。如果它直接返回一个存放在其他地方的列表，那么使用 mapcan 会很不安全。替代方案是我们只能用append 把返回的列表拼接在一起。对于这类情况，mappend 提供了一个mapcan 的非破坏性版本。
+
+下一个实用工具是mapcars ，如果你想对多个列表mapcar 某个函数，那么就可以用上它。假设有两个数列，我们希望得到它们的平方根列表，可以用原始 Lisp 这样实现：
+
+(mapcar #'sqrt (append list1 list2))
+但这里的cons 是没有必要的。我们把list1 和list2 串在一起后，立即丢弃了结果。借助mapcars ，可以殊途同归：
+
+(defun map0-n (fn n)
+(mapa-b fn 0 n))
+
+(defun map1-n (fn n)
+(mapa-b fn 1 n))
+
+(defun mapa-b (fn a b &optional (step 1))
+(do ((i a (+ i step))
+(result nil))
+((> i b) (nreverse result))
+(push (funcall fn i) result)))
+
+(defun map-> (fn start test-fn succ-fn)
+(do ((i start (funcall succ-fn i))
+(result nil))
+((funcall test-fn i) (nreverse result))
+(push (funcall fn i) result)))
+
+(defun mappend (fn &rest lsts)
+(apply #'append (apply #'mapcar fn lsts)))
+
+(defun mapcars (fn &rest lsts)
+(let ((result nil))
+(dolist (lst lsts)
+(dolist (obj lst)
+(push (funcall fn obj) result)))
+(nreverse result)))
+
+(defun rmapcar (fn &rest args)
+(if (some #'atom args)
+(apply fn args)
+(apply #'mapcar
+#'(lambda (&rest args)
+(apply #'rmapcar fn args))
+args)))
+图4.6： 映射函数
+
+(mapcars #'sqrt list1 list2)
+而且还避免了多余的cons。
+
+图4.6 中最后一个函数是适用于树的mapcar 版本。它的名字rmapcar 是"recursive mapcar" 的缩写， 并且所有mapcar 在扁平列表上能完成的功能，它都可以在树上做到：
+
+> (rmapcar #'princ '(1 2 (3 4 (5) 6) 7 (8 9)))
+123456789
+(1 2 (3 4 (5) 6) 7 (8 9))
+和 mapcar 一样，它可以接受一个以上的列表作为参数：
+
+> (rmapcar #'+ '(1 (2 (3) 4)) '(10 (20 (30) 40)))
+(11 (22 (33) 44))
+后面出现的某些函数会调用rmapcar ，包括第225 页的rep_ 。
+
+在某种程度上，传统的列表映射函数可能会被 2 中新引入的串行宏（seriesmacro） 所取代。例如，
+
+(mapa-b #'fn a b c)
+可以被改写成：
+
+(collect (map-fn t #'fn (scan-range :from a :upto b :by c)))
+尽管如此，映射函数仍然是有市场的。在某些场合，采用映射函数可能会更清晰优雅。一些map-> 表达的
+
+结构，改用series 来表达也许就不那么方便。最后，映射函数和其他函数一样，也可以作为参数传递。
+
+4.6 I/O
+
+(defun readlist (&rest args)
+(values (read-from-string
+(concatenate 'string "("
+(apply #'read-line args)
+")"))))
+(defun prompt (&rest args)
+(apply #'format *query-io* args)
+(read *query-io*))
+
+(defun break-loop (fn quit &rest args)
+(format *query-io* "Entering break-loop.'~%")
+(loop
+(let ((in (apply #'prompt args)))
+(if (funcall quit in)
+(return)
+(format *query-io* "~A~%" (funcall fn in))))))
+图4.7： I/O 函数
+
+图4.7 给出了三个I/O 实用工具的例子。不同程序对这类实用工具的需要各有不同。图4.7 中的不过是些
+
+例子。要是你希望用户在输入表达式时可以略去括号，那么可以用第一个函数。它读入一行并以列表形式
+
+返回：
+
+> (readlist)
+Call me "Ed"
+(CALL ME "Ed")
+函数定义中调用values 是为了只得到一个返回值（read-from-string 本身会返回第二个值，但这个值在这种情况下没有意义）。
+
+函数prompt 把打印问题和读取答案结合了起来。它带有跟format 函数类似的参数表，除了一开始的流参数。
+
+> (prompt "Enter a number between ~A and ~A.~%>> " 1 10)
+Enter a number between 1 and 10.
+>> 3
+3
+最后，如果你希望模拟 Lisp 的toplevel 环境，那么break-loop 可以帮上忙。它接受两个函数和一个&rest
+
+参数，后者一次又一次地作为参数传给prompt 。当输入使得第二个函数返回逻辑假的时候，那第一个参数
+
+将会应用在这个输入上。所以我们可以像这样来模仿真正的 Lisp toplevel 环境：
+
+译者注：原书的写法是 （collect （#Mfn （scan-range ：from a ：upto b ：by c））），两种写法是等价的。CLTL提到：e # macro
+
+charactersyntax #M makesiteasytospecifyusesof map-fn wheretypeis t andthefunctionisanamedfunction。enotation （#Mfunction
+
+...）isanabbreviationfor （map-fn t #'function ...）。由于目前series 宏的标准实现cl-series 包在加载以后的缺省情况下并不定义#M 这个宏，所以这里采用了通俗写法。
+
+> (break-loop #'eval #'(lambda (x) (eq x :q)) ">> ")
+Enter break-loop.
+>> (+ 2 3)
+5
+>> :q
+:Q
+随便提一下，这也是Common Lisp 厂商主张对运行期进行授权的原因。如果能在运行期调用eval ，那么任何 Lisp 程序都可以包含 Lisp 环境。
+
+4.7 符号和字符串
+
+(defun mkstr (&rest args)
+(with-output-to-string (s)
+(dolist (a args) (princ a s))))
+
+(defun symb (&rest args)
+(values (intern (apply #'mkstr args))))
+
+(defun reread (&rest args)
+(values (read-from-string (apply #'mkstr args))))
+
+(defun explode (sym)
+(map 'list #'(lambda (c)
+(intern (make-string 1
+:initial-element c)))
+(symbol-name sym)))
+图4.8： 操作符号和字符串的函数
+
+符号和字符串两者紧密相关。通过打印和读取函数，我们可以在这两种表示方式之间相互转换。图4.8 举
+
+了几个实用工具例子，它们都是用来做这种转换工作的。其中，第一个是mkstr ，它接受任意数量的参数，
+
+并将它们的打印形式连起来，形成一个字符串：
+
+> (mkstr pi " pieces of " 'pi)
+"3.141592653589793 pieces of PI"
+我们在mkstr 的基础上编写了symb ，大多数情况下，它被用来构造符号。它接受一个或多个参数，并返回
+
+一个符号（若需要的话，则会新建一个），使其打印名称等于所有参数连接在一起的字符串。它可以接受任
+
+何支持可打印表示的对象作为参数： 符号、字符串、数字，甚至列表。
+
+> (symb 'ar "Madi" #\L #\L 0)
+|ARMadiLL0|
+symb 首先调用mkstr ，把所有参数连成一个字符串，然后把这个字符串发给intern。这个函数是 Lisp 传统上的符号构造器： 它接受一个字符串，然后，如果无法找到一个打印输出和该字符串相同的符号，就创建一个满足此条件的新符号。
+
+任何字符串都可以作为符号的打印名称，甚至是含有小写字母或者类似括号这样的宏字符的字符串也不例
+
+外。当符号名称含有这些奇怪的字符时，它将被原样打印在两条竖线中间。在源代码中，这样的符号应该被放在两条竖线之间，否则就必须用反斜线转义：
+
+> (let ((s (symb '(a b))))
+(and (eq s '|(A B)|) (eq s '\(A\ B\))))
+T
+下一个函数 reread ，是 symb 的通用化版本。它接受一系列对象，然后打印并重读它们。它可以像symb 那
+
+样返回符号，但也可以返回其他任何 read 能返回的东西。其间，读取宏将会被调用，而不是被当成函数的
+
+一部分，这样 a：b 将被认作包（package） a 中的符号b ，而不是当前包中的符号|a：b|。 这个更通用的函数同时也更加挑剔： 如果reread 的参数不合 Lisp 语法，它将生成一个错误。
+
+图4.8 中的最后一个函数在几种早期方言是预定义了的： explode 接受一个符号，然后返回一个由该符号名称里的字符所组成的列表。
+
+> (explode 'bomb)
+(B O M B)
+毫无疑问，Common Lisp 不会包含这个函数。如果你发现自己需要处理符号本身，那你很可能在做某件低效率的事情。尽管如此，在开发原型的时候，这类实用工具还是有用武之地的，如果是产品级软件，就另当别论了。
+
+4.8 紧凑性
+
+如果你在代码里用了大量实用工具，有的读者可能会抱怨这种程序晦涩难懂。那些还没能自如使用 Lisp 的人只能习惯阅读原始的 Lisp 。事实上，他们可能一直就无法认同可扩展语言的理念。当读到一个严重依赖实用工具的程序时，在他们看来，作者可能是完全出于怪癖而决定用某种私人语言来写程序。
+
+会有人提出，所有这些新操作符让程序更难读了。他认为必须首先理解所有的这些新操作符，才能读懂程序。要想知道为什么这类说法是错误的，不妨想想第27 页的那个例子，在那里我们想要找到最近的书店。如果用 find2 来写程序，有人可能会抱怨说，在他能够读懂这个程序之前，必须先理解这个实用工具的定义。好吧，假设你没有用 find2。那么现在可以不用先理解 find2 了，但是读者将不得不去理解 find-books 的定义，该函数相当于把 find2 和查找书店的特定任务混在了一起。理解 find2 并不比理解 find-books 更难。另一方面，在这里我们只用了一次这个新的实用工具。实用工具意味着重复使用。在实际的程序里，它意味着在下列两种情况中做出选择，理解 find2 ，或者不得不去理解三到四种特定的搜索例程。显然前者更容易些。
+
+所以，阅读自底向上的程序确实需要理解作者定义的所有新操作符。但它的工作量几乎总是比理解在没有这些操作符的情况下的所有代码要少很多。
+
+如果人们抱怨说使用实用工具使得你的代码难于阅读了，他们很可能根本没有意识到，如果你不使用这些实用工具的话代码看起来将是什么样子。自底向上程序设计让本来规模很大的程序看起来短小简单。给人的感觉就是，这程序并没有做很多事，所以应该很好懂。当缺乏经验的读者们更仔细地阅读程序，结果发现事情并没有想象的那么简单，他们就会灰心丧气。
+
+我们在其他领域观察到了相同的现象： 设计合理的机器可能部件数量更少，但是看起来会感觉更复杂，因为这些部件被安置在了更小的空间里。自底向上的程序有种感官上的紧密性。阅读这种程序可能需要花一些力气，但如果不是这样写的话，你会需要花更多的精力来读懂它们。
+
+有一种情况下，你应该有意地避免使用实用工具，即： 如果你需要写一个小程序，它将独立于其余部分的代码发布。一个实用工具通常至少要被使用两到三次才值得引入，但在小程序里， 如果一个实用工具用得太少的话，可能就没有必要包含它了。
+
+有关包的介绍，可以参见第 25 章后面的附录。

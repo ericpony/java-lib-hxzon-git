@@ -1,0 +1,819 @@
+《On Lisp》-第 24 章 Prolog
+
+http://www.ituring.com.cn/article/54697
+
+本章将介绍如何编写嵌入式的 Prolog 解释器。第 19 章中已经展示了编写数据库查询语句编译器的方法，这里我们再加入一个新的元素：规则。有了规则，就可以根据已有的知识通过推理得到新知。一组规则定义了表明事实之间相互蕴含关系的一棵树。由于这棵树可能包含无限多的事实，所以我们必须使用非确定性的搜索。
+
+Prolog 是嵌入式语言的一个极好的例子。它融合了三个元素：模式匹配，非确定性，规则。其中，前两个元素在第 18 章和第 22 章曾分别介绍过。把 Prolog 建立在模式匹配和非确定性选择操作的基础之上，我们可以得到一个真正的，多层的，自底向上的系统。图 (24.1) 展示了有关几个抽象层的结构。
+
+![enter image description here][1]
+本章的第二个目标是学习Prolog。对于经验丰富的程序员来说，简要地说明一下其实现方式可能会更有助于讲解这门语言。而用Lisp 实现Prolog 非常有趣，因为在这过程中能够发掘出这两者间的共同点。
+
+24.1 概念
+
+第19章介绍了如何写一个能接受复杂查询语句的数据库系统，这个系统能自动生成所有满足查询条件的绑定。在下例中，(调用 clear-db 之后)，我们声明两个事实，然后对数据库进行查询：
+
+> (fact painter reynolds)
+(REYNOLDS)
+> (fact painter gainsborough)
+(GAINSBOROUGH)
+> (with-answer (painter ?x)
+  (print ?x))
+GAINSBOROUGH
+REYNOLDS
+NIL
+从概念上说，Prolog 是一个 "附有规则的数据库程序"。它不仅仅能够直接从数据库中查找匹配的数据来满足查询语句，还能够从已知的事实(数据) 中推导出匹配的数据。例如，若有如下的规则：
+
+If (hungry ?x) and (smells-of ?x turpentine)
+
+en (painter ?x)
+则，只要数据库中存在 (hungry raoul) 和 (smells-of raoul turpentine) 这两个事实，那么 ?x = raoul 就能满足查询语句 (painter ?x)，即使数据库中没有 (painter raoul) 这个事实。
+
+在 Prolog 中，规则的 "if" 部分被称作 body，"then" 部分被称作 head。(在逻辑中，它们分别叫做前提 (an-tecedent) 和推论 (consequent)，不过用不同的名字也好，能强调 Prolog 的推导不同于逻辑的推导)。在我们试图生成查询的绑定时，程序首先检查规则的 head，如果 head 能满足查询，那么程序会做出响应，为 body 建立各种绑定。根据定义，如果绑定满足 body，那么它也满足 head。
+
+在规则的 body 中用到的各种事实可能会转而由其他规则中推演得出。例如：
+
+If (gaunt ?x) or (eats-ravenously ?x)
+
+en (hungry ?x)
+规则也可以是递归的，例如：
+
+If (surname ?f ?n) and (father ?f ?c)
+
+en (surname ?c ?n)
+如果 Prolog 能在种种规则中找到一条通往已知事实的路径，它便会为该查询建立各种绑定。因而，它实质上是一个搜索引擎：它遍历由各种规则形成的逻辑蕴含树，寻找一条通往事实的成功之路。
+
+虽然规则和事实听上去像两回事，其实它们在概念上是可以互换的 规则可以被看作虚拟事实。如果我们希望我们的数据库能够反映出 "凶猛的大型动物是稀有的" 这个发现，我们可以寻找所有的 x ，令 x 满足 (species)，(big) 和 (fierce) 这些事实，找到的话就加上一个新的事实 (rare )。如果定义下面的规则：
+
+If (species ?x)and (big ?x) and (fierce ?x)
+
+en (rare ?x)
+就会得到相同的效果，而无需在数据库中加入所有的 (rare x) 事实。我们甚至可以定义能推出无穷个事实的规则。因此，在回应查询的时候，我们通过使用规则，用额外的数据处理作为代价，缩小了数据库的规模。
+
+另一方面，事实则是规则的一种退化形式。任一事实 F 的效用，都可以用一个 body 恒为真的规则来达到，如下：
+
+If true
+
+en F
+为了简化实现,我们将利用这个性质,并用body less rules 来表达事实。
+
+24.2 解释器
+
+第 18.4 节展示了两种定义 if-match 的方式，前一种简洁但效率低下，后来者由于在编译期完成了大量工作，因而速度有很大的提高。这里，我们将沿用这个策略。为了便于引出相关的几个话题，我们先从一个简单的解释器开始，然后再介绍如何把同一程序写得更加高效。
+
+[示例代码 24.2]–24.4 包含了一个简单的 Prolog 解释器。它能接受与第 19.3 节查询解释器相同的输入，但使用的是规则而非数据库来生成绑定。查询解释器是通过宏 with-answer 来调用的，我们的 Prolog 解释器的接口也打算采用一个类似的宏，称其为 with-inference 。犹如 with-answer ，with-inference 的输入是一个查询语句和一组 Lisp 表达式。查询语句中的变量是以问号开头的符号，例如：
+
+(with-inference (painter ?x)
+  (print ?x))
+with-inference 的一个调用会展开成一段代码，该代码则将Lisp 表达式应用于生成的绑定并求值。比如上面那段代码，会把所有能导出 (painter ) 的x 打印出来。
+
+这章的许多概念，比如 binding 的含义，在第 18.4 节已经说明。
+
+[示例代码 24.2] Toplevel 宏
+
+(defmacro with-inference (query &body body)
+  '(progn
+    (setq *paths* nil)
+    (=bind (binds) (prove-query ',(rep_ query) nil)
+      (let ,(mapcar #'(lambda (v)
+            '(,v (fullbind ',v binds)))
+             (vars-in query #'atom))
+       ，@body
+       (fail)))))
+
+(defun rep_ (x)
+ (if (atom x)
+  (if (eq x '_) (gensym "?") x)
+  (cons (rep_ (car x)) (rep_ (cdr x)))))
+
+(defun fullbind (x b)
+ (cond ((varsym? x) (aif2 (binding x b)
+                     (fullbind it b)
+                     (gensym)))
+  ((atom x) x)
+  (t (cons (fullbind (car x) b)
+      (fullbind (cdr x) b)))))
+
+(defun varsym? (x)
+ (and (symbolp x) (eq (char (symbol-name x) 0) #\?)))
+[示例代码 24.2] 给出了 with-inference 的定义，及其生成绑定所需的函数。with-answer 和 with-inference 有个显著的区别：前者只是简单地收集所有的有效绑定，而后者则进行非确定性的搜索。我们可以在 with-inference 的定义里注意到这一点：它没有展开成循环，而是展开成了一段能返回一组绑定的代码，紧接着是一个 fail 用来重启下个搜索。这无形中给我们带来了迭代结构。比如：
+
+> (choose-bind x '(0 1 2 3 4 5 6 7 8 9)
+   (princ x)
+   (if (= x 6) x (fail)))
+
+0123456
+6
+函数 fullbind 则点出了 with-answer 和 with-inference 的又一不同之处，沿着规则往回跟踪，我们可以建立一系列绑定 变量的绑定是其他变量组成的列表。要使用该查询语句的结果，我们需要一个递归函数来帮我们找到相应的绑定。这就是fullbind 的目的，例如：
+
+> (setq b '((?x . (?y . ?z)) (?y . foo) (?z . nil)))
+    ((?X ?Y . ?Z) (?Y . FOO) (?Z))
+
+> (values (binding '?x b))
+    (?Y . ?Z)
+
+> (fullbind '?x b)
+    (FOO)
+查询语句的绑定的是由 with-inference 展开式中的 prove-query 生成的。[示例代码 24.3] 给出了这个函数的定义及其组成部分。这段代码和第 19.3 节中描述的查询解释器结构相同。两者都用相同的函数用于匹配，只不过查询解释器用mapping 和迭代，而 Prolog 解释器则用等价的 choose。
+
+不过，使用非确定性搜索替代迭代的方式确实让解释否定的查询语句变得更难了。例如下面的查询语句：
+
+[示例代码 24.3]： 查询语句的解释
+
+(not (painter ?x))
+(=defun prove-query (expr binds)
+  (case (car expr)
+    (and (prove-and (cdr expr) binds))
+    (or (prove-or (cdr expr) binds))
+    (not (prove-not (cadr expr) binds))
+    (t (prove-simple expr binds))))
+
+(=defun prove-and (clauses binds)
+  (if (null clauses)
+    (=values binds)
+    (=bind (binds) (prove-query (car clauses) binds)
+      (prove-and (cdr clauses) binds))))
+
+(=defun prove-or (clauses binds)
+  (choose-bind c clauses
+    (prove-query c binds)))
+
+(=defun prove-not (expr binds)
+  (let ((save-paths *paths*))
+    (setq *paths* nil)
+    (choose (=bind (b) (prove-query expr binds)
+        (setq *paths* save-paths)
+        (fail))
+      (progn
+        (setq *paths* save-paths)
+        (=values binds)))))
+
+(=defun prove-simple (query binds)
+  (choose-bind r *rlist*
+    (implies r query binds)))
+查询解释器只需要为 (painter ?x) 建立绑定，如果找到任意的绑定则返回 nil 。而使用非确定性搜索的话，就必须更加小心，因为我们不希望 (painter ?x) 在 not 的作用域之外 fail，同时(如果 (painter ?x) 为真) 我们也不希望保留其剩下还未探索的路径。所以，(painter ?x) 的判断被应用在一个临时的空的搜索路径的环境中。当判断结束时，会恢复原先的路径。
+
+它们之间的另一区别在于对简单模板的解释 类似于 (painter ?x) 的仅仅由一个谓词和几个参数组成的表达式。当查询解释器对简单模板生成绑定时，它调用 lookup (第 19.3 节)。在 Prolog 解释器中，我们必须找到所有规则所能推导出的绑定，因此 lookup 已不适用。
+
+[示例代码 24.4] 中给出了定义和使用规则的代码。规则被放在全局列表 *rlist* 中。每个规则由 body 和 head 所组成的点对(dottedpair) 表达。当一个规则被定义后，任一下划线会被替换为一个唯一的变量。
+
+<- 的定义遵循了三个惯例，一般来说，编写这类程序时通常都会采纳这些习惯做法：
+
+加入新规则的时候，应当把规则放到列表末尾，而不是最前面，这样应用规则时的顺序就和定义规则的顺序一致了。
+
+在表示规则的时候，要把head 放在前面，因为程序查看规则的顺序就是如此。
+
+如果 body 里有多个表达式的话，它们事实上被放在了看不见的 and 里面。
+
+在 <- 的展开式最外层调用了 length ，其目的是为了避免在 toplevel 调用 <- 时，打印出巨大的列表。
+
+规则的语法如 [示例代码 24.5] 所示。规则的 head 必须是一种事实的模式：一个列表，列表的每个元素都由一个谓
+
+(defvar *rlist* nil)
+
+(defmacro <- (con &rest ant)
+  (let ((ant (if (= (length ant) 1)
+          (car ant)
+          '(and ,@ant))))
+    '(length (conc1f *rlist* (rep_ (cons ',ant ',con))))))
+
+(=defun implies (r query binds)
+  (let ((r2 (change-vars r)))
+    (aif2 (match query (cdr r2) binds)
+      (prove-query (car r2) it)
+      (fail))))
+
+(defun change-vars (r)
+  (sublis (mapcar #'(lambda (v)
+        (cons v (symb '? (gensym))))
+      (vars-in r #'atom))
+        r))
+[示例代码 24.4]： 包含规则的代码
+
+⟨rule⟩ : (<- ⟨sentence⟩ ⟨query⟩)
+
+⟨query⟩ : (not ⟨query⟩)
+
+: (and ⟨query⟩*)
+
+: (or ⟨query⟩*)
+
+: ⟨sentence⟩
+
+⟨sentence⟩ : (⟨symbol⟩ ⟨argument⟩*)
+
+⟨argument⟩ : ⟨variable⟩
+
+: ⟨symbol⟩
+
+: ⟨number⟩
+
+⟨variable⟩ : ?⟨symbol⟩
+[示例代码 24.5]： 规则的语法
+
+词，跟着任意数量的参数。body 可以是任何查询语句，只要第19章的查询解释器能读懂它就行。下面是本章前面曾用过的一个规则：
+
+(<- (painter ?x) (and (hungry ?x)
+    (smells-of ?x turpentine)))
+或直接
+
+(<- (painter ?x) (hungry ?x)
+  (smells-of ?x turpentine))
+和查询解释器一样，类似turpentine 的参数不会被求值，所以它们没有必要被quoted。
+
+当我们让prove-simple 为某个查询生成绑定时，它的非确定地选择一条规则，并把该规则和查询一同送给implies。下一个函数则试图把查询和规则的head 匹配起来。一旦匹配成功，implies 将会调用prove-query ，让它帮助为body 建立绑定。用这种方法，我们递归搜索逻辑蕴含树。
+
+change-vars 函数把规则中所有的变量换成新生成的。如果在某个规则里使用了?x ，那么这个?x 是和其它规则里面的?x 是没有关系的。为了避免现有绑定之间发生冲突，每应用一条规则，都会调用change-vars 。
+
+为了给用户提供方便，这里可以把_ (下划线) 用作规则里的通配符变量。在定义规则的时候，会调用函数rep_ ，它把每个下划线都替换成真正的变量。下划线也可以用在传给with-inference 的查询里面。
+
+24.3 规则
+
+本节将介绍如何为我们的Prolog 编制规则。先以第24.1 节中的两条规则为例：
+
+(<- (painter ?x) (hungry ?x)
+  (smells-of ?x turpentine))
+
+(<- (hungry ?x) (or (gaunt ?x) (eats-ravenously ?x)))
+倘若我们同样也断言了(assert) 下面几个事实：
+
+(<- (gaunt raoul))
+(<- (smells-of raoul turpentine))
+(<- (painter rubens))
+它们将根据其定义的顺序，来决定要生成的绑定：
+
+> (with-inference (painter ?x)
+  (print ?x))
+RAOUL
+RUBENS
+@
+with-inference 宏和with-answer 一样，对变量绑定有着相同限制(见第19.1节)。
+
+我们能写出这样一种规则，它意味着：对所有可能的绑定，都可以令给定形式的事实为真。这并非不可能。
+
+比如说，如果有变量出现在规则的head 里，但却在body 里销声匿迹。这种规则就能满足要求。下面的规则
+
+(<- (eats ?x ?f) (glutton ?x))
+说道：如果?x 是个吃货(glutton)，那么?x 就来者不据，照单全收。因为?f 在body 里没有出现，所以，只消为?x 设立一个绑定，就能证明任意形如 (eats ?x ) 的事实。如果我们用一个字面值作为eats 的第二个参数，进行查询，
+
+> (<- (glutton hubert))
+7
+> (with-inference (eats ?x spinach)
+  (print ?x))
+HUBERT
+@
+那么任何字面值都能满足要求。如果把一个变量作为第二个参数的话：
+
+> (with-inference (eats ?x ?y)
+  (print (list ?x ?y)))
+(HUBERT #:G229)
+@
+我们会得到一个gensym。在查询中把gensym 作为变量的绑定返回，这表示任意值都能令事实为真。在编程序的时候，可以显式地利用这一惯例：
+
+> (progn
+  (<- (eats monster bad-children))
+  (<- (eats warhol candy)))
+9
+> (with-inference (eats ?x ?y)
+
+  (format t "~A eats ~A.~%"
+    ?x
+    (if (gensym? ?y) 'everything ?y)))
+HUBERT eats EVERYTHING.
+MONSTER eats BAD-CHILDREN.
+WARHOL eats CANDY.
+@
+最后，如果我们想要指定一个特定形式的事实对任意参数都为真，那么可以令其body 为无参数的合取式。 (and) 表达式和永真式的事实，其行为表现是一样的。由于在<- 宏中([示例代码 24.4])，body 的缺省设置就是 (and)，所以对于这种规则，我们可以直接略去其body ：
+
+> (<- (identical ?x ?x))
+10
+> (with-inference (identical a ?x)
+  (print ?x))
+A
+@
+若是读者已经粗通Prolog，就可以看出[示例代码 24.6] 展示了把Prolog 语法转换到我们程序语法的过程。照老习惯，第一个Prolog 程序往往是append ，它可以写成[示例代码 24.6] 结尾的那样。在一次append 中，两个较短的列表被并成一个更长的列表。Lisp 的函数append 把两个短列表作为参数，而将长列表当成返回值。Prolog 的append 更通用一些。[示例代码 24.6] 中的两条规则定义了一个程序，只要传入任意两个相关的列表，这个程序就能找到第三个。
+
+我们的语法和传统的Prolog 语法间有如下几点区别：
+
+使用以问号开头的符号，而非大写字母来表示变量。因为Common Lisp 缺省是不区分大小写的，
+所以用大写字母的话可能会得不偿失。
+
+[ ]变成了nil 。
+
+形如 [x | y] 的表达式成了(x . y)。
+
+形如 [x，y，...] 的表达式成了(x y...)。
+
+断言被挪到了括弧里面，而且用来分隔参数的逗号也被去掉了： ( ，，...) 成了 ( ...)。
+
+于是乎，Prolog 对append 的定义：
+
+append([ ], Xs, Xs).
+append([X | Xs], Ys, [X | Zs]) <- append(Xs, Ys, Zs).
+就成了下面的模样：
+
+(<- (append nil ?xs ?xs))
+(<- (append (?x . ?xs) ?ys (?x . ?zs))
+  (append ?xs ?ys ?zs))
+[示例代码 24.6]： 和Prolog 语法的对应关系
+
+> (with-inference (append ?x (c d) (a b c d))
+  (format t "Left: ~A~%" ?x))
+Left: (A B)
+@
+> (with-inference (append (a b) ?x (a b c d))
+  (format t "Right: ~A~%" ?x))
+Right: (C D)
+@
+> (with-inference (append (a b) (c d) ?x)
+  (format t "Whole: ~A~%" ?x))
+Whole: (ABCD)
+@
+不仅如此，如果给出了最后一个列表，它还能找出前两个列表所有可能的组合：
+
+> (with-inference (append ?x ?y (a b c))
+  (format t "Left: ~A Right: ~A~%" ?x ?y))
+Left: NIL Right: (A B C)
+Left: (A) Right: (B C)
+Left: (A B) Right: (C)
+Left: (A B C) Right: NIL
+@
+append 这个例子揭示出了Prolog 和其它语言之间的天差地别。一组Prolog 规则不一定非要推出某个特定的值。这些规则也可以给出一些约束(constraints)，而这些约束和由程序其他部分生成的约束一同，将能得出一个特定的值。举例来说，如果这样定义member ：
+
+(<- (member ?x (?x . ?rest)))
+(<- (member ?x (_ . ?rest)) (member ?x ?rest))
+就能用它判断列表的成员关系，和Lisp 的函数member 的用法一模一样：
+
+> (with-inference (member a (a b)) (print t))
+T
+@
+不过，我们也可以用它新建一个成员关系的约束，这个约束和其他约束一起，同样可以得出一个特定的列表。如果我们手里还有个谓词叫cara
+
+(<- (cara (a _)))
+任意一个有两个元素的列表，只要其car 为a ，那么这个事实就为真。这样，有了这个谓词和member ，就有了充足的约束条件，可以让Prolog 为我们想出一个确定的答案了：
+
+> (with-inference (and (cara ?lst) (member b ?lst))
+  (print ?lst))
+(A B)
+@
+例子很简单，但是其中的道理在编写更大规模的程序时也一样适用。无论何时，只要我们想通过把部分结果组合到一起的方式来编写程序，那么就能用上Prolog。事实上借助这种方式可以表达很多类型的问题：
+
+比如说，[示例代码 24.14] 就展示了一个排序算法，这个排序算法是由一组对计算结果的约束来表示的。
+
+24.4 对于非确定性的需求
+
+第22 章解释了确定性和非确定性搜索的区别所在。使用确定性搜索的程序能接受一个查询，并生成所有满足这个查询的结果。而用非确定性搜索的程序则会借助choose，每次生成一个结果，如果用户需要更多的结果，那么它会调用fail ，来重新启动这个搜索过程。
+
+如果我们手中的规则得出的都是有限大小的绑定集合，而且我们希望一次性的得到所有这些绑定，那么就没有理由用非确定性搜索。倘若我们的查询会产生无穷多的绑定，而我们要的只是其中的一个有限子集，那么这两种搜索策略的区别就一目了然了。比如说，下面的规则
+
+(<- (all-elements ?x nil))
+(<- (all-elements ?x (?x . ?rest))
+  (all-elements ?x ?rest))
+蕴含所有形如 (all-elements x y) 的事实，的每一个成员都等于 。不用回溯的话，我们有能力处理类似下面的查询：
+
+(all-elements a (a a a))
+(all-elements a (a a b))
+(all-elements ?x (a a a))
+然而，有无数多的?x 可以满足 (all-elements a ?x) 这个查询，比如：nil、(a)、(a a)，等等。要是想用迭代的方式为这个查询生成答案，那么这个迭代就会永不休止，一直运行下去。就算我们弱水三千只取一瓢饮，在这无穷多的答案中仅仅要一个，如果算法的实现在走到下一个Lisp 表达式之前，必须为查询准备好所有的绑定，那么我们永远等不到那一天，更不用说得到答案了。
+
+这就是为什么with-inference 把绑定的产生过程和其body 的求值过程交错进行的原因。由于查询可能会对应无穷多的答案，所以唯一的办法只能是每次产生一个答案，并通过重启前被暂停的搜索来取得新的答案。因为我们的程序使用了choose 和fail ，所以它能够解决下面的问题：
+
+> (block nil
+  (with-inference (all-elements a ?x)
+    (if (= (length ?x) 3)
+      (return ?x)
+      (princ ?x))))
+NIL(A)(A A)
+(A A A)
+和所有的Prolog 实现一样，我们也是借助带回溯的深度优先搜索来模拟非确定性的。从理论上而言，"逻辑程序" 是由真正的非确定性驱动的。而实际上，各家Prolog 实现却常常用的是深度优先搜索。这个选择非但没有造成不便，相反，深度优先版的非确定性是标准的Prolog 程序赖以正常工作的基础。在使用真实非确定性的世界里，下面的查询
+
+(and (all-elements a ?x) (length ?x 3))
+是有答案的，但是在得到这个答案之前，你必须先等到海枯石烂。
+
+Prolog 使用深度优先搜索实现非确定性，不仅如此，它使用的深度优先还和第 22.3 节中定义的版本等价。正如我们在那里提到的，这个实现是不能保证终止的。所以 Prolog 程序员必须采取专门的措施，避免在搜索空间里面产生环。举例来说，如果我们以相反的顺序定义member
+
+(<- (member ?x (_ . ?rest)) (member ?x ?rest))
+(<- (member ?x (?x . ?rest)))
+那么照道理来说，其意义应该保持不变，但是作为Prolog 程序的话，效果就完全不同了。如果使用member 原来的定义，那么查询 (member 'a ?x)，会得到一系列连绵不绝，无穷多的答案。但是如果把定义的顺序反过来，则会产生一个无穷递归，一个答案都得不到。
+
+24.5 新的实现
+
+在这一节，我们会故友重逢，碰到一个熟悉模式的另一实例。在第18.4 节，在编完if-match 的最初版本之后，我们发现其实可以把它实现得更快。通过利用编译期的已知信息，我们本可以写一个新的版本，让它在运行期做更少的事情。后来，在第19章，我们经历了同样的问题，不过这一次程序的规模更大。我们把查询解释器换成了一个与之等价，但更高效的版本。历史将会在我们的Prolog 解释器上重演。
+
+[示例代码 24.7]，24.8，24.10 一起以另一种方式定义了Prolog。宏with-inference 以前只是Prolog 解释器的接口。
+
+它现在成了程序的主要的组成部分。新程序的结构和原来基本一致，不过在[示例代码 24.8] 中定义的函数里面，只有prove 是在运行期调用的。其他函数则由with-inference 调用，被用来生成其展开式。
+
+[示例代码 24.7] 中是with-inference 的新定义。和if-match 以及 with-answer 中一样，模式匹配变量在开始的时候会被绑定到gensym 上，表示它们还没有被匹配过程赋予真正的值。因而，被match 和fullbind 用来辨别变量的函数varsym? ，就需要修改一下，转而检查是否是gensym。
+
+with-inference 调用gen-query ([示例代码 24.8]) 的目的是为了生成一部分代码，这些代码将为查询建立绑定。
+
+gen-query 要做的的一件事是检查它的第一个参数是不是那种以and 或者or 开头的复杂查询。这个过程会递归地进行，直至遇到简单查询，这些简单查询会被展开成对prove 的调用。在原来的实现中，这种逻辑结构是在运行期完成解析的。以前，每次使用规则时，都必须重新分析body 中的复杂查询。显然，这毫无必要。因为规则和查询的逻辑结构是事先已知的。针对这个问题，新版的实现把复杂表达式的解析工作移到了编译期。
+
+和原来的实现一样，with-inference 表达式展开出的代码会先进行一次查询，查询中的模式变量所绑定到的值是由规则一一设定的，然后再迭代执行Lisp 代码。with-inference 的展开式以一个fail 作结，后者会重启之前保存的状态。
+
+[示例代码 24.8] 中其他函数会为复杂查询生成对应的展开式 即由诸如and、or 和not 的操作符结合起来的查询。倘若有如下的查询
+
+(and (big ?x) (red ?x))
+并且，我们希望只有那些能同时prove 两个合取式的?x ，才被带入Lisp 代码求值。因此，为了生成and 的展开式，我们把第二个合取式的展开式嵌入到第一个合取式的展开式中。要是 (big ?x) 成功了，就继续尝试 (red ?x)，如果后者也成功的话，则对这个Lisp 表达式进行求值。如此，整个表达式展开后如[示例代码 24.9] 所示。
+
+(defmacro with-inference (query &rest body)
+  (let ((vars (vars-in query #'simple?)) (gb (gensym)))
+    '(with-gensyms ,vars
+      (setq *paths* nil)
+      (=bind (,gb) ,(gen-query (rep_ query))
+        (let ,(mapcar #'(lambda (v)
+              '(,v (fullbind ,v ,gb)))
+            vars)
+          ,@body)
+        (fail)))))
+
+(defun varsym? (x)
+  (and (symbolp x) (not (symbol-package x))))
+[示例代码 24.7]： 新的toplevel 宏
+
+and 意味着嵌入；而or 则意味着choose。有下列查询
+
+(or (big ?x) (red ?x))
+两个子查询，如果其中任意一个能建立?x 的绑定，我们将希望Lisp 表达式使用这些?x 来进行求值。
+
+函数gen-or 会展开成choose ，后者会在诸参数的gen-query 中选择一个。至于not ，gen-not 基本上和prove-not 同出一辙(见[示例代码 24.3])。
+
+[示例代码 24.10] 中是定义规则的代码。规则被直接转换成Lisp 代码，而后者是由 rule-fn 生成的。因为现在<- 把规则展开成了Lisp 代码，所以如果把一个写满了规则定义的文件编译了的话，就会让这些规则变成编译过的函数。
+
+当一个rule-function 收到一个模式时，它会试图把自己所表示规则的head 与之匹配。如果匹配成功，这个rule-function 就会试图为其body 设立绑定。这个过程和with-inference 的功能基本一致，而且，事实上rule-fn 会在结束的时候调用gen-query 。rule-function 最终会返回一些绑定，它们是为规则的head 中出现的变量而设立的。
+
+24.6 增添Prolog 特性 233
+
+(defun gen-query (expr &optional binds)
+  (case (car expr)
+    (and (gen-and (cdr expr) binds))
+    (or (gen-or (cdr expr) binds))
+    (not (gen-not (cadr expr) binds))
+    (t '(prove (list ',(car expr)
+          ,@(mapcar #'form (cdr expr)))
+        ,binds))))
+
+(defun gen-and (clauses binds)
+  (if (null clauses)
+    '(=values ,binds)
+    (let ((gb (gensym)))
+      '(=bind (,gb) ,(gen-query (car clauses) binds)
+        ,(gen-and (cdr clauses) gb)))))
+
+(defun gen-or (clauses binds)
+  '(choose
+    ,@(mapcar #'(lambda (c) (gen-query c binds))
+      clauses)))
+
+(defun gen-not (expr binds)
+  (let ((gpaths (gensym)))
+    '(let ((,gpaths *paths*))
+      (setq *paths* nil)
+      (choose (=bind (b) ,(gen-query expr binds)
+          (setq *paths* ,gpaths)
+          (fail))
+        (progn
+          (setq *paths* ,gpaths)
+          (=values ,binds))))))
+
+(=defun prove (query binds)
+  (choose-bind r *rules* (=funcall r query binds)))
+
+(defun form (pat)
+  (if (simple? pat)
+    pat
+    '(cons ,(form (car pat)) ,(form (cdr pat)))))
+[示例代码 24.8]： 对查询进行的编译处理
+
+24.6 增添Prolog 特性
+
+现有的代码已足以运行绝大多数的"纯"Prolog 程序。最后一步是再加入一些特性，诸如：减枝(cut)，数学计算，还有I/O。
+
+在Prolog 规则中加入cut，就能对搜索树进行剪枝了。通常，当我们的程序碰到fail 的时候，它会回溯到最后一个选择点。在第22.4 节实现的 choose 中，把历史上的选择点都放到了全局变量paths 里。调用fail ，会在最新近的一个选择点重新启动搜索过程，而这个选择点就是paths 的car。cut 让问题更复杂了。当程序遇到cut 时，它会放弃保存在 paths 里的一部分最新选择点，具体说，就是在最后一次调用prove 之后保存的选择点。
+
+其结果就是让规则之间互斥。我们可以用cut 来在Prolog 程序中达到case 语句的效果。举例来说，如果像下面这样定义minimum ：
+
+(with-inference (and (big ?x) (red ?x))
+  (print ?x))
+
+expandsinto:
+
+(with-gensyms (?x)
+  (setq *paths* nil)
+  (=bind (#:g1) (=bind (#:g2) (prove (list 'big ?x) nil)
+      (=bind (#:g3) (prove (list 'red ?x) #:g2)
+        (=values #:g3)))
+    (let ((?x (fullbind ?x #:g1)))
+      (print ?x))
+    (fail)))
+[示例代码 24.9]： 合取式的展开
+
+(defvar *rules* nil)
+
+(defmacro <- (con &rest ant)
+  (let ((ant (if (= (length ant) 1)
+          (car ant)
+          '(and ,@ant))))
+    '(length (conc1f *rules*
+        ,(rule-fn (rep_ ant) (rep_ con))))))
+
+(defun rule-fn (ant con)
+  (with-gensyms (val win fact binds)
+    '(=lambda (,fact ,binds)
+      (with-gensyms ,(vars-in (list ant con) #'simple?)
+        (multiple-value-bind
+          (,val ,win)
+          (match ,fact
+            (list ',(car con)
+              ,@(mapcar #'form (cdr con)))
+            ,binds)
+          (if ,win
+            ,(gen-query ant val)
+            (fail)))))))
+[示例代码 24.10]： 定义规则的代码
+
+(<- (minimum ?x ?y ?x) (lisp (<= ?x ?y)))
+(<- (minimum ?x ?y ?y) (lisp (> ?x ?y)))
+它会工作正常，但是比较没有效率。若有下列查询
+
+(minimum 1 2 ?x)
+根据第一条规则，Prolog 将会立即建立?x = 1。倘若是人的话，就会到此为止，但是程序会虚掷光阴，继续从第二条规则那里找寻答案，因为没人告诉它这两条规则是互斥的。平均情况下，这个版本的minimum 会多做50% 的无用功。如果在第一个测试后面加个cut 就能解决这一问题：
+
+(<- (minimum ?x ?y ?x) (lisp (<= ?x ?y)) (cut))
+(<- (minimum ?x ?y ?y))
+现在，一旦Prolog 完成了第一条规则，它就会一路掠过剩下的规则，完成查询，而不是继续处理下一条规则。
+
+要让我们的程序支持减枝，简直易如反掌。每次在调用 prove 时，当前paths 的状态都会被当作参数传进去。如果程序碰到了 cut，它就把paths 设置回上一次当作参数传入的值。[示例代码 24.11] 和24.12 显示了为了支持减枝，必须改动的部分代码。(修改过的代码行后面有分号以示区别。并非所有的改动都是由于减枝而造成的。)
+
+仅仅提高程序效率的cut 叫做greencuts 。minimum 中的cut 就是个greencut。那种会改变程序行为的cut 则被称为redcuts。比如说，如果我们像下面那样定义谓词artist ：
+
+(<- (artist ?x) (sculptor ?x) (cut))
+(<- (artist ?x) (painter ?x))
+结果就是：如果有雕塑家，那么查询到此结束。如果一个雕塑家都找不到，那么就把画家认作艺术家：
+
+> (progn (<- (painter 'klee))
+  (<- (painter 'soutine)))
+4
+> (with-inference (artist ?x)
+  (print ?x))
+KLEE
+SOUTINE
+@
+但如果存在雕塑家的话，减枝机制使得推理在处理第一条规则时就会停止：
+
+> (<- (sculptor 'hepworth))
+5
+> (with-inference (artist ?x)
+  (print ?x))
+HEPWORTH
+@
+有时，cut 会和Prolog 的fail 操作符一起搭配使用。我们的fail 函数也是如此。把cut 放到规则里，就如同把这条规则变成了单行道：一旦你驶上这条路，你就只能用这条规则，不能回头。把cut-fail 组合加到规则里，则意味着治安堪忧的单行道：只要开上这条路，就只能凶多吉少。not-equal 的实现里就有个典型的例子：
+
+(<- (not-equal ?x ?x) (cut) (fail))
+(<- (not-equal ?x ?y))
+这里的第一条规则是为冒牌货设下的陷阱。如果我们试图证明形如 (not-equal 1 1) 的事实，它会先和第一条规则的head 匹配，然后就自取灭亡了。而(not-equal 1 2) 的查询则不会和第一条规则的head 匹配，因此会继续与第二条规则匹配，在这里它会匹配成功：
+
+> (with-inference (not-equal 'a 'a)
+  (print t))
+@
+> (with-inference (not-equal '(a a) '(a b))
+  (print t))
+T
+@
+[示例代码 24.11] 和24.12 中的代码同样也为我们的程序带来了数学计算、I/O 和Prolog 的is 操作符。[示例代码 24.13] 列出了规则和查询的所有语法。
+
+我们为Lisp 开了个后门，通过这种方式加入了数学计算(及其他功能) 的支持。现在，除了诸如and 和or 的操作符，我们又有了lisp 操作符。这个操作符可以跟任意Lisp 表达式，对表达式求值时，将会用查询产生的变量绑定，作为表达式中变量的值。如果表达式求值的结果是nil ，那么整个lisp 表达式会被视为与 (fail) 等价；否则它就和 (and) 等价。
+
+下面举个应用lisp 操作符的例子。试想一下ordered 的Prolog 实现，只有当列表中元素以升序排列的时候，它才是真：
+
+(defun rule-fn (ant con)
+  (with-gensyms (val win fact binds paths) ;
+    '(=lambda (,fact ,binds ,paths) ;
+      (with-gensyms ,(vars-in (list ant con) #'simple?)
+        (multiple-value-bind
+          (,val ,win)
+          (match ,fact
+            (list ',(car con)
+              ,@(mapcar #'form (cdr con)))
+            ,binds)
+          (if ,win
+            ,(gen-query ant val paths) ;
+            (fail)))))))
+
+(defmacro with-inference (query &rest body)
+  (let ((vars (vars-in query #'simple?)) (gb (gensym)))
+    '(with-gensyms ,vars
+      (setq *paths* nil)
+      (=bind (,gb) ,(gen-query (rep_ query) nil '*paths*) ;
+        (let ,(mapcar #'(lambda (v)
+              '(,v (fullbind ,v ,gb)))
+            vars)
+          ,@body)
+        (fail)))))
+
+(defun gen-query (expr binds paths) ;
+  (case (car expr)
+    (and (gen-and (cdr expr) binds paths)) ;
+    (or (gen-or (cdr expr) binds paths)) ;
+    (not (gen-not (cadr expr) binds paths)) ;
+    (lisp (gen-lisp (cadr expr) binds)) ;
+    (is (gen-is (cadr expr) (third expr) binds)) ;
+    (cut '(progn (setq *paths* ,paths) ;
+        (=values ,binds))) ;
+    (t '(prove (list ',(car expr)
+          ,@(mapcar #'form (cdr expr)))
+        ,binds *paths*)))) ;
+
+(=defun prove (query binds paths) ;
+  (choose-bind r *rules*
+    (=funcall r query binds paths))) ;
+[示例代码 24.11]： 加入对新操作符的支持
+
+(<- (ordered (?x)))
+(<- (ordered (?x ?y . ?ys))
+  (lisp (<= ?x ?y))
+  (ordered (?y . ?ys)))
+用汉语来表述，就是说，单元素的列表是有序的；如果列表中有两个或更多元素，那么只有当第一个元素小于或等于第二个元素，而且从第二个元素开始的列表也是有序的，那么才能说该列表是有序的。
+
+> (with-inference (ordered '(1 2 3))
+  (print t))
+T
+@
+> (with-inference (ordered '(1 3 2))
+
+  (defun gen-and (clauses binds paths) ;
+    (if (null clauses)
+      '(=values ,binds)
+      (let ((gb (gensym)))
+        '(=bind (,gb) ,(gen-query (car clauses) binds paths) ;
+          ,(gen-and (cdr clauses) gb paths))))) ;
+
+  (defun gen-or (clauses binds paths) ;
+    '(choose
+      ,@(mapcar #'(lambda (c) (gen-query c binds paths)) ;
+        clauses)))
+
+  (defun gen-not (expr binds paths) ;
+    (let ((gpaths (gensym)))
+      '(let ((,gpaths *paths*))
+        (setq *paths* nil)
+        (choose (=bind (b) ,(gen-query expr binds paths) ;
+            (setq *paths* ,gpaths)
+            (fail))
+          (progn
+            (setq *paths* ,gpaths)
+            (=values ,binds))))))
+
+  (defmacro with-binds (binds expr)
+    '(let ,(mapcar #'(lambda (v) '(,v (fullbind ,v ,binds)))
+        (vars-in expr))
+      ,expr))
+
+  (defun gen-lisp (expr binds)
+    '(if (with-binds ,binds ,expr)
+      (=values ,binds)
+      (fail)))
+
+  (defun gen-is (expr1 expr2 binds)
+    '(aif2 (match ,expr1 (with-binds ,binds ,expr2) ,binds)
+      (=values it)
+      (fail)))
+[示例代码 24.12]： 加入对新操作符的支持
+
+(print t))
+@
+
+借助lisp 操作符，我们得以提供典型Prolog 实现具有的一些其他特性。要实现Prolog 的I/O 谓词，可以把Lisp 的I/O 调用放到lisp 表达式里。而Prolog 的assert ，它有个副作用，会顺带着定义一些规则。它可以通过在lisp 表达式里调用<- 宏来实现一样的功能。
+
+is 操作符提供了一种赋值的形式。它有两个参数：一个是匹配模式，一个是个Lisp 表达式。它会试图把模式和表达式的返回结果匹配起来。如果匹配失败，那么程序就会调用fail ；否则它会使用新的绑定继续运行。因而，表达式 (is ?x 1) 的作用就是把?x 设置成1，或者更准确地说，程序会认为?x 应该是1。我们希望能让is 进行计算。比如说，计算阶乘：
+
+(<- (factorial 0 1))
+(<- (factorial ?n ?f)
+  (lisp (> ?n 0))
+  (is ?n1 (- ?n 1))
+  (factorial ?n1 ?f1)
+  (is ?f (* ?n ?f1)))
+⟨rule⟩ ： (<- ⟨sentence⟩ ⟨query⟩)
+
+⟨query⟩ ： (not ⟨query⟩)
+
+： (and ⟨query⟩*)
+
+： (lisp ⟨lisp expression⟩)
+
+： (is ⟨variable⟩ ⟨lisp expression⟩)
+
+： (cut)
+
+： (fail)
+
+： ⟨sentence⟩
+
+⟨sentence⟩ ： (⟨symbol⟩ ⟨argument⟩*)
+
+⟨argument⟩ ： ⟨variable⟩
+
+： ⟨lisp expression⟩
+
+⟨variable⟩ ： ?⟨symbol⟩ [示例代码 24.13]： 规则的新语法
+
+我们构造一个查询，让数字 作为它的首个参数，让一个变量作为第二个参数，用这个办法来使用这个定义：
+
+> (with-inference (factorial 8 ?x)
+  (print ?x))
+40320
+@
+注意到，lisp 表达式中用到的变量，以及is 的第二个参数，都必须有已建立的绑定与其对应，这样，表达式才能返回值。所有Prolog 都存在这个限制。比如说，下面的查询：
+
+(with-inference (factorial ?x 120) ; wrong
+  (print ?x))
+就不能和这个factorial 的定义一同工作，因为在求值lisp 表达式的时候，?n 还是个未知数。因此，不是所有的Prolog 程序都和append 一样：它们中有许多都要求某些参数应该是真实的值，比如factorial。
+
+24.7 例子
+
+这一节会展示几个Prolog 例程，介绍如何编写能在我们的Prolog 实现中运行的程序。[示例代码 24.14] 的规则一齐定义了快速排序算法。这些规则蕴含了形如 (quicksort ) 的事实，其中 是一个列表，而 是由前一列表中的相同元素构成的另一个列表，不过其中的元素以增序排列。变量可以出现在第二个参数的位置上：
+
+> (with-inference (quicksort '(3 2 1) ?x)
+  (print ?x))
+(1 2 3)
+@
+这里之所以用I/O 循环来测试我们的Prolog 实现，原因是它同时利用了cut，lisp，以及is 这几个操作符。
+
+代码如[示例代码 24.15] 所示。在试图证明 (echo) 的时候，会不带参数地调用这些规则。查询会先和第一个规则匹配，后者会把?x 绑定到read 返回的结果上，并试图建立 (echo ?x)。而新的查询则会与后两条规则之一匹配。如果?x = done ，那么查询就会在第二条规则停下来。否则，查询将匹配第三条规则，打印出读到的值，然后重新开始处理。
+
+这些规则共同定义了一个程序，它会一直回显输入的字串，直到你打done ：
+
+译者注：原文为"isnalsectionshows..."，译文根据实情去掉了"最后"。
+
+(setq *rules* nil)
+
+(<- (append nil ?ys ?ys))
+(<- (append (?x . ?xs) ?ys (?x . ?zs))
+  (append ?xs ?ys ?zs))
+
+(<- (quicksort (?x . ?xs) ?ys)
+  (partition ?xs ?x ?littles ?bigs)
+  (quicksort ?littles ?ls)
+  (quicksort ?bigs ?bs)
+  (append ?ls (?x . ?bs) ?ys))
+(<- (quicksort nil nil))
+
+(<- (partition (?x . ?xs) ?y (?x . ?ls) ?bs)
+  (lisp (<= ?x ?y))
+  (partition ?xs ?y ?ls ?bs))
+(<- (partition (?x . ?xs) ?y ?ls (?x . ?bs))
+  (lisp (> ?x ?y))
+  (partition ?xs ?y ?ls ?bs))
+(<- (partition nil ?y nil nil))
+[示例代码 24.14]： Quicksort
+
+(<- (echo)
+  (is ?x (read))
+  (echo ?x))
+(<- (echo 'done)
+  (cut))
+(<- (echo ?x)
+  (lisp (prog1 t (format t "~A~%" ?x)))
+  (is ?y (read))
+  (cut)
+  (echo ?y))
+[示例代码 24.15]： Prolog 编写的I/O 循环
+
+> (with-inference (echo))
+hi
+HI
+ho
+HO
+done
+@
+像这样的程序很难懂，因为它背离了Prolog 的抽象模型。如果把它在字面上翻译成Lisp 的话，可能就容易懂些了
+
+(defun echo (&rest args)
+  (cond ((null args) (echo (read)))
+    ((eq (car args) 'done) nil)
+    (t (format t "~A~%" (car args))
+      (echo (read)))))
+如果用地道的Common Lisp 来说，就是：
+
+(defun echo (&optional (arg (read)))
+  (unless (eq arg 'done)
+    (format t "~A~%" arg)
+    (echo)))
+24.8 编译的含义
+
+"编译" 这个词有好几层意思。通常，它指：把一个程序的某种抽象表述转换成更底层的代码。当然，如果用这个含义的话，本章介绍的程序就是个编译器，因为它会把规则翻译成Lisp 函数。
+
+比较狭义地说，编译是指把程序转换成机器语言的过程。良好的Common Lisp 实现会把函数编译成机器语言。正如第 2.9 节上提到的，如果一段产生闭包的代码是编译过的，那么这段代码产生的闭包也会是
+
+编译过的。因此，在更严格的意义上，这里所说的程序同样也是编译器。如果使用实现良好的Lisp，我们的Prolog 程序就会被转换成为机器语言。
+
+然而，文中描述的程序仍然不能称为Prolog 编译器。对程序设计语言而言，"编译" 的意思要更进一步，单单生成机器代码还不够。一门编程语言的编译器在转换源程序的同时，还必须能优化产生的代码。比如说，如果让一个Lisp 的编译器编译下列表达式
+
+(+ x (+ 2 5))
+它必须足够智能，能意识到没有必要等到运行期才去对(+ 2 5)进行求值。我们可以用7 取而代之，以此优化程序，这样就变成编译下面的表达式了
+
+(+ x 7)
+在我们的程序中，所有的编译工作都是由Lisp 编译器完成的，而且，它追求的优化是在Lisp 上做文章，而不是在Prolog 上动脑筋。这些优化的确能提升性能，但是它们都太底层了。Lisp 编译器并不知道它正在编译的代码是用来表示规则的。真正的Prolog 编译器会找出那些能转换成循环的规则，而我们的程序寻找的却是能产生常量的表达式，以及能直接在栈上分配的闭包。
+
+嵌入式语言让你从现有的抽象机制中获益良多，但是这些语言也不是一揽子的解决方案。如果你希望把程序从非常抽象的表达方式一路转化成高效的机器代码，还是需要有人教会计算机如何做。在本章，我们用少得惊人的代码完成了这个工作中的相当一部分，但是这和编写一个真正意义上的Prolog 编译器相比还差得很远。
