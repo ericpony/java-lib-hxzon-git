@@ -1,0 +1,440 @@
+用Java数字签名提供XML安全
+
+http://www.importnew.com/6271.html
+
+本文由 ImportNew - 唐尤华 翻译自 javacodegeeks。如需转载本文，请先参见文章末尾处的转载要求。
+=======
+hxzon：
+封内签名。
+创建XML签名。
+XML签名验证。
+
+===========
+简介
+
+众所周知，XML在产品和项目开发中起着非常重要的作用。
+通过XML文档可以获取很多信息，还可以使用XML文件进行CRUD（增加、查询、更新和删除）操作。
+然而值得注意的是，我们如何确保XML中的数据是来自经过认证的可信和可靠的来源。
+关于XML文件数据的可靠性和真实性存在很多问题。
+通常的情况是，开发者直接处理XML文件而不去考虑数据的可靠性。
+有一些情况提出了上面的所有问题。
+现实生活中，每当我们从邮局收到一封信件时我们如何确定这封信是来自我们的朋友？
+依据可能是他/她的习惯用语、用词或者邮件详细地址。也可能是他/她的个性签名。
+如今，我们收到的信件可能被某人进行了篡改，添加了其他内容。
+基于上述原因，通常我们会验证朋友的手写签名。
+当然这些是关于来自邮局的普通邮件。
+电子消息又该如何？我们如何验证电子消息的真实性？这种情况我们会采用数字签名。
+本文会对保证数据完整性的XML数字签名技术进行简要介绍，并且展示如何为XML文件附加电子签名及其验证过程。
+
+使用的技术
+
+过去几年里，XML数字签名取得了快速发展，在金融领域尤其如此。
+在开始讨论之前，让我们考虑一个典型场景：想象一下，某个组织将所有雇员的薪资内容用XML文件发送给所得税部门。
+那么现在的问题是：所得税部门如何验证这份XML文件？
+这就是说，IT部门需要验证该组织的敏感信息。
+IT部门需要确保XML文件的来源可信，并且在IT部门收到之前没有经过篡改——也就是说文档的内容没有在传递中被修改。
+
+首先，我们需要理解数字签名的概念。
+数字签名是一种用来验证文档发自可信方的电子签名。
+它确保了文档的原始内容在传输中没有受到修改。
+数字签名可以用于任何加密和非加密消息，因此接收方可以识别发送者的身份，并确认消息没有被其他人修改。
+根据维基百科的定义：“数字签名是一种验证数字信息或文档的数学方法”。
+一个有效的数字签名可以让接收者确认收到的消息来自已知发送方，
+发送者不能否认自己发送了此消息（提供认证和不可否认性）并且此消息在传输中未经修改（提供完整性）。
+数字签名通常被用在软件发布、金融事务和其他需要检测伪造或篡改的重要场合。
+
+下面让我们来看完整的一个带有数字签名的XML文件：
+
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><SalaryDeposit>
+       <Organisation>
+              <Name>DDLab Inc</Name>
+              <AccountNo>SBC-12345789</AccountNo>
+       </Organisation>
+       <Employees>
+              <Emp>
+                     <Name>John Abraham</Name>
+                     <AccountNo>SB-001</AccountNo>
+                     <Amount>1234</Amount>
+              </Emp>
+              <Emp>
+                     <Name>Bipasha Basu</Name>
+                     <AccountNo>SB-002</AccountNo>
+                     <Amount>2334</Amount>
+              </Emp>
+              <Emp>
+                     <Name>Vidya Balan</Name>
+                     <AccountNo>SB-003</AccountNo>
+                     <Amount>3465</Amount>
+              </Emp>
+              <Emp>
+                     <Name>Debadatta Mishra</Name>
+                     <AccountNo>SB-007</AccountNo>
+                     <Amount>5789</Amount>
+              </Emp>
+              <Emp>
+                     <Name>Priti Zinta</Name>
+                     <AccountNo>SB-009</AccountNo>
+                     <Amount>1234</Amount>
+              </Emp>
+       </Employees>
+       <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+              <SignedInfo>
+                     <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+                     <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+                     <Reference URI="">
+                           <Transforms>
+                                  <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+                           </Transforms>
+                           <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                           <DigestValue>bHS+6uf8KbJV4AGzoHNHLfnXvKM=</DigestValue>
+                     </Reference>
+              </SignedInfo>
+              <SignatureValue>
+aUEMrCT5dzeOfSNaznzoT0If8WZ8KQcMNXDqtoeseonVk3NqOk9ctcxrf3QVX3wP6810DDRPdI6l
+            e8ccG64Ge0HjkO+aYC5+c2L/qKBzwtSbl/olJEuFU2DVxBQO+K29TTUJfxpVzC9Zf2pvT+1NRj0f
+            2/ofHujYZ01D6+YqI8c=
+              </SignatureValue>
+              <KeyInfo>
+                     <KeyValue>
+                           <RSAKeyValue>
+                                  <Modulus>
+jfAd5uV38L36+lDZJrqfH9oLN86VJezXYfAeU+lrFoHlKAXVJLAi9hKvBHQRer4tPfdez6iSBKsl
+                       6IHkPnVRAKt0xU99uxi5QpymsWAX3qnBqHlw9Z70PwyZ+Xysfw4Q2tK2HtSgUOhMuaUcIf9sbHvf
+                        gbvcRPgxDZZqfIzDmDU=</Modulus>
+                                  <Exponent>AQAB</Exponent>
+                           </RSAKeyValue>
+                     </KeyValue>
+              </KeyInfo>
+       </Signature>
+</SalaryDeposit>
+
+上面是一个带有签名的XML文件，该文件可以随时进行验证。
+文件中包了含雇员名称、帐号和薪资信息。
+然而，实际的数字签名通过<Signature></Signature>标记进行附加。
+<Signature> 标记中的信息提供了文档的真实性。
+正如你看到的那样，虽然你可以随意修改其中的数据，但是这种修改会在随后的签名验证中被查到。
+
+基本上数字签名有三种类型：
+
+封内签名
+封外签名
+分离签名
+
+----
+封内签名
+
+这种签名是将签名作为XML对象的子信息，也就是说 <Signature>是邮件中XML文件的子标签。
+封内数字签名的结构如下：
+
+<RootElement>
+    <Signature>
+    ……
+    </Signature>
+</ RootElement>
+
+本文会介绍如何创建XML封内数字签名。
+
+--
+封外签名
+
+这种签名将XML文档包含到Signature对象，也就是说<Signature>标签是签名XML文件的根元素。
+封外签名结构如下：
+
+<Signature >
+    < MyXMLDocument >
+    ……
+    </ MyXMLDocument >
+</Signature>
+
+--
+分离签名
+
+这种情况下，签名是独立生成的不作为XML的一部分。
+也就是说你会拥有两个XML文件：一个待签名的XML文件，另一个是XML签名。
+下面是分离签名的XML结构：
+
+<Signature>
+……
+</Signature>
+
+=============
+XML数字签名文件结构如下：
+
+<Signature xmlns="">
+    <SignedInfo>
+        <CanonicalizationMethod Algorithm="" />
+        <SignatureMethod Algorithm="" />
+        <Reference URI="">
+            <Transforms>
+                <Transform Algorithm="" />
+                </Transforms>
+            <DigestMethod Algorithm="" />
+            <DigestValue></DigestValue>
+        </Reference>
+    </SignedInfo>
+    <SignatureValue></SignatureValue>
+    <KeyInfo>
+        <KeyValue>
+            <RSAKeyValue>
+                <Modulus></Modulus>
+                <Exponent></Exponent>
+            </RSAKeyValue>
+        </KeyValue>
+    </KeyInfo>
+</Signature>
+
+XML中<Signature>有3个子标签，结构如下：
+
+
+<Signature>
+    <SignedInfo></SignedInfo>
+    <SignatureValue></SignatureValue>
+    <KeyInfo></KeyInfo>
+</Signature>
+
+这里<Signature>是XML数字签名的根元素，这一点由W3C建议并且必须遵守。
+<SignedInfo>元素是你的签名信息；
+<SignatureValue>包含了实际的签名以及使用Base64加密的内容；
+最后<KeyInfo>表示公钥。
+
+
+让我们再看一下<SignedInfo>标签，结构如下：
+
+<SignedInfo>
+    <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+    <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+    <Reference URI="">
+        <Transforms>
+            <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+        <DigestValue>bHS+6uf8KbJV4AGzoHNHLfnXvKM=</DigestValue>
+    </Reference>
+</SignedInfo>
+
+当使用Java创建XML数字签名时，SignedInfo对象被用来在数字签名的Signature标签内创建元素。
+这也是W3C建议的XML签名标准中的一部分。
+
+XML标签<KeyInfo>的结构如下：
+
+<KeyInfo>
+    <KeyValue>
+        <RSAKeyValue>
+            <Modulus></Modulus>
+            <Exponent></Exponent>
+        </RSAKeyValue>
+    </KeyValue>
+</KeyInfo>
+
+<KeyInfo>标记包含了需要数学计算的相关信息，主要有公钥的系数和指数。
+
+============
+要创建XML数字签名可以遵循下列步骤：
+
+生成一组私钥和公钥。
+获得原始XML文件。
+通过Java API使用私钥和公钥为原始的XML文件签名，生成带有XML签名的文档。
+
+让我们看看使用Java生成XML签名的相关代码：
+
+
+public void generateXMLDigitalSignature(String originalXmlFilePath,
+	String destnSignedXmlFilePath, String privateKeyFilePath, String publicKeyFilePath) {
+    // 获取XML文档对象
+    Document doc = getXmlDocument(originalXmlFilePath);
+ 
+    // 创建XML签名工厂
+    XMLSignatureFactory xmlSigFactory = XMLSignatureFactory.getInstance("DOM");
+    PrivateKey privateKey = new KryptoUtil().getStoredPrivateKey(privateKeyFilePath);
+    DOMSignContext domSignCtx = new DOMSignContext(privateKey, doc.getDocumentElement());
+    Reference ref = null;
+    SignedInfo signedInfo = null;
+    try {
+        ref = xmlSigFactory.newReference("", xmlSigFactory.newDigestMethod(DigestMethod.SHA1, null),
+        Collections.singletonList(xmlSigFactory.newTransform(Transform.ENVELOPED,
+        (TransformParameterSpec) null)), null, null);
+        signedInfo = xmlSigFactory.newSignedInfo(
+        xmlSigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
+        (C14NMethodParameterSpec) null),
+        xmlSigFactory.newSignatureMethod(SignatureMethod.RSA_SHA1, null),
+        Collections.singletonList(ref));
+    } catch (NoSuchAlgorithmException ex) {
+        ex.printStackTrace();
+    } catch (InvalidAlgorithmParameterException ex) {
+        ex.printStackTrace();
+    }
+ 
+    // 传入公钥路径
+    KeyInfo keyInfo = getKeyInfo(xmlSigFactory, publicKeyFilePath);
+ 
+    // 创建新的XML签名
+    XMLSignature xmlSignature = xmlSigFactory.newXMLSignature(signedInfo, keyInfo);
+    try {
+        // 对文档签名
+        xmlSignature.sign(domSignCtx);
+    } catch (MarshalException ex) {
+        ex.printStackTrace();
+    } catch (XMLSignatureException ex) {
+        ex.printStackTrace();
+    }
+ 
+    // 存储签名过的文档
+    storeSignedDoc(doc, destnSignedXmlFilePath);
+}
+
+=============
+XML签名验证
+
+数字签名的验证包含以下操作：
+
+验证数字签名
+计算<SignedInfo>元素摘要。
+使用公钥解密<SignatureValue>元素。
+比较上面两个值。
+计算引用摘要
+重新计算<SignedInfo>元素引用摘要。
+将它们与<DigestValue>中的摘要比较。
+
+为了验证XML签名文档，需要完成下列步骤：
+
+得到XML文档和公钥。
+验证<SignedInfo> 元素的数字签名。
+计算<SignedInfo> 元素的摘要并对值进行比较。
+
+让我们看看下面这段XML数字签名示例代码：
+
+public static boolean isXmlDigitalSignatureValid(String signedXmlFilePath, String pubicKeyFilePath) throws Exception {
+    boolean validFlag = false;
+    Document doc = getXmlDocument(signedXmlFilePath);
+    NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+    if (nl.getLength() == 0) {
+        throw new Exception("No XML Digital Signature Found, document is discarded");
+    }
+ 
+    PublicKey publicKey = new KryptoUtil().getStoredPublicKey(pubicKeyFilePath);
+    DOMValidateContext valContext = new DOMValidateContext(publicKey, nl.item(0));
+    XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
+    XMLSignature signature = fac.unmarshalXMLSignature(valContext);
+    validFlag = signature.validate(valContext);
+    return validFlag;
+}
+
+如上面示例代码所示，XML签名可以通过重新计算<SignedInfo>的摘要值进行验证，验证算法由 <SignatureMethod>元素指定；
+使用公钥可以验证<SignedInfo>摘要中的<SignatureValue>值是否正确。 
+引用摘要会在<SignedInfo>元素中重新计算，并与<Reference> 元素中对应的<DigestValue> 进行比对。
+
+接下来，让我们熟悉一下XML数字签名相关的Java组件。
+--
+XMLSignatureFactory
+
+XMLSignatureFactory是生成XML文档数字签名的工厂对象。对象的创建如下列代码所示：
+
+XMLSignatureFactory factory = XMLSignatureFactory.getInstance("DOM");
+--
+DOMSignContext
+
+DOMSignContext对象用来生成DOM树。
+在创建数字签名的过程中，DOM树会被附上XML数字签名。
+DOMSignContext对象要求输入私钥和XML文档的根元素。
+--
+Reference
+
+Reference对象用来在Signature 标记的SignedInfo内部创建XML数字签名。
+对象创建的遵循“W3C XML签名文法和处理”规则。
+Reference的基本结构如下：
+
+<Reference URI="">
+    <Transforms>
+    <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+    </Transforms>
+    <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+    <DigestValue>bHS+6uf8KbJV4AGzoHNHLfnXvKM=</DigestValue>
+</Reference>
+--
+SignedInfo
+
+类似的，SignedInfo对象可以在数字签名的Signature标记内部创建元素。
+创建的规则同样遵循“W3C XML数字签名协议”。
+SignedInfo的基本结构如下：
+
+<SignedInfo>
+    <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+    <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+    <Reference URI="">
+        <Transforms>
+        <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+        <DigestValue>bHS+6uf8KbJV4AGzoHNHLfnXvKM=</DigestValue>
+    </Reference>
+</SignedInfo>
+--
+XMLSignature
+
+最后，XMLSignature对象用来创建XML文档的封面签名。
+按照W3C的建议，签名对象应该作为XML数字签名的根元素。
+
+----
+完整的结构如下：
+
+
+<Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+    <SignedInfo>
+        <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+        <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+        <Reference URI="">
+            <Transforms>
+            <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+            </Transforms>
+            <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+            <DigestValue>bHS+6uf8KbJV4AGzoHNHLfnXvKM=</DigestValue>
+        </Reference>
+    </SignedInfo>
+    <SignatureValue>aUEMrCT5dzeOfSNaznzoT0If8WZ8KQcMNXDqtoeseonVk3NqOk9ctcxrf3QVX3wP6810DDRPdI6l
+    e8ccG64Ge0HjkO+aYC5+c2L/qKBzwtSbl/olJEuFU2DVxBQO+K29TTUJfxpVzC9Zf2pvT+1NRj0f
+    2/ofHujYZ01D6+YqI8c=</SignatureValue>
+    <KeyInfo>
+        <KeyValue>
+        <RSAKeyValue>
+            <Modulus>jfAd5uV38L36+lDZJrqfH9oLN86VJezXYfAeU+lrFoHlKAXVJLAi9hKvBHQRer4tPfdez6iSBKsl
+            6IHkPnVRAKt0xU99uxi5QpymsWAX3qnBqHlw9Z70PwyZ+Xysfw4Q2tK2HtSgUOhMuaUcIf9sbHvf
+            gbvcRPgxDZZqfIzDmDU=</Modulus>
+            <Exponent>AQAB</Exponent>
+        </RSAKeyValue>
+        </KeyValue>
+    </KeyInfo>
+</Signature>
+
+==========
+为了有一个完成的理解，可以从这里下载完整的Netbeans项目代码。
+
+配置
+
+可以从这个站点下载完整的XML数字签名项目；也可以从下面的链接下载：
+
+https://www.dropbox.com/s/0k1iukhy0in6n8h/xmldigitalsignature1.zip
+
+可以用你最喜欢的Java IDE对项目进行配置；也可以在source文件夹下运行程序。
+这个项目已经包含了公钥和私钥。
+如果想要自己生成，可以运行“TestGenerateKeys”类生成一对公钥和私钥。
+通过指定自己的XMI文件，还可以查看XML签名的生成过程。
+
+结论
+
+希望你喜欢这篇文章。
+创建XML数字签名有很多方法，本文只介绍了使用Java API生成XML签名。
+下载完整的项目代码对理解相关的概念和使用有很大帮助。
+在参考资料中我列举了很多链接，希望对文章的理解有所帮助。
+如果对本文由任何问题，请联系debadatta.mishra@gmail.com，非常感谢。
+
+参考资料
+
+http://en.wikipedia.org/wiki/XML_Signature
+http://msdn.microsoft.com/en-us/library/ms996502.aspx
+http://www.xml.com/pub/a/2001/08/08/xmldsig.html
+
+原文链接： javacodegeeks 翻译： ImportNew.com - 唐尤华
+http://www.javacodegeeks.com/2013/10/xml-security-with-digital-signature-in-java.html
+
+
+

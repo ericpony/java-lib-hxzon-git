@@ -6,7 +6,7 @@ https://github.com/clojure/clojure/blob/master/changes.md
 
 http://qiujj.com/static/clojure-handbook.html
 
-clojure使用者：庄晓丹（Dennis Zhuang）
+clojure使用者：庄晓丹（Dennis Zhuang）http://weibo.com/fnil
 
 =======================
 web

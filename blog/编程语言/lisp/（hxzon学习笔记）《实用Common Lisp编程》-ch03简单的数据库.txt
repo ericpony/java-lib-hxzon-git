@@ -6,44 +6,21 @@ by hxzon
 参见《<On Lisp>-第 19 章 一个查询编译器》。
 
 ======
-定义条件函数：
-(defmacro where (&rest clauses)
-	`#'(lambda (cd) 
-		(and ,@(make-comparisons-list clauses))
-	)
-)
---
-(defun make-comparisons-list (fields)
-	(loop while fields
-		collection (make-comparison-expr (pop fields) (pop fields))
-	)
-)
---
-(defun make-comparison-expr (field value)
-	`(equal (getf cd ,field) ,value)
-)
-----
-定义选择函数：
-(defun select (selector-fn)
-	(remove-if-not selector-fn *db*)
-)
-----------------
 &rest 表示其余参数。
-,@将表达式（必须求值为一个列表）的值嵌入到其外围的列表里。
+&key定义关键字形参。
+
 反引用`阻止表达式求值。
+在一个反引用表达式里,逗号开始的子表达式都是被求值的。
+,@将表达式（必须求值为一个列表）的值嵌入到其外围的列表里。
+
 lambda是一个指示器，表示匿名函数。
 #'表示获取函数。
---
-pop宏，弹出元素。
---
-在一个反引用表达式里,逗号开始的子表达式都是被求值的。
-----
-remove-if-not返回一个新列表，删除不满足谓词的元素。
-如：
-(remove-if-not 
-	#'(lambda (x) (= 0 (mod x 2)))
-	'(1 2 3 4 5 6 7 8 9 10)
-)
+
+
+=======
+使用方式：
+
+(select (where :title "Give Us a Break" :ripped t))
 ----------------
 (where :title "Give Us a Break" :ripped t)
 将展开为
@@ -52,15 +29,69 @@ remove-if-not返回一个新列表，删除不满足谓词的元素。
 		(equal (getf cd :ripped) t)
 	)
 )
-================
-(select (where :title "Give Us a Break" :ripped t))
+
+=========
+定义条件函数：
+
+-1，
+(defmacro where (&rest clauses)
+	`#'(lambda (cd) 
+		(and ,@(make-comparisons-list clauses))
+	)
+)
+--
+cd是一条cd记录。
+
+
+-2，
+(defun make-comparisons-list (fields)
+	(loop while fields
+		collection (make-comparison-expr (pop fields) (pop fields))
+	)
+)
+--
+pop宏，弹出元素。
+loop while...collection，返回一个列表，元素是每次make-comparison-expr的求值结果。
+
+
+-3，
+(defun make-comparison-expr (field value)
+	`(equal (getf cd ,field) ,value)
+)
+--
+equal，返回true或false。
+http://www.lispworks.com/documentation/HyperSpec/Body/f_equal.htm
+
+
+==========
+定义选择函数：
+
+(defun select (selector-fn)
+	(remove-if-not selector-fn *db*)
+)
+--
+*db* 是一个集合，元素为cd记录。
+remove-if-not返回一个新列表，删除不满足谓词的元素（即只保留满足谓词的）。
+如：
+(remove-if-not 
+	#'(lambda (x) (= 0 (mod x 2)))
+	'(1 2 3 4 5 6 7 8 9 10)
+)
+
+
+
 ===============
 定义删除函数：
+
 (defun delete-rows (selector-fn)
 	(setf *db* (remove-if selector-fn *db*))
 )
+--
+remove-if返回一个新列表，删除满足谓词的元素。
+
 ===============
 定义更新函数：
+
 (defun update 
 	(selector-fun &key title artist rating (ripped nil ripped-p) )
 	(setf *db*
@@ -78,6 +109,12 @@ remove-if-not返回一个新列表，删除不满足谓词的元素。
 	)
 )
 --
-&key定义关键字形参。
 (ripped nil ripped-p)中间表示默认值，最后一个表示该参数是否被实际传递。
-mapcar逐个转换列表元素。
+if ripped-p，是否有传递ripped这个参数。
+if rating，？
+
+mapcar逐个转换列表元素，这里是对*db*里的每个cd记录调用lambda函数。
+when，？
+
+
+

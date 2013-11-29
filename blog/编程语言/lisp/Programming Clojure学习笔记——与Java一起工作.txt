@@ -1,12 +1,22 @@
 Programming Clojure学习笔记——与Java一起工作
 
 http://blog.csdn.net/zh2qiang/article/details/7080485
+修订by hxzon。
 
+========
+调用java构造函数，方法及属性。语法糖。
+使用java数组。
+便利函数。
+类型提示。
+创建和编译java类。
+资源清理和异常处理。
 
+==========
 3.1  调用Java
 
 Clojure提供了简单直接的语法调用Java代码：创建对象，调用方法，访问静态方法和属性。
 
+----
 访问构造函数，方法和属性
 
 Clojure提供了new形式调用构造函数创建实例：
@@ -63,8 +73,8 @@ user=> (. Math PI)
    (.setProperty "name" "Stuart")
    (.setProperty "favoriteColor" "blue"))
 
-----
-使用Java集合
+=======
+使用Java数组
 
 Clojure提供make-array函数创建Java数组：
 
@@ -76,11 +86,11 @@ user=> (make-array String 5)
 user=> (make-array String 2 2)
 #<String[][] [[Ljava.lang.String;@766a24>
 
-可以使用seq将任意Java数组包装称Clojure序列，如
+可以使用seq将任意Java数组包装成Clojure序列，如
 user=> (seq (make-array String 5))
 (nil nil nil nil nil)
 
-Clojure还提供了一序列类似int-array的函数用来创建Java基础类型数组，如
+Clojure还提供了一系列类似int-array的函数用来创建Java基础类型数组，如
 user=> (int-array 5)
 #<int[] [I@1742700>
 
@@ -157,7 +167,7 @@ user=> (areduce strings idx ret 0 (max ret (.length (aget strings idx))))
 
 上面的代码计算数组strings中，最长字符串的长度。
 
-----
+=========
 便利函数
 
 1. memfn 创建匿名函数包装Java方法，使其在Clojure中能像Clojure函数那样使用，如
@@ -199,6 +209,7 @@ user=> (:digestLength (bean (MessageDigest/getInstance "SHA")))
 =========
 3.2  性能优化
 
+----
 使用原始类型
 
 示例：
@@ -246,6 +257,8 @@ user=> (dotimes [_ 5] (time (integer-sum-to 10000)))
 ----
 添加类型暗示
 
+通过 #^宏 给参数添加类型元数据。
+
 Clojure支持给函数参数，let绑定，变量名及表达式添加类型暗示。
 
 类型暗示的作用：
@@ -276,6 +289,8 @@ Clojure可以在需要时很方便地在磁盘上生成一次性的代理或类�
 ----
 创建Java代理
 
+（hxzon：创建代理的作用是什么？）
+
 在Clojure中，可以使用代理来扩展一个类：
 (proxy class-and-interfaces super-cons-args & fns)
 
@@ -289,16 +304,16 @@ Clojure可以在需要时很方便地在磁盘上生成一次性的代理或类�
 说明：
 1. proxy创建了代理类的一个实例；
 
-2. proxy机制是完全通用的，可以用来任意Java对象
+2. proxy机制是完全通用的，可以用在任意Java对象。
 user=> (.start (Thread.
               (proxy [Runnable] [] (run [] (println "I ran!")))))
 user=> I ran!
 
-3. 在Java中必须实现接口的所有方法，但在Clojure中不必如此，如
+3. 在Java中必须实现接口的所有方法，但在Clojure中不必如此，如：
 user=> (proxy [Callable] [])
 #<Object$Callable clojure.proxy.java.lang.Object$Callable@11e0c13>
 
-如果忽略方法实现，Clojure将提供一个默认实现，该实现抛出异常UnsupportedOperationException，如
+如果忽略方法实现，Clojure将提供一个默认实现，该实现抛出异常UnsupportedOperationException，如：
 user=> (.call (proxy [Callable] []))
 java.lang.UnsupportedOperationException: call (NO_SOURCE_FILE:0)
 
@@ -318,7 +333,7 @@ user=> (.call #(println "foo"))
 ----
 编译到硬盘
 
-reader.tasklist类Clojure源代码：
+生成 reader.tasklist类 的Clojure源代码：
 
 (ns reader.tasklist
     (:gen-class
@@ -374,9 +389,9 @@ Clojure的这种模块性允许我们在运行时动态替换单个函数。
 3.4  异常处理
 
 异常处理的目的:
-(1) 包装检查异常
-(2) 使用finally块清理非内存资源如文件或网络句柄
-(3) 响应问题：忽略异常，重新操作，转换异常为非异常结果
+(1) 包装检查异常；
+(2) 使用finally块清理非内存资源如文件或网络句柄；
+(3) 响应问题：忽略异常，重新操作，转换异常为非异常结果。
 
 ----
 简化异常处理
@@ -386,19 +401,21 @@ Clojure的这种模块性允许我们在运行时动态替换单个函数。
 ----
 资源清理
 
-如果需要是否的资源有close方法，则可以使用with-open宏：
+如果需要释放的资源有close方法，则可以使用with-open宏：
 (with-open [name init-form] & body)
 
 Clojure内部，with-open创建一个try块，将init-form的结果赋给name，
-然后运行body，最后在finally块中是否绑定到name的资源。如：
+然后运行body，最后在finally块中释放绑定到name的资源。如：
 
 (defn spit [f content]
   (with-open [#^PrintWriter w (writer f)]
     (.print w content)))
+
 (spit "hello.out" "hello, world")
 
 将字符串"hello, world"写入文件hello.out
 
+----
 如果需要在finally块中做close以外事情，可以使用如下形式：
 
 (try expr* catch-clause* finally-clause?)
