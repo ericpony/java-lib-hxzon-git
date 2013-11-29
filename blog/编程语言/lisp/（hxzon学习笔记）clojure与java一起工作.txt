@@ -1,0 +1,217 @@
+（hxzon学习笔记）clojure与java一起工作
+
+by hxzon
+========
+1，生成类实例。
+
+通过new：
+(def rnd (new java.util.Random))
+
+也可直接写出类名加点号：
+(Random.)
+
+========
+2，调用类或实例的方法和属性。
+
+(. class-or-instance member-symbol & args)
+(. class-or-instance (member-symbol & args))
+
+(. rnd nextInt) 还可成 (.nextInt rnd) 。
+
+(. Math PI) 静态域还可写成 Math/PI 。
+
+静态方法可写成 (System/currentTimeMillis) 。
+
+----
+多次连续调用的缩写形式(.. class-or-instance form & forms)。
+
+(.getLocation (.getCodeSource (.getProtectionDomain (.getClass '(1 2)))))
+可以缩写为
+(.. '(1 2) getClass getProtectionDomain getCodeSource getLocation)
+
+--
+在同一对象上调用多个方法(doto class-or-inst & member-access-forms)。
+
+(doto (System/getProperties)
+   (.setProperty "name" "Stuart")
+   (.setProperty "favoriteColor" "blue"))
+
+========
+3，通过import显示引入类，这样就不需要类全名。
+
+(import [& import-lists])
+
+(import '(java.security MessageDigest))
+
+
+4，instance? 类似Java的instanceof，检测一个对象是否是某个类的实例。
+
+(instance? Integer 10)
+
+
+5，通过 #^宏 给参数添加类型元数据。
+
+[#^Class c]
+
+(defn integer-sum-to [n]
+(let [n (int n)]
+  (loop [i (int 1) sum (int 0)]
+    (if (<= i n)
+      (recur (inc i) (+ i sum))
+      sum))))
+
+
+6，memfn 创建匿名函数包装Java方法，使其在Clojure中能像Clojure函数那样使用。
+
+user=> (map (memfn toUpperCase) ["a" "short" "message"])
+("A" "SHORT" "MESSAGE")
+
+还可以写成如下形式：
+user=> (map #(.toUpperCase %) ["a" "short" "message"])
+("A" "SHORT" "MESSAGE")
+
+7，bean包装JavaBean将其转换为不可变的Clojure映射：
+(bean java-bean)
+
+8，format包装了Java的format方法，格式化字符串：
+
+(format fmt-string & args)，如
+
+user=> (format "%s ran %d miles today" "Stu" 8)
+"Stu ran 8 miles today"
+
+说明：占位符详细参考Java相关文档。
+
+======
+9，可以使用seq将任意Java数组包装成Clojure序列。
+
+user=> (seq (make-array String 5))
+(nil nil nil nil nil)
+
+10，创建数组。
+
+创建一维数组 (make-array class length)。
+
+user=> (make-array String 5)
+#<String[] [Ljava.lang.String;@5f6303>
+
+创建多维数组 (make-array class dim & more-dims)。
+
+user=> (make-array String 2 2)
+#<String[][] [[Ljava.lang.String;@766a24>
+
+一系列类似int-array的函数用来创建Java基础类型数组。
+
+user=> (int-array 5)
+#<int[] [I@1742700>
+
+11，
+aset 设置Java数组项值：
+一维数组 (aset java-array index value)
+多维数组 (aset java-array index-dim1 index-dim2 ... value)
+
+aget 获取Java数组项值：
+一维数组 (aget java-array index)
+多维数组 (aget java-array index-dim1 index-dim2 ...)
+
+alength获取数字长度：
+(alength java-array)
+
+12，
+to-array函数直接将集合转化为数组：
+(to-array sequence)。
+
+说明：转换的结果为Object数组。
+
+into-array函数也能将集合转换为数组，并且可以指定数组元素类型：
+(into-array type? seq)。
+
+user=> (into-array String ["Easier" "array" "creation"])
+#<String[] [Ljava.lang.String;@110c31>
+
+如果忽略类型参数，into-array则根据第一个元素猜测数组元素的类型。
+
+13，
+amap函数转换Java数组的每个元素：
+(amap a idx ret expr)
+
+amap创建数组的克隆，并绑定到变量ret，
+对数组a每一个元素执行expr表达式，idx绑定到数组元素索引，最后返回克隆的数组，如：
+
+user=> (def strings (into-array ["some" "strings" "here"]))
+#'user/strings
+
+user=> (seq (amap strings idx _ (.toUpperCase (aget strings idx))))
+("SOME" "STRINGS" "HERE")
+
+----
+areduce函数类似amap，但可以返回值任意：
+(areduce a idx ret init expr)
+
+areduce开始用init初始化ret，然后对每一个数组a元素计算表达式expr，将计算结果赋给ret返回。
+
+user=> (areduce strings idx ret 0 (max ret (.length (aget strings idx))))
+7
+
+上面的代码计算数组strings中，最长字符串的长度。
+
+=========
+14，处理异常
+
+(try expr* catch-clause* finally-clause?)
+; catch-clause -> (catch classname name expr*)
+; finally-clause -> (finally expr*)
+
+在Clojure中，检查异常不是必须的，如果不处理则直接忽略异常。
+
+----
+响应异常
+
+最常见的情况是在catch块中响应异常。
+
+示例：验证类是否可以找到。
+
+(defn class-available? [class-name]
+   (try
+      (Class/forName class-name) true
+      (catch ClassNotFoundException _ false)))
+
+如果类找不到，则抛出ClassNotFoundException异常，返回false。
+
+=========
+15，资源清理
+
+如果需要释放的资源有close方法，则可以使用with-open宏：
+(with-open [name init-form] & body)
+
+Clojure内部，with-open创建一个try块，将init-form的结果赋给name，
+然后运行body，最后在finally块中释放绑定到name的资源。
+
+(defn spit [f content]
+  (with-open [#^PrintWriter w (writer f)]
+    (.print w content)))
+
+========
+16，
+在Clojure中，可以使用代理来扩展一个类：
+(proxy class-and-interfaces super-cons-args & fns)
+
+proxy创建了代理类的一个实例。
+
+proxy机制是完全通用的，可以用在任意Java对象。
+
+user=> (.start (Thread.
+              (proxy [Runnable] [] (run [] (println "I ran!")))))
+user=> I ran!
+
+在Java中必须实现接口的所有方法，但在Clojure中不必如此。
+user=> (proxy [Callable] [])
+#<Object$Callable clojure.proxy.java.lang.Object$Callable@11e0c13>
+
+如果忽略方法实现，Clojure将提供一个默认实现，该实现抛出异常UnsupportedOperationException。
+
+
+
+
+
+

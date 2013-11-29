@@ -29,7 +29,7 @@ user=> (def rnd (new java.util.Random))
 
 使用特殊形式(.)调用方法：
 (. class-or-instance member-symbol & args)
-(. class-or-instance (member-symbo & args))
+(. class-or-instance (member-symbol & args))
 
 下面的代码调用rnd的nextInt方法：
 user=> (. rnd nextInt)
@@ -405,7 +405,7 @@ Clojure的这种模块性允许我们在运行时动态替换单个函数。
 (with-open [name init-form] & body)
 
 Clojure内部，with-open创建一个try块，将init-form的结果赋给name，
-然后运行body，最后在finally块中释放绑定到name的资源。如：
+然后运行body，最后在finally块中释放绑定到name的资源。
 
 (defn spit [f content]
   (with-open [#^PrintWriter w (writer f)]
@@ -427,7 +427,7 @@ Clojure内部，with-open创建一个try块，将init-form的结果赋给name，
 
 最常见的情况是在catch块中响应异常。
 
-示例：验证类是否可以
+示例：验证类是否可以找到。
 (defn class-available? [class-name]
    (try
       (Class/forName class-name) true
