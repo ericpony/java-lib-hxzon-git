@@ -14,7 +14,8 @@ by hxzon
 
 3，依赖注入。（hxzon：书中例子只是说明clojure可扩展一个对象，不受类型和继承限制，和“依赖注入”本身完全不搭边。）
 
-4，面向方面编程。本身函数就可作为参数，很容易被包装。另外还有宏，还有专门的clojure库。
+4，面向方面编程。本身函数就可作为参数，很容易被包装。另外还有宏，
+还有专门的clojure库：Robert Hooke library  (https://github.com/technomancy/robert-hooke)。
 
 5，抽象工厂，策略模式，命令模式。本身函数就可作为参数，不必借助对象，直接组合即可。
 
