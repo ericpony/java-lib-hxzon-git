@@ -58,7 +58,7 @@ g  (NO_SOURCE_FILE:0)
 为了让函数可以适用各种参数情况，可以用定义含多个参数列表和方法体的函数：
 (defn  name  doc-string?  attr-map?  ([params*]  body)+  )
 
-不同参数的方法体可以互相调用。如：
+不同参数的方法体可以互相调用。
 user=>  (defn  greeting
                     "Returns  a  greeting  of  the  form  'Hello,  username.'
                       Default  username  is  'world'."

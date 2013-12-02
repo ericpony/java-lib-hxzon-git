@@ -30,6 +30,7 @@ Clojure提供强大的并发库，由四个API组成，增强不同并发模型�
 如：(def current-track (ref "Mars, the Bringer of War")) 定义引用current-track。
 
 ref包装并保护它内部的状态，控制对它内部状态的访问。
+
 可以使用deref查看引用内容：
 (deref reference)
 
@@ -43,10 +44,11 @@ user=> @current-track
 
 ----
 ref-set
+
 使用ref-set修改引用指向：
 (ref-set reference new-value)
 
-因为引用refs是可变的，必须保护对它们的修改；
+因为引用refs是可变的，必须保护对它们的修改。
 在Clojure中，使用事务来保护，事务通过dosync进行包装：
 (dosync & exprs)
 
@@ -169,7 +171,7 @@ user=> @current-track
 如修改current-track为“Credo”：
 (reset! current-track "Credo")
 
-使用reset!不能直接同时修改current-track和current-composer在一个原子中。
+？？使用reset!不能直接同时修改current-track和current-composer在一个原子中。
 但是可以通过将current-track和current-composer存贮到一个map中，然后通过atom来同时修改：
 
 user=> (def current-track (atom {:title "Credo" :composer "Byrd"}))
@@ -178,10 +180,11 @@ user=> (def current-track (atom {:title "Credo" :composer "Byrd"}))
 user=> (reset! current-track {:title "Spem in Alium" :composer "Tallis"})
 {:title "Spem in Alium", :composer "Tallis"}
 
+----
 如果要部分修改上述map，则可以使用swap!:
 (swap! an-atom f & args)
 
-swap更新atom的值通过函数f及其参数args，如只修改上述current-track的标题：
+swap通过函数f及其参数args来更新atom的值，如只修改上述current-track的标题：
 
 user=> (swap! current-track assoc :title "Sancte Deus")
 {:title "Sancte Deus", :composer "Tallis"}
@@ -207,6 +210,7 @@ user=> (swap! current-track assoc :title "Sancte Deus")
 同样地，可以通过deref和@查看agent的当前值：
 @counter #返回 1
 
+----
 如果你想确保send到agent的函数被执行，可以调用await或await-for:
 (await & agents)
 (await-for timeout-millis  & agents)
@@ -227,7 +231,7 @@ await-for等待超时后将返回nil，而await就一直等待直到agent完成�
 可以通过agent-errors获取agent执行过程中的异常，如：
 (agent-errors counter)
 
-一旦agent有错误，所有后续的查询都将返回错误，可以通过clear-agent-errors是agent变得可用：
+一旦agent有错误，所有后续的查询都将返回错误，可以通过clear-agent-errors使agent变得可用：
 (clear-agent-errors counter)
 
 ----
@@ -248,7 +252,7 @@ await-for等待超时后将返回nil，而await就一直等待直到agent完成�
     (send-off backup-agent (fn [filename](spit filename snapshot) filename))
      snapshot)))
 
-这里使用了send-off代替send，send-off是send的一个变体将阻塞线程，就像写文件操作一样。
+这里使用了send-off代替send，send-off是send的一个变体，将阻塞线程，就像写文件操作一样。
 
 ----
 统一更新模型
@@ -258,6 +262,7 @@ await-for等待超时后将返回nil，而await就一直等待直到agent完成�
 这种统一模型和各种辅助函数如下表所示：
 
 Update Mechanism        Ref Function    Atom Function    Agent Function
+
 Function application    alter           swap!            send-off
 Function(commutative)   commute         N/A              N/A
 Function(nonbocking)    N/A             N/A              send
@@ -285,23 +290,26 @@ user=> 10
 (binding [bindings] & body)
 
 绑定有动态作业域，换句话说，
-就是一个绑定在执行它的线程中从绑定的地方开始直到退出线程为止都可见，但对其他线程不可见。
+就是一个绑定在执行它的线程中，从绑定的地方开始直到退出线程为止都可见，但对其他线程不可见。
 
 举例说明：
 
 (binding [foo 42] foo)
 
-为了说明binding和let的不同创建一个简单的输出foo值的函数
+--
+为了说明binding和let的不同，创建一个简单的输出foo值的函数
 user=> (defn print-foo [] (println foo))
 #'user/print-foo
 
-然后分别通过let和binding来调用print-foo
+然后分别通过let和binding来调用print-foo：
+
 user=> (let [foo "let foo"] (print-foo))
 10
+
 user=> (binding [foo "bound foo"] (print-foo))
 bound foo
 
-从执行结果可以看出，let在let形式外就不起作用，因此还是输出10；
+从执行结果可以看出，let在let形式外（hxzon：？？）就不起作用，因此还是输出10；
 而binding则从binding形式开始的任何向下调用链中都有效，因此输出"bound foo"。
 
 ----
@@ -348,8 +356,9 @@ user=> (demo-memoize)
 
 一些Java API依赖与回调事件处理，如GUI框架和XML解析器SAX。
 这些回调处理都是用可变对象写的，并且倾向于单线程。
-在Clojure中，实现回到处理的最好折中方式是动态绑定，引入类似变量的可变引用，
-又因为它们在但线程环境使用，因此不会出现并发问题。
+
+在Clojure中，实现回调处理的最好折中方式是动态绑定，引入类似变量的可变引用，
+又因为它们在单线程环境使用，因此不会出现并发问题。
 
 
 最后总结以下Clojure的并发模型，如下：
