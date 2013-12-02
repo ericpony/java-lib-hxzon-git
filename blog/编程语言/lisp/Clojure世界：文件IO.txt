@@ -1,0 +1,128 @@
+Clojure世界：文件IO
+
+http://www.blogjava.net/killme2008/archive/2012/02/16/370144.html
+
+文件读写是日常编程中最经常使用的操作之一。
+这篇blog将大概介绍下Clojure里对文件操作的常用类库。
+
+    首先介绍标准库clojure.java.io，这是最经常用的IO库，定义了常见的IO操作。
+
+    首先，直接看一个例子，可以熟悉下大多数常用的函数：
+
+(ns io
+  (:use [clojure.java.io]))
+
+;;file函数，获取一个java.io.File对象
+(def f (file "a.txt"))
+
+;;拷贝文件使用copy
+(copy f (file "b.txt"))
+
+;;删除文件，使用delete-file
+(delete-file f)
+
+;;更经常使用reader和writer
+(def rdr (reader "b.txt" :encoding "utf-8"))
+(def wtr (writer "c.txt" :append true))
+
+;;copy可以接受多种类型的参数
+(copy rdr wtr :buffer-size 4096)
+
+;;关闭文件
+(.close wtr)
+(.close rdr)
+
+
+
+    这个例子基本上说明了大多数常见的操作。但是有些问题需要解释下。
+
+    首先，通过file这个函数可以将各种类型的对象转化为java.io.File对象，
+file可以接受String,URL,URI以及java.io.File本身作为参数，并返回java.io.File。
+有了File对象，你就可以调用java.io.File类中的各种方法，比如判断文件是否存在：
+
+(.exists (file "a.txt")) => true or false
+
+    其次，可以通过delete-file来删除一个文件，它是调用File的delete方法来执行的，
+但是File.delete会返回一个布尔值告诉你成功还是失败，如果返回false，那么delete-file会抛出IO异常，
+如果你不想被这个异常打扰，可以让它“保持安静”：
+    (delete-file f true)
+
+    拷贝文件很简单，使用copy搞定，copy也可以很“宽容”，也可以接受多种类型的参数并帮你自动转换，
+input可以是InputStream, Reader, File, byte[] 或者String，
+而output可以是OutputStream, Writer或者File。是不是很给力？
+这都是通过Clojure的protocol和defmulti做到的。
+但是，copy并不帮你处理文件的关闭问题，假设你传入的input是一个File，output也是一个File，
+copy会自动帮你打开InputStream和OutputStream并建立缓冲区做拷贝，
+但是它不会帮你关闭这两个流，因此你要小心，如果你经常使用copy，这可能是个内存泄漏的隐患。
+
+    更常用的，我们一般都是用reader和writer函数来打开一个BufferedReader和BufferedWriter做读写，
+同样reader和writer也可以接受多种多样的参数类型，甚至包括Socket也可以。
+因为writer打开的通常是一个BufferedWriter，所以你如果用它写文件，有时候发现write之后文件还是没有内容，
+这是因为数据暂时写到了缓冲区里，没有刷入到磁盘，可以明确地调用(.flush wtr)来强制写入；
+或者在wtr关闭后系统帮你写入。
+reader和writer还可以传入一些配置项，如:encoding指定读写的字符串编码，writer可以指定是否为append模式等。
+
+    Clojure并没有提供关闭文件的函数或者宏，你简单地调用close方法即可。
+clojure.java.io的设计很有原则，它不准备将java.io都封装一遍，而是提供一些最常用方法的简便wrapper供你使用。
+
+    刚才提到copy不会帮你关闭打开的文件流，但是我们可以利用with-open这个宏来自动帮你管理打开的流：
+(with-open [rdr (reader "b.txt")
+            wtr (writer "c.txt")]
+  (copy rdr wtr))
+
+   with-open宏会自动帮你关闭在binding vector里打开的流，你不再需要自己调用close，也不用担心不小心造成内存泄漏。
+因此我会推荐你尽量用reader和writer结合with-open来做文件操作，而不要使用file函数。
+file函数应该用在一些判断是否存在，判断文件是否为目录等操作上。
+
+    在clojure.core里，还有两个最常用的函数slurp和spit，一个吃，一个吐，
+也就是slurp读文件，而spit写文件，他们类似Ruby的File里的read和write，用来完整地读或者写文件：
+    (prn (slurp "c.txt"))
+    (spit "c.txt" "hello world")
+
+   用法简单明了，slurp将文件完整地读出并返回字符串作为结果，它还接受:encoding参数来指定字符串编码，你猜的没错，它就是用reader和with-open实现的。
+spit同样很简单，将content转化为字符串写入文件，也接受:encoding和:append参数。
+
+    深度优先遍历目录，可以使用file-seq，返回一个深度优先顺序遍历的目录列表，这是一个LazySeq：
+(user=> (file-seq (java.io.File. "."))
+
+
+(#<File .> #<File ./.gitignore> #<File ./.lein-deps-sum> #<File ./b.txt> #<File ./c.txt> #<File ./classes> ⋯⋯ )
+
+    上面的介绍已经足以让你对付大多数需求了。
+接下来，介绍下几个开源库。首先是fs这个库，它封装了java.io.File类的大多数方法，让你用起来很clojure way，很舒服，例如：
+(exists? "a.txt")
+(directory? "file")
+(file? "file")
+(name "/home/dennis/.inputrc")
+(mkdir "/var/data")
+(rename "a.txt" "b.txt")
+(def tmp (temp-dir))
+(glob #".*test.*")
+(chmod 744 "a.txt")
+
+……
+
+    更多介绍请看它的源码。https://github.com/Raynes/fs/
+读写二进制文件也是一个很常见的需求，Clojure有几个DSL库干这个事情，可以很直观地定义二进制格式来encode/decode，
+比如byte-spec这个库，看看它的例子：
+
+defspec basic-spec
+         :a :int8
+         :b :int16
+         :c :int32
+         :d :float32
+         :e :float64
+         :f :string)
+
+;; An object to serialize
+(def foo {:a 10 :b 20 :c 40 :d 23.2 :e 23.2 :f "asddf"})
+
+;; And serialize it to a byte array like this:
+(spec-write-bytes basic-spec foo) ;; => [bytes]
+
+;; reading in a byte array with the basic-spec format works like this:
+(spec-read-bytes basic-spec bytes)
+
+    相当直观和给力吧。Gloss是一个更强大的DSL库，非常适合做网络通讯的协议处理。
+这里就不多做介绍了，你可以自己看它的例子和文档。
+https://github.com/ztellman/gloss/wiki/Introduction
