@@ -1,0 +1,68 @@
+clojure-运行环境安装
+
+http://dead-knight.iteye.com/blog/1827059
+
+
+一、clojure下载及安装 
+官方的入门指南： 
+http://clojure.org/getting_started 
+
+下载clojure： 
+（注：由于clojure运行在jvm之上，并且需要jdk1.5以上的版本） 
+稳定版下载地址（1.5）： 
+http://repo1.maven.org/maven2/org/clojure/clojure/1.5.0/clojure-1.5.0.zip 
+低版本下载地址： 
+http://clojure.org/downloads_older 
+
+----
+运行环境： 
+
+将下载的zip文件解压，放到某个指定目录，如D:/work/clojure14 
+
+cd进入这个目录，执行以下命令即可 。
+java -cp clojure-1.4.0.jar clojure.main 
+如： 
+
+D:\work\clojure14>java -cp clojure-1.4.0.jar clojure.main  
+Clojure 1.4.0  
+user=> (+ 1 2 3)  
+6  
+user=>  
+
+
+=======
+二、项目构建工具lein安装
+ 
+下载 leiningen 的 jar 。
+从 https://github.com/technomancy/leiningen/downloads 下载 leiningen-2.0.0-preview10-standalone.jar 
+
+下载windows下启动lein的脚本 。
+https://raw.github.com/technomancy/leiningen/preview/bin/lein.bat 
+
+把前两步骤下载的文件分别放入：D:\work\leiningen目录，并修改lein的脚本，增加配置信息： 
+
+set LEIN_HOME=D:\work\leiningen 
+set LEIN_JAR=D:\work\leiningen\leiningen-2.0.0-preview10-standalone.jar 
+(或者在环境变量中配置这两个属性) 
+
+执行脚本 
+打开cmd，进入到leiningen目录，执行lein.bat 。
+
+--
+环境变量配置 
+
+修改环境变量，把leiningen目录添加到path属性中。 
+重新开启cmd，执行lein version，如果能看到lein的版本号，表示安装成功。
+接着可以打开clojure的repl环境，执行命令：lein repl即可。 
+
+
+=====
+三、相关开发工具 
+
+1.CounterClockwise（Eclipse插件） 
+下载地址：http://ccw.cgrand.net/updatesite/ 
+
+2.Clooj 
+下载地址：https://github.com/arthuredelstein/clooj/downloads 
+下载后，直接右键选择打开方式为java platform se binary即可。
+

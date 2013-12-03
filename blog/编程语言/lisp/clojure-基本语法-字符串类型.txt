@@ -1,0 +1,91 @@
+clojure-基本语法-字符串类型
+
+http://dead-knight.iteye.com/blog/1827681
+
+=======
+一、创建
+ 
+函数str： 
+函数 (str) 接受任意数量的参数。
+如果参数不是字符串则将其转换为字符串，返回创建的新字符串。
+如果没有参数或为nil，则返回空字符串""。 
+
+user=> (str 1)  
+"1"  
+user=> (str -2.5)  
+"-2.5"  
+user=> (str "a")  
+"a"  
+user=> (str "abc" 123)  
+"abc123"  
+
+user=> (str)  
+""  
+
+user=> (str '(1 2 3))  
+"(1 2 3)"  
+
+user=> (str nil)  
+""  
+
+
+其它比较少用的创建函数：
+print-str、println-str、pr-str、prn-str、with-out-str 
+
+======
+二、string操作 
+
+----
+count函数： 
+count函数接受字符串参数时，返回字符串的字符数。 
+
+user=> (count "abc123")  
+6  
+user=> (count nil)  
+0  
+
+----
+subs函数： 
+subs函数接受两个或三个参数, 第一个是字符串，第二个是一个整数偏移量，第三个（可选）是另一个整数偏移量。
+函数返回从第一个偏移量（含），到第二个（不含）偏移量或者结尾（如果没有第二个偏移量）截取的子字符串。 
+
+user=> (subs "Clojure" 1)  
+"lojure"  
+user=> (subs "Clojure" 1 3)  
+"lo"  
+user=> (subs "Clojure" 1 20)  
+StringIndexOutOfBoundsException String index out of range: 20  java.lang.String.  
+substring (String.java:1934)  
+
+----
+format函数： 
+format函数用于格式化字符串。使用jdk的java.util.Formatter类完成格式化。 
+
+user=> (format "hello there, %s" "clojure")  
+"hello there, clojure"  
+user=> (format "%5d" 3)  
+"    3"  
+user=> (format "pad with leading zeros %07d" 5432)  
+"pad with leading zeros 0005432"  
+
+----
+检查函数 
+字符串检查函数 (string?) 接受一个参数，如果是字符串返回true，否则返回false 。
+
+user=> (string? "abc")  
+true  
+
+user=> (string? 12)  
+false  
+
+----
+字符检查函数(char?)接受一个参数，如果是字符类型返回true，否则返回false 。
+
+user=> (char? "abc")  
+false  
+
+user=> (char? \a)  
+true  
+
+user=> (char? 1)  
+false  

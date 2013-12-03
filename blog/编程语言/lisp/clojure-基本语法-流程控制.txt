@@ -1,0 +1,324 @@
+clojure-基本语法-流程控制
+
+http://dead-knight.iteye.com/blog/1828668
+http://dead-knight.iteye.com/blog/1829618
+
+
+一、标准的流程控制 
+
+----
+1，if： 
+将一个判断表达式作为它的第一个参数进行求值。
+如果求值为true，那么就返回它的第二个参数（相当于“then”子句）的求值结果。
+如果结果为false（包括nil）就返回第三个参数的求值结果（相当于“else”子句），前提是有提供第三个参数并且不为空。 
+
+user=> (defn is-small [number] (if (< number 100) "yes" "no"))  
+#'user/is-small  
+
+user=> (is-small 50)  
+"yes"  
+
+user=> (is-small 110)  
+"no"  
+
+if条件中除了false和nil，其他都为true： 
+
+user=> (if true "true")  
+"true"  
+user=> (if 0 "true")  
+"true"  
+user=> (if "" "true")  
+"true"  
+user=> (if nil "true")  
+nil  
+user=> (if false "true")  
+nil  
+
+----
+2，if-not： 
+跟 if 的用法相同，但是作用是相反的。
+当逻辑为false的时候会去计算第二个参数的值，为true的时候才计算第三个参数的值。
+
+user=> (if-not (zero? 0) "no" "yes")  
+"yes"  
+user=> (if (not (zero? 0)) "no" "yes")  
+"yes"  
+
+----
+3，if-let： 
+if-let宏接受两个参数，第一个参数为绑定变量，第二个参数为表达式。
+并根据第二个表达式参数返回的值确定执行then、else语句。 
+
+user=> (defn if-let-test [arg] (if-let [x arg] "true" "false"))  
+#'user/if-let-test  
+
+user=> (if-let-test 1)  
+"true"  
+user=> (if-let-test nil)  
+"false"  
+user=> (if-let-test false)  
+"false"  
+
+----
+4，when: 
+when没有else子句，如果when后面第一个参数为true，则执行条件后的所有语句，否则返回nil。 
+
+user=> (when false (println "is true") "return true")  
+nil  
+
+user=> (when true (println "is true") "return true")  
+is true  
+"return true"  
+
+user=> (def has-value (when true (println "hello world") "returned value"))  
+hello world  
+#'user/has-value  
+
+user=> has-value  
+"returned value"  
+
+----
+5，when-not： 
+when-not与when类似，只是第一个参数返回false，才执行后面所有语句，否则返回nil。 
+
+user=> (when-not  false (println "is true") "return true")  
+is true  
+"return true"  
+user=> (when-not true (println "is true") "return true")  
+nil  
+
+----
+6，when-let： 
+when-let与if-let类似，只有绑定变量值不是false、nil时，才执行后面所有语句，否则直接返回nil。 
+
+user=> (when-let [a true] (println "true") "return true")  
+true  
+"return true"  
+
+user=> (when-let [a false] (println "true"))  
+nil  
+
+user=> (when-let [a nil] (println "true"))  
+nil  
+
+----
+7，cond： 
+cond 可以有任意个“判断/表达式”对，作为它的参数。
+如果满足第一个判断，就执行第一个判断对应的表达式。
+如果没有满足第一个条件，就会尝试后面的判断表达式，以此类推。
+如果一个都没有满足，那么返回 nil 。
+除非你用一个 :else 关键字放在最后来抓住剩下的所有可能性。
+cond类似于java中的switch..case..default语句，如： 
+
+user=> (defn f [n] (cond (< n 0) "<0" (< n 10) "<10" :else ">=10"))  
+#'user/f  
+
+user=> (f -2)  
+"<0"  
+
+user=> (f 2)  
+"<10"  
+
+user=> (f 10)  
+">=10"  
+
+----
+8，case： 
+case可以简单理解为java中switch的case，如下 
+
+user=> (let [mystr "hello"];首先绑定mystr的值为hello  
+          (case mystr    
+            "" 0   
+            "hello" (count mystr)));case用于匹配mystr的值  
+5       
+
+user=> (let [mystr "no match"]   
+          (case mystr    
+                "" 0   
+                "hello" (count mystr)   
+                "default")) ;最后一个表达式只有匹配不成功时才执行  
+"default"  
+
+--
+case可以用列表一次匹配多个值： 
+
+user=> (defn f [x] (case x  
+       (5 10) "*5"  
+       (3 6 9) "*3"  
+       "others"))  
+#'user/f  
+
+user=> (f 5)  
+"*5"  
+
+user=> (f 10)  
+"*5"  
+
+user=> (f 6)  
+"*3"  
+
+user=> (f 1)  
+"others"  
+
+----
+9，do： 
+do执行多条语句，返回最后一条语句值 
+
+user=> (def v (do (println 123) (println 321) -1))  
+123  
+321  
+#'user/v  
+
+user=> v  
+-1  
+
+----
+10，loop、recur： 
+如果递归的层次太深的话，那么可能会产生内存不足的情况。
+所以一些编程语言利用 “tail call optimization” (TCO)的技术来解决这个问题。
+在Clojure里面避免这个问题的一个办法是使用loop 和recur。 
+
+;定义递归语句完成10+9+……1=55  
+user=> (loop [sum 0 cnt 10] (if (= cnt 0) sum (recur (+ cnt sum) (dec cnt))))  
+55  
+
+loop/recur 组合把一个看似递归的调用变成一个迭代，迭代不需要占用栈空间。 
+loop special form 跟let special form 类似的地方是它们都会建立一个本地binding，但是同时它也建立一个递归点，
+而这个递归点就是recur的参数里面的那个函数。
+loop给这些binding一个初始值。
+对recur 的调用使得程序的控制权返回给loop， 并且给那些本地binding赋了新的值。
+给recur传递的参数一定要和loop所创建的binding的个数一样。
+同样recur只能出现在loop这个special form的最后一行。
+
+
+============
+二、异常处理
+ 
+Clojure代码里面抛出来的异常都是运行时异常。
+当然从Clojure代码里面调用的java代码还是可能抛出那种需要检查的异常的。
+
+----
+try,catch,finally 以及throw 提供了和java里面类似的功能: 
+
+user=> (try (throw (Exception. "error")) (finally (println "final")))  
+final  
+Exception error  user/eval310 (NO_SOURCE_FILE:1)  
+
+
+user=> (try (/ 3 0) (catch Exception e (println e)))  
+#<ArithmeticException java.lang.ArithmeticException: Divide by zero>  
+nil  
+
+----
+assert： 
+它测试一个表达式， 如果这个表达式的值为false的话，它会抛出异常。 
+
+user=> (assert true)  
+nil  
+
+user=> (assert false)  
+AssertionError Assert failed: false  user/eval317 (NO_SOURCE_FILE:1)  
+
+user=> (assert nil)  
+AssertionError Assert failed: nil  user/eval319 (NO_SOURCE_FILE:1)  
+
+user=> (assert 0)  
+nil  
+
+user=> (assert [1 2 3])  
+nil  
+
+user=> (assert "foo")  
+nil  
+
+
+==========
+三、基于函数的流程控制 
+
+----
+1，repeatedly： 
+repeatedly字面意思为重复函数。一般的用法如下： 
+
+user=> (repeatedly 5 #(rand-int 11))  
+(6 8 2 6 6)  
+
+重复产生5次随机数。
+rand-int 11表示0至11的随机数。 
+
+--
+这里顺便提一下repeat函数：repeat函数接受一/两个常量参数，用法如下： 
+
+user=> (repeat 5 (int (rand-int 100)))  
+(30 30 30 30 30)  
+
+当repeat、repeatedly函数只接受一个参数时（即没有重复次数的参数），需要配合take来中止，否则会产生内存溢出的错误。如下： 
+
+user=> (repeatedly #(rand-int 11))  
+OutOfMemoryError Java heap space  java.util.Arrays.copyOf (Arrays.java:2882)  
+
+user=> (take 5 (repeatedly #(rand-int 11)))  
+(10 7 0 2 8)  
+
+----
+2，iterate： 
+迭代函数形式如下： 
+(iterate f v) 
+相当于： 
+while(true) { v = f(v) } 
+所以一般要配合(take n sequence)来中止： 
+
+user=> (take 10 (iterate inc 5)) ; (5 6 7 8 9 10 11 12 13 14)  
+user=> (take 10 (iterate #(+ % 5) 5)) ; (5 10 15 20 25 30 35 40 45 50)  
+user=> (take 10 (iterate #(* % 2) 2)) ; (2 4 8 16 32 64 128 256 512 1024)  
+
+
+========
+四、基于序列的流程控制
+
+----
+1，dotimes： 
+dotimes 会执行给定的表达式一定次数, 一个本地binding会被给定值：从0到一个给定的数值。如下： 
+
+user=> (dotimes [num 3] (println "number:" (inc num)))  
+number: 1  
+number: 2  
+number: 3  
+nil  
+
+----
+2，doseq： 
+doseq和for的语法是一样的，只不过for返回lazy seq而doseq接受任意数量的表达式, 以有副作用的方式执行它们, 并且返回nil 。
+
+user=> (doseq [i (range 10)] (println i))  
+0  
+1  
+2  
+3  
+4  
+5  
+6  
+7  
+8  
+9  
+nil  
+
+user=> (doseq [i [1 2 3] j [10 20]] (println i "-" j))  
+1 - 10  
+1 - 20  
+2 - 10  
+2 - 20  
+3 - 10  
+3 - 20  
+nil  
+
+----
+3，for： 
+for、doseq都支持遍历多个集合(最右边的最快)，同时还可以用:when 和 :while来过滤。 
+
+user=> (for [x (range 3 7)] (* x x))  
+(9 16 25 36)  
+  
+user=> (for [x [0 1 2 3 4 5] :let [y (* x 3)] :when (even? y)] y)  
+(0 6 12)  
+
+上面第二条语句可理解为：先定义x为集合，再使用let将y赋值为x*3，最后判断y是否为偶数，偶数才返回。

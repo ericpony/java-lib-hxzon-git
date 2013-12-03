@@ -1,0 +1,287 @@
+clojure-基本语法-函数定义
+
+http://dead-knight.iteye.com/blog/1828075
+
+
+一、创建函数：
+
+---- 
+1，fn： 
+fn是一个宏（后面进行详细描述），用于定义一个简单的函数。
+
+user=> (fn [] "hello")  
+#<user$eval375$fn__376 user$eval375$fn__376@eabd2f>  
+
+user=> ((fn [] "hello"))  
+"hello"  
+
+user=> ((fn [x] x) "hello") ; 带参数  
+"hello"  
+
+----
+2，简短的函数可以使用#()，%表示唯一的参数；%1、%2 ..表示第1、2、..个参数；%&表示所有参数。
+
+user=> (#(/ % 3) 4);结果为3/4  
+4/3  
+
+user=> (#(/ %2 %1) 3 4);结果为3/4  
+4/3  
+
+user=> (#(apply / %&) 3 5 7);结果为3/5/7  
+3/35  
+
+下面是几个定义函数的例子： 
+
+user=> ((fn [x] (+ 1 x)) 3);一个参数，完成加一的功能  
+4  
+
+user=> (#(+ 1 %) 3);使用#符号完成加一的功能  
+4  
+
+user=> ((fn [x y] (* x y)) 3 4);两个参数，实现乘积的功能  
+12  
+
+user=> (#(* %1 %2) 3 4);使用#符号完成两个参数乘积的功能  
+12  
+
+----
+3，defn： 
+defn 宏用来定义一个函数。
+它的参数包括一个函数名字，一个可选的注释字符串，参数列表，然后一个方法体。
+而函数的返回值则是方法体里面最后一个表达式的值。
+所有的函数都会返回一个值， 只是有的返回的值是nil。 
+
+user=> (defn f1 [] "hello");定义无参函数  
+#'user/f1  
+
+user=> (f1)  
+"hello"  
+
+user=> (defn f2 [x] (format "hello %s" x));定义一个参数函数  
+#'user/f2  
+
+user=> (f2 "girl")  
+"hello girl"  
+
+user=> (defn f3 [x y] (+ x y));定义两个参数相加的函数  
+#'user/f3  
+
+user=> (f3 2 4)  
+6  
+
+user=> (defn f4 "f4 function" [] (println "f4 function"));带注释的函数  
+#'user/f4  
+
+user=> (f4)  
+f4 function  
+nil  
+
+user=> (doc f4);通过doc查看函数注释信息  
+-------------------------  
+user/f4  
+([])  
+  f4 function  
+nil  
+
+user=> (defn f5 ([] (str "no parameter"))  
+  #_=> ([name] (str "my name is " name)));定义重载的函数  
+#'user/f5  
+
+user=> (f5)  
+"no parameter"  
+
+user=> (f5 "clojure")  
+"my name is clojure"  
+
+user=> (defn f1 [& a] (str a));定义变参函数  
+#'user/f1  
+
+user=> (f1 1 2 3)  
+"(1 2 3)"  
+
+user=> (defn m [& arg] (str arg ", size=" (count arg)));定义变参函数  
+#'user/m  
+
+user=> (m 1 2 3 4 5)  
+"(1 2 3 4 5), size=5"  
+
+user=> (m "a" 1 2.3 -1)  
+"(\"a\" 1 2.3 -1), size=4"  
+
+user=> (defn exp [a f1 b f2 c] (f2 (f1 a b) c));函数作为参数  
+#'user/exp  
+
+user=> (exp 5 - 2 + 3)  
+6  
+
+user=> (defn f [a] (fn [b] (- a b)));函数作为返回值  
+#'user/f  
+
+user=> ((f 7) 4)  
+3  
+
+----
+4，defn-： 
+
+defn-与defn功能一致，都是用于定义函数的，但是defn-定义的函数作用域是私有的，而defn定义的函数是公有的。
+
+user=> (ns test1);ns的意思是切换到指定的命名空间，如果不存在，则新建该命名空间  
+nil  
+
+test1=> (defn- foo [] "world");定义私有函数foo，返回字符串world  
+#'test1/foo  
+
+test1=> (defn bar [] (str "hello " (foo)));定义公有函数bar，并调用私有函数foo  
+#'test1/bar  
+
+test1=> (foo);当前命名空间内调用foo函数  
+"world"  
+
+test1=> (bar);当前命名空间内调用bar函数  
+"hello world"  
+
+test1=> (ns test2);切换到test2命名空间中  
+nil  
+
+test2=> (test1/bar);调用test1命名空间的bar函数，返回成功  
+"hello world"  
+
+test2=> (test1/foo);调用test1命名空间的foo函数，出现异常，提示test1的foo函数不是公开的  
+CompilerException java.lang.IllegalStateException: var: #'test1/foo is not public, compiling:(NO_SOURCE_PATH:1)  
+
+----
+5，组合函数comp： 
+形如： 
+
+((comp f1 f2 .. fn) arg1 arg2 .. argn)  
+
+就是对参数从右到左组合执行所有函数，可以转变为： 
+
+(f1 (f2 (.. (fn arg1 arg2 .. argn))))  
+
+举例如下： 
+
+user=> (defn f [x y] (- (* x y)));使用defn定义函数方式  
+#user/f  
+
+user=> (f 2 4)  
+-8  
+
+user=> (def fc (comp - *));使用comp定义组合函数方式  
+#user/fc  
+
+user=> (fc 2 4)  
+-8  
+
+----
+6，偏函数partial： 
+形如： 
+
+((partial  f  arg1 arg2 .. argn)  arga argb .. argz)  
+
+就是执行： 
+(f  arg1 arg2 .. argn  arga argb .. argz) 
+注意：偏函数的第一个参数是一个函数，后面至少有1个其他参数 。
+
+partial函数称为“偏函数”或者“部分完整函数”，因为它是不完整的，定义也用def而不是defn。 
+
+user=> (defn f [n] (* n 10));正常函数  
+#'user/f  
+
+user=> (f 2)  
+20  
+
+user=> (def fp (partial * 10));偏函数  
+#'user/fp  
+
+user=> (fp 2)  
+20  
+
+----
+7，constantly函数： 
+
+constantly函数接受一个参数x，并返回一个变参函数，该变参函数无论参数是什么，都返回这个x值。 
+
+user=> (def consf (constantly "a"))  
+#'user/consf  
+
+user=> (consf 1 2 3)  
+"a"  
+
+user=> (consf "a")  
+"a"  
+
+user=> (consf [1 2 3])  
+"a"  
+
+
+============
+二、函数调用
+
+----
+1，->: 
+宏-> 我们也称为 “thread” 宏, 它本质上是调用一系列的函数，前一个函数的返回值作为后一个函数的参数，返回最后一次函数调用的值。
+比如下面两行代码的作用是一样的： 
+
+user=>(first (.split (.replace (.toUpperCase "a b c d") "A" "X") " "))  
+user=>"X"   
+
+user=> (-> "a b c d" .toUpperCase (.replace "A" "X") (.split " ") first)  
+user=>"X"   
+
+这样调用的好处是更少的()，也更接近于scala的习惯。 
+
+(-> (/ 144 12) (/ 2 3) str keyword list)  
+
+(list (keyword (str (/ (/ 144 12) 2 3))))  
+
+上面两句结果一样。 
+
+----
+2，->>： 
+后面的函数迭代使用之前的函数结果作为最后一个参数，返回最后一次函数调用的值 。
+
+
+(-> 10 (/ 3)) ; 10/3  10作为/函数第一个参数  
+
+(->> 10 (/ 3)) ; 3/10  10作为/函数最后一个参数  
+
+----
+3，eval： 
+
+eval解析表达式数据结构（不是字符串），并返回结果。 
+
+user=> (eval (str "(println 1)"));str函数返回字符串  
+"(println 1)"  
+
+user=> (read-string "(println 1)");而read-string函数用于从字符串中读取对象  
+(println 1)  
+
+user=>  (eval (read-string "(println 1)"))  
+1  
+
+----
+4，apply函数： 
+
+apply 把给定的集合里面的所有元素一次性地给指定的函数作为参数调用，然后返回这个函数的返回值。
+可以把apply看作是SQL里面的聚合函数，如下： 
+
+user=> (apply + [1 2 3 4])  
+10  
+
+
+==========
+三、函数检查 
+
+fn?: 
+fn?用于检查给定的参数是否为函数，是返回true，否则返回false，如： 
+
+user=> (fn? #("test"))  
+true  
+
+user=> (fn? +)  
+true  
+
+user=> (fn? 1)  
+false  
+
