@@ -1,0 +1,51 @@
+Clojure世界：静态代码分析
+
+http://www.blogjava.net/killme2008/archive/2012/03/23/372576.html
+
+Java世界里有findbugs这样的神器，可以让你避免很多“简单愚蠢”的bug。
+同样，Clojure世界里也有相应的替代品，这就是今天要介绍的kibit。
+不过kibit现在还比较年轻，判断的规则较少，但是已经可以使用起来做clojure代码的静态检查。
+
+项目主页：https://github.com/jonase/kibit 
+
+使用：
+
+1.安装lein插件：
+lein plugin install jonase/kibit 0.0.2
+
+2.在项目的根目录运行
+lein kibit
+
+kibit会分析项目里所有clojure源码，每个namespace分别分析，例如我分析clojure-control的输出：
+
+== control.commands ==
+== control.core ==
+[186] Consider (zero? (:status (ssh host user cluster (str "test -e " file)))) instead of (= (:status (ssh host user cluster (str "test -e " file))) 0)
+== control.main ==
+== leiningen.control ==
+[null] Consider Integer/parseInt instead of (fn* [p1__61444#] (Integer/parseInt p1__61444#))
+[null] Consider Integer/parseInt instead of (fn* [p1__65254#] (Integer/parseInt p1__65254#))
+
+    显然，kibit一个一个namespace分析过去，并且按照规则对它认为有问题的地方打印出来，并提出建议。
+例如这里它建议我用
+(zero? (:status (ssh host user cluster (str "test -e " file))))
+    替换control.core里186行的：
+ (= (:status (ssh host user cluster (str "test -e " file))) 0)
+
+    目前kibit大多数是这类代码风格上的检查，还没有做到类似findbugs那样更丰富的检查，例如NPE异常检查等。
+此外kibit还提供反射检查，任何有反射调用的地方都给出警告。
+
+    kibit是基于core.logic实现的，它的规则都放在了这里，通过defrules宏来定义检查规则，源码中对算术运算的规则定义：
+
+(defrules rules
+  [(+ ?x 1) (inc ?x)]
+  [(+ 1 ?x) (inc ?x)]
+  [(- ?x 1) (dec ?x)]
+
+  [(* ?x (* . ?xs)) (* ?x . ?xs)]
+  [(+ ?x (+ . ?xs)) (+ ?x . ?xs)])
+   
+    第一个规则，任何对类似(+ 1 x)的代码，都建议替换成(inc x)，后面的与此类似。
+理论上你也可以自定义规则，并提交给官方。
+总体上说kibit仍然是比不上findbugs的，期待未来发展的更好。
+

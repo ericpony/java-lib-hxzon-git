@@ -3,6 +3,27 @@ Programming Clojure学习笔记——宏
 http://blog.csdn.net/zh2qiang/article/details/7234538
 
 ========
+hxzon学习笔记：
+
+1，宏的定义通过defmacro关键字：
+(defmacro name doc-string? attr-map? [params*] body)
+
+使用宏实现unless功能：
+user=> (defmacro unless [expr form] (list 'if expr nil form))
+
+2，
+foo#                在语法上被引号引起的区域内，创建一个以foo为前缀的唯一名称。
+(gensym prefix?)            以可选的前缀prefix创建唯一名称。
+(macroexpand form)        使用macroexpand-1递归展开form，直到没有宏为止。
+(macroexpand-1 form)        显示form如何展开。
+
+3，特殊形式不是函数，因此也不具备某些函数的功能：
+
+(1) 不能对特殊形式应用apply函数。
+(2) 不能将特殊形式赋给一个变量。
+(3) 不能使用特殊形式作为一个序列库的过滤器。
+
+========
 7.1 什么时候使用宏
 
 使用宏的两个原则和一个例外：
@@ -63,7 +84,7 @@ Clojure在代码上没有特殊语法，它的代码有数据结构组成，也�
 而Java中有很多特殊形式，如在Java中实现unless功能，我们只能通过下面的语句来模拟：
 if (!something) ...
 
-Java中将一些常用的解决办法称为设计模式，然而设计模式不是一个完成的设计不能直接转换为代码。
+Java中将一些常用的解决办法称为设计模式，然而设计模式不是一个完成的设计，不能直接转换为代码。
 而Clojure的宏提供了一个间接的层可以自动完成重复出现模式的公共部分，
 与代码即数据的特性一起，使得你可以重写你的语言从而在运行中封装模式。
 

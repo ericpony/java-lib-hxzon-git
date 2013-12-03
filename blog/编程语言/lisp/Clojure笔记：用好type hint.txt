@@ -1,0 +1,241 @@
+Clojure笔记：用好type hint
+
+http://www.blogjava.net/killme2008/archive/2012/07/10/382738.html
+
+Clojure的一大优点就是跟Java语言的完美配合，Clojure和Java之间可以相互调用，Clojure可以天然地使用Java平台上的丰富资源。
+在Clojure里调用一个类的方法很简单，利用dot操作符：
+
+user=> (.substring "hello" 3)
+"lo"
+
+user=> (.substring "hello" 0 3)
+"hel"
+
+    上面的例子是在clojure里调用String的substring方法做字符串截取。
+Clojure虽然是一门弱类型的语言，但是它的Lisp Reader还是能识别大多数常见的类型，比如这里hello是一个字符串就可以识别出来,3是一个整数也可以，
+通过这些类型信息可以找到最匹配的substring方法，在生成字节码的时候避免使用反射，而是直接调用substring方法（INVOKEVIRTUAL指令）。
+
+    但是当你在函数里调用类方法的时候，情况就变了，例如，定义substr函数：
+(defn substr [s begin end] (.substring s begin end))
+
+    我们打开*warn-on-reflection*选项，当有反射的时候告警：
+
+user=> (set! *warn-on-reflection* true)
+true
+
+user=> (defn substr [s begin end] (.substring s begin end))
+Reflection warning, NO_SOURCE_PATH:22 - call to substring can't be resolved.
+#'user/substr
+    
+    问题出现了，由于函数substr里没有任何关于参数s的类型信息，
+为了调用s的substring方法，必须使用反射来调用，clojure编译器也警告我们调用substring没办法解析，只能通过反射调用。
+众所周知，反射调用是个相对昂贵的操作（对比于普通的方法调用有）。
+这一切都是因为clojure本身是弱类型的语言，对参数或者返回值你不需要声明类型而直接使用,Clojure会自动处理类型的转换和调用。
+ps.在leiningen里启用反射警告很简单，在project.clj里设置：
+
+;; Emit warnings on all reflection calls.
+  :warn-on-reflection true
+    
+过多的反射调用会影响效率，有没有办法避免这种情况呢？
+有的，Clojure提供了type hint机制，允许我们帮助编译器来生成更高效的字节码。
+所谓type hint就是给参数或者返回值添加一个提示：
+hi,clojure编译器，这是xxx类型，我想调用它的yyy方法，请生成最高效的调用代码，谢谢合作：
+
+user=> (defn substr [^String s begin end] (.substring s begin end))
+#'user/substr
+     
+    这次没有警告，^String就是参数s的type hint，提示clojure编译器说s的类型是字符串，
+那么clojure编译器会从java.lang.String类里查找名称为substring并且接收两个参数的方法，
+并利用invokevirtual指令直接调用此方法，避免了反射调用。
+除了target对象（这里的s)可以添加type hint，方法参数和返回值也可以添加type hint：
+
+user=> (defn ^{:tag String} substr [^String s ^Integer begin ^Integer end] (.substring s begin end))
+#'user/substr
+    
+    返回值添加type hint是利用tag元数据，提示substr的返回类型是String，其他函数在使用substr的时候可以利用这个类型信息来避免反射；
+而参数的type hint跟target object的type hint一样以^开头加上类型，例如这里begin和end都提示说是Integer类型。
+
+    问题1，什么时候应该为参数添加type hint呢？
+我的观点是，在任何为target object添加type hint的地方，都应该相应地为参数添加type hint，除非你事先不知道参数的类型。
+为什么呢？因为clojure查找类方法的顺序是这样：
+
+1.从String类里查找出所有参数个数为2并且名称为substring方法
+
+2.遍历第一步里查找出来的Method，如果你有设置参数的type hint,则  查找最匹配参数类型的Method；
+否则，如果第一步查找出来的Method就一个，直接使用这个Method，相反就认为没有找到对应的Method。
+
+3.如果第二步没有找到Method，使用反射调用；
+否则根据该Method元信息生成调用字节码。
+
+   因此，如果substring方法的两个参数版本刚好就一个，方法参数有没有type hint都没有关系（有了错误的type hint反而促使反射的发生），我们都会找到这个唯一的方法；
+但是如果目标方法的有多个重载方法并且参数相同，而只是参数类型不同（Java里是允许方法的参数类型重载的，Clojure只允许函数的参数个数重载），
+那么如果没有方法参数的type hint，Clojure编译器仍然无法找到合适的调用方法，而只能通过反射。
+   
+   看一个例子,定义get-bytes方法调用String.getBytes：
+
+user=> (defn get-bytes [s charset] (.getBytes s charset))
+Reflection warning, NO_SOURCE_PATH:26 - call to getBytes can't be resolved.
+#'user/get-bytes
+
+user=> (defn get-bytes [^String s charset] (.getBytes s charset))
+Reflection warning, NO_SOURCE_PATH:27 - call to getBytes can't be resolved.
+#'user/get-bytes
+
+    第一次定义，s和charset都没有设置type hint，有反射警告；
+第二次，s设置了type hint，但是还是有反射警告。
+原因就在于String.getBytes有两个重载方法，参数个数都是一个，但是接收不同的参数类型，一个是String的charset名称，一个Charset对象。
+如果我们明确地知道这里charset是字符串，那么还可以为charset添加type hint:
+
+user=> (defn get-bytes [^String s ^String charset] (.getBytes s charset))
+#'user/get-bytes
+   
+    这次才真正的没有警告了。
+总结：在设置type hint的时候，不要只考虑被调用的target object，也要考虑调用的方法参数。
+
+    问题2：什么时候应该添加tag元数据呢？
+理论上，在任何你明确知道返回类型的地方都应该添加tag，但是这不是教条，如果一个偶尔被调用的方法是无需这样做的。
+这一点只对写库的童鞋要特别注意。
+
+    Type hint的原理在上文已经大概描述了下，具体到clojure源码级别，请参考clojure.lang.Compiler.InstanceMethodExpr类的构造函数和emit方法。
+最后，附送是否使用type hint生成substr函数的字节码之间的差异对比：
+
+
+未使用type hint	
+
+  // access flags 1
+
+  public invoke(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+
+   L0
+
+    LINENUMBER 14 L0
+
+   L1
+
+    LINENUMBER 14 L1
+
+    ALOAD 1
+
+    ACONST_NULL
+
+    ASTORE 1
+
+    LDC "substring"
+
+    ICONST_2
+
+    ANEWARRAY java/lang/Object
+
+    DUP
+
+    ICONST_0
+
+    ALOAD 2
+
+    ACONST_NULL
+
+    ASTORE 2
+
+    AASTORE
+
+    DUP
+
+    ICONST_1
+
+    ALOAD 3
+
+    ACONST_NULL
+
+    ASTORE 3
+
+    AASTORE
+
+    INVOKESTATIC clojure/lang/Reflector.invokeInstanceMethod (Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;
+
+   L2
+
+    LOCALVARIABLE this Ljava/lang/Object; L0 L2 0
+
+    LOCALVARIABLE s Ljava/lang/Object; L0 L2 1
+
+    LOCALVARIABLE begin Ljava/lang/Object; L0 L2 2
+
+    LOCALVARIABLE end Ljava/lang/Object; L0 L2 3
+
+    ARETURN
+
+    MAXSTACK = 0
+
+    MAXLOCALS = 0
+
+
+使用type hint
+
+public invoke(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+
+   L0
+
+    LINENUMBER 15 L0
+
+   L1
+
+    LINENUMBER 15 L1
+
+    ALOAD 1
+
+    ACONST_NULL
+
+    ASTORE 1
+
+    CHECKCAST java/lang/String
+
+    ALOAD 2
+
+    ACONST_NULL
+
+    ASTORE 2
+
+    CHECKCAST java/lang/Number
+
+    INVOKESTATIC clojure/lang/RT.intCast (Ljava/lang/Object;)I
+
+    ALOAD 3
+
+    ACONST_NULL
+
+    ASTORE 3
+
+    CHECKCAST java/lang/Number
+
+    INVOKESTATIC clojure/lang/RT.intCast (Ljava/lang/Object;)I
+
+    INVOKEVIRTUAL java/lang/String.substring (II)Ljava/lang/String;
+
+   L2
+
+    LOCALVARIABLE this Ljava/lang/Object; L0 L2 0
+
+    LOCALVARIABLE s Ljava/lang/Object; L0 L2 1
+
+    LOCALVARIABLE begin Ljava/lang/Object; L0 L2 2
+
+    LOCALVARIABLE end Ljava/lang/Object; L0 L2 3
+
+    ARETURN
+
+    MAXSTACK = 0
+
+    MAXLOCALS = 0
+
+
+    
+    对比很明显，没有使用type hint，调用clojure.lang.Reflector的invokeInstanceMethod方法，使用反射调用（具体见clojure.lang.Reflector.java)，
+而使用了type hint之后，则直接使用invokevirtual指令（其他方法可能是invokestatic或者invokeinterface等指令）调用该方法，避免了反射。
+      
+
+    参考：
+Type hint官方指南 http://clojure.org/java_interop#Java%20Interop-Type%20Hints
+invokevirtual指令 http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.10.1.4.5.invokevirtual
+Clojure源码 https://github.com/clojure/clojure
+
+
