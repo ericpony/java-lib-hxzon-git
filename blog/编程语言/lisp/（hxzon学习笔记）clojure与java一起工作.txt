@@ -77,6 +77,13 @@ user=> (defn shout
               {:tag String})
 
 --
+从Clojure1.1开始，你能够为数组声明基本类型提示：
+Java的boolean[], char[], byte[], short[], int[], long[], float[], 和 double[]数组能被分别标识为
+#^booleans, #^chars, #^bytes, #^shorts, #^ints, #^longs, #^floats, and #^doubles。
+（同样可以采用#^objects 标识 Object[]）
+https://code.google.com/p/clojure-doc-en2ch/wiki/Chapter_14_performance
+
+--
 可以对形式加类型提示：
 (defn split-name
 	[user]

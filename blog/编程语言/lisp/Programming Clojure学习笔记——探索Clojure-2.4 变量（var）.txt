@@ -49,6 +49,16 @@ user=> (defn square-corners [bottom left size]
 user=> (square-corners 1 1 2)
 [[1 1] [3 1] [3 3] [1 3]]
 
+--
+hxzon：
+
+(let [top (+ bottom size)
+	   right (+ left size)]
+	[[bottom left] [top left] [top right] [bottom right]])
+
+(let [变量1 值1 变量2 值2]
+	表达式1 表达式2)
+
 ----
 非结构化（hxzon：解构）
 

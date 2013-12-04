@@ -1,0 +1,409 @@
+clojure-基本语法-集合（二）映射和集合
+
+http://dead-knight.iteye.com/blog/1830683
+
+=========
+三、映射Map 
+
+Map存储一个键-值对的集合。
+键和值都可以是任何数据类型的对象，无论是基本数据类型还是其它映射。
+然而，使用关键字来作为映射的键非常合适，因此它们经常在应用映射的场合被使用。
+
+clojure的Map有三种实现方式：数组映射、哈希映射和有序映射。
+它们分别使用数组、哈希表和二叉树来作为底层实现。
+数组映射适用于较小的映射，而对哈希映射和有序映射的比较则要基于特定应用场合的情况。
+
+Map形式以“{:a 1 :b 2}“符号表示。
+ 
+创建Map的方式： 
+
+1、简单定义 
+直接通过def绑定某个符号为映射形式。 
+
+user=> (def my-map {:a 1 :b 2 :c 3})  
+#'user/my-map  
+
+user=> (type my-map);type查看符号的类型，这里默认采用哈希映射  
+clojure.lang.PersistentHashMap  
+
+
+2、hash-map： 
+创建哈希映射。 
+
+user=> (hash-map)  
+{}  
+
+user=> (hash-map :key1 1, :key2 2)  
+{:key2 2, :key1 1}  
+
+user=> (def user {:name "steve" :age 24 :salary 8000 :company "ibm"})  
+#'user/user  
+
+
+3、array-map： 
+array-map创建数组映射，也有资料说是有序映射
+（不是根据key排序的意思，而是根据元素的初始顺序，相对于hash-map中key的位置不确定而言）。 
+
+user=> (array-map :b 1 :a 2 :c 3)  
+{:b 1, :a 2, :c 3}  
+
+user=> (def am (array-map  :b 1 :a 2 :c 3))  
+#'user/am  
+
+user=> (type am)  
+clojure.lang.PersistentArrayMap  
+
+
+4、sorted-map： 
+sorted-map对键进行比较：根据数字或者字母表进行排序。 
+
+user=> (type (sorted-map));底层实现方式为PersistentTreeMap  
+clojure.lang.PersistentTreeMap  
+
+user=> (sorted-map :b 2 :a 1)  
+{:a 1, :b 2}  
+
+user=> (sorted-map 0 0 2 2 1 1)  
+{0 0, 1 1, 2 2}  
+
+
+5、zipmap： 
+zipmap使用给定的keys映射到匹配的vals，返回一个数组映射。
+
+user=> (def zm (zipmap [:a :b :c :d :e] [1 2 3 4 5]))  
+#'user/zm  
+
+user=> (type zm)  
+clojure.lang.PersistentArrayMap  
+
+user=> zm  
+{:e 5, :d 4, :c 3, :b 2, :a 1}  
+
+user=> (zipmap [:a :b :c] [1 2 3 4])  
+{:c 3, :b 2, :a 1}  
+
+
+6、sorted-map-by： 
+使用提供的比较器，返回一个新建的有序映射。 
+
+user=> (sorted-map-by > 1 "a", 2 "b", 3 "c")  
+{3 "c", 2 "b", 1 "a"}  
+
+user=> (sorted-map-by < 1 "a", 2 "b", 3 "c")  
+{1 "a", 2 "b", 3 "c"}  
+
+
+7、bean： 
+根据java对象，返回该对象的属性构成的map，这里待分析与java互操作时再说明。 
+
+8、frequencies： 
+根据集合中元素出现的次数，构成一个数组映射。
+
+user=> (frequencies [1 2 1 1 "a" "b" "a"])  
+{1 3, 2 1, "a" 2, "b" 1}  
+
+user=> (type (frequencies [1 2 1 1 "a" "b" "a"]))  
+clojure.lang.PersistentArrayMap  
+
+======
+操作Map的函数：
+ 
+1、assoc（更新）： 
+在vector部分已经提到assoc，不过assoc函数作用在map上，
+相当于把参数中的key value对添加到已有map中，如果key相同，则更新成参数中的value。 
+
+user=> (assoc {} :key1 "value1" :key2 2)  
+{:key2 2, :key1 "value1"}  
+
+user=> (assoc {:key1 "old value"} :key1 "new value")  
+{:key1 "new value"}  
+
+
+2、dissoc（删除）： 
+dissoc函数是将map中指定的key丢弃掉，并返回新的map。 
+
+user=> (dissoc {:a 1 :b 2 :c 3} :b);丢弃key为:b的元素  
+{:a 1, :c 3}  
+
+user=> (dissoc {:a 1 :b 2 :c 3});没有key的参数时，直接返回  
+{:a 1, :c 3, :b 2}  
+
+user=> (dissoc {:a 1 :b 2 :c 3} :d);  
+{:a 1, :c 3, :b 2}  
+
+user=> (dissoc {:a 1 :b 2 :c 3} :a :b :c)  
+{}  
+
+
+3、find： 
+find函数接收两个参数，第一个参数为map，第二个参数为key，
+在map中查找key对应的元素，找不到返回nil，找到返回该元素（即键值对）。 
+
+user=> (find {:a 1 :b 2} :c)  
+nil  
+
+user=> (find {:a 1 :b 2} :a)  
+[:a 1]  
+
+实际上，find也可作用在vector上，从vector中查找索引对应的元素，
+找到后，返回索引位置与值组成的新的vector，找不到，直接返回nil。 
+
+user=> (find [1 2 3] 2)  
+[2 3]  
+
+user=> (find [1 2 3] 4)  
+nil  
+
+
+4、key： 
+key的参数为map中的元素（entry），所以不能直接把key作用在map上。
+key用于返回元素的key名称。 
+
+user=> (map key {:a 1 :b 2});map的作用在后续详细介绍  
+(:a :b)  
+
+user=> (key (first {:a 1 :b 2}));first函数返回map的第一个元素作为key的参数  
+:a  
+
+
+5、keys： 
+keys的参数为map，返回map中的key组成列表。 
+
+user=> (keys {:a 1 :b 2})  
+(:a :b)  
+
+
+6、val： 
+与key类似，参数为map元素（entry），返回元素的value值。 
+
+user=> (val (first {:one :two}))  
+:two  
+
+
+7、vals： 
+与keys类似，参数为map，返回map中的value组成的列表。 
+
+user=> (vals {:a 1 :b 2})  
+(1 2)  
+
+
+8、get： 
+在vector时也用到get，用于返回指定位置的元素。
+get作用在map上，是返回指定key的对应的value，如果找不到，也可返回指定的提示信息。 
+
+user=> (get {:a 1 :b 2} :b)  
+2  
+
+user=> (get {:a 1 :b 2} :z "missing")  
+"missing"  
+
+
+9、get-in： 
+get-in适用于多层嵌套的情况。 
+
+user=> (((({:n "qh", :addr {:cn {:bj {:hd "tsinghua"}}}} :addr) :cn) :bj) :hd);不用get-in时  
+"tsinghua"  
+
+user=> (get-in {:n "qh", :addr {:cn {:bj {:hd "tsinghua"}}}} [:addr :cn :bj :hd]);使用get-in方式  
+"tsinghua"  
+
+
+10、select-keys: 
+用于选择key，返回包含指定key的map。 
+
+user=> (select-keys {:a 1 :b 2} [:a])  
+{:a 1}  
+
+user=> (select-keys {:a 1 :b 2} [:a :c])  
+{:a 1}  
+
+
+11、assoc-in（更新）： 
+assoc-in函数用于更新map中指定key对应的值。 
+
+user=> (assoc-in {:name "tom" :age 26} [:age] 36)  
+{:age 36, :name "tom"}  
+
+
+12、update-in（更新）： 
+update-in函数用于更新map中指定key对应的值，不过更新方式使用第三个参数（函数）。 
+
+user=> (update-in {:name "qh" :age 30} [:age] #(inc %))  
+{:age 31, :name "qh"}  
+
+user=> (update-in {:a 3} [:a] / 4 5)  
+{:a 3/20}  
+
+
+13、merge（更新）： 
+merge函数用于合并多个map为一个新的map，如果key相同，则保留后一个参数map的key对应值。 
+
+user=> (merge {:name "qh" :age 30} {:gender 'm :mail "qh@mail"})  
+{:mail "qh@mail", :gender m, :age 30, :name "qh"}  
+
+;这里也可以用conj  
+user=> (conj {:name "qh" :age 30} {:gender 'm :mail "qh@mail"})  
+{:mail "qh@mail", :gender m, :age 30, :name "qh"}  
+
+
+14、merge-with（更新）： 
+merge-with可以作为merge的升级版，不仅合并map，还能以第一个参数（函数）对key相同的value做处理。 
+
+user=> (merge-with + {:a 1 :b 2} {:a 2 :b 98 :c 0})  
+{:c 0, :a 3, :b 100}  
+
+这里把value值相加作为新的value值。
+
+========
+操作SortedMap的函数：
+ 
+1、rseq： 
+对有序映射的逆转函数。 
+
+user=> (rseq (sorted-map :a 1 :c 2 :b 4))  
+([:c 2] [:b 4] [:a 1])  
+
+
+2、subseq: 
+对有序映射执行比较（支持>、>=、<、<=），比较结果为true，添加到列表中，并返回。 
+
+user=> (subseq (sorted-map :a 1 :c 2 :b 4) < :b)  
+([:a 1])  
+
+user=> (subseq (sorted-map :a 1 :c 2 :b 4) >= :b)  
+([:b 4] [:c 2])  
+
+
+3、rsubseq: 
+对有序映射执行比较（支持>、>=、<、<=），比较结果为true，添加到列表中，并对列表结果逆转后返回。
+
+user=> (rsubseq (sorted-map :a 1 :c 2 :b 4) >= :b)  
+([:c 2] [:b 4])  
+
+========
+四、集合Set 
+
+Set是一个包含不重复元素的集合。
+当我们要求集合里面的元素不可以重复，并且我们不要求集合里面的元素保持它们添加时候的顺序，那么使用set比较合适。
+Set形式以“#{1,2,3}”符号表示。
+Set可以使用哈希表或二叉树来实现，使用 hash-set 或者 sorted-set 函数。
+ 
+创建集合Set的方式： 
+
+1、简单定义： 
+
+user=> (def languages #{:java :list :c++})  
+#'user/languages  
+
+user=> languages  
+#{:c++ :list :java}  
+
+
+2、set： 
+使用set函数转换其他集合类型为set类型，并且去除重复元素。
+
+user=> (set '(1 1 2 3 4 4 5))  
+#{1 2 3 4 5}  
+
+user=> (set [1 1 2 3 4 4 5])  
+#{1 2 3 4 5}  
+
+user=> (set "abcd")  
+#{\a \b \c \d}  
+
+user=> (set "abccdd")  
+#{\a \b \c \d}  
+
+user=> (set {:one 1 :two 2 :three 3})  
+#{[:two 2] [:three 3] [:one 1]}  
+
+
+3、hash-set： 
+使用hash-set创建基于哈希表的集合。 
+
+user=> (hash-set :a :b :c)  
+#{:a :c :b}  
+
+user=> (hash-set 3 2 1 2);通过hash-set创建set时，需要检查给定的key是否重复  
+IllegalArgumentException Duplicate key: 2  clojure.lang.PersistentHashSet.create  
+WithCheck (PersistentHashSet.java:80)  
+
+
+4、sorted-set： 
+使用sorted-set创建基于二叉树的集合。 
+
+user=> (sorted-set 3 2 1)  
+#{1 2 3}  
+
+user=> (sorted-set 3 2 1 1);通过sorted-set创建set时，不检查key是否重复  
+#{1 2 3}  
+
+为何这里不检查key重复，而hash-set检查出现重复时抛出异常？ 
+原因如下： 
+
+;使用source查看函数的源码  
+user=> (source hash-set)  
+(defn hash-set  
+  "Returns a new hash set with supplied keys."  
+  {:added "1.0"  
+   :static true}  
+  ([] #{})  
+  ([& keys]  
+   (clojure.lang.PersistentHashSet/[color=red]createWithCheck[/color] keys)))  
+nil  
+
+user=> (source sorted-set)  
+(defn sorted-set  
+  "Returns a new sorted set with supplied keys."  
+  {:added "1.0"  
+   :static true}  
+  ([& keys]  
+   (clojure.lang.PersistentTreeSet/[color=red]create[/color] keys)))  
+nil  
+
+hash-set函数调用clojure.lang.PersistentHashSet类的createWithCheck方法
+（一般clojure里集合创建时，方法名称为createWithCheck的就表示创建时需要检查参数的合法性），
+而sorted-set函数调用clojure.lang.PersistentTreeSet的create方法
+（一般方法名称为create表示对参数不做检查）。
+ 
+
+5、sorted-set-by: 
+sorted-set-by方法根据比较函数，确定set的排序规则。
+
+user=> (sorted-set-by > 3 5 8 2 1)  
+#{8 5 3 2 1}  
+
+user=> (sorted-set-by <  3 5 8 2 1)  
+#{1 2 3 5 8}  
+
+========
+操作Set的常用函数：
+ 
+1、conj： 
+根据给定的元素增加到第一个参数指向的set集合中。 
+
+user=> (conj #{1 3} 1 5 7)  
+#{1 3 5 7}  
+
+
+2、disj： 
+根据给定的元素，从第一个参数指向的set集合中删除匹配的元素。 
+
+user=> (disj #{1 3 5 7} 3 7)  
+#{1 5}  
+
+
+3、其它方式： 
+
+user=> (clojure.set/union #{1 2 3} #{1 2 4});合并子集  
+#{1 2 3 4}  
+
+user=> (clojure.set/select even? #{1 2 3 4 5});根据条件选择  
+#{2 4}  
+
+user=> (clojure.set/difference #{1 2 3} #{1 2 4});取差集  
+#{3}  
+
+user=> (clojure.set/intersection #{1 2 3} #{1 2 4});取交集  
+#{1 2}  
+

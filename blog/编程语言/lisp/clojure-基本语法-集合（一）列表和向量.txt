@@ -1,0 +1,267 @@
+clojure-基本语法-集合（一）列表和向量
+
+http://dead-knight.iteye.com/blog/1830583
+
+========
+Clojure提供以下集合类型: list, vector, set, map。
+并且可以使用Java里面提供的集合类型。
+所有的clojure集合是不可修改的、异源的以及持久的。
+不可修改表示集合产生之后，不能从集合里面增加或删除元素。
+异源表示集合里面可以装任意类型的数据。
+持久的表示集合有更新时，更新之前的数据还在。
+CLojure以一种高效的，共享内存的方式来实现集合。 
+
+因为clojure里面的集合是不可修改的，所以也就没有对集合进行修改的函数。
+相反clojure里面提供了一些函数从一个已有的集合来高效地创建新的集合。
+同时也有一些函数操作一个已有的集合（比如vector)来产生另外一种类型的集合(比如LazySeq), 这些函数有不同的特性。 
+
+========
+一、列表List 
+
+Clojure的List是单向链表，在头部增加新元素。List形式以“(1,2,3)”符号表示 。
+
+创建list的方式： 
+1、通过list创建（这里list是clojure定义的指向clojure.lang.PersistentList的creator方法的符号）。 
+
+user=> (list 1 2 3)  
+(1 2 3)  
+
+user=> (list "a" "b" "c")  
+("a" "b" "c")  
+
+user=> (list "a" 1 2.3 'a :keyname)  
+("a" 1 2.3 a :keyname)  
+
+
+2、通过list*创建，list*要求最后一个参数必须为集合。 
+
+user=> (list* 1 [2 3])  
+(1 2 3)  
+user=> (list* nil [1 2])  
+(nil 1 2)  
+user=> (list* 1 nil)  
+(1)  
+user=> (list* 1 ())  
+(1)  
+
+
+3、通过其它方式创建： 
+
+user=> '(1 2 3);'符号阻止对后面的表达式立即求值，与quote意义相同  
+(1 2 3)  
+user=> (quote (1 2 3))  
+(1 2 3)  
+user=> (range 1 10)  
+(1 2 3 4 5 6 7 8 9)  
+user=> (repeat 5 1)  
+(1 1 1 1 1)  
+
+======
+操作List的函数： 
+这里只介绍常用函数。
+ 
+1、cons： 
+cons函数通过一个已有的集合来创建一个新的包含更多元素的集合，其中新加的元素在最前面。 
+
+user=> (cons 1 (list 2 3 4 5))  
+(1 2 3 4 5)  
+user=> (cons (list 1 2) '(3 4 5))  
+((1 2) 3 4 5)  
+
+
+2、conj： 
+conj接收一个组合数据类型作为其第一个参数和任意数量的其它参数。
+并返回一个新的列表，这个列表将所有的其它参数连接到原来那个列表。
+conj函数也对Vector、Map、Set适用。 
+
+user=> (conj (list 1 2 3) 4);list在头部增加新元素，所以此处添加在起始位置  
+(4 1 2 3)  
+
+user=> (conj nil 2)  
+(2)  
+
+user=> (conj nil 2 3)  
+(3 2)  
+
+
+3、peek： 
+peek函数操纵一个单一的列表作为参数并返回列表中的第一个值。 
+
+user=> (peek '(2 3 4))  
+2  
+user=> (peek (list nil "2" 3))  
+nil  
+
+
+4、pop： 
+pop函数操纵一个单一的列表作为参数并且返回一个去掉了首个元素的新列表。 
+
+user=> (pop '(2 3 4))  
+(3 4)  
+
+user=> (pop (list nil "2" 3))  
+("2" 3)  
+
+
+5、first： 
+first返回列表第一个元素。
+在list中，first与peek效果相同，因为list是压栈操作元素。 
+
+user=> (first nil)  
+nil  
+user=> (first ())  
+nil  
+user=> (first (list 1 2 3))  
+1  
+
+
+6、rest： 
+rest返回去除first之后剩下的集合。 
+
+user=> (rest '(1 2 3))  
+(2 3)  
+user=> (rest nil)  
+()  
+user=> (rest ())  
+()  
+
+List是以单向链接列表的形式来实现的，在这一点上有利有弊。
+读取列表的第一个元素或者在列表头添加一个元素的操作都可以在常量时间内完成，然而访问列表的第N个元素却需要N次操作。 
+
+========
+二、向量Vector
+ 
+Vector支持高效地根据索引来访问元素，与数组类似。
+Vector形式以“[1,2,3]”符号表示。
+ 
+创建Vector方式： 
+1、vector： 
+vector接收任意数量的参数并将它们的值组成一个Vector。 
+
+user=> (vector)  
+[]  
+user=> (vector nil)  
+[nil]  
+user=> (vector 1 2 3)  
+[1 2 3]  
+user=> (vector (list 1 2 3))  
+[(1 2 3)]  
+
+
+2、vec： 
+vec接收一个单独的参数，可能是任何Clojure或Java的数据类型，然后将其元素的值作为参数，组成一个新的向量。 
+
+user=> (vec (list 1 2 3))  
+[1 2 3]  
+user=> (vec [1 2 3])  
+[1 2 3]  
+user=> (vec '())  
+[]  
+user=> (vec nil)  
+[]  
+
+
+3、vector-of： 
+vector-of函数第一个参数指定Vector元素的类型，后面任意个参数作为元素，
+如果类型转换正确，则返回一个vector。
+vector-of第一个参数包括：:int :long :float :double :byte :short :char or :boolean 。 
+
+user=> (vector-of :int 1 2 3)  
+[1 2 3]  
+user=> (vector-of :int "1" "2")  
+ClassCastException java.lang.String cannot be cast to java.lang.Character  cloju  
+re.lang.RT.intCast (RT.java:1076)  
+
+======
+常用操作函数：
+ 
+1、conj： 
+conj函数在List常用函数中已介绍过，在操作Vector时，代码如下： 
+
+user=> (conj [1 2 3] [4])  
+[1 2 3 [4]]  
+
+user=> (conj [1 2 3] 4);由于vector在尾部增加新元素，所以4添加在末尾  
+[1 2 3 4]  
+
+user=> (conj '(1 2 3) 4);这里参数为list，由于list在头部增加新元素，所以4添加在1之前  
+(4 1 2 3)  
+
+user=> (conj ["a" 2 3.4] -1)  
+["a" 2 3.4 -1]  
+
+user=> (conj ["a" "b"] ["c"])  
+["a" "b" ["c"]]  
+
+
+2、peek： 
+peek返回vector中第一个值，与操作list的区别和conj一样。 
+
+user=> (peek [1 2 3])  
+3  
+user=> (peek '(1 2 3))  
+1  
+user=> (peek [])  
+nil  
+
+
+3、pop： 
+pop返回peek之后剩下的集合。 
+
+user=> (peek [1 2 3])  
+3  
+user=> (pop [1 2 3])  
+[1 2]  
+user=> (peek '(1 2 3))  
+1  
+user=> (pop '(1 2 3))  
+(2 3)  
+
+
+4、get： 
+get函数接收两个参数来操作vector。
+第一个参数是vector，第二个参数是一个整数索引。
+它返回给定索引处的值，若在索引处没有值，则返回nil 。 
+
+user=> (get [1 2 3] 1)  
+2  
+user=> (get [1 2 3] 4)  
+nil  
+
+
+5、assoc： 
+assoc接收三个参数：第一个是向量，第二个是整数索引，第三个是一个值。
+它返回一个新的向量，这个向量是原来那个向量在给定的索引处插入那个值的结果。
+如果索引超过了向量的长度，那么会引发一个错误。 
+
+user=> (assoc [1 2 3] 0 10)  
+[10 2 3]  
+
+user=> (assoc [1 2 3] 3 10)  
+[1 2 3 10]  
+
+user=> (assoc [1 2 3] 4 10)  
+IndexOutOfBoundsException   clojure.lang.PersistentVector.assocN (PersistentVect  
+or.java:136)  
+
+
+6、subvec： 
+subvec接收两个或三个参数。
+第一个是向量，第二个和第三个（如果有的话）是索引。
+它返回一个新向量，这个向量由原来那个向量的介于两个索引之间或者第一个索引到向量末尾（如果没有第二个索引）的部分组成。 
+
+user=> (subvec [12 3 4 5 6 7] 2)  
+[4 5 6 7]  
+
+user=> (subvec [12 3 4 5 6 7] 2 4)  
+[4 5]  
+
+
+7、rseq: 
+rseq接受一个向量参数，如果向量为空，则返回nil。
+如果不为空，则在常量时间内返回顺序逆转的新向量。 
+
+user=> (rseq [])  
+nil  
+user=> (rseq [3 5 9 1 3])  
+(3 1 9 5 3)  

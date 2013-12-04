@@ -1,0 +1,317 @@
+clojure-基本语法-集合（三）集合通用
+
+http://dead-knight.iteye.com/blog/1831446
+
+========
+操作集合的通用语句 
+
+1、count： 
+count函数返回集合中元素的个数，如果count参数为nil，则返回0 。
+
+user=> (count nil)  
+0  
+user=> (count [])  
+0  
+user=> (count [1 2 3])  
+3  
+user=> (count '(1 "a"))  
+2  
+user=> (count {:one 1 :two 2})  
+2  
+user=> (count "string")  
+6  
+
+
+2、empty： 
+返回一个空的集合，集合类型不变，如果empty参数为nil，则返回nil 。
+
+user=> (empty [1 2 3])  
+[]  
+user=> (empty (list 1 2 3))  
+()  
+user=> (empty {:key1 1})  
+{}  
+user=> (empty nil)  
+nil  
+
+
+3、not-empty： 
+如果集合为空，返回nil，其它直接返回参数指向的集合 。
+
+user=> (not-empty [])  
+nil  
+
+user=> (not-empty '(1 2 3))  
+(1 2 3)  
+
+
+4、into： 
+into接受两个集合参数，并且将第二个集合参数元素全部插入到第一个集合参数中，再返回。 
+
+user=> (into {} [[1 2] [3 4]])  
+{1 2, 3 4}  
+user=> (into [] {:a 1 :b 2})  
+[[:a 1] [:b 2]]  
+user=> (into () '(1 2 3))  
+(3 2 1)  
+user=> (into ["a" "b"] '(1 2 3))  
+["a" "b" 1 2 3]  
+
+
+5、contains?： 
+如果当前给定的集合（第一个参数）存在key（第二个参数），则返回true，否则返回false。
+特别指出，对于数组、vector以索引标识的集合，如果key在索引范围内，则返回true，否则返回false，
+对于列表类型，总是返回false。 
+
+user=> (contains? {:a 1} :a)  
+true  
+user=> (contains? {:a nil} :a)  
+true  
+user=> (contains? {:a 1} :b)  
+false  
+user=> (contains? [:a :b :c] :b)  
+false  
+user=> (contains? [:a :b :c] 2)  
+true  
+user=> (contains? "f" 0)  
+true  
+user=> (contains? "f" 2)  
+false  
+
+user=> (contains? '(1 2 3) 1)  
+false  
+
+user=> (contains? #{"a" "b" "v"} "a")  
+true  
+user=> (contains? #{"a" "b" "c"} "z")  
+false  
+
+
+6、distinct?： 
+如果传递的参数列表中有值相同的，返回false，否则返回true。 
+
+user=> (distinct? 1 2 3)  
+true  
+
+user=> (distinct? 1 1 2 3)  
+false  
+
+user=> (distinct? "a" "b" "a")  
+false  
+
+
+7、empty?： 
+接受一个集合参数，如果该集合没有元素，则返回true，否则返回false。 
+
+user=> (empty? ())  
+true  
+user=> (empty? '(1 2 3))  
+false  
+user=> (empty? [])  
+true  
+user=> (empty? {})  
+true  
+user=> (empty? #{})  
+true  
+
+
+8、every?： 
+every?接受两个参数，第一个参数为检查函数，第二个参数为集合。
+如果该检查函数对集合所有元素都通过，则返回true，否则返回false。 
+
+user=> (every? even? '(2 4 6))  
+true  
+
+user=> (every? odd? '(1 3 9))  
+true  
+
+user=> (every? true? '())  
+true  
+
+user=> (every? false? '())  
+true  
+
+
+9、not-every?： 
+not-every?与every作用相反。参照every介绍。 
+
+user=> (not-every? odd? '(1 2 3))  
+true  
+
+user=> (not-every? odd? '(1 3))  
+false  
+
+
+10、some： 
+some与every?作用类似，区别是some要求集合中只要有一个元素检查为true，则返回true。所有检查都不通过，则返回nil。 
+
+user=> (some even? '(1 2 3 4))  
+true  
+user=> (some even? '(1 3 5 7))  
+nil  
+user=> (some true? [false false false])  
+nil  
+user=> (some true? [false true false])  
+true  
+
+
+11、not-any?： 
+not-any?与some函数作用也相反（定义为comp not some），可参考some描述。 
+
+user=> (not-any? odd? '(2 4 6))  
+true  
+
+user=> (not-any? odd? '(1 2 3))  
+false  
+
+
+12、sequential?： 
+sequential?检查集合是否实现Sequential接口（不是排序，而是顺序存储），是则返回true，否则返回false。 
+
+user=> (sequential? '(2 1 3))  
+true  
+
+user=> (sequential? {:a 1 :d 2 :b 3})  
+false  
+
+user=> (sequential? 1)  
+false  
+
+
+13、associative?： 
+associative?检查集合是否实现Associative接口，是则返回true，否则返回false。 
+
+user=> (associative? [1 2 3])  
+true  
+
+user=> (associative? '(1 2 3))  
+false  
+
+
+14、sorted?： 
+sorted?检查集合是否实现Sorted接口，是则返回true，否则返回false。 
+
+user=> (sorted? (sorted-set 5 3 1 2 4))  
+true  
+
+user=> (sorted? (sorted-map :a 1 :c 3 :b 2))  
+true  
+
+user=> (sorted? [1 2 3 4 5])  
+false  
+
+
+15、counted?： 
+如果集合参数以常量时间内返回元素总和时，返回true，否则返回false。 
+
+user=> (sorted? [1 2 3 4 5])  
+false  
+user=> (counted? [:a :b :c])  
+true  
+user=> (counted? '(:a :b :c))  
+true  
+user=> (counted? {:a 1 :b 2 :c 3})  
+true  
+user=> (counted? "asdf")  
+false  
+
+
+16、reversible?： 
+reversible?检查集合参数是否实现Reversible接口，是则返回true，否则返回false。 
+
+user=> (reversible? [])  
+true  
+user=> (reversible? '())  
+false  
+user=> (reversible? #{})  
+false  
+
+=========
+类型检查 
+
+1、coll?： 
+如果给定的参数实现IPersistentCollection接口（集合都会实现该接口），则返回true，否则返回false。 
+
+user=> (coll? {})   
+true   
+user=> (coll? #{})   
+true   
+user=> (coll? [])   
+true   
+user=> (coll? ())   
+true   
+user=> (coll? 4)   
+false  
+user=> (coll? "fred")   
+false  
+user=> (coll? true)   
+false  
+user=> (coll? nil)   
+false  
+
+
+2、seq?： 
+如果给定的参数实现ISeq接口（序列实现该接口，序列内容在下篇讲解），则返回true，否则返回false 。
+
+user> (seq? 1)   
+false   
+user> (seq? [1])   
+false   
+user> (seq? (seq [1]))   
+true   
+
+
+3、vector?： 
+如果给定的参数实现IPersistentVector接口（向量Vector实现该接口），则返回true，否则返回false 。
+
+user=> (vector? [1 2 3])   
+true   
+
+user=> (vector? '(1 2 3))   
+false   
+
+user=> (vector? (vec '(1 2 3)))   
+true   
+
+
+4、list?： 
+如果给定的参数实现IPersistentList接口（列表List实现该接口），则返回true，否则返回false 。
+
+user=> (list? '(1 2 3))   
+true   
+user=> (list? (list 1 2))   
+true   
+user=> (list? 0)   
+false   
+user=> (list? {})   
+false   
+user=> (list? [])   
+false    
+
+
+5、map?： 
+如果给定的参数实现IPersistentMap接口（映射Map实现该接口），则返回true，否则返回false 。
+
+user=> (map? {:a 1 :b 2 :c 3})   
+true   
+user=> (map? '(1 2 3))   
+false    
+
+
+6、set?： 
+如果给定的参数实现IPersistentSet接口（set集合实现该接口），则返回true，否则返回false 。
+
+user> (set? #{1 2 3})   
+true   
+
+user> (set? [1 2 3])   
+false   
+
+user> (set? {:a 1 :b 2})   
+false   
+
+实际上本篇介绍的各种检查语句，都是检查底层实现类所实现的接口（具有对应接口的功能），比如说列表List的实现类定义为： 
+
+public class PersistentList extends ASeq  
+  implements IPersistentList, IReduce, List, Counted  
+
