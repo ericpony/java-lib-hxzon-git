@@ -296,21 +296,38 @@ loop is exactly like let, except that it establishes a recursion point at the to
 with arity equal to the number of bindings. 
 See recur.
 
+（hxzon：loop和recur一起使用。见下。）
+
 ----
 (recur exprs*)
 
 Evaluates the exprs in order, then, in parallel, rebinds the bindings of the recursion point to the values of the exprs. 
-If the recursion point was a fn method, then it rebinds the params. 
-If the recursion point was a loop, then it rebinds the loop bindings. 
-Execution then jumps back to the recursion point. 
-The recur expression must match the arity of the recursion point exactly. 
-In particular, if the recursion point was the top of a variadic fn method, 
-there is no gathering of rest args - a single seq (or null) should be passed. 
+（in parallel，并联。）
+按顺序对表达式求值，这些值用来重新绑定递归点的参数（loop建立了一个递归点）。
+If the recursion point was a fn method, then it rebinds the params.
+如果递归点是一个函数，用它来重新绑定参数。 
+If the recursion point was a loop, then it rebinds the loop bindings.
+如果递归点是一个loop，这些值用来重新绑定递归点的参数（loop建立了一个递归点）。
+Execution then jumps back to the recursion point.
+然后执行跳转到递归点（即loop处）。 
+The recur expression must match the arity of the recursion point exactly.
+（arity，元数。）
+recur表达式的参数个数必须匹配递归点的参数个数。 
+In particular, if the recursion point was the top of a variadic fn method,
+（variadic，可变参数。）
+如果递归点是可变参数函数的顶，要更加注意，
+there is no gathering of rest args - a single seq (or null) should be passed.
+这里没有采集rest参数，只能传单个序列或null。
 recur in other than a tail position is an error.
+recur只能出现在loop形式中的最后一行。
 
 Note that recur is the only non-stack-consuming looping construct in Clojure. 
-There is no tail-call optimization and the use of self-calls for looping of unknown bounds is discouraged. 
+recur在clojure中只是一个无栈的循环结构。
+There is no tail-call optimization and the use of self-calls for looping of unknown bounds is discouraged.
+没有尾调用优化， ？不鼓励在未知绑定中循环而自调用。
 recur is functional and its use in tail-position is verified by the compiler.
+recur是一个函数，通过编译器来检查它是否出现在尾部。
+
 
 (def factorial
   (fn [n]
@@ -318,6 +335,13 @@ recur is functional and its use in tail-position is verified by the compiler.
        (if (zero? cnt)
             acc
           (recur (dec cnt) (* acc cnt))))))
+
+（hxzon：
+loop建立了一个递归点。
+初始时，用n和1初始化cnt和acc。
+执行到recur时，cnt和acc重新绑定为（dec cnt）和（* acc cnt），
+再次回到loop处开始执行。
+）
 
 ----
 (throw expr)

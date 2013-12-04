@@ -175,13 +175,16 @@ user=> (into-array String ["Easier" "array" "creation"])
 
 如果忽略类型参数，into-array则根据第一个元素猜测数组元素的类型。
 
+=======
+13，（数组循环）
 
-13，
+----
 amap函数转换Java数组的每个元素：
 (amap a idx ret expr)
 
 amap创建数组的克隆，并绑定到变量ret，
-对数组a每一个元素执行expr表达式，idx绑定到数组元素索引，最后返回克隆的数组，如：
+对数组a每一个元素执行expr表达式，idx绑定到数组元素索引，
+表达式结果赋值给克隆的数组对应的位置，最后返回克隆的数组（即ret）。
 
 user=> (def strings (into-array ["some" "strings" "here"]))
 #'user/strings
@@ -193,7 +196,8 @@ user=> (seq (amap strings idx _ (.toUpperCase (aget strings idx))))
 areduce函数类似amap，但可以返回值任意：
 (areduce a idx ret init expr)
 
-areduce开始用init初始化ret，然后对每一个数组a元素计算表达式expr，将计算结果赋给ret返回。
+areduce开始用init初始化ret，然后对每一个数组a元素计算表达式expr，将计算结果赋给ret，
+最后返回ret（即表达式的最后一次计算值）。
 
 user=> (areduce strings idx ret 0 (max ret (.length (aget strings idx))))
 7
