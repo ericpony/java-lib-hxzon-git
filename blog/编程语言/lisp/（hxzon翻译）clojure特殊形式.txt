@@ -1,4 +1,4 @@
-（hxzon学习笔记）clojure特殊形式
+（hxzon翻译）clojure特殊形式
 
 http://clojure.org/special_forms
 

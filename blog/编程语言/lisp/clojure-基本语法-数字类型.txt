@@ -328,7 +328,7 @@ double  Coerce to double.
 bigint  Coerce to BigInteger.   
 bigdec  Coerce to BigDecimal.   
 num  Coerce to Number.   
-rationalize  returns the rational value of num   
+rationalize  returns the rational value of num.转成比例数。   
 
 
 （hxzon补充：

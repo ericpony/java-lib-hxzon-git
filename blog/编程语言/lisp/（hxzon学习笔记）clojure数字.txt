@@ -1,0 +1,247 @@
+（hxzon学习笔记）clojure数字
+
+by hxzon
+《clojure编程》第11章：数字和数学
+
+========
+一，数字和数学运算
+
+1，clojure首选64位及更大的数字。
+
+(class (inc (Integer. 5)))
+;= java.lang.Long
+
+注意：int等强制转型函数也相当于提示。
+
+2，jvm中Long和Double的存在，只是因为集合类无法处理原始类型。
+
+3，
+有限精度和数值范围：long,double
+无限精度和数值范围：BigDecimal,BigInt,BigInteger
+
+4，数字后缀M表示BigDecimal，后缀N表示BigInt。
+
+5，数字类型提升
+long->BigInt->Rationals->BigDecimal->double。
+前几项都是扩大精度和数值范围。
+但最后一项确实double，
+这是因为double本身不精确（精确数和不精确数运算结果是不精确的），
+同时，有些double数（例如Infinity和NaN）无法用BigDecimal表示。
+
+6，为什么会有BigInt？
+首先，BigInteger有问题，它的hashCode计算方式和Long不一致。
+这会导致集合中出现重复的键。
+另外，BigInt做了优化，只要数值范围在long内，会使用原生类型。
+clojure的数字永远不会返回BigInteger类型。
+
+
+7，数值溢出
+clojure不会默默“回绕”数值，而是会抛出溢出异常。
+带撇号的运算，例如inc', dec', +', -', 和 *' ，可以防止溢出。
+这会付出轻微代价（先使用原始类型计算，如果溢出，会用装箱类型）。
+
+(inc' k)
+;= 9223372036854775808N
+
+(inc' 1)
+;= 2
+
+(inc' (dec' Long/MAX_VALUE))
+;= 9223372036854775807
+
+--
+如果要像java中强制转型，可以使用有unchecked-前缀的运算。
+
+(unchecked-dec Long/MIN_VALUE)
+;= 9223372036854775807
+
+(unchecked-multiply 92233720368547758 1000)
+;= -80
+
+--
+也可以在源文件开头设置动态变量，从而不用unchecked-前缀。
+这个动态变量在每个源文件结尾会被重置为false，防止意外。
+
+(inc Long/MAX_VALUE)
+;= #<ArithmeticException java.lang.ArithmeticException: integer overflow>
+
+(set! *unchecked-math* true)
+;= true
+
+(inc Long/MAX_VALUE)
+;= -9223372036854775808
+
+(set! *unchecked-math* false)
+;= false
+
+--
+使用binding是无效的，因为这个动态变量控制的是编译器行为，
+而binding形式在很久以后才被求值。
+
+(binding [*unchecked-math* true]
+(inc Long/MAX_VALUE))
+;= #<ArithmeticException java.lang.ArithmeticException: integer overflow>
+
+
+8，java中设置数学环境（精度及取整模式）相当繁琐，需要给每次操作设置一遍。
+clojure提供with-precision宏。
+
+(/ 22M 7)
+;= #<ArithmeticException java.lang.ArithmeticException:
+;= Non-terminating decimal expansion; no exact representable decimal result.>
+
+(with-precision 10 (/ 22M 7))
+;= 3.142857143M
+
+(with-precision 10 :rounding FLOOR
+(/ 22M 7))
+;= 3.142857142M
+
+--
+也可以使用动态变量来设置数学环境。
+
+(set! *math-context* (java.math.MathContext. 10 java.math.RoundingMode/FLOOR))
+;= #<MathContext precision=10 roundingMode=FLOOR>
+
+(/ 22M 7)
+;= 3.142857142M
+
+========
+二，相等性
+
+----
+1，对象相同(identical?)
+相当于java中的==。
+
+一般情况下，数字永远不会identical? ，即便是字面量。
+
+(identical? 5/4 (+ 3/4 1/2))
+;= false
+
+(identical? 5.4321 5.4321)
+;= false
+
+(identical? 2600 2600)
+;= false
+
+有时数字会identical? ，是因为使用了数字池。
+这依赖于jvm的实现，所以永远不要对数字identical? ，
+它的结果无法保证。
+
+(identical? 127 (dec 128))
+;= true
+
+(identical? 128 (dec 129))
+;= false
+
+----
+2，引用相等（=）
+使用java.lang.Object.equals方法。
+这是类型敏感的。
+
+Note, however, that collections of different categories will never be = to each other. 
+For example, while any sequential collection (e.g., a vector, list, or sequence) 
+may be equal to another sequential collection of a different concrete type, 
+a sequential collection will never be equal to a set, or a map.
+
+不同的具体类型是=的，但是不同的集合类型永远不会=。
+
+(= {:a 1 :b ["hi"]}
+	(into (sorted-map) [[:b ["hi"]] [:a 1]])
+	(doto (java.util.HashMap.)
+		(.put :a 1)
+		(.put :b ["hi"])))
+;= true
+这里，不同具体类型的映射是=的。
+
+(= 1 1N (Integer. 1) (Short. (short 1)) (Byte. (byte 1)))
+;= true
+这里，不同类型的整数是=的。
+
+(= 1.25 (Float. 1.25))
+;= true
+
+(= 1 1.0)
+;= false
+这里，整数和浮点数不=。
+
+(= 1N 1M)
+;= false
+这里，整数和浮点数不=。
+
+(= 1.25 5/4)
+;= false
+这里，浮点数和比例数不=。
+
+----
+3，数值相等（==）
+类型不敏感。
+
+(== 0.125 0.125M 1/8)
+;= true
+
+(== 4 4N 4.0 4.0M)
+;= true
+
+==要求操作数必须是数字，否则会抛出异常。
+可以自定义函数来避免抛出异常。
+
+(defn equiv?
+	"Same as `==`, but doesn't throw an exception if any arguments are not numbers."
+	[& args]
+	(and (every? number? args)
+		(apply == args)))
+;= #'user/equiv?
+
+(equiv? "foo" 1)
+;= false
+
+(equiv? 4 4N 4.0 4.0M)
+;= true
+
+(equiv? 0.125 0.125M 1/8)
+;= true
+
+--
+因为hashcode和equals等问题，java中会出现重复键。
+
+java.util.Map m = new java.util.HashMap();
+m.put(1, "integer");
+m.put(1L, "long");
+m.put(java.math.BigInteger.valueOf(1), "bigint");
+System.out.println(m);
+>> {1=bigint, 1=long, 1=integer}
+
+clojure不会出现重复键。
+
+(into #{} [1 1N (Integer. 1) (Short. (short 1))])
+;= #{1}
+
+(into {}
+	[[1 :long]
+	[1N :bigint]
+	[(Integer. 1) :integer]])
+;= {1 :integer}
+
+--
+浮点数总是不精确的，所以要小心。
+
+(== 1.1 (float 1.1))
+;= false
+
+(double (float 1.1))
+;= 1.100000023841858
+
+1.1f == 1.1d 在java中也是false的。
+
+这是IEEE floating-point规范的问题，ruby和python只使用一种浮点类型，避免了这个问题。
+
+==========
+三，优化数字性能
+
+-1，使用原始类型。
+-2，避免使用集合和序列。
+
+“Use Primitive Arrays Judiciously”部分见《（hxzon学习笔记）clojure与java一起工作》。
+
+

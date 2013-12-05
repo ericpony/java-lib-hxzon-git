@@ -1,4 +1,4 @@
-（hxzon学习笔记）clojure-The Reader
+（hxzon翻译）clojure-The Reader
 
 by hxzon
 =======

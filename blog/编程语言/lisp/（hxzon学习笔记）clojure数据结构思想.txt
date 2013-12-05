@@ -1,12 +1,13 @@
-﻿（hxzon学习笔记）clojure
+﻿（hxzon学习笔记）clojure数据结构思想
 
 by hxzon
 
 ==========
 《clojure编程》
 
-1，第3章《集合和数据结构》。
+第3章《集合和数据结构》。
 
+1，《3.1，Abstractions over Implementations，抽象优于实现》
 
 一百种算法对一种数据结构操作，优于十种算法对十种数据结构操作。
 —Alan J. Perlis in the foreword to Structure and Interpretation of Computer Programs,
@@ -18,7 +19,29 @@ clojure：更优的是一百种算法对一种抽象操作。
 
 clojure的核心是数据结构。
 
-2，
+2，《3.6，Putting Clojure’s Collections to Work，用Clojure的集合来小试牛刀》
+在《人月神话》中，Frederick Brooks说：“
+Show me your flowchart and conceal your tables, and I shall continue to be mystified.
+Show me your tables, and I won’t usually need your flowchart; it’ll be obvious.”
+
+告诉我数据库表就可以了，我不需要你的流程图。
+
+Eric Raymond说：“
+Show me your code and conceal your data structures, and I shall continue to be mystified.
+Show me your data structures, and I won’t usually need your code; it’ll be obvious.”。
+告诉我数据结构就可以了，我不需要你的代码。
+
+--
+标识符和循环引用。
+
+数据结构本身就是它们的最佳自然标识，不再需要复杂的人工的唯一标识。
+循环引用容易导致不一致性。
+
+--
+三个实践例子。
+
+===========
+3，
 根绑定：变量的初始值称为根绑定。
 当你使用def和defn定义一个对象时，对象就存贮在变量中。
 --
@@ -33,4 +56,4 @@ Interning：命名空间维护了每个Var对象的全局符号映射。
 创建或者寻找的过程被称作interning。
 （hxzon：intern的意思是扣留、羁押，这里指放入常量池。）
 
-3，
+4，

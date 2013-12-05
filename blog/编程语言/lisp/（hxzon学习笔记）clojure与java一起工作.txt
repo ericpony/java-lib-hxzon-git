@@ -51,7 +51,128 @@ by hxzon
 (instance? Integer 10)
 
 
-5，通过 #^宏 给参数添加类型元数据。
+
+=========
+5，memfn 创建匿名函数包装Java方法，使其在Clojure中能像Clojure函数那样使用。
+
+user=> (map (memfn toUpperCase) ["a" "short" "message"])
+("A" "SHORT" "MESSAGE")
+
+还可以写成如下形式：
+user=> (map #(.toUpperCase %) ["a" "short" "message"])
+("A" "SHORT" "MESSAGE")
+
+
+6，bean包装JavaBean将其转换为不可变的Clojure映射：
+(bean java-bean)
+
+
+7，format包装了Java的format方法，格式化字符串：
+
+(format fmt-string & args)，如
+
+user=> (format "%s ran %d miles today" "Stu" 8)
+"Stu ran 8 miles today"
+
+说明：占位符详细参考Java相关文档。
+
+======
+8，可以使用seq将任意Java数组包装成Clojure序列。
+
+user=> (seq (make-array String 5))
+(nil nil nil nil nil)
+
+
+9，创建数组。
+
+创建一维数组 (make-array class length)。
+
+user=> (make-array String 5)
+#<String[] [Ljava.lang.String;@5f6303>
+
+创建多维数组 (make-array class dim & more-dims)。
+
+user=> (make-array String 2 2)
+#<String[][] [[Ljava.lang.String;@766a24>
+
+一系列类似int-array的函数用来创建Java基础类型数组。
+
+user=> (int-array 5)
+#<int[] [I@1742700>
+
+
+10，
+to-array函数直接将集合转化为数组：
+(to-array sequence)。
+
+说明：转换的结果为Object数组。
+
+into-array函数也能将集合转换为数组，并且可以指定数组元素类型：
+(into-array type? seq)。
+
+user=> (into-array String ["Easier" "array" "creation"])
+#<String[] [Ljava.lang.String;@110c31>
+
+(into-array CharSequence ["a" "b" "c"]) 
+;= #<CharSequence[] [Ljava.lang.CharSequence;@5acad437>
+
+生成原始类型数组。
+(into-array Long/TYPE (range 5))
+;= #<long[] [J@21e3cc77>
+
+如果忽略类型参数，into-array则根据第一个元素猜测数组元素的类型。
+
+(into-array ["a" "b" "c"])
+;= #<String[] [Ljava.lang.String;@4413515e>
+
+11，
+aset 设置Java数组项值：
+一维数组 (aset java-array index value)
+多维数组 (aset java-array index-dim1 index-dim2 ... value)
+
+aget 获取Java数组项值：
+一维数组 (aget java-array index)
+多维数组 (aget java-array index-dim1 index-dim2 ...)
+
+alength获取数字长度：
+(alength java-array)
+
+对多维数组处理的性能问题，见下文“Use Primitive Arrays Judiciously”部分。
+
+=======
+12，（数组循环）
+
+map和reduce对序列操作，它们基于集合，而集合只能处理对象，不能处理原始类型。
+
+----
+amap函数转换Java数组的每个元素：
+(amap a idx ret expr)
+
+amap创建数组的克隆，并绑定到变量ret，
+对数组a每一个元素执行expr表达式，idx绑定到数组元素索引，
+表达式结果赋值给克隆的数组对应的位置，最后返回克隆的数组（即ret）。
+
+user=> (def strings (into-array ["some" "strings" "here"]))
+#'user/strings
+
+user=> (seq (amap strings idx _ (.toUpperCase (aget strings idx))))
+("SOME" "STRINGS" "HERE")
+
+----
+areduce函数类似amap，但可以返回值任意：
+(areduce a idx ret init expr)
+
+areduce开始用init初始化ret，然后对每一个数组a元素计算表达式expr，将计算结果赋给ret，
+最后返回ret（即表达式的最后一次计算值）。
+
+user=> (areduce strings idx ret 0 (max ret (.length (aget strings idx))))
+7
+
+上面的代码计算数组strings中，最长字符串的长度。
+
+
+==========
+13，通过 #^宏 给参数添加类型元数据。
 
 [#^ClassnameXX c]，内部扩展成#^{:tag ClassnameXX}，clojure内部用tag来表示类型。
 
@@ -92,117 +213,12 @@ https://code.google.com/p/clojure-doc-en2ch/wiki/Chapter_14_performance
 
 这里对(:name user)添加类型提示。
 --
-可以对返回值加类型提示（加在函数的参数前面）：
+可以对返回值加类型提示（加在函数的参数上面）：
 (defn file-extension
 	^String [^java.io.File f]
 	(-> (re-seq #"\.(.+)" (.getName f))
 		first
 		second))
-
-=========
-6，memfn 创建匿名函数包装Java方法，使其在Clojure中能像Clojure函数那样使用。
-
-user=> (map (memfn toUpperCase) ["a" "short" "message"])
-("A" "SHORT" "MESSAGE")
-
-还可以写成如下形式：
-user=> (map #(.toUpperCase %) ["a" "short" "message"])
-("A" "SHORT" "MESSAGE")
-
-
-7，bean包装JavaBean将其转换为不可变的Clojure映射：
-(bean java-bean)
-
-
-8，format包装了Java的format方法，格式化字符串：
-
-(format fmt-string & args)，如
-
-user=> (format "%s ran %d miles today" "Stu" 8)
-"Stu ran 8 miles today"
-
-说明：占位符详细参考Java相关文档。
-
-======
-9，可以使用seq将任意Java数组包装成Clojure序列。
-
-user=> (seq (make-array String 5))
-(nil nil nil nil nil)
-
-
-10，创建数组。
-
-创建一维数组 (make-array class length)。
-
-user=> (make-array String 5)
-#<String[] [Ljava.lang.String;@5f6303>
-
-创建多维数组 (make-array class dim & more-dims)。
-
-user=> (make-array String 2 2)
-#<String[][] [[Ljava.lang.String;@766a24>
-
-一系列类似int-array的函数用来创建Java基础类型数组。
-
-user=> (int-array 5)
-#<int[] [I@1742700>
-
-
-11，
-aset 设置Java数组项值：
-一维数组 (aset java-array index value)
-多维数组 (aset java-array index-dim1 index-dim2 ... value)
-
-aget 获取Java数组项值：
-一维数组 (aget java-array index)
-多维数组 (aget java-array index-dim1 index-dim2 ...)
-
-alength获取数字长度：
-(alength java-array)
-
-
-12，
-to-array函数直接将集合转化为数组：
-(to-array sequence)。
-
-说明：转换的结果为Object数组。
-
-into-array函数也能将集合转换为数组，并且可以指定数组元素类型：
-(into-array type? seq)。
-
-user=> (into-array String ["Easier" "array" "creation"])
-#<String[] [Ljava.lang.String;@110c31>
-
-如果忽略类型参数，into-array则根据第一个元素猜测数组元素的类型。
-
-=======
-13，（数组循环）
-
-----
-amap函数转换Java数组的每个元素：
-(amap a idx ret expr)
-
-amap创建数组的克隆，并绑定到变量ret，
-对数组a每一个元素执行expr表达式，idx绑定到数组元素索引，
-表达式结果赋值给克隆的数组对应的位置，最后返回克隆的数组（即ret）。
-
-user=> (def strings (into-array ["some" "strings" "here"]))
-#'user/strings
-
-user=> (seq (amap strings idx _ (.toUpperCase (aget strings idx))))
-("SOME" "STRINGS" "HERE")
-
-----
-areduce函数类似amap，但可以返回值任意：
-(areduce a idx ret init expr)
-
-areduce开始用init初始化ret，然后对每一个数组a元素计算表达式expr，将计算结果赋给ret，
-最后返回ret（即表达式的最后一次计算值）。
-
-user=> (areduce strings idx ret 0 (max ret (.length (aget strings idx))))
-7
-
-上面的代码计算数组strings中，最长字符串的长度。
 
 =========
 14，处理异常
@@ -261,6 +277,8 @@ user=> (proxy [Callable] [])
 如果忽略方法实现，Clojure将提供一个默认实现，该实现抛出异常UnsupportedOperationException。
 
 ============
+《clojure编程》第9章：java及jvm互操作-The JVM Is Clojure’s Foundation
+
 clojure以jvm为基础：
 
 字符串就是java String。
@@ -274,7 +292,89 @@ nil就是java的null。
 defrecord和 deftype编译成java类里的字段。
 defprotocol生成java接口。
 
+==========
+《clojure编程》第11章：数字和数学-Use Primitive Arrays Judiciously
+
+使用原始类型数组。
+
+1，只要可变对象只在函数内使用，这是可取的，不违背clojure的。
+
+2，p446，《Multidimensional  concerns.》
+访问多维数组的性能问题。
+
+(def arr (make-array Double/TYPE 1000 1000))
+;= #'user/arr
+
+(time (dotimes [i 1000]
+	(dotimes [j 1000]
+		(aset arr i j 1.0)
+		(aget arr i j))))
+; "Elapsed time: 50802.798 msecs"
+
+这是aget和aset不支持直接访问多维数组。
+因为中间层是对象数组，所以只能使用apply来访问这些中间层。
+因此，1.0也被装箱。
+因为没有办法提示arr是一个原始类型数组，所以所有操作都是靠反射。
+
+通过手工展开中间层，加上类型提示能够优化性能，如下：
+
+(time (dotimes [i 1000]
+	(dotimes [j 1000]
+		(let [^doubles darr (aget ^objects arr i)]
+			(aset darr j 1.0)
+			(aget darr j)))))
+; "Elapsed time: 21.543 msecs"
+;= nil
 
 
+但维数增加，代码会迅速复杂，可自定义宏来解决这个问题。
+
+(defmacro deep-aget
+	"Gets a value from a multidimensional array as if via `aget`,
+	but with automatic application of appropriate type hints to
+	each step in the array traversal as guided by the hint added
+	to the source array.
+	e.g. (deep-aget ^doubles arr i j)"
+
+	([array idx]
+		`(aget ~array ~idx)) 
+	([array idx & idxs]
+		(let [a-sym (gensym "a")]
+			`(let [~a-sym (aget ~(vary-meta array assoc :tag 'objects) ~idx)] 
+				(deep-aget ~(with-meta a-sym {:tag (-> array meta :tag)}) ~@idxs)))))
+
+--
+(defmacro deep-aset
+	"Sets a value in a multidimensional array as if via `aset`,
+	but with automatic application of appropriate type hints to
+	each step in the array traversal as guided by the hint added
+	to the target array.
+	e.g. (deep-aset ^doubles arr i j 1.0)"
+	[array & idxsv]
+	(let [hints '{booleans boolean, bytes byte 
+		chars char, longs long
+		ints int, shorts short
+		doubles double, floats float}
+
+		hint (-> array meta :tag)
+		[v idx & sxdi] (reverse idxsv)
+		idxs (reverse sxdi)
+		v (if-let [h (hints hint)] (list h v) v)
+
+		nested-array (if (seq idxs)
+		`(deep-aget ~(vary-meta array assoc :tag 'objects) ~@idxs)
+		array)
+
+		a-sym (gensym "a")]
+
+		`(let [~a-sym ~nested-array]
+			(aset ~(with-meta a-sym {:tag hint}) ~idx ~v))))
+
+使用示例：
+(time (dotimes [i 1000]
+	(dotimes [j 1000]
+		(deep-aset ^doubles arr i j 1.0)
+		(deep-aget ^doubles arr i j))))
+; "Elapsed time: 25.033 msecs"
 
 
