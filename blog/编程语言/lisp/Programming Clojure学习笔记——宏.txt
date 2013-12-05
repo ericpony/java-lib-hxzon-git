@@ -14,8 +14,17 @@ user=> (defmacro unless [expr form] (list 'if expr nil form))
 2，
 foo#                在语法上被引号引起的区域内，创建一个以foo为前缀的唯一名称。
 (gensym prefix?)            以可选的前缀prefix创建唯一名称。
-(macroexpand form)        使用macroexpand-1递归展开form，直到没有宏为止。
-(macroexpand-1 form)        显示form如何展开。
+(macroexpand form)        使用macroexpand-1递归展开form，直到没有宏为止。不会对嵌套的宏展开。
+(macroexpand-1 form)        显示form如何展开。不会对嵌套的宏展开。
+
+--
+(require '[clojure.walk :as w])
+(w/macroexpand-all '(cond a b c d))		能够获得一个宏的彻底扩展。但它只是编译器完全宏扩展的一个模拟，对于特殊形式的处理并不完全正确。
+
+(w/macroexpand-all ''(when x a))
+;= (quote (if x (do a)))
+但实际上应该为(quote (when x a))，不该对quote这个特殊形式后面的代码进行展开。
+
 
 3，特殊形式不是函数，因此也不具备某些函数的功能：
 

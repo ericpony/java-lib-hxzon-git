@@ -44,3 +44,23 @@ Returns the metadata of obj, returns nil if there is no metadata.
 Returns an object of the same type and value as obj, with map as its metadata.
 
 返回一个新对象，与原对象类型和值相同，加上元数据。
+
+==========
+hxzon补充（《clojure编程》p135）：
+
+(def b (with-meta a (assoc (meta a)
+	:modified (System/currentTimeMillis))))
+;= #'user/b
+
+(meta b)
+;= {:modified 1322065210115, :created 1322065198169}
+
+(def b (vary-meta a assoc :modified (System/currentTimeMillis)))
+;= #'user/b
+
+(meta b)
+;= {:modified 1322065229972, :created 1322065198169}
+
+with-meta是把一个值的元数据完全替换成给定的元数据。
+
+vary-meta则通过给定的函数（它的参数是当前的元数据）进行更新。

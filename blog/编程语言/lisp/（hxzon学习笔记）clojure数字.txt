@@ -7,6 +7,8 @@ by hxzon
 一，数字和数学运算
 
 1，clojure首选64位及更大的数字。
+所有数学操作都可以用更窄的类型，但返回值会扩大到对应的64比特表示。
+clojure的原始类型只有long和double，没有byte、int、boolean等。
 
 (class (inc (Integer. 5)))
 ;= java.lang.Long
@@ -19,6 +21,15 @@ by hxzon
 
 (class (int 1))
 ;= java.lang.Integer
+
+--
+clojure的类型强制转换函数，如short，int，long等，只在需要用它来除掉与反射或自动封装相关的编译器警告时才有用处。
+当用于其他情景时，类型强制转换函数不会返回所指示的类型对应的值，例如：
+(class (int 5))
+;= java.lang.Long
+在这方面，类型强制函数与类型提示最为类似。
+
+以上这段话出自《clojure编程》p442，但实际情况是java.lang.Integer，原书有误？亦或clojure新版本做了更改。
 
 
 2，jvm中Long和Double的存在，只是因为集合类无法处理原始类型。
@@ -39,14 +50,15 @@ long->BigInt->Rationals->BigDecimal->double。
 6，为什么会有BigInt？
 首先，BigInteger有问题，它的hashCode计算方式和Long不一致。
 这会导致集合中出现重复的键。
-另外，BigInt做了优化，只要数值范围在long内，会使用原生类型。
-clojure的数字永远不会返回BigInteger类型。
+另外，BigInt做了优化，只要数值范围在long内，会使用原生类型，只在需要任意精度时才会付出代价。
+clojure所有的数字操作永远不会返回BigInteger类型。
 
 
 7，数值溢出
 clojure不会默默“回绕”数值，而是会抛出溢出异常。
-带撇号的运算，例如inc', dec', +', -', 和 *' ，可以防止溢出。
-这会付出轻微代价（先使用原始类型计算，如果溢出，会用装箱类型）。
+可以用bigint和bigdec来明确的使用任意精度数值。
+也可以使用撇号后缀的运算，例如inc', dec', +', -', 和 *' ，它们会自动提升类型，而且只在必要时提升结果。
+这会付出轻微代价（先使用原始类型计算，然后检查，如果溢出，提升类型然后重新计算）。
 
 (inc' k)
 ;= 9223372036854775808N
@@ -152,7 +164,9 @@ For example, while any sequential collection (e.g., a vector, list, or sequence)
 may be equal to another sequential collection of a different concrete type, 
 a sequential collection will never be equal to a set, or a map.
 
-不同的具体类型是=的，但是不同的集合类型永远不会=。
+不同的具体类型可能是=的，但是不同的集合类型永远不会=。
+例如任何顺序性集合类，如向量、列表和序列可能与另一种具体类型的顺序性集合类=，
+但一个顺序性集合类绝不会与一个集合或映射=。
 
 (= {:a 1 :b ["hi"]}
 	(into (sorted-map) [[:b ["hi"]] [:a 1]])
@@ -162,12 +176,17 @@ a sequential collection will never be equal to a set, or a map.
 ;= true
 这里，不同具体类型的映射是=的。
 
+--
+所有类型的整数可以用=来比较，不同宽度的有限精度的小数也可以用=来比较。
+
 (= 1 1N (Integer. 1) (Short. (short 1)) (Byte. (byte 1)))
 ;= true
 这里，不同类型的整数是=的。
 
 (= 1.25 (Float. 1.25))
 ;= true
+
+但不同类的等值数字比较，不会=。
 
 (= 1 1.0)
 ;= false
@@ -233,6 +252,10 @@ clojure不会出现重复键。
 
 --
 浮点数总是不精确的，所以要小心。
+(+ 0.1 0.2)
+;= 0.30000000000000004
+
+尽管==是类型不敏感的，但32位的float需要扩展为64位的double，而这是无法对1.1做到精确的。
 
 (== 1.1 (float 1.1))
 ;= false
@@ -247,8 +270,61 @@ clojure不会出现重复键。
 ==========
 三，优化数字性能
 
--1，使用原始类型。
--2，避免使用集合和序列。
+-1，使用原始类型，没有封装的代价，而且靠硬件实现。
+-2，避免使用集合和序列，它们会装箱。
+
+----
+声明函数接受和返回原始类型。
+基于类的类型提示使得编译器在执行java互操作时能够避免反射，但提示不改变实现这些方法的函数签名。
+
+(defn foo [a] 0)
+;= #'user/foo
+
+(seq (.getDeclaredMethods (class foo)))
+;= (#<Method public java.lang.Object user$foo.invoke(java.lang.Object)>)
+
+(defn foo [^Double a] 0)
+;= #'user/foo
+
+(seq (.getDeclaredMethods (class foo)))
+;= (#<Method public java.lang.Object user$foo.invoke(java.lang.Object)>)
+
+使用原始类型声明，采用了invokePrim方法。
+(defn round ^long [^double a] (Math/round a))
+;= #'user/round
+
+(seq (.getDeclaredMethods (round foo)))
+;= (#<Method public java.lang.Object user$round.invoke(java.lang.Object)>
+;= #<Method public final long user$round.invokePrim(double)>)
+
+它不会接受一个类型不符合的参数。
+(round "string")
+;= #<ClassCastException java.lang.ClassCastException:
+;= java.lang.String cannot be cast to java.lang.Number>
+
+可以传任何封装的数字，但须在预期的数值范围内。
+(defn idem ^long [^long x] x)
+;= #'user/long
+(idem 18/5)
+;= 3
+(idem 3.14M)
+;= 3
+(idem 1e15)
+;= 1000000000000000
+(idem 1e150)
+;= #<IllegalArgumentException java.lang.IllegalArgumentException:
+;= Value out of range for long: 1.0E150>
+
+通常的invoke方法（参数和返回值为Object类型）仍在，这是为了支持用封装的数字参数调用函数的情况。
+(map round [4.5 6.9 8.2])
+;= (5 7 8)
+(apply round [4.2])
+;= 4
+
+声明为接受或返回原始类型的任何clojure函数限制在4个参数内。
+这是由于实现上的一个细节：为了开发上面提到的效率而不加入严格静态的编译过程，
+每个可能接受原始类型的函数签名必须在单独的接口中定义。
+参数和返回值有三种（double、long和Object），即使允许最大4个参数也会产生数百种不同的接口。
 
 “Use Primitive Arrays Judiciously”部分见《（hxzon学习笔记）clojure与java一起工作》。
 

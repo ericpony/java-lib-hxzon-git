@@ -142,7 +142,7 @@ alength获取数字长度：
 =======
 12，（数组循环）
 
-map和reduce对序列操作，它们基于集合，而集合只能处理对象，不能处理原始类型。
+map和reduce只能用于容纳对象的序列，如果应用于数组，会引起装箱。
 
 ----
 amap函数转换Java数组的每个元素：
@@ -318,11 +318,11 @@ defprotocol生成java接口。
 ; "Elapsed time: 50802.798 msecs"
 
 这是aget和aset不支持直接访问多维数组。
-因为中间层是对象数组，所以只能使用apply来访问这些中间层。
-因此，1.0也被装箱。
+因为中间层是对象数组，它们通过递归使用apply来支持多维操作、获取或设置多维数组的每一层。
+因为aset不为n维数组提供直接的函数变体，在使用apply传播到其它参数时，1.0被装箱。
 因为没有办法提示arr是一个原始类型数组，所以所有操作都是靠反射。
 
-通过手工展开中间层，加上类型提示能够优化性能，如下：
+解决办法是通过手工展开中间层，加上必要的类型提示，如下：
 
 (time (dotimes [i 1000]
 	(dotimes [j 1000]
@@ -332,6 +332,7 @@ defprotocol生成java接口。
 ; "Elapsed time: 21.543 msecs"
 ;= nil
 
+如上，提示最终类型是double数组，中间层是Object数组。
 
 但维数增加，代码会迅速复杂，可自定义宏来解决这个问题。
 
@@ -368,8 +369,8 @@ defprotocol生成java接口。
 		v (if-let [h (hints hint)] (list h v) v)
 
 		nested-array (if (seq idxs)
-		`(deep-aget ~(vary-meta array assoc :tag 'objects) ~@idxs)
-		array)
+			`(deep-aget ~(vary-meta array assoc :tag 'objects) ~@idxs)
+			array)
 
 		a-sym (gensym "a")]
 
@@ -395,4 +396,62 @@ defprotocol生成java接口。
 ;(let* [a1376 (user/deep-aget user/arr 2 3)] (clojure.core/aset a1376 4 1.0))
 
 （hxzon：macroexpand没有继续展开deep-aget？）
+
+--
+hxzon代码注释：
+
+(defmacro deep-aget
+	"Gets a value from a multidimensional array as if via `aget`,
+	but with automatic application of appropriate type hints to
+	each step in the array traversal as guided by the hint added
+	to the source array.
+	e.g. (deep-aget ^doubles arr i j)"
+
+	([array idx]
+		`(aget ~array ~idx)) 
+对于一维数组，直接使用aget。这里假设array已经合理的提示了类型。
+
+	([array idx & idxs]
+		(let [a-sym (gensym "a")]
+			`(let [~a-sym (aget ~(vary-meta array assoc :tag 'objects) ~idx)] 
+				(deep-aget ~(with-meta a-sym {:tag (-> array meta :tag)}) ~@idxs)))))
+对于多维数组，首先生成一个名字a-sym，它表示下一层数组。
+~(vary-meta array assoc :tag 'objects)，给array添加object类型提示。
+~(with-meta a-sym {:tag (-> array meta :tag)})，给下一层数组添加array所带的类型提示。
+
+--
+(defmacro deep-aset
+	"Sets a value in a multidimensional array as if via `aset`,
+	but with automatic application of appropriate type hints to
+	each step in the array traversal as guided by the hint added
+	to the target array.
+	e.g. (deep-aset ^doubles arr i j 1.0)"
+	[array & idxsv]
+解构成“数组（带类型提示）”及“下标和值”两部分。
+
+	(let [hints '{booleans boolean, bytes byte 
+		chars char, longs long
+		ints int, shorts short
+		doubles double, floats float}
+
+		hint (-> array meta :tag)
+hint为array带的类型提示。
+
+		[v idx & sxdi] (reverse idxsv)
+反转“下标和值”，取得值v，和最底层下标idx。
+
+		idxs (reverse sxdi)
+恢复中间层的下标。
+
+		v (if-let [h (hints hint)] (list h v) v)
+
+		nested-array (if (seq idxs)
+			`(deep-aget ~(vary-meta array assoc :tag 'objects) ~@idxs)
+			array)
+如果中间层下标不只一个，用deep-aget取得倒数第2层数组，否则取得array。
+
+		a-sym (gensym "a")]
+
+		`(let [~a-sym ~nested-array]
+			(aset ~(with-meta a-sym {:tag hint}) ~idx ~v))))
 
