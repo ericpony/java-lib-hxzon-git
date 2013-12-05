@@ -176,6 +176,12 @@ user=> (areduce strings idx ret 0 (max ret (.length (aget strings idx))))
 
 [#^ClassnameXX c]，内部扩展成#^{:tag ClassnameXX}，clojure内部用tag来表示类型。
 
+最多只能对4个参数进行类型提示。
+clojure中只有long和double两种原始类型，没有int、short、byte、char、boolean等。
+
+(defn ch>= ^Boolean [ ^Character ch1 ^Character ch2]
+   (>= (int ch1) (int ch2)))
+
 (defn integer-sum-to [n]
 	(let [n (int n)]
 	  (loop [i (int 1) sum (int 0)]
@@ -377,4 +383,16 @@ defprotocol生成java接口。
 		(deep-aget ^doubles arr i j))))
 ; "Elapsed time: 25.033 msecs"
 
+--
+(macroexpand-1 '(deep-aset ^doubles arr 2 3 1.0))
+;(clojure.core/let [a1335 (user/deep-aget arr 2)] (clojure.core/aset a1335 3 (double 1.0)))
+
+(def arr (make-array Double/TYPE 100 100 100))
+(macroexpand-1 '(deep-aset ^doubles arr 2 3 4 1.0))
+;(clojure.core/let [a1366 (user/deep-aget arr 2 3)] (clojure.core/aset a1366 4 (double 1.0)))
+
+(macroexpand `(deep-aset ^doubles arr 2 3 4 1.0))
+;(let* [a1376 (user/deep-aget user/arr 2 3)] (clojure.core/aset a1376 4 1.0))
+
+（hxzon：macroexpand没有继续展开deep-aget？）
 

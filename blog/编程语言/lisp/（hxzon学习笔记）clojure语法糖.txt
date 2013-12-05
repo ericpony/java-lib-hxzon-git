@@ -35,6 +35,8 @@ http://clojure.org/special_forms#quote
 -2.2，反引号（Syntax-quote）·，阻止求值。
 除了符号，列表，向量，集合，映射外的所有形式，`x 和 'x 相同。
 
+（hxzon：' 和 ` 区别在于Syntax-quote (`)会进行symbol的解析。）
+
 For Symbols, syntax-quote resolves the symbol in the current context, yielding a fully-qualified symbol 
 (i.e. namespace/name or fully.qualified.Classname). 
 If a symbol is non-namespace-qualified and ends with '#', 

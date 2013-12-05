@@ -11,7 +11,15 @@ by hxzon
 (class (inc (Integer. 5)))
 ;= java.lang.Long
 
-注意：int等强制转型函数也相当于提示。
+(class (inc (byte 1)))
+;= java.lang.Long
+
+(type (int 1))
+;= java.lang.Integer
+
+(class (int 1))
+;= java.lang.Integer
+
 
 2，jvm中Long和Double的存在，只是因为集合类无法处理原始类型。
 

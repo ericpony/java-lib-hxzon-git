@@ -33,56 +33,64 @@ Special Forms
 
 ----
 (def symbol init?)
+定义变量。
 
 Creates and interns or locates a global var with the name of symbol and a namespace of the value of the current namespace (*ns*). 
-If init is supplied, it is evaluated, and the root binding of the var is set to the resulting value. 
-If init is not supplied, the root binding of the var is unaffected. 
-def always applies to the root binding, even if the var is thread-bound at the point where def is called. 
-def yields the var itself (not its value). 
-Throws an exception if symbol is already in the namespace and not mapped to an interned var. 
-Since 1.3, def has allowed an optional doc-string: (def symbol doc-string? init?).
+（intern：扣留，羁押。这里翻译为“池化”。）
+创建并池化，或者定位一个全局变量，命名空间为当前命名空间。
 
-（intern：扣留，羁押。）
-（unaffected：不受影响的；不装扮的，无装饰的；自然的；不矫揉造作的。）
-（yield：vi.放弃，屈服；生利；退让，退位。）
-创建然后扣留或定位一个带名字的全局var。
+If init is supplied, it is evaluated, and the root binding of the var is set to the resulting value. 
 如果提供init参数，它会被求值，这个值会作为这个var的根绑定。
+
+If init is not supplied, the root binding of the var is unaffected. 
+（unaffected：不受影响的；不装扮的，无装饰的；自然的；不矫揉造作的。）
 如果不提供init参数，这个var的根绑定是不受影响的。
+
+def always applies to the root binding, even if the var is thread-bound at the point where def is called. 
 def总是作用于根绑定，即使def被调用时这个var是线程绑定的。
+
+def yields the var itself (not its value). 
+（yield：vi.放弃，屈服；生利；退让，退位。）
 def返回这个var本身，而不是它的值。
-当这个符号在命名空间存在，且没被映射到一个已经被扣留的var时，抛出异常。
+
+Throws an exception if symbol is already in the namespace and not mapped to an interned var. 
+当这个符号在命名空间存在，且没被映射到一个已经被池化的var时，抛出异常。
+
+Since 1.3, def has allowed an optional doc-string: (def symbol doc-string? init?).
 从1.3开始，def允许一个可选的文档参数。
 
-Any metadata on the symbol will be evaluated, and become metadata on the var itself. 
-There are several metadata keys that have special interpretation:
 
+Any metadata on the symbol will be evaluated, and become metadata on the var itself. 
 符号的任何元数据都会被求值，并作为这个var本身的元数据。
+
+There are several metadata keys that have special interpretation:
 有几个特殊的元数据：
 
 :private
 a boolean indicating the access control for the var. 
 If this key is not present, the default access is public (e.g. as if :private false).
-控制这个var的可见性。
+控制这个变量的可见性。
 如果这个元数据不存在，可见性为公开。
 
 :doc
 a string containing short (1-3 line) documentation for the var contents
-定义这个var的文档说明。
+定义这个变量的文档说明。
 
 :test
 a fn of no args that uses assert to check various operations. 
 The var itself will be accessible during evaluation of a literal fn in the metadata map.
 一个无参函数用来检查各种操作。
-？var本身在求值过程中可被访问。
+变量本身在求值过程中可被访问。（见下边示例。）
 
 :tag
 a symbol naming a class or a Class object that indicates the Java type of the object in the var, 
 or its return value if the object is a fn.
-一个一个类或类对象的名字，对于var，用来指明对象的java类型。
-如果对象是一个函数，这指的是返回值。
+clojure中用tag来指示类型。
+跟着一个类名或Class对象，用来指明变量的类型。
+如果变量是一个函数，tag元数据指定该函数返回值的类型。
 
 In addition the compiler will place the following keys on the var:
-编译器会为var额外添加如下键：
+编译器会为变量额外添加如下键：
 
 :file string
 :line int
@@ -108,6 +116,8 @@ var的元数据也可被应用程序使用。
   ([x y & more]
    (reduce mymax (mymax x y) more)))
 
+（这里，test函数可以引用这个变量名。）
+
 user=> (meta #'mymax)
   {:name mymax,
    :user/comment "this is the best fn ever!",
@@ -126,57 +136,68 @@ and thus also convey metadata for the resulting var from the symbol used as the 
 
 Using def to modify the root value of a var at other than the top level 
 is usually an indication that you are using the var as a mutable global, and is considered bad style. 
+使用def来修改一个var的根值，作为一个可变的全局变量，这是一种不好的做法。
+
 Consider either using binding to provide a thread-local value for the var, 
 or putting a ref or agent in the var and using transactions or actions for mutation.
-
-使用def来修改一个var的根值，作为一个可变的全局变量，这是一种不好的做法。
 更好的方式是，为var提供一个线程本地值，
 或者将var放入一个ref或agent，然后使用事务或动作来修改。
+
 
 ----
 (if test then else?)
 
 Evaluates test. 
+对test表达式求值。
 If not the singular values nil or false, evaluates and yields then, otherwise, evaluates and yields else. 
+（singular：adj.<语>单数的；<正>突出的；奇特的；非凡的。）
+如果值不为nil或false，求值then表达式并返回其值，否则求值else表达式并返回其值。
 If else is not supplied it defaults to nil. 
+如果没有else表达式，则相当于nil。
+
 All of the other conditionals in Clojure are based upon the same logic, 
 that is, nil and false constitute logical falsity, and everything else constitutes logical truth, 
 and those meanings apply throughout. 
-if performs conditional tests of boolean Java method return values without conversion to Boolean. 
-Note that if does not test for arbitrary values of java.lang.Boolean, only the singular value false (Java's Boolean.FALSE), 
-so if you are creating your own boxed Booleans make sure to use Boolean/valueOf and not the Boolean constructors.
-
-（singular：adj.<语>单数的；<正>突出的；奇特的；非凡的。）
-（arbitrary：adj.随意的，任性的，随心所欲的；主观的，武断的；霸道的，专制的，专横的，独断独行的；乱。）
-对test表达式求值。
-如果值不为nil或false，求值then表达式并返回其值，否则求值else表达式并返回其值。
-如果没有else表达式，则相当于nil。
 clojure的其它条件都是相同的逻辑，即nil和false表示假值，而其它值都是真值。
-如果test表达式，java方法返回值没有转成Boolean。
+
+if performs conditional tests of boolean Java method return values without conversion to Boolean. 
+如果test表达式使用java方法的返回值，没有转成Boolean。
+
+Note that if does not test for arbitrary values of java.lang.Boolean, only the singular value false (Java's Boolean.FALSE), 
+so if you are creating your own boxed Booleans 
+make sure to use Boolean/valueOf and not the Boolean constructors.
+
+（arbitrary：adj.随意的，任性的，随心所欲的；主观的，武断的；霸道的，专制的，专横的，独断独行的；乱。）
 如果你创建你自己的布尔值装箱，记住使用Boolean.valueOf而不是Boolean构造器。
 
 ----
 (do exprs*)
 
 Evaluates the expressions in order and returns the value of the last. 
-If no expressions are supplied, returns nil.
 顺序求值表达式，并返回最后一个表达式的值。
+If no expressions are supplied, returns nil.
 如果没有表达式，返回nil。
 
 ----
 (let [bindings* ] exprs*)
-
 binding => binding-form init-expr
+定义本地变量。
 
 Evaluates the exprs in a lexical context in which the symbols in the binding-forms 
-are bound to their respective init-exprs or parts therein. 
-The bindings are sequential, so each binding can see the prior bindings. 
+are bound to their respective init-exprs or parts therein.
+ 
+The bindings are sequential, so each binding can see the prior bindings.
+绑定是按顺序的，所以后面的绑定表达式可使用前面的本地变量值。 
+
 The exprs are contained in an implicit do. 
+表达式隐含在do块中。
+
 If a binding symbol is annotated with a metadata tag, 
-the compiler will try to resolve the tag to a class name and presume that type in subsequent references to the binding. 
+the compiler will try to resolve the tag to a class name and presume that type in subsequent references to the binding.
+如果本地变量带有元数据，编译器会视为数据类型。
+ 
 The simplest binding-form is a symbol, which is bound to the entire init-expr:
-
-
+最简单的绑定形式为一个变量名，跟着一个初始值表达式。
 
 (let [x 1
       y x]
@@ -187,11 +208,13 @@ See Binding Forms for more information about binding forms.
 
 Locals created with let are not variables. 
 Once created their values never change!
+用let定义的本地绑定不是变量，一旦创建，值就不会再改变。
 
 ----
 (quote form)
 
 Yields the unevaluated form.
+
 user=> '(a b c)
 (a b c)
 
@@ -200,14 +223,18 @@ The return value is a list of 3 symbols.
 
 ---
 (var symbol)
+取得变量本身。
 
 The symbol must resolve to a var, and the Var object itself (not its value) is returned. 
 The reader macro #'x expands to (var x).
+
 
 ----
 (fn name? [params* ] exprs*)
 
 (fn name? ([params* ] exprs*)+)
+
+定义函数。
 
 params => positional-params* , or positional-params* & rest-param
 positional-param => binding-form
@@ -216,7 +243,11 @@ name => symbol
 
 Defines a function (fn). 
 Fns are first-class objects that implement the IFn interface. 
+
 The IFn interface defines an invoke() function that is overloaded with arity ranging from 0-20. 
+IFn接口定义了invoke()方法，并且重载了该方法，参数个数从0至20。
+（clojure中只能根据参数个数重载，不能根据参数类型重载。）
+
 A single fn object can implement one or more invoke methods, and thus be overloaded on arity. 
 One and only one overload can itself be variadic, by specifying the ampersand followed by a single rest-param. 
 Such a variadic entry point, when called with arguments that exceed the positional params, 
@@ -249,12 +280,15 @@ Note that named fns such as mult are normally defined with defn, which expands i
 A fn (overload) defines a recursion point at the top of the function, 
 with arity equal to the number of params including the rest param, if present. 
 See recur.
+一个函数定义了一个递归点，递归点参数为函数的参数，包括rest参数。参见recur。
 
 fns implement the Java Callable, Runnable and Comparator interfaces.
+函数实现了Callable，Runnable和Comparator接口。
 
 Since 1.1
 
 Functions support specifying runtime pre- and postconditions.
+从1.1开始，函数支持运行时前置和后置条件。
 
 The syntax for function definitions becomes the following:
 
@@ -264,6 +298,7 @@ The syntax for function definitions becomes the following:
 
 
 The syntax extension also applies to to defn and other macros which expand to fn forms.
+基于fn的其它宏也支持前置和后置条件。
 
 Note: If the sole form following the parameter vector is a map, 
 it is treated as the function body, and not the condition map.
@@ -278,10 +313,16 @@ where either key is optional.
 The condition map may also be provided as metadata of the arglist.
 
 pre-expr and post-expr are boolean expressions that may refer to the parameters of the function. 
+前置和后置表达式返回布尔值，可以访问函数的参数。
+
 In addition, % may be used in a post-expr to refer to the function's return value. 
+后置表达式还可以使用百分号来引用函数的返回值。
+
 If any of the conditions evaluate to false and *assert* is true, an assertion failure exception is thrown.
+如果前置和后置条件返回false，且*assert*变量为true，会抛出一个异常。
 
 Example:
+
 (defn constrained-sqr [x]
     {:pre  [(pos? x)]
      :post [(> % 16), (< % 225)]}
@@ -303,28 +344,35 @@ See recur.
 
 Evaluates the exprs in order, then, in parallel, rebinds the bindings of the recursion point to the values of the exprs. 
 （in parallel，并联。）
-按顺序对表达式求值，这些值用来重新绑定递归点的参数（loop建立了一个递归点）。
+按顺序对表达式求值，这些值用来重新绑定递归点的参数（loop或函数建立了一个递归点）。
+
 If the recursion point was a fn method, then it rebinds the params.
-如果递归点是一个函数，用它来重新绑定参数。 
 If the recursion point was a loop, then it rebinds the loop bindings.
-如果递归点是一个loop，这些值用来重新绑定递归点的参数（loop建立了一个递归点）。
+这些值用来重新绑定递归点的参数（loop和函数都能用来建立一个递归点，loop的本地参数和函数的参数就是递归点参数）。
+
 Execution then jumps back to the recursion point.
-然后执行跳转到递归点（即loop处）。 
+然后执行跳转到递归点（即loop开头或函数开头）。 
+
 The recur expression must match the arity of the recursion point exactly.
 （arity，元数。）
 recur表达式的参数个数必须匹配递归点的参数个数。 
+
 In particular, if the recursion point was the top of a variadic fn method,
 （variadic，可变参数。）
 如果递归点是可变参数函数的顶，要更加注意，
+
 there is no gathering of rest args - a single seq (or null) should be passed.
 这里没有采集rest参数，只能传单个序列或null。
+
 recur in other than a tail position is an error.
 recur只能出现在loop形式中的最后一行。
 
 Note that recur is the only non-stack-consuming looping construct in Clojure. 
 recur在clojure中只是一个无栈的循环结构。
+
 There is no tail-call optimization and the use of self-calls for looping of unknown bounds is discouraged.
 没有尾调用优化， ？不鼓励在未知绑定中循环而自调用。
+
 recur is functional and its use in tail-position is verified by the compiler.
 recur是一个函数，通过编译器来检查它是否出现在尾部。
 
@@ -343,10 +391,30 @@ loop建立了一个递归点。
 再次回到loop处开始执行。
 ）
 
+hxzon补充示例：
+
+(defn countdown
+	[x]
+	(if (zero? x)
+		:blastoff!
+		(do (println x)
+			(recur (dec x)))))
+;= #'user/countdown
+
+(countdown 5)
+; 5
+; 4
+; 3
+; 2
+; 1
+;= :blastoff!
+
+
 ----
 (throw expr)
 
 The expr is evaluated and thrown, therefore it should yield an instance of some derivee of Throwable.
+抛出异常，表达式必须返回一个Throwable对象。
 
 ----
 (try expr* catch-clause* finally-clause?)
@@ -367,62 +435,96 @@ Before returning, normally or abnormally, any finally exprs will be evaluated fo
 
 (monitor-exit x)
 
-These are synchronization primitives that should be avoided in user code. Use the locking macro.
+These are synchronization primitives that should be avoided in user code. 
+Use the locking macro.
+同步原语，避免在代码中使用。
+请使用locking宏。
 
-
-----
+========
 Other Special Forms
+其它特殊形式。
 
 The special forms dot ('.'), new, and set! of fields are described in the Java Interop section of the reference.
+点号，new，和set!用于java互操作。
+
 set! of vars is described in the Vars section of the reference.
 
-----
+========
 Binding Forms (Destructuring)
+绑定形式（结构）。
 
 Clojure supports abstract structural binding, often called destructuring, 
 in let binding lists, fn parameter lists, and any macro that expands into a let or fn. 
+clojure支持结构绑定，称为“解构”，用在let绑定，fn参数及基于这两者的宏。
+
 The basic idea is that a binding-form can be a data structure literal containing symbols 
 that get bound to the respective parts of the init-expr. 
+基本概念是绑定形式可以是一个含有符号的数据结构字面量，
+（respective，各自。）
+结构中的每个符号各自绑定表达式的某部分。
+
 The binding is abstract in that a vector literal can bind to anything that is sequential, 
 while a map literal can bind to anything that is associative.
+（associative，关联。）
+绑定形式如果为一个向量字面量，可以绑定一个序列结构。
+如果为一个映射字面量，则可以绑定一个关联结构。
 
 Vector binding-exprs allow you to bind names to parts of sequential things (not just vectors), 
 like vectors, lists, seqs, strings, arrays, and anything that supports nth. 
-The basic sequential form is a vector of binding-forms, which will be bound to successive elements from the init-expr, looked up via nth. 
+向量绑定形式允许你结构序列，包括向量、列表、序列、字符串、数组及所有基于下标访问的数据结构。
+
+The basic sequential form is a vector of binding-forms, which will be bound to successive elements from the init-expr, looked up via nth.
+ 
 In addition, and optionally, & followed by a binding-forms will cause that binding-form to be bound to the remainder of the sequence,
 i.e. that part not yet bound, looked up via nthnext . 
+与号用来绑定序列结构的其余部分。
+
 Finally, also optional, :as followed by a symbol will cause that symbol to be bound to the entire init-expr:
+:as关键字可用来绑定整个序列结构。
 
 (let [[a b c & d :as e] [1 2 3 4 5 6 7]]
   [a b c d e])
 ->[1 2 3 (4 5 6 7) [1 2 3 4 5 6 7]]
 
 These forms can be nested:
+可以嵌套解构。
 
 (let [[[x1 y1][x2 y2]] [[1 2] [3 4]]]
   [x1 y1 x2 y2])
 ->[1 2 3 4]
 
 Strings work too:
+可对字符串解构，相当于字符序列。
 
 (let [[a b & c :as str] "asdjhhfdas"]
   [a b c str])
 ->[\a \s (\d \j \h \h \f \d \a \s) "asdjhhfdas"]
 
+--
 Map binding-forms allow you to bind names to parts of associative things (not just maps), 
 like maps, vectors, string and arrays (the latter three have integer keys). 
+map绑定形式允许你绑定关联结构，包括映射、向量、字符串、数组，后三者以下标为键。
+
 It consists of a map of binding-form-key pairs, each symbol being bound to the value in the init-expr at the key. 
+
 In addition, and optionally, an :as key in the binding form followed by a symbol 
 will cause that symbol to be bound to the entire init-expr. 
+:as关键字用来绑定整个结构。
+
 Also optionally, an :or key in the binding form followed by another map 
 may be used to supply default values for some or all of the keys if they are not found in the init-expr:
+
+:or关键字可指定一个映射，用作找不到键的绑定的默认值。
 
 (let [{a :a, b :b, c :c, :as m :or {a 2 b 3}} {:a 5 :c 6}]
   [a b c m])
 ->[5 3 6 {:c 6, :a 5}]
 
+（这里找不到:b键，所以使用默认值映射里的值。）
+
 It is often the case that you will want to bind same-named symbols to the map keys. 
 The :keys directive allows you to avoid the redundancy:
+如果键名和绑定名相同，:key关键字可让你省略掉键名。
 
 (let [{fred :fred ethel :ethel lucy :lucy} m] ...
 
@@ -431,11 +533,13 @@ can be written:
 (let [{:keys [fred ethel lucy]} m] ...
 
 There are similar :strs and :syms directives for matching string and symbol keys.
+:strs和:syms两个关键字则针对字符串和符号类型的键。
 
 Since binding forms can be nested within one another arbitrarily, you can pull apart just about anything:
+向量形式和映射形式可以任意内嵌。
 
 (let [{j :j, k :k, i :i, [r s & t :as v] :ivec, :or {i 12 j 13}}
-{:j 15 :k 16 :ivec [22 23 24 25]}]
-[i j k r s t v])
+		{:j 15 :k 16 :ivec [22 23 24 25]}]
+	[i j k r s t v])
 -> [12 15 16 22 23 (24 25) [22 23 24 25]]
 
