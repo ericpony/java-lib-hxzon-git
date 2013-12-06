@@ -1,0 +1,206 @@
+（hxzon学习笔记）var，def，let，binding
+
+by hxzon
+《clojure编程》第4章：多线程和并发-Vars
+
+var，def，let，binding
+======
+1，clojure中有4种引用类型可以用来表示标识：var，ref，agent，atom。
+
+2，var跟其它引用类型的不同在于，var的状态不是在时间尺度上维护的，
+它们提供的是一个命名空间内全局的实体，可以在每个线程上把这个实体绑定到不同的值。
+
+clojure对一个符号进行求值，其实就是在当前命名空间寻找名字是这个符号的那个var，
+并对它解引用获取它的值。
+
+3，定义var：使用def或者它的引申物。
+
+4，私有var
+
+通过给var添加一个:private的元数据。
+
+一个私有var有以下特性：
+-1，在其它命名空间里面只能通过全限定名称对其进行访问。
+-2，要访问它的值只能通过解引用。
+
+(def ^:private everything 42)
+;= #'user/everything
+
+(ns other-namespace)
+;= nil
+
+(refer 'user)
+;= nil
+
+everything
+;= #<CompilerException java.lang.RuntimeException:
+;= Unable to resolve symbol: everything in this context, compiling:(NO_SOURCE_PATH:0)>
+
+@#'user/everything
+;= 42
+
+5，私有函数
+通过defn-来定义，和defn完全一样，只是会自动加上一个:private元数据。
+
+6，文档字符串也只是var上的元数据而已。
+
+7，常量
+给var加上一个:const元数据，但它不只是一个简单标记，它在运行时会有一些实质影响：
+任何对于常量var的引用都不是在运行时求值的（普通var则是），
+这些引用在编译器会被全部替换成这个常量所对应的值。
+
+(def ^:const max-value 255)
+;= #'user/max-value
+(defn valid-value?
+[v]
+(<= v max-value))
+;= #'user/valid-value?
+
+(def max-value 500)
+;= #'user/max-value
+这里重新定义了var，但不会影响valid-value? 。
+
+(valid-value? 299)
+;= false
+
+==========
+8，动态作用域
+
+一个var的作用域在定义它的形式之内。
+
+(let [a 1
+	b 2]
+	(println (+ a b)) 
+	(let [b 3
+		+ -]
+		(println (+ a b)))) 
+;= 3
+;= -2
+
+内层定义了两个绑定，它们“遮盖”了外层的绑定。
+（hxzon：
+相当于其它语言的本地局部变量，但它们不是变量。
+所有的本地绑定都是不可变的。内层可以“遮盖”外层的值，但是无法改变一个let绑定的值。
+另，loop和recur满足你在每个循环都对本地值进行改变的需求。
+）
+
+----
+每个var有一个根绑定，是使用def及其变种定义var的时候赋予的值，同时也是一般情况下对它解引用得到的值。
+
+但如果把一个var定义成动态的（加上:dynamic元数据），就可以利用binding在每个线程上覆盖这个根绑定的值（不影响其它线程）。
+
+(def ^:dynamic *max-value* 255)
+;= #'user/*max-value*
+
+(defn valid-value?
+	[v]
+	(<= v *max-value*))
+;= #'user/valid-value?
+
+(binding [*max-value* 500]
+	(valid-value? 299))
+;= true
+
+(binding [*max-value* 500]
+	(println (valid-value? 299))
+	(doto (Thread. #(println "in other thread:" (valid-value? 299)))
+		.start
+		.join))
+;= true
+;= in other thread: false
+
+注：对于那些你期望通过binding来对根绑定进行覆盖的动态var，一般在命名时以星号开头和结尾。
+
+----
+动态作用域被广泛使用在各种类库及clojure本身的实现里，
+用来提供一种修改api默认配置的方法，本质上其实是给函数提供了一个隐式的参数。
+
+反过来，也可以通过动态作用域，让下层函数给上层函数返回一些东西。
+
+（hxzon：动态作用域相当于其它语言的全局变量。）
+
+----
+动态作用域会通过clojure原生的并发形式进行传播。
+clojure的动态var绑定可以在线程之间进行传播，这种机制叫做“绑定传播”
+——当使用agent（通过send和send-off），future以及pmap和它的变种的时候。
+
+(binding [*max-value* 500]
+	(println (valid-value? 299))
+	@(future (valid-value? 299)))
+; true
+;= true
+
+虽然valid-value?是在另外一个独立的线程上被调用的，但是future把这个动态作用域传播到了这个线程上面。
+
+不过要注意，虽然pmap是支持绑定传播的，但是一般的惰性序列是不支持的。
+
+(binding [*max-value* 500]
+	(map valid-value? [299]))
+;= (false)
+
+一种解决方法是，手动将这个动态作用域“传播”到惰性序列中“计算实际用到这个动态var的”地方。
+
+(map #(binding [*max-value* 500]
+		(valid-value? %))
+	[299])
+;= (true)
+
+============
+9，var不是变量。
+def定义的都是顶级var，是全局可访问的。
+
+var从本质上来说，是被设计用来保存一些值，然后直到程序或者repl结束的时候都不再改变。
+如果你想要一种可以改变的东西，可以尝试clojure提供的其它的引用类型。
+
+----
+但是，在某些情况下，如果确实需要对一个var的根绑定进行修改，可以使用alter-var-root函数，
+它以这个var本身以及一个将要作用在var身上的函数作为参数。
+
+(def x 0)
+;= #'user/x
+
+(alter-var-root #'x inc)
+;= 1
+
+如果这个var是一个函数，那就可以利用这种机制来实现面向切面的编程。
+
+----
+我们也可以使用with-redefs来暂时修改一些var的根绑定，
+它会在程序控制流离开它的作用域时，把var的根绑定恢复到之前的状态。
+这个对于测试非常有用，可以让我们对一些函数或者函数所依赖的一些跟环境有关的变量进行mock。
+
+
+========
+10，前置声明
+
+如果定义一个var时不给它赋值，则称这个var是“未绑定”的，
+如果你对它进行解引用，它会返回一个“占位符”对象。
+
+(def j)
+;= #'user/j
+j
+;= #<Unbound Unbound: #'user/j>
+
+在你需要先使用var，后续代码再给它赋值的情况下，这个特性很有用。
+
+例如要实现某种类型的算法，它的实现需要交替递归。
+或者，你只是想把主要的、公共的api放在源文件的最前面，但这些api需要引用别的帮助函数（这些函数你想放在后面）。
+
+不过，更好的方式是使用declare宏，用它可以明确告诉读者，你是在定义一个未绑定的var，
+而且它允许你在一个表达式里面一次定义多个未绑定的var。
+
+(declare complex-helper-fn other-helper-fn) 
+
+(defn public-api-function
+	[arg1 arg2]
+	...)
+
+(other-helper-fn arg1 arg2 (complex-helper-fn arg1 arg2)) 
+
+(defn- complex-helper-fn 
+	[arg1 arg2]
+	...)
+
+(defn- other-helper-fn
+	[arg1 arg2 arg3]
+	...)

@@ -444,11 +444,14 @@ hint为array带的类型提示。
 恢复中间层的下标。
 
 		v (if-let [h (hints hint)] (list h v) v)
+if-let宏接受两个参数，第一个参数为绑定变量，第二个参数为表达式。
+并根据第二个表达式参数返回的值确定执行then、else语句。
+(hints hint)，返回hint对应的强制转换函数，如果找到，绑定到h，if-let返回(list h v)，否则返回v。
 
 		nested-array (if (seq idxs)
 			`(deep-aget ~(vary-meta array assoc :tag 'objects) ~@idxs)
 			array)
-如果中间层下标不只一个，用deep-aget取得倒数第2层数组，否则取得array。
+如果中间层下标不只一个，用deep-aget取得最底一层数组，否则直接返回array（已经是最底一层数组）。
 
 		a-sym (gensym "a")]
 

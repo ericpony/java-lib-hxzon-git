@@ -59,6 +59,53 @@ user=> (if-let-test nil)
 user=> (if-let-test false)  
 "false"  
 
+--
+if-let
+macro
+Usage: (if-let bindings then)
+       (if-let bindings then else & oldform)
+bindings => binding-form test
+
+If test is true, evaluates then with binding-form bound to the value of test, if not, yields else
+如果 test 为真，那么结合 binding-form 绑定，对 then 部分进行求值。
+如果 test 为假，那么对 else 部分进行求值。
+
+user=> (defn sum-all-even-number [all-number]
+           (if-let [all-even-number (filter even? all-number)]
+               (reduce + all-even-number)
+               0))
+#'user/sum-all-even-number
+
+（hxzon：这里test表达式为(filter even? all-number)，找出偶数，如果含有偶数，整体为真，则绑定到all-even-number。）
+
+user=> (sum-all-even-number [1 2 3 4 5 6 7 8 9])
+20  ; 2 + 4 + 6 + 8
+
+user=> (sum-all-even-number [1 3 5 7 9])
+0
+
+http://clojure-api-cn.readthedocs.org/en/latest/clojure.core/if-let.html
+
+(defmacro if-let
+  "bindings => binding-form test
+
+  If test is true, evaluates then with binding-form bound to the value of 
+  test, if not, yields else"
+  {:added "1.0"}
+  ([bindings then]
+   `(if-let ~bindings ~then nil))
+  ([bindings then else & oldform]
+   (assert-args
+     (vector? bindings) "a vector for its binding"
+     (nil? oldform) "1 or 2 forms after binding vector"
+     (= 2 (count bindings)) "exactly 2 forms in binding vector")
+   (let [form (bindings 0) tst (bindings 1)]
+     `(let [temp# ~tst]
+        (if temp#
+          (let [~form temp#]
+            ~then)
+          ~else)))))
+
 ----
 4，when: 
 when没有else子句，如果when后面第一个参数为true，则执行条件后的所有语句，否则返回nil。 
