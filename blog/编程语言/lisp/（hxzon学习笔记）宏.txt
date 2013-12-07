@@ -1,0 +1,686 @@
+（hxzon学习笔记）宏
+
+by hxzon
+《clojure编程》第5章：宏
+
+=========
+1，
+
+读取期（读者宏）
+编译期（宏）
+运行期（函数）
+
+高阶函数干掉一批“设计模式”，宏干掉最后残存的“模式”。
+
+2，
+宏在实现上其实也是函数，只是它有一些特殊的元数据表明它是一个宏。
+
+宏只在编译期被求值。
+
+=======
+3，用宏来实现类似java5的改进型for。
+
+p233
+
+(defmacro foreach [[sym coll] & body]
+	`(loop [coll# ~coll]
+		(when-let [[~sym & xs#] (seq coll#)]    ;如果coll可以转成一个序列（当coll为nil时失败），则序列的第一个元素绑定到sym，其它元素绑定到xs# 。
+			~@body
+			(recur xs#))))
+;= #'user/foreach
+
+(foreach [x [1 2 3]]
+(println x))
+; 1
+; 2
+; 3
+
+=========
+4，写一个宏，把clojure里面所有的符号倒过来写。
+
+例如写(reverse-it (nltnirp "foo")) ，最终求值成 (println "foo")。
+
+(require '(clojure [string :as str]
+	[walk :as walk]))
+
+(defmacro reverse-it
+	[form] 
+	(walk/postwalk #(if (symbol? %) 
+						(symbol (str/reverse (name %))) 
+						%)
+		form))
+
+postwalk函数递归地对form的每个元素执行给定的匿名函数。
+
+匿名函数把form里面的所有符号替换成相反的名字，而对于非符号的元素则不进行处理。
+
+--
+(reverse-it
+(qesod [gra (egnar 5)]
+(nltnirp (cni gra))))
+; 1
+; 2
+; 3
+; 4
+; 5
+;= nil
+
+--
+(macroexpand-1 '(reverse-it
+					(qesod [gra (egnar 5)]
+						(nltnirp (cni gra)))))
+;= (doseq [arg (range 5)]
+;= (println (inc arg)))
+
+==========
+5，调试宏（把宏展开）
+
+macroexpand-1 ：只扩展宏一次。
+
+macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
+
+(macroexpand '(cond a b c d))
+;= (if a b (clojure.core/cond c d))
+
+----
+完全扩展宏
+
+(require '[clojure.walk :as w])
+
+(w/macroexpand-all '(cond a b c d))
+;= (if a b (if c d nil))
+
+--
+只是模拟编译器，但对于特殊形式的处理不一定正确。
+
+(w/macroexpand-all ''(when x a))
+;= (quote (if x (do a)))
+
+事实上应该扩展成 (quote (when x a)) ，不应该扩展quote后面的代码。
+
+=========
+6，语法
+
+引述：返回参数的不求值形式。
+
+语法引述：跟引述很像，但语法引述把无命名空间限定的符号求值成当前命名空间的符号。
+符号的默认空间化对于产生正确的代码非常关键。
+它使我们不会因为疏忽而重定义一个已经定义过的值。这被称为“宏卫生”。
+另，语法引述里面允许“反引述”。
+
+反引述。
+
+编接反引述。
+
+----
+看一下语法引述的实现。
+
+'`(map println ~[foo])
+;= (clojure.core/seq
+;= 	(clojure.core/concat
+;= 		(clojure.core/list (quote clojure.core/map))
+;= 		(clojure.core/list (quote clojure.core/println))
+;= 		(clojure.core/list [foo])))
+
+======
+7，什么时候使用宏
+
+宏在编译期被调用，所以无法访问运行时的信息。
+
+(defn fn-hello [x]
+	(str "Hello, " x "!"))
+
+(defmacro macro-hello [x]
+	`(str "Hello, " ~x "!"))
+
+(fn-hello "Brian")
+;= "Hello, Brian!"
+
+(macro-hello "Brian")
+;= "Hello, Brian!"
+
+(map fn-hello ["Brian" "Not Brian"])
+;= ("Hello, Brian!" "Hello, Not Brian!")
+
+(map macro-hello ["Brian" "Not Brian"])
+;= #<CompilerException java.lang.RuntimeException:
+;= Can't take value of a macro: #'user/macro-hello, compiling:(NO_SOURCE_PATH:1)>
+
+宏根本就没有运行时值的概念，宏不能作为值来进行组合或者传递。
+对于那些需要传递高阶函数的习惯用法，宏是不合适的。
+
+应该只在需要自己的语言组件时才使用宏。
+换种说法，只在函数满足不了需要的时候才去使用宏。
+例如，
+-1，需要特殊的求值语义。
+-2，需要自定义的语法，特别是一些领域特定的表示法。
+-3，需要在编译期提前计算一些中间值。
+
+宏是clojure的终极表达力的体现。
+但是你不应该把它当做你写代码的首选。
+函数式编程和数据建模已经给了我们很强的表达力，并且使得我们可以把代码里面的重复模式抽象出来。
+宏应该作为我们的终极武器，用它来简化控制流，添加一些语法糖，
+以消除重复代码，以及一些难看的代码。
+
+==========
+8，宏卫生（符号冲突问题，重复求值问题）
+
+----
+8.1，符号冲突问题
+
+在宏里面使用的某个符号名，跟外部代码，或者传入的用户自定义代码里的某个符号名字，可能会发生冲突。
+
+(defmacro unhygienic
+	[& body]
+	`(let [x :oops]
+		~@body))
+;= #'user/unhygenic
+
+(unhygienic (println "x:" x))
+;= #<CompilerException java.lang.RuntimeException:
+;= Can't let qualified name: user/x, compiling:(NO_SOURCE_PATH:1)>
+
+(macroexpand-1 `(unhygienic (println "x:" x)))
+;= (clojure.core/let [user/x :oops]
+;= (clojure.core/println "x:" user/x))
+
+所有对x的引用都被扩展成user/x，但是let需要的名字是没有命名空间限定的。
+可以通过引述、反引述来“聪明”的避免这个错误，
+
+(defmacro still-unhygienic
+	[& body]
+	`(let [~'x :oops] 
+		~@body))
+;= #'user/still-unhygenic
+
+(still-unhygienic (println "x:" x))
+; x: :oops
+;= nil
+
+(macroexpand-1 '(still-unhygienic
+					(println "x:" x)))
+;= (clojure.core/let [x :oops]
+;= (println "x:" x))
+
+但这是给代码引入一个重大的bug。
+
+(let [x :this-is-important]
+	(still-unhygienic
+		(println "x:" x)))
+; x: :oops
+
+这里已经把x绑定到一个本地值了，但是由宏产生的let会悄悄把x绑定到另外一个值。
+
+----
+用gensym函数来生成一个保证唯一的符号。
+
+(gensym)
+;= G__2386
+
+(gensym)
+;= G__2391
+
+(gensym "sym")
+;= sym2396
+
+(gensym "sym")
+;= sym2402
+
+在语法引述形式里面，任何以#结尾的符号都会被自动扩展，
+并且对于前缀相同的符号，它们会被扩展成同一个符号的名字，这成为”自动gensym“。
+但是，只在同一个语法引述形式里所产生的符号名字是一样的。
+
+`(x# x#)
+;= (x__1447__auto__ x__1447__auto__)
+
+(defmacro auto-gensyms
+	[& numbers]
+	`(let [x# (rand-int 10)] 
+		(+ x# ~@numbers))) 
+;= #'user/auto-gensyms
+
+(auto-gensyms 1 2 3 4 5)
+;= 22
+
+(macroexpand-1 '(auto-gensyms 1 2 3 4 5)) 
+;= (clojure.core/let [x__570__auto__ (clojure.core/rand-int 10)]
+;= (clojure.core/+ x__570__auto__ 1 2 3 4 5))
+
+[`x# `x#]
+;= [x__1450__auto__ x__1451__auto__]
+
+(defmacro our-doto [expr & forms]
+	`(let [obj# ~expr] 
+		~@(map (fn [[f & args]]
+			`(~f obj# ~@args)) forms) 
+		obj#))
+
+(our-doto "It works"
+	(println "I can't believe it"))
+;= #<CompilerException java.lang.RuntimeException:
+;= Unable to resolve symbol: obj__1456__auto__ in this context,
+;= compiling:(NO_SOURCE_PATH:1)>
+
+在这种情况下，只能手工调用gensym。
+
+(defmacro our-doto [expr & forms]
+	(let [obj (gensym "obj")]
+		`(let [~obj ~expr]
+			~@(map (fn [[f & args]]
+				`(~f ~obj ~@args)) forms) 
+~obj)))
+
+当前，这里这个语法引述其实没什么意义，使用(list* f obj args)更好。
+
+----
+让宏的用户来选择名字
+
+一个宏如果故意向外部代码暴露出一个名字，则这个宏称为“不稳定的”。
+更好的方式是，让用户来选择这个绑定的名字。
+
+(defmacro with
+	[name & body]
+	`(let [~name 5]
+		~@body))
+;= #'user/with
+
+(with bar (+ 10 bar))
+;= 15
+
+(with foo (+ 40 foo))
+;= 45
+
+--------
+8.2，重复求值问题
+
+如果传给宏的参数，在宏的扩展形式里面出现多次，就可能会被重复求值。
+
+(defmacro spy [x]
+	`(do
+		(println "spied" '~x ~x)
+		~x))
+
+(spy 2)
+; spied 2 2
+;= 2
+
+(spy (rand-int 10))
+; spied (rand-int 10)
+;= 7
+
+(macroexpand-1 '(spy (rand-int 10)))
+;= (do (println (rand-int 10))
+;= 	(rand-int 10))
+
+可以引入一个本地绑定来解决这个问题。
+
+(defmacro spy [x]
+	`(let [x# ~x]
+		(println "spied" '~x x#)
+		x#))
+
+(macroexpand-1 '(spy (rand-int 10)))
+;= (let [x__725__auto__ (rand-int 10)]
+;= 	(println x__725__auto__ '(rand-int 10))
+;= 	x__725__auto__)
+
+但这更是代码有问题的一个信号，通常意味着你把有些本该函数来实现的逻辑放到了宏里面了。
+
+(defn spy-helper [expr value]
+	(println expr value)
+	value)
+
+(defmacro spy [x]
+	`(spy-helper '~x ~x))
+
+===========
+9，定义宏时最好遵循一些约定
+
+-1，如果宏需要指定本地绑定，那么把绑定指定在一个vector里面。
+clojure内置的一些宏，都是这种风格，如let、if-let、for和with-open等。
+
+(for [x (range 10)
+	y (range x)]
+	[x y])
+
+for是一个有趣的例子，因为它这里的“初始化表达式”提供的值并不是对应绑定的值，
+x不会被初始化成(range 10)，在for里面，它的意思是x将作为遍历过程中(range 10)的每个元素的引用。
+所以你应该始终记住，“初始化表达式的值不一定是你绑定的值”。
+
+-2，定义var的宏的名字应该以def开头。
+-3，把var的名字作为第一个参数。
+-4，每个宏形式只定义一个var（内部私有的var不计入）。
+
+-5，不要在宏里面实现复杂的行为。
+宏应该只在函数或其它宏的基础上薄薄的封装一层。
+有个反例for，它的扩展形式很复杂，这是为了优化性能和语法。
+
+宏应该把大多数逻辑都代理给下层函数来做，它应该专注于那些函数没办法实现的功能：对求值进行控制。
+
+
+==========
+10，隐藏的参数：&env 和 &form 。
+
+defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
+
+----
+10.1，&env
+
+&env 是一个map，map的key是当前上下文下所有本地绑定的名字，但对应的值是未定义的。
+注意，不要依赖&env 这个map里面的key的元数据，特别是当这些key可能有本地别名的时候。
+
+(defmacro spy-env []
+	(let [ks (keys &env)]
+		`(prn (zipmap '~ks [~@ks]))))
+
+(let [x 1 y 2]
+	(spy-env)
+	(+ x y))
+; {x 1, y 2}
+;= 3
+
+这里通过解引用获得绑定的值。
+
+--
+&env的另外一个用途是利用它，可以在编译期安全地对表达式进行优化。
+
+(defmacro simplify
+	[expr]
+	(let [locals (set (keys &env))]
+		(if (some locals (flatten expr)) 
+			expr 
+			(do
+				(println "Precomputing: " expr)
+				(list `quote (eval expr)))))) 
+
+这个宏在编译期对于那些没有引用本地绑定的表达式提前进行求值，从而使得在运行期不用进行求值。
+
+(defn f
+	[a b c]
+	(+ a b c (simplify (apply + (range 5e7)))))
+; Precomputing: (apply + (range 5e7))
+;= #'user/f
+
+(f 1 2 3) ;; returns instantly
+;= 1249999975000006
+
+(defn f'
+	[a b c]
+	(simplify (apply + a b c (range 5e7))))
+;= #'user/f'
+
+(f' 1 2 3) ;; takes ~2.5s to calculate
+;= 1249999975000006
+
+----
+如何测试使用了&env的宏？
+
+可以通过直接使用实现宏的那个函数（其实就是模仿编译器的行为），但它依赖clojure当前特定的实现。
+
+(@#'simplify nil {} '(inc 1)) 
+; Precomputing: (inc 1)
+;= (quote 2)
+
+(@#'simplify nil {'x nil} '(inc x))
+;= (inc x)
+
+这里没法使用macroexpand来测试，因为它没有提供任何方法来模拟&env这个map。
+
+----
+10.2，&form
+
+&form 里面的元素是当前被宏扩展的整个形式，也就是说，
+它是一个包含了宏的名字（用户代码里面引用的宏的名字，它可能被重命名了），
+以及传给宏的所有参数的一个列表。
+这个形式也就是reader在读入宏的时候所读入的形式，或者是由前一个宏扩展所返回的。
+这意味着，&form保存了用户指定的所有元数据，比如类型提示，以及reader加入的元数据，
+例如调用宏的那行代码的行号。
+
+--
+在宏里面打印有用的错误信息。
+
+(defmacro ontology
+[& triples]
+(every? #(or (== 3 (count %))
+(throw (IllegalArgumentException.
+"All triples provided as arguments must have 3 elements")))
+triples)
+;; build and emit pre-processed ontology here...
+)
+
+(ontology ["Boston" :capital-of]) 
+;= #<IllegalArgumentException java.lang.IllegalArgumentException:
+;= All triples provided as arguments must have 3 elements>
+(pst)
+;= IllegalArgumentException All triples provided as arguments must have 3 elements
+;= user/ontology (NO_SOURCE_FILE:3) 
+
+这里确实抛出了一个异常，但这里的行号是不对的，这里的3是抛出异常位置相对宏的源码定义开始的行号，
+而不是调用这个宏的代码的行号。
+我们可以利用&form来提供更准确的行号信息。
+
+(defmacro ontology
+[& triples]
+(every? #(or (== 3 (count %))
+(throw (IllegalArgumentException.
+(format "`%s` provided to `%s` on line %s has < 3 elements"
+%  ;整个有问题的数组参数
+(first &form)  ;宏的名字，有可能被重命名
+(-> &form meta :line)))))  ;用户代码使用宏的行号
+triples)
+;; ...
+)
+
+(ontology ["Boston" :capital-of])
+;= #<IllegalArgumentException java.lang.IllegalArgumentException:
+;= `["Boston" :capital-of]` provided to `ontology` on line 1 has < 3 elements>
+
+(ns com.clojurebook.macros)
+;= nil
+
+(refer 'user :rename '{ontology triples})
+;= nil
+
+(triples ["Boston" :capital-of])
+;= #<IllegalArgumentException java.lang.IllegalArgumentException:
+;= `["Boston" :capital-of]` provided to `triples` on line 1 has < 3 elements>
+
+--
+保持用户提供的类型提示。（没理解。）
+
+(set! *warn-on-reflection* true)
+;= true
+(defn first-char-of-either
+[a b]
+(.substring ^String (or a b) 0 1))
+; Reflection warning, NO_SOURCE_PATH:2 - call to substring can't be resolved.
+;= #'user/first-char-of-either
+
+(defn first-char-of-either
+[^String a ^String b]
+(.substring (or a b) 0 1))
+;= #'user/first-char-of-either
+
+(binding [*print-meta* true]
+(prn '^String (or a b)))
+; ^{:tag String, :line 1} (or a b)
+
+(binding [*print-meta* true]
+(prn (macroexpand '^String (or a b))))
+; (let* [or__3548__auto__ a]
+; (if or__3548__auto__ or__3548__auto__ (clojure.core/or b)))
+
+(defmacro or
+([] nil)
+([x] x)
+([x & next]
+`(let [or# ~x]
+(if or# or# (or ~@next)))))
+
+(defmacro OR
+([] nil)
+([x]
+(let [result (with-meta (gensym "res") (meta &form))]
+`(let [~result ~x]
+~result)))
+([x & next]
+(let [result (with-meta (gensym "res") (meta &form))]
+`(let [or# ~x
+~result (if or# or# (OR ~@next))]
+~result))))
+
+(binding [*print-meta* true]
+(prn (macroexpand '^String (OR a b))))
+; (let* [or__1176__auto__ a
+; ^{:tag String, :line 2}
+; res1186 (if or__1176__auto__ or__1176__auto__ (user/or b))]
+; ^{:tag String, :line 2} res1186)
+
+(defn first-char-of-any
+[a b]
+(.substring ^String (OR a b) 0 1))
+;= #'user/first-char-of-any
+
+(defn preserve-metadata
+"Ensures that the body containing `expr` will carry the metadata
+from `&form`."
+[&form expr]
+(let [res (with-meta (gensym "res") (meta &form))]
+`(let [~res ~expr]
+~res)))
+
+(defmacro OR
+"Same as `clojure.core/or`, but preserves user-supplied metadata
+(e.g. type hints)."
+([] nil)
+([x] (preserve-metadata &form x))
+([x & next]
+(preserve-metadata &form `(let [or# ~x]
+(if or# or# (or ~@next))))))
+
+----
+10.3，测试上下文相关的宏
+
+使用了&env 和 &from的宏是不好测试的。
+但我们可以编写出我们自己的macroexpand-1，从而可以轻易的mock出&env，以便于测试和调试。
+
+(defn macroexpand1-env [env form]
+(if-let [[x & xs] (and (seq? form) (seq form))]
+(if-let [v (and (symbol? x) (resolve x))]
+(if (-> v meta :macro)
+(apply @v form env xs)
+form)
+form)
+form))
+
+(macroexpand1-env '{} '(simplify (range 10)))
+; Precomputing: (range 10)
+;= (quote (0 1 2 3 4 5 6 7 8 9))
+(macroexpand1-env '{range nil} '(simplify (range 10)))
+;= (range 10)
+
+(defmacro spy [expr]
+`(let [value# ~expr]
+(println (str "line #" ~(-> &form meta :line) ",")
+'~expr value#)
+value#))
+;= #'user/spy
+(let [a 1
+a (spy (inc a))
+a (spy (inc a))]
+a)
+; line #2, (inc a) 2
+; line #3, (inc a) 3
+;= 3
+
+(macroexpand1-env {} (with-meta '(spy (+ 1 1)) {:line 42})) 
+;= (clojure.core/let [value__602__auto__ (+ 1 1)]
+;= (clojure.core/println
+;= (clojure.core/str "line #" 42 ",") 
+;= (quote (+ 1 1)) value__602__auto__)
+;= value__602__auto__)
+
+(defn macroexpand1-env [env form]
+(if-all-let [[x & xs] (and (seq? form) (seq form))
+v (and (symbol? x) (resolve x))
+_ (-> v meta :macro)]
+(apply @v form env xs)
+form))
+
+(defmacro if-all-let [bindings then else]
+(reduce (fn [subform binding]
+`(if-let [~@binding] ~subform ~else))
+then (reverse (partition 2 bindings))))
+
+=========
+11，自己实现串行宏。
+
+(defn ensure-seq [x]
+(if (seq? x) x (list x)))
+(ensure-seq 'x)
+;= (x)
+(ensure-seq '(x))
+;= (x)
+
+(defn insert-second
+"Insert x as the second item in seq y."
+[x ys]
+(let [ys (ensure-seq ys)]
+(concat (list (first ys) x)
+(rest ys))))
+
+(defn insert-second
+"Insert x as the second item in seq y."
+[x ys]
+(let [ys (ensure-seq ys)]
+`(~(first ys) ~x ~@(rest ys))))
+
+(defn insert-second
+"Insert x as the second item in seq y."
+[x ys]
+(let [ys (ensure-seq ys)]
+(list* (first ys) x (rest ys))))
+
+(defmacro thread
+"Thread x through successive forms."
+([x] x)
+([x form] (insert-second x form))
+([x form & more] `(thread (thread ~x ~form) ~@more)))
+
+(thread [1 2 3] (conj 4) reverse println)
+;= (4 3 2 1)
+(-> [1 2 3] (conj 4) reverse println)
+;= (4 3 2 1)
+
+(defn thread-fns
+([x] x)
+([x form] (form x))
+([x form & more] (apply thread-fns (form x) more)))
+(thread-fns [1 2 3] reverse #(conj % 4) prn)
+;= (4 3 2 1)
+
+(thread [1 2 3] .toString (.split " ") seq)
+;= ("[1" "2" "3]")
+(thread-fns [1 2 3] .toString #(.split % " ") seq)
+;= #<CompilerException java.lang.RuntimeException:
+;= Unable to resolve symbol: .toString in this context, 
+
+compiling:(NO_SOURCE_PATH:1)>
+;; This is starting to look a bit hairy...
+(thread-fns [1 2 3] #(.toString %) #(.split % " ") seq)
+;= ("[1" "2" "3]")
+
+----
+.. 它的行为跟-> 差不多，但是它只支持对于java方法的调用（它还支持->所不支持的java静态方法）、
+点点是在->之前引入clojure的，现在已经很少使用。
+
+->> 它把前面一个form插入后面一个form的最后一个元素的位置上。这个宏经常用来对一个序列或者其他数据结构进行转换。
+例如：
+(->> (range 10) (map inc) (reduce +))
+;= 55
+
+
+
+
+
+

@@ -1,0 +1,195 @@
+（hxzon学习笔记）clojure函数式编程
+
+by hxzon
+《clojure编程》第2章：函数式编程
+
+=======
+
+1，声明式处理，组合，值不随时间的改变而改变。
+集合也能够作为map的key。
+
+
+2，一个关键性的选择：
+
+-1，可变对象不能被安全的传给方法调用。
+-2，可变对象不能安全的作为map的key、sets的元素灯。因为它们的相等语义以及查询语义会随着时间的改变而改变。
+-3，可变对象不能被安全地缓存。
+-4，可变对象不能在多线程情况下被安全的使用，因为需要小心地在不同线程之间进行同步。
+
+软件编程领域最大的挑战其实就是“如何辨别出那些不变的元素”。
+你找打的不变元素越多，你就可以把越多的注意力集中在某段代码的本地改变上面。
+
+
+========
+3，高阶函数。
+map,reduce（规约）,partial（部分应用函数）,comp（函数组合）,complement,repeatedly。
+
+----
+(map f [a b c]) 相当于 [(f a) (f b) (f c)] 。
+
+(map f [a b c] [x y x]) 相当于 [(f a x) (f b y) (f c z)] 。
+
+(reduce max [0 -3 10 48]) 相当于  (max (max (max 0 -3) 10) 48) 。
+
+--
+匿名函数vs函数字面量
+
+函数字面量省略了fn符号和参数数组（使用%、%2来表示第1个、第2个参数），更简洁。
+匿名函数能给参数起个有意义的名字，可读性好些。
+
+(reduce
+	(fn [m v] 
+		(assoc m v (* v v)))
+	{}  ;初始是个空集合
+	[1 2 3 4])
+;= {4 16, 3 9, 2 4, 1 1}
+
+(reduce
+	#(assoc % %2 (* %2 %2))
+	{}
+	[1 2 3 4])
+;= {4 16, 3 9, 2 4, 1 1}
+
+----
+函数应用apply
+
+(apply fnX paramsYY)
+(apply fnX param1 param2 paramsYY)
+可以先指定前几个参数。
+
+----
+部分应用函数partial
+
+(def only-strings (partial filter string?))
+;= #'user/only-strings
+
+(only-strings ["a" 5 "b" 6])
+;= ("a" "b")
+
+部分应用函数vs函数字面量：
+函数字面量提供了partial所提供的功能的超集。
+而且函数字面量并不限制你去指定函数的开头几个参数。
+但是，函数字面量强制指定要调用的函数的所有参数。
+
+(#(map *) [1 2 3] [4 5 6] [7 8 9]) 
+;= #<ArityException clojure.lang.ArityException:
+;= Wrong number of args (3) passed to: user$eval812$fn>
+
+(#(map * % %2 %3) [1 2 3] [4 5 6] [7 8 9]) 
+;= (28 80 162)
+
+(#(map * % %2 %3) [1 2 3] [4 5 6]) 
+;= #<ArityException clojure.lang.ArityException:
+;= Wrong number of args (2) passed to: user$eval843$fn>
+
+(#(apply map * %&) [1 2 3] [4 5 6] [7 8 9]) 
+;= (28 80 162)
+可以通过“百分号与号”来说明这个函数字面量接受的剩余参数。
+
+
+(#(apply map * %&) [1 2 3])
+;= (1 2 3)
+
+((partial map *) [1 2 3] [4 5 6] [7 8 9]) 
+;= (28 80 162)
+
+==========
+4，函数（功能）的组合
+
+(comp f3 f2 f1)
+
+(defn negated-sum-str
+	[& numbers]
+	(str (- (apply + numbers))))
+;= #'user/negated-sum-str
+
+(negated-sum-str 10 12 3.4)
+;= "-25.4"
+
+(def negated-sum-str (comp str - +))
+;= #'user/negated-sum-str
+
+(negated-sum-str 10 12 3.4)
+;= "-25.4"
+
+--
+(require '[clojure.string :as str]) 
+
+(def camel->keyword (comp keyword
+	str/join
+	(partial interpose \-)
+	(partial map str/lower-case)
+#(str/split % #"(?<=[a-z])(?=[A-Z])"))) 
+;= #'user/camel->keyword
+
+(camel->keyword "CamelCase")
+;= :camel-case
+
+(camel->keyword "lowerCamelCase")
+;= :lower-camel-case
+
+可以通过串行宏来实现函数组合的功能：
+
+(defn camel->keyword
+	[s]
+	(->> (str/split s #"(?<=[a-z])(?=[A-Z])")
+		(map str/lower-case)
+		(interpose \-)
+		str/join
+		keyword))
+
+--
+(def camel-pairs->map (comp (partial apply hash-map)
+	(partial map-indexed (fn [i x]
+		(if (odd? i)
+			x
+		(camel->keyword x))))))
+;= #'user/camel-pairs->map
+
+(camel-pairs->map ["CamelCase" 5 "lowerCamelCase" 3])
+;= {:camel-case 5, :lower-camel-case 3}
+
+--
+利用可组合的高阶函数构建一个日志系统。
+
+打印日志到不同的地方。
+打印日志到多个地方。
+给日志添加时间戳。
+用map来描述一个日志信息，可以很轻易的对这个map进行各种转换，实现日志消息的过滤等。
+
+成熟的库：https://github.com/clojure/tools.logging
+=========
+5，
+
+幂等的：总是返回同一个值。
+纯的：没有副作用。
+
+-1，纯函数更容易测试。
+-2，纯函数的结果是可以被缓存的，并且很容易并行化。
+
+clojure提供了一个memoize函数，可以返回一个函数的内存化版本：
+
+(defn prime? 
+	[n]
+	(cond
+		(== 1 n) false
+		(== 2 n) true
+		(even? n) false
+		:else (->> (range 3 (inc (Math/sqrt n)) 2)
+			(filter #(zero? (rem n %)))
+			empty?)))
+	(time (prime? 1125899906842679)) 
+; "Elapsed time: 2181.014 msecs"
+;= true
+
+(let [m-prime? (memoize prime?)]
+	(time (m-prime? 1125899906842679))
+	(time (m-prime? 1125899906842679)))
+; "Elapsed time: 2085.029 msecs" 
+; "Elapsed time: 0.042 msecs" 
+;= true
+
+
+
+
+
