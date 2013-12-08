@@ -1,4 +1,4 @@
-﻿（hxzon学习笔记）《实用Common Lisp编程》-ch03简单的数据库
+﻿（hxzon读书笔记）《实用Common Lisp编程》-ch03简单的数据库
 
 by hxzon
 

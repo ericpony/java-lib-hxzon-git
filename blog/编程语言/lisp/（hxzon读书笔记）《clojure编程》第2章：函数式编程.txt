@@ -1,7 +1,13 @@
-（hxzon学习笔记）clojure函数式编程
+（hxzon读书笔记）《clojure编程》第2章：函数式编程
 
 by hxzon
 《clojure编程》第2章：函数式编程
+
+hxzon摘要：
+
+1，高阶函数：map,reduce（规约）,partial（部分应用函数）,comp（函数组合）,complement,repeatedly。
+2，匿名函数vs函数字面量。
+3，内存化：memoize函数，core.memoize函数库。
 
 =======
 
@@ -189,7 +195,15 @@ clojure提供了一个memoize函数，可以返回一个函数的内存化版本
 ; "Elapsed time: 0.042 msecs" 
 ;= true
 
+----
+core.memoize(https://github.com/clojure/core.memoize)
 
+memoize是怎么做到的呢？保存所有调用参数和对应返回值的映射，不会被垃圾回收。
+所以如果一个函数的参数的取值范围很广，或者参数、返回值很占用内存，
+那么通常会造成“内存泄露”，特别是当它们被用def幼稚地定义成一个全局的var。
 
-
+对于这种问题的解决办法：
+-1，不要把它们定义成顶层的函数，把它们定义成一个顶层函数的内部，然后只在需要的时候调用它们。
+-2，使用core.memoize，这是一个内存化函数库，
+它提供一些不同的内存化策略，包括在一定时间之后失效缓存的内容等。
 

@@ -1,4 +1,4 @@
-（hxzon学习笔记）clojure数字
+（hxzon读书笔记）《clojure编程》第11章：数字和数学
 
 by hxzon
 《clojure编程》第11章：数字和数学

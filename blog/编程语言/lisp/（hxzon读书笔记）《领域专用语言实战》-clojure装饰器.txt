@@ -1,4 +1,4 @@
-（hxzon学习笔记）《领域专用语言实战》-clojure装饰器
+（hxzon读书笔记）《领域专用语言实战》-clojure装饰器
 
 by hxzon
 
