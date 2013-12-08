@@ -51,9 +51,10 @@ everything
 
 (def ^:const max-value 255)
 ;= #'user/max-value
+
 (defn valid-value?
-[v]
-(<= v max-value))
+	[v]
+	(<= v max-value))
 ;= #'user/valid-value?
 
 (def max-value 500)

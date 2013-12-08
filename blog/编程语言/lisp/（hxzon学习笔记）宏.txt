@@ -1,8 +1,8 @@
 （hxzon学习笔记）宏
 
 by hxzon
-《clojure编程》第5章：宏
 
+《clojure编程》第5章：宏
 =========
 1，
 
@@ -10,7 +10,7 @@ by hxzon
 编译期（宏）
 运行期（函数）
 
-高阶函数干掉一批“设计模式”，宏干掉最后残存的“模式”。
+高阶函数消灭一批“设计模式”，宏消灭最后残存的“模式”。
 
 2，
 宏在实现上其实也是函数，只是它有一些特殊的元数据表明它是一个宏。
@@ -440,17 +440,18 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 在宏里面打印有用的错误信息。
 
 (defmacro ontology
-[& triples]
-(every? #(or (== 3 (count %))
-(throw (IllegalArgumentException.
-"All triples provided as arguments must have 3 elements")))
-triples)
+	[& triples]
+	(every? #(or (== 3 (count %))
+		(throw (IllegalArgumentException.
+			"All triples provided as arguments must have 3 elements")))
+		triples)
 ;; build and emit pre-processed ontology here...
 )
 
 (ontology ["Boston" :capital-of]) 
 ;= #<IllegalArgumentException java.lang.IllegalArgumentException:
 ;= All triples provided as arguments must have 3 elements>
+
 (pst)
 ;= IllegalArgumentException All triples provided as arguments must have 3 elements
 ;= user/ontology (NO_SOURCE_FILE:3) 
@@ -460,15 +461,15 @@ triples)
 我们可以利用&form来提供更准确的行号信息。
 
 (defmacro ontology
-[& triples]
-(every? #(or (== 3 (count %))
-(throw (IllegalArgumentException.
-(format "`%s` provided to `%s` on line %s has < 3 elements"
-%  ;整个有问题的数组参数
-(first &form)  ;宏的名字，有可能被重命名
-(-> &form meta :line)))))  ;用户代码使用宏的行号
-triples)
-;; ...
+	[& triples]
+	(every? #(or (== 3 (count %))
+		(throw (IllegalArgumentException.
+			(format "`%s` provided to `%s` on line %s has < 3 elements"
+				%  ;整个有问题的数组参数
+				(first &form)  ;宏的名字，有可能被重命名
+				(-> &form meta :line)))))  ;用户代码使用宏的行号
+		triples)
+	;; ...
 )
 
 (ontology ["Boston" :capital-of])
@@ -486,77 +487,102 @@ triples)
 ;= `["Boston" :capital-of]` provided to `triples` on line 1 has < 3 elements>
 
 --
-保持用户提供的类型提示。（没理解。）
+保持用户提供的类型提示。
+
+大多数宏把用户在形式上指定的元数据给丢弃掉了，包括类型提示信息。
+例如，or这个宏就没有在生成的代码里面把类型提示带上，从而导致一个反射警告。
 
 (set! *warn-on-reflection* true)
 ;= true
+
 (defn first-char-of-either
-[a b]
-(.substring ^String (or a b) 0 1))
+	[a b]
+	(.substring ^String (or a b) 0 1))
 ; Reflection warning, NO_SOURCE_PATH:2 - call to substring can't be resolved.
 ;= #'user/first-char-of-either
 
+不过，这样的情况其实很少发生，因为通常不会这么指定类型提示信息。
+我们通常会把类型提示信息加在宏的参数上面，
+因此下面使用到参数的地方就可以通过类型推断来获取类型信息。
+
 (defn first-char-of-either
-[^String a ^String b]
-(.substring (or a b) 0 1))
+	[^String a ^String b]
+	(.substring (or a b) 0 1))
 ;= #'user/first-char-of-either
 
-(binding [*print-meta* true]
-(prn '^String (or a b)))
-; ^{:tag String, :line 1} (or a b)
+可以通过检查它的元数据信息来看看用户在or表达式上面指定的类型提示信息。
 
 (binding [*print-meta* true]
-(prn (macroexpand '^String (or a b))))
+	(prn '^String (or a b)))
+; ^{:tag String, :line 1} (or a b)
+
+确实有。但是当检查macroexpand之后的代码的元数据信息的时候，这个元数据不见了。
+
+(binding [*print-meta* true]
+	(prn (macroexpand '^String (or a b))))
 ; (let* [or__3548__auto__ a]
 ; (if or__3548__auto__ or__3548__auto__ (clojure.core/or b)))
 
+首先来看or在clojure.core中是怎么实现的：
+
 (defmacro or
-([] nil)
-([x] x)
-([x & next]
-`(let [or# ~x]
-(if or# or# (or ~@next)))))
+	([] nil)
+	([x] x)
+	([x & next]
+		`(let [or# ~x]
+			(if or# or# (or ~@next)))))
+只需要把加在&form上面的元数据，包含了用户指定的类型提示信息，加到宏产生的代码上。
+在很多情况下，只需要先从&form上获取元数据信息，再在宏的代码体的最外层利用with-meta把元数据加上去。
+但是，这里没办法这么做。
+这个限制是由于一个不幸的实现细节：特殊形式是不能指定类型提示的。
+所以必须先引入一个本地绑定，再把这个类型提示加到这个本地绑定上去。
+
 
 (defmacro OR
-([] nil)
-([x]
-(let [result (with-meta (gensym "res") (meta &form))]
-`(let [~result ~x]
-~result)))
-([x & next]
-(let [result (with-meta (gensym "res") (meta &form))]
-`(let [or# ~x
-~result (if or# or# (OR ~@next))]
-~result))))
+	([] nil)
+	([x]
+		(let [result (with-meta (gensym "res") (meta &form))]   ;生成一个res的唯一符号，带上&form的元数据，绑定到result。
+		`(let [~result ~x]   ;？
+			~result)))
+	([x & next]
+		(let [result (with-meta (gensym "res") (meta &form))]
+			`(let [or# ~x
+				~result (if or# or# (OR ~@next))]
+				~result))))
 
 (binding [*print-meta* true]
-(prn (macroexpand '^String (OR a b))))
+	(prn (macroexpand '^String (OR a b))))
 ; (let* [or__1176__auto__ a
-; ^{:tag String, :line 2}
-; res1186 (if or__1176__auto__ or__1176__auto__ (user/or b))]
-; ^{:tag String, :line 2} res1186)
+; 	^{:tag String, :line 2}
+; 	res1186 (if or__1176__auto__ or__1176__auto__ (user/or b))]
+; 	^{:tag String, :line 2} res1186)
+
+现在，用户指定的元数据被保留下来了。
 
 (defn first-char-of-any
-[a b]
-(.substring ^String (OR a b) 0 1))
+	[a b]
+	(.substring ^String (OR a b) 0 1))
 ;= #'user/first-char-of-any
 
+--
+上面OR使用的模式可以抽取出来作为一个可重用的函数，从而可以用在任何宏上面。
+
 (defn preserve-metadata
-"Ensures that the body containing `expr` will carry the metadata
-from `&form`."
-[&form expr]
-(let [res (with-meta (gensym "res") (meta &form))]
-`(let [~res ~expr]
-~res)))
+	"Ensures that the body containing `expr` will carry the metadata
+	from `&form`."
+	[&form expr]
+	(let [res (with-meta (gensym "res") (meta &form))]
+		`(let [~res ~expr]
+			~res)))
 
 (defmacro OR
-"Same as `clojure.core/or`, but preserves user-supplied metadata
-(e.g. type hints)."
-([] nil)
-([x] (preserve-metadata &form x))
-([x & next]
-(preserve-metadata &form `(let [or# ~x]
-(if or# or# (or ~@next))))))
+	"Same as `clojure.core/or`, but preserves user-supplied metadata
+	(e.g. type hints)."
+	([] nil)
+	([x] (preserve-metadata &form x))
+	([x & next]
+		(preserve-metadata &form `(let [or# ~x]
+			(if or# or# (or ~@next))))))
 
 ----
 10.3，测试上下文相关的宏
@@ -565,108 +591,130 @@ from `&form`."
 但我们可以编写出我们自己的macroexpand-1，从而可以轻易的mock出&env，以便于测试和调试。
 
 (defn macroexpand1-env [env form]
-(if-let [[x & xs] (and (seq? form) (seq form))]
-(if-let [v (and (symbol? x) (resolve x))]
-(if (-> v meta :macro)
-(apply @v form env xs)
-form)
-form)
-form))
+	(if-let [[x & xs] (and (seq? form) (seq form))]
+如果form可序列，将form转成序列，form的第一个元素（宏的名字）绑定到x，其余元素（宏的参数）绑定到xs。
+		(if-let [v (and (symbol? x) (resolve x))]
+如果x是符号，获得宏的实现函数，绑定到v。
+			(if (-> v meta :macro)
+				(apply @v form env xs)
+				form)
+如果v是一个宏，获得宏的实现函数，以env和宏的参数xs作为参数，调用这个实现函数。
+			form)
+		form))
 
 (macroexpand1-env '{} '(simplify (range 10)))
 ; Precomputing: (range 10)
 ;= (quote (0 1 2 3 4 5 6 7 8 9))
+
 (macroexpand1-env '{range nil} '(simplify (range 10)))
 ;= (range 10)
 
 (defmacro spy [expr]
-`(let [value# ~expr]
-(println (str "line #" ~(-> &form meta :line) ",")
-'~expr value#)
-value#))
+	`(let [value# ~expr]
+		(println (str "line #" ~(-> &form meta :line) ",")
+			'~expr value#)
+		value#))
 ;= #'user/spy
+
 (let [a 1
-a (spy (inc a))
-a (spy (inc a))]
-a)
+		a (spy (inc a))
+		a (spy (inc a))]
+	a)
 ; line #2, (inc a) 2
 ; line #3, (inc a) 3
 ;= 3
 
 (macroexpand1-env {} (with-meta '(spy (+ 1 1)) {:line 42})) 
 ;= (clojure.core/let [value__602__auto__ (+ 1 1)]
-;= (clojure.core/println
-;= (clojure.core/str "line #" 42 ",") 
-;= (quote (+ 1 1)) value__602__auto__)
-;= value__602__auto__)
+;= 	(clojure.core/println
+;= 		(clojure.core/str "line #" 42 ",") 
+;= 		(quote (+ 1 1)) value__602__auto__)
+;= 	value__602__auto__)
 
 (defn macroexpand1-env [env form]
-(if-all-let [[x & xs] (and (seq? form) (seq form))
-v (and (symbol? x) (resolve x))
-_ (-> v meta :macro)]
-(apply @v form env xs)
-form))
+	(if-all-let [[x & xs] (and (seq? form) (seq form))
+					v (and (symbol? x) (resolve x))
+					_ (-> v meta :macro)]
+		(apply @v form env xs)
+		form))
 
 (defmacro if-all-let [bindings then else]
-(reduce (fn [subform binding]
-`(if-let [~@binding] ~subform ~else))
-then (reverse (partition 2 bindings))))
+	(reduce (fn [subform binding]
+				`(if-let [~@binding] ~subform ~else))
+			then (reverse (partition 2 bindings))))
 
 =========
 11，自己实现串行宏。
 
+首先，验证一个形式是不是序列，如果不是，构造一个只包含这个形式的序列。
+
 (defn ensure-seq [x]
-(if (seq? x) x (list x)))
+	(if (seq? x) x (list x)))
+
 (ensure-seq 'x)
 ;= (x)
+
 (ensure-seq '(x))
 ;= (x)
 
-(defn insert-second
-"Insert x as the second item in seq y."
-[x ys]
-(let [ys (ensure-seq ys)]
-(concat (list (first ys) x)
-(rest ys))))
+接着，对于给定的两个形式x和ys，把x插入到ys的第二个元素的位置上，并且确保ys是一个序列。
 
 (defn insert-second
-"Insert x as the second item in seq y."
-[x ys]
-(let [ys (ensure-seq ys)]
-`(~(first ys) ~x ~@(rest ys))))
+	"Insert x as the second item in seq y."
+	[x ys]
+	(let [ys (ensure-seq ys)]
+		(concat (list (first ys) x)
+			(rest ys))))
 
 (defn insert-second
-"Insert x as the second item in seq y."
-[x ys]
-(let [ys (ensure-seq ys)]
-(list* (first ys) x (rest ys))))
+	"Insert x as the second item in seq y."
+	[x ys]
+	(let [ys (ensure-seq ys)]
+		`(~(first ys) ~x ~@(rest ys))))
+语法引述可以在函数中使用。
+
+(defn insert-second
+	"Insert x as the second item in seq y."
+	[x ys]
+	(let [ys (ensure-seq ys)]
+		(list* (first ys) x (rest ys))))
 
 (defmacro thread
-"Thread x through successive forms."
-([x] x)
-([x form] (insert-second x form))
-([x form & more] `(thread (thread ~x ~form) ~@more)))
+	"Thread x through successive forms."
+	([x] x)
+	([x form] (insert-second x form))
+	([x form & more] `(thread (thread ~x ~form) ~@more)))
+宏可以支持不同个数的参数。
+
 
 (thread [1 2 3] (conj 4) reverse println)
 ;= (4 3 2 1)
+
 (-> [1 2 3] (conj 4) reverse println)
 ;= (4 3 2 1)
 
+--
+也可以用函数来实现“串行宏”。
+
 (defn thread-fns
-([x] x)
-([x form] (form x))
-([x form & more] (apply thread-fns (form x) more)))
+	([x] x)
+	([x form] (form x))
+	([x form & more] (apply thread-fns (form x) more)))
+
 (thread-fns [1 2 3] reverse #(conj % 4) prn)
 ;= (4 3 2 1)
+这里需要用匿名函数。
+而且这个函数版本不支持java的方法调用。
 
 (thread [1 2 3] .toString (.split " ") seq)
 ;= ("[1" "2" "3]")
+
 (thread-fns [1 2 3] .toString #(.split % " ") seq)
 ;= #<CompilerException java.lang.RuntimeException:
 ;= Unable to resolve symbol: .toString in this context, 
-
 compiling:(NO_SOURCE_PATH:1)>
 ;; This is starting to look a bit hairy...
+
 (thread-fns [1 2 3] #(.toString %) #(.split % " ") seq)
 ;= ("[1" "2" "3]")
 
@@ -678,9 +726,5 @@ compiling:(NO_SOURCE_PATH:1)>
 例如：
 (->> (range 10) (map inc) (reduce +))
 ;= 55
-
-
-
-
 
 
