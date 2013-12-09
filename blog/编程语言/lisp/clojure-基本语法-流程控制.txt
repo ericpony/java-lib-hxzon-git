@@ -344,11 +344,12 @@ user=> (take 5 (repeatedly #(rand-int 11)))
 
 ----
 2，iterate： 
-迭代函数形式如下： 
-(iterate f v) 
+(iterate f v)
+返回一个惰性序列， 序列元素的值为 x 、 (f x) 、 (f (f x)) 、 (f (f (f x))) ， 诸如此类。
+函数 f 必须是无副作用的。 
 相当于： 
 while(true) { v = f(v) } 
-所以一般要配合(take n sequence)来中止： 
+所以一般要配合(take n sequence)来中止。
 
 user=> (take 10 (iterate inc 5)) ; (5 6 7 8 9 10 11 12 13 14)  
 user=> (take 10 (iterate #(+ % 5) 5)) ; (5 10 15 20 25 30 35 40 45 50)  
@@ -423,6 +424,92 @@ user=> (for [x [0 1 2 3 4 5] :let [y (* x 3)] :when (even? y)] y)
 (0 6 12)  
 
 上面第二条语句可理解为：先定义x为集合，再使用let将y赋值为x*3，最后判断y是否为偶数，偶数才返回。
+
+--
+http://qiujj.com/static/clojure-handbook.html
+
+clojure中的for，类似于scala的for..yield和Python的list comps。
+用于简化map、filter、#()、fn。
+
+(for [i (range 10)] (* i i)) 
+; (0 1 4 9 16 25 36 49 64 81)
+
+(for [i (range 10) :when (> 20 (* i i))] (* i i)) 
+; (0 1 4 9 16) 平方小于20。
+
+注：上例中(* i i)算了两次没有必要，可用:let来解决。
+
+(for [i (range 10) :let [ii (* i i)] :when (> 20 ii)] ii)
+map对单个集合的操作都可以用for来代替（选择原则：很简单的用map，其他都用for）。
+
+例子：
+(map (comp count str) '[aa bbb cccc])      
+; (2 3 4)
+
+(for [i '[aa bbb cccc]] (count (str i)))   
+; (2 3 4)
+
+例子：
+(map #(* % %) [1 2 3 4 5]))  
+; (1 4 9 16 25)
+
+(for [i [1 2 3 4 5]] (* i i))
+ 
+for比map少的功能：不能操作多个集合，如(map + [1 2] [10 20] [100 200]) 。
+for比map多出来的功能：可用多个变量，还可加when。
+
+例子：乘法口诀表
+(for	[i (range 1 10) j (range 1 10) :when (>= i j)]  ;只保留i小于等于j的组合。
+		(str j "x" i "=" (* i j))) 
+
+(for 	[i (range 1 10) j (range 1 (inc i))] 	;每次遍历i时，j从1到(inc i) 。
+		(str j "x" i "=" (* i j)))
+该简单问题的最佳解决方案还是分而治之：
+(defn f [n] 
+		(for [i (range 1 (inc n))] (format "%d*%d=%d" i n (* i n))))
+(dotimes [i 9] (println (f (inc i))))
+
+--
+for循环中进行解构。
+(for [[a b c] '((A B C) (D E F))] b) 
+; (B E)
+不需要的也可忽略：
+(for [[a b] '((A B C) (D E F))] b) 
+; (B E)
+
+还可以使用 &:
+(for [ [a & r] '((A B C) (D E F))]  r) 
+; ((B C) (E F))
+
+--
+区别:when和:while
+(for [x [1 2 0 3 4] :when (pos? x)] x)   
+; (1 2 3 4) 全部做完为止
+
+(for [x [1 2 0 3 4] :while (pos? x)] x)  
+; (1 2)     碰到不满足就停
+
+(for [i (range 10) :when (even? i)] i) 
+; (0 2 4 6 8) 做到完
+
+(for [i (range 10) :while (even? i)] i) 
+; (0) 碰到false停止
+
+多个变量：
+(for [x (range 10) y (range 3) :while (< y x)] [x y])
+
+(for [a [1 3 5] b [2 4]] [a b]) 
+; ([1 2] [1 4] [3 2] [3 4] [5 2] [5 4]) 组合。
+ 
+ 
+例子：找杨辉三角形
+(defn tri-yang? [a b] (def c (Math/sqrt (+ (* a a) (* b b)))) (= (int c) c))
+
+(defn f [n] (for [a (range 1 n) b (range (inc a) n) :when (tri-yang? a b)] (list a b)))
+
+(f 21) 
+; ((3 4) (5 12) (6 8) (8 15) (9 12) (12 16) (15 20))
+
 
 --
 for

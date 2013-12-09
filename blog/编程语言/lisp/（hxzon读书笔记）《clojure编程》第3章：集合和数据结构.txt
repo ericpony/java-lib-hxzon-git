@@ -12,7 +12,9 @@ http://mitpress.mit.edu/sicp/toc/toc.html
 
 clojure：更优的是一百种算法对一种抽象操作。
 
-clojure的核心是数据结构。
+clojure的集合抽象以及具体的数据结构的实现是整个语言的核心。
+它比clojure的其它任何特性都更能代表这门语言的能力、特征以及世界观。
+
 
 2，《3.6，Putting Clojure’s Collections to Work，用Clojure的集合来小试牛刀》
 
