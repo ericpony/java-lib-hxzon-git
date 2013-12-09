@@ -49,10 +49,10 @@ postwalk函数。
 p233
 
 (defmacro foreach [[sym coll] & body]
-	`(loop [coll# ~coll]
-		(when-let [[~sym & xs#] (seq coll#)]    ;如果coll可以转成一个序列（当coll为nil时失败），则序列的第一个元素绑定到sym，其它元素绑定到xs# 。
-			~@body
-			(recur xs#))))
+    `(loop  [coll# ~coll]
+            (when-let [[~sym & xs#] (seq coll#)]    ;如果coll可以转成一个序列（当coll为nil时失败），则序列的第一个元素绑定到sym，其它元素绑定到xs# 。
+                      ~@body
+                     (recur xs#))))
 ;= #'user/foreach
 
 (foreach [x [1 2 3]]
@@ -66,15 +66,15 @@ p233
 
 例如写(reverse-it (nltnirp "foo")) ，最终求值成 (println "foo")。
 
-(require '(clojure [string :as str]
-	[walk :as walk]))
+(require '(clojure  [string :as str]
+                    [walk :as walk]))
 
 (defmacro reverse-it
-	[form] 
-	(walk/postwalk #(if (symbol? %) 
-						(symbol (str/reverse (name %))) 
-						%)
-		form))
+    [form] 
+    (walk/postwalk #(if (symbol? %) 
+                        (symbol (str/reverse (name %))) 
+                        %)
+                    form))
 
 postwalk函数递归地对form的每个元素执行给定的匿名函数。
 
@@ -82,8 +82,8 @@ postwalk函数递归地对form的每个元素执行给定的匿名函数。
 
 --
 (reverse-it
-(qesod [gra (egnar 5)]
-(nltnirp (cni gra))))
+    (qesod [gra (egnar 5)]
+           (nltnirp (cni gra))))
 ; 1
 ; 2
 ; 3
@@ -93,8 +93,8 @@ postwalk函数递归地对form的每个元素执行给定的匿名函数。
 
 --
 (macroexpand-1 '(reverse-it
-					(qesod [gra (egnar 5)]
-						(nltnirp (cni gra)))))
+                    (qesod [gra (egnar 5)]
+                           (nltnirp (cni gra)))))
 ;= (doseq [arg (range 5)]
 ;= (println (inc arg)))
 
@@ -143,10 +143,10 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 
 '`(map println ~[foo])
 ;= (clojure.core/seq
-;= 	(clojure.core/concat
-;= 		(clojure.core/list (quote clojure.core/map))
-;= 		(clojure.core/list (quote clojure.core/println))
-;= 		(clojure.core/list [foo])))
+;=     (clojure.core/concat
+;=         (clojure.core/list (quote clojure.core/map))
+;=         (clojure.core/list (quote clojure.core/println))
+;=         (clojure.core/list [foo])))
 
 ======
 7，什么时候使用宏
@@ -154,10 +154,10 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 宏在编译期被调用，所以无法访问运行时的信息。
 
 (defn fn-hello [x]
-	(str "Hello, " x "!"))
+      (str "Hello, " x "!"))
 
-(defmacro macro-hello [x]
-	`(str "Hello, " ~x "!"))
+(defmacro   macro-hello [x]
+            `(str "Hello, " ~x "!"))
 
 (fn-hello "Brian")
 ;= "Hello, Brian!"
@@ -196,10 +196,10 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 
 在宏里面使用的某个符号名，跟外部代码，或者传入的用户自定义代码里的某个符号名字，可能会发生冲突。
 
-(defmacro unhygienic
-	[& body]
-	`(let [x :oops]
-		~@body))
+(defmacro   unhygienic
+            [& body]
+            `(let [x :oops]
+                  ~@body))
 ;= #'user/unhygenic
 
 (unhygienic (println "x:" x))
@@ -213,10 +213,10 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 所有对x的引用都被扩展成user/x，但是let需要的名字是没有命名空间限定的。
 可以通过引述、反引述来“聪明”的避免这个错误，
 
-(defmacro still-unhygienic
-	[& body]
-	`(let [~'x :oops] 
-		~@body))
+(defmacro   still-unhygienic
+            [& body]
+            `(let [~'x :oops] 
+                  ~@body))
 ;= #'user/still-unhygenic
 
 (still-unhygienic (println "x:" x))
@@ -224,15 +224,15 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 ;= nil
 
 (macroexpand-1 '(still-unhygienic
-					(println "x:" x)))
+                    (println "x:" x)))
 ;= (clojure.core/let [x :oops]
 ;= (println "x:" x))
 
 但这是给代码引入一个重大的bug。
 
 (let [x :this-is-important]
-	(still-unhygienic
-		(println "x:" x)))
+     (still-unhygienic
+        (println "x:" x)))
 ; x: :oops
 
 这里已经把x绑定到一个本地值了，但是由宏产生的let会悄悄把x绑定到另外一个值。
@@ -259,10 +259,10 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 `(x# x#)
 ;= (x__1447__auto__ x__1447__auto__)
 
-(defmacro auto-gensyms
-	[& numbers]
-	`(let [x# (rand-int 10)] 
-		(+ x# ~@numbers))) 
+(defmacro   auto-gensyms
+            [& numbers]
+            `(let [x# (rand-int 10)] 
+                  (+ x# ~@numbers))) 
 ;= #'user/auto-gensyms
 
 (auto-gensyms 1 2 3 4 5)
@@ -276,25 +276,27 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 ;= [x__1450__auto__ x__1451__auto__]
 
 (defmacro our-doto [expr & forms]
-	`(let [obj# ~expr] 
-		~@(map (fn [[f & args]]
-			`(~f obj# ~@args)) forms) 
-		obj#))
+          `(let [obj# ~expr] 
+                ~@(map (fn [[f & args]]
+                           `(~f obj# ~@args)) 
+                       forms) 
+                obj#))
 
-(our-doto "It works"
-	(println "I can't believe it"))
+(our-doto   "It works"
+            (println "I can't believe it"))
 ;= #<CompilerException java.lang.RuntimeException:
 ;= Unable to resolve symbol: obj__1456__auto__ in this context,
 ;= compiling:(NO_SOURCE_PATH:1)>
 
 在这种情况下，只能手工调用gensym。
 
-(defmacro our-doto [expr & forms]
-	(let [obj (gensym "obj")]
-		`(let [~obj ~expr]
-			~@(map (fn [[f & args]]
-				`(~f ~obj ~@args)) forms) 
-~obj)))
+(defmacro   our-doto [expr & forms]
+            (let [obj (gensym "obj")]
+                 `(let  [~obj ~expr]
+                        ~@(map (fn [[f & args]]
+                                   `(~f ~obj ~@args)) 
+                               forms) 
+                        ~obj)))
 
 当前，这里这个语法引述其实没什么意义，使用(list* f obj args)更好。
 
@@ -305,9 +307,9 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 更好的方式是，让用户来选择这个绑定的名字。
 
 (defmacro with
-	[name & body]
-	`(let [~name 5]
-		~@body))
+    [name & body]
+    `(let [~name 5]
+          ~@body))
 ;= #'user/with
 
 (with bar (+ 10 bar))
@@ -322,9 +324,9 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 如果传给宏的参数，在宏的扩展形式里面出现多次，就可能会被重复求值。
 
 (defmacro spy [x]
-	`(do
-		(println "spied" '~x ~x)
-		~x))
+    `(do
+        (println "spied" '~x ~x)
+        ~x))
 
 (spy 2)
 ; spied 2 2
@@ -336,28 +338,28 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 
 (macroexpand-1 '(spy (rand-int 10)))
 ;= (do (println (rand-int 10))
-;= 	(rand-int 10))
+;=     (rand-int 10))
 
 可以引入一个本地绑定来解决这个问题。
 
 (defmacro spy [x]
-	`(let [x# ~x]
-		(println "spied" '~x x#)
-		x#))
+    `(let [x# ~x]
+          (println "spied" '~x x#)
+          x#))
 
 (macroexpand-1 '(spy (rand-int 10)))
 ;= (let [x__725__auto__ (rand-int 10)]
-;= 	(println x__725__auto__ '(rand-int 10))
-;= 	x__725__auto__)
+;=      (println x__725__auto__ '(rand-int 10))
+;=      x__725__auto__)
 
 但这更是代码有问题的一个信号，通常意味着你把有些本该函数来实现的逻辑放到了宏里面了。
 
 (defn spy-helper [expr value]
-	(println expr value)
-	value)
+    (println expr value)
+    value)
 
 (defmacro spy [x]
-	`(spy-helper '~x ~x))
+    `(spy-helper '~x ~x))
 
 ===========
 9，定义宏时最好遵循一些约定
@@ -365,9 +367,11 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 -1，如果宏需要指定本地绑定，那么把绑定指定在一个vector里面。
 clojure内置的一些宏，都是这种风格，如let、if-let、for和with-open等。
 
-(for [x (range 10)
-	y (range x)]
-	[x y])
+(for [  x (range 10)
+        y (range x)]
+     [x y])
+
+（hxzon：(range x)？）
 
 for是一个有趣的例子，因为它这里的“初始化表达式”提供的值并不是对应绑定的值，
 x不会被初始化成(range 10)，在for里面，它的意思是x将作为遍历过程中(range 10)的每个元素的引用。
@@ -396,12 +400,12 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 注意，不要依赖&env 这个map里面的key的元数据，特别是当这些key可能有本地别名的时候。
 
 (defmacro spy-env []
-	(let [ks (keys &env)]
-		`(prn (zipmap '~ks [~@ks]))))
+    (let [ks (keys &env)]
+         `(prn (zipmap '~ks [~@ks]))))
 
 (let [x 1 y 2]
-	(spy-env)
-	(+ x y))
+     (spy-env)
+     (+ x y))
 ; {x 1, y 2}
 ;= 3
 
@@ -411,19 +415,19 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 &env的另外一个用途是利用它，可以在编译期安全地对表达式进行优化。
 
 (defmacro simplify
-	[expr]
-	(let [locals (set (keys &env))]
-		(if (some locals (flatten expr)) 
-			expr 
-			(do
-				(println "Precomputing: " expr)
-				(list `quote (eval expr)))))) 
+    [expr]
+    (let [locals (set (keys &env))]
+         (if (some locals (flatten expr)) 
+             expr 
+             (do
+                (println "Precomputing: " expr)
+                (list `quote (eval expr)))))) 
 
 这个宏在编译期对于那些没有引用本地绑定的表达式提前进行求值，从而使得在运行期不用进行求值。
 
 (defn f
-	[a b c]
-	(+ a b c (simplify (apply + (range 5e7)))))
+    [a b c]
+    (+ a b c (simplify (apply + (range 5e7)))))
 ; Precomputing: (apply + (range 5e7))
 ;= #'user/f
 
@@ -431,8 +435,8 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 ;= 1249999975000006
 
 (defn f'
-	[a b c]
-	(simplify (apply + a b c (range 5e7))))
+    [a b c]
+    (simplify (apply + a b c (range 5e7))))
 ;= #'user/f'
 
 (f' 1 2 3) ;; takes ~2.5s to calculate
@@ -466,11 +470,11 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 在宏里面打印有用的错误信息。
 
 (defmacro ontology
-	[& triples]
-	(every? #(or (== 3 (count %))
-		(throw (IllegalArgumentException.
-			"All triples provided as arguments must have 3 elements")))
-		triples)
+    [& triples]
+    (every? #(or (== 3 (count %))
+                 (throw (IllegalArgumentException.
+                    "All triples provided as arguments must have 3 elements")))
+            triples)
 ;; build and emit pre-processed ontology here...
 )
 
@@ -487,15 +491,15 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 我们可以利用&form来提供更准确的行号信息。
 
 (defmacro ontology
-	[& triples]
-	(every? #(or (== 3 (count %))
-		(throw (IllegalArgumentException.
-			(format "`%s` provided to `%s` on line %s has < 3 elements"
-				%  ;整个有问题的数组参数
-				(first &form)  ;宏的名字，有可能被重命名
-				(-> &form meta :line)))))  ;用户代码使用宏的行号
-		triples)
-	;; ...
+    [& triples]
+    (every? #(or (== 3 (count %))
+                 (throw (IllegalArgumentException.
+                            (format "`%s` provided to `%s` on line %s has < 3 elements"
+                                    %  ;整个有问题的数组参数
+                                    (first &form)  ;宏的名字，有可能被重命名
+                                    (-> &form meta :line)))))  ;用户代码使用宏的行号
+            triples)
+    ;; ...
 )
 
 (ontology ["Boston" :capital-of])
@@ -522,8 +526,8 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 ;= true
 
 (defn first-char-of-either
-	[a b]
-	(.substring ^String (or a b) 0 1))
+    [a b]
+    (.substring ^String (or a b) 0 1))
 ; Reflection warning, NO_SOURCE_PATH:2 - call to substring can't be resolved.
 ;= #'user/first-char-of-either
 
@@ -532,31 +536,31 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 因此下面使用到参数的地方就可以通过类型推断来获取类型信息。
 
 (defn first-char-of-either
-	[^String a ^String b]
-	(.substring (or a b) 0 1))
+    [^String a ^String b]
+    (.substring (or a b) 0 1))
 ;= #'user/first-char-of-either
 
 可以通过检查它的元数据信息来看看用户在or表达式上面指定的类型提示信息。
 
 (binding [*print-meta* true]
-	(prn '^String (or a b)))
+         (prn '^String (or a b)))
 ; ^{:tag String, :line 1} (or a b)
 
 确实有。但是当检查macroexpand之后的代码的元数据信息的时候，这个元数据不见了。
 
 (binding [*print-meta* true]
-	(prn (macroexpand '^String (or a b))))
+         (prn (macroexpand '^String (or a b))))
 ; (let* [or__3548__auto__ a]
 ; (if or__3548__auto__ or__3548__auto__ (clojure.core/or b)))
 
 首先来看or在clojure.core中是怎么实现的：
 
 (defmacro or
-	([] nil)
-	([x] x)
-	([x & next]
-		`(let [or# ~x]
-			(if or# or# (or ~@next)))))
+    ([] nil)
+    ([x] x)
+    ([x & next]
+        `(let [or# ~x]
+              (if or# or# (or ~@next)))))
 只需要把加在&form上面的元数据，包含了用户指定的类型提示信息，加到宏产生的代码上。
 在很多情况下，只需要先从&form上获取元数据信息，再在宏的代码体的最外层利用with-meta把元数据加上去。
 但是，这里没办法这么做。
@@ -565,50 +569,51 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 
 
 (defmacro OR
-	([] nil)
-	([x]
-		(let [result (with-meta (gensym "res") (meta &form))]   ;生成一个res的唯一符号，带上&form的元数据，绑定到result。
-		`(let [~result ~x]   ;？
-			~result)))
-	([x & next]
-		(let [result (with-meta (gensym "res") (meta &form))]
-			`(let [or# ~x
-				~result (if or# or# (OR ~@next))]
-				~result))))
+    ([] nil)
+    (   [x]
+        (let [result (with-meta (gensym "res") (meta &form))]   ;生成一个res的唯一符号，带上&form的元数据，绑定到result。
+             `(let [~result ~x]   ;？
+                   ~result)))
+    (   [x & next]
+        (let [result (with-meta (gensym "res") (meta &form))]
+             `(let [    or# ~x
+                        ~result (if or# or# (OR ~@next))]
+                    ~result))))
 
 (binding [*print-meta* true]
-	(prn (macroexpand '^String (OR a b))))
+         (prn (macroexpand '^String (OR a b))))
 ; (let* [or__1176__auto__ a
-; 	^{:tag String, :line 2}
-; 	res1186 (if or__1176__auto__ or__1176__auto__ (user/or b))]
-; 	^{:tag String, :line 2} res1186)
+;     ^{:tag String, :line 2}
+;     res1186 (if or__1176__auto__ or__1176__auto__ (user/or b))]
+;     ^{:tag String, :line 2} res1186)
 
 现在，用户指定的元数据被保留下来了。
 
 (defn first-char-of-any
-	[a b]
-	(.substring ^String (OR a b) 0 1))
+    [a b]
+    (.substring ^String (OR a b) 0 1))
 ;= #'user/first-char-of-any
 
 --
 上面OR使用的模式可以抽取出来作为一个可重用的函数，从而可以用在任何宏上面。
 
 (defn preserve-metadata
-	"Ensures that the body containing `expr` will carry the metadata
-	from `&form`."
-	[&form expr]
-	(let [res (with-meta (gensym "res") (meta &form))]
-		`(let [~res ~expr]
-			~res)))
+    "Ensures that the body containing `expr` will carry the metadata
+    from `&form`."
+    [&form expr]
+    (let [res (with-meta (gensym "res") (meta &form))]
+         `(let [~res ~expr]
+               ~res)))
 
 (defmacro OR
-	"Same as `clojure.core/or`, but preserves user-supplied metadata
-	(e.g. type hints)."
-	([] nil)
-	([x] (preserve-metadata &form x))
-	([x & next]
-		(preserve-metadata &form `(let [or# ~x]
-			(if or# or# (or ~@next))))))
+    "Same as `clojure.core/or`, but preserves user-supplied metadata
+    (e.g. type hints)."
+    ([] nil)
+    ([x] (preserve-metadata &form x))
+    (   [x & next]
+        (preserve-metadata  &form 
+                            `(let [or# ~x]
+                                  (if or# or# (or ~@next))))))
 
 ----
 10.3，测试上下文相关的宏
@@ -617,16 +622,16 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 但我们可以编写出我们自己的macroexpand-1，从而可以轻易的mock出&env，以便于测试和调试。
 
 (defn macroexpand1-env [env form]
-	(if-let [[x & xs] (and (seq? form) (seq form))]
-如果form可序列，将form转成序列，form的第一个元素（宏的名字）绑定到x，其余元素（宏的参数）绑定到xs。
-		(if-let [v (and (symbol? x) (resolve x))]
-如果x是符号，获得宏的实现函数，绑定到v。
-			(if (-> v meta :macro)
-				(apply @v form env xs)
-				form)
-如果v是一个宏，获得宏的实现函数，以env和宏的参数xs作为参数，调用这个实现函数。
-			form)
-		form))
+    (if-let [[x & xs] (and (seq? form) (seq form))]
+;如果form可序列，将form转成序列，form的第一个元素（宏的名字）绑定到x，其余元素（宏的参数）绑定到xs。
+            (if-let [v (and (symbol? x) (resolve x))]
+;如果x是符号，获得宏的实现函数，绑定到v。
+                    (if (-> v meta :macro)
+                        (apply @v form env xs)
+                        form)
+;如果v是一个宏，获得宏的实现函数，以env和宏的参数xs作为参数，调用这个实现函数。
+                    form)
+            form))
 
 (macroexpand1-env '{} '(simplify (range 10)))
 ; Precomputing: (range 10)
@@ -636,38 +641,38 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 ;= (range 10)
 
 (defmacro spy [expr]
-	`(let [value# ~expr]
-		(println (str "line #" ~(-> &form meta :line) ",")
-			'~expr value#)
-		value#))
+    `(let [value# ~expr]
+          (println (str "line #" ~(-> &form meta :line) ",")
+                   '~expr value#)
+          value#))
 ;= #'user/spy
 
-(let [a 1
-		a (spy (inc a))
-		a (spy (inc a))]
-	a)
+(let [  a 1
+        a (spy (inc a))
+        a (spy (inc a))]
+     a)
 ; line #2, (inc a) 2
 ; line #3, (inc a) 3
 ;= 3
 
 (macroexpand1-env {} (with-meta '(spy (+ 1 1)) {:line 42})) 
 ;= (clojure.core/let [value__602__auto__ (+ 1 1)]
-;= 	(clojure.core/println
-;= 		(clojure.core/str "line #" 42 ",") 
-;= 		(quote (+ 1 1)) value__602__auto__)
-;= 	value__602__auto__)
+;=     (clojure.core/println
+;=         (clojure.core/str "line #" 42 ",") 
+;=         (quote (+ 1 1)) value__602__auto__)
+;=     value__602__auto__)
 
 (defn macroexpand1-env [env form]
-	(if-all-let [[x & xs] (and (seq? form) (seq form))
-					v (and (symbol? x) (resolve x))
-					_ (-> v meta :macro)]
-		(apply @v form env xs)
-		form))
+    (if-all-let [   [x & xs] (and (seq? form) (seq form))
+                    v (and (symbol? x) (resolve x))
+                    _ (-> v meta :macro)]
+                (apply @v form env xs)
+                form))
 
 (defmacro if-all-let [bindings then else]
-	(reduce (fn [subform binding]
-				`(if-let [~@binding] ~subform ~else))
-			then (reverse (partition 2 bindings))))
+    (reduce (fn [subform binding]
+                `(if-let [~@binding] ~subform ~else))
+            then (reverse (partition 2 bindings))))
 
 =========
 11，自己实现串行宏。
@@ -675,7 +680,7 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 首先，验证一个形式是不是序列，如果不是，构造一个只包含这个形式的序列。
 
 (defn ensure-seq [x]
-	(if (seq? x) x (list x)))
+    (if (seq? x) x (list x)))
 
 (ensure-seq 'x)
 ;= (x)
@@ -686,30 +691,30 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 接着，对于给定的两个形式x和ys，把x插入到ys的第二个元素的位置上，并且确保ys是一个序列。
 
 (defn insert-second
-	"Insert x as the second item in seq y."
-	[x ys]
-	(let [ys (ensure-seq ys)]
-		(concat (list (first ys) x)
-			(rest ys))))
+    "Insert x as the second item in seq y."
+    [x ys]
+    (let [ys (ensure-seq ys)]
+         (concat (list (first ys) x)
+                 (rest ys))))
 
 (defn insert-second
-	"Insert x as the second item in seq y."
-	[x ys]
-	(let [ys (ensure-seq ys)]
-		`(~(first ys) ~x ~@(rest ys))))
+    "Insert x as the second item in seq y."
+    [x ys]
+    (let [ys (ensure-seq ys)]
+         `(~(first ys) ~x ~@(rest ys))))
 语法引述可以在函数中使用。
 
 (defn insert-second
-	"Insert x as the second item in seq y."
-	[x ys]
-	(let [ys (ensure-seq ys)]
-		(list* (first ys) x (rest ys))))
+    "Insert x as the second item in seq y."
+    [x ys]
+    (let [ys (ensure-seq ys)]
+         (list* (first ys) x (rest ys))))
 
 (defmacro thread
-	"Thread x through successive forms."
-	([x] x)
-	([x form] (insert-second x form))
-	([x form & more] `(thread (thread ~x ~form) ~@more)))
+    "Thread x through successive forms."
+    ([x] x)
+    ([x form] (insert-second x form))
+    ([x form & more] `(thread (thread ~x ~form) ~@more)))
 宏可以支持不同个数的参数。
 
 
@@ -723,9 +728,9 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 也可以用函数来实现“串行宏”。
 
 (defn thread-fns
-	([x] x)
-	([x form] (form x))
-	([x form & more] (apply thread-fns (form x) more)))
+    ([x] x)
+    ([x form] (form x))
+    ([x form & more] (apply thread-fns (form x) more)))
 
 (thread-fns [1 2 3] reverse #(conj % 4) prn)
 ;= (4 3 2 1)
@@ -745,7 +750,7 @@ compiling:(NO_SOURCE_PATH:1)>
 ;= ("[1" "2" "3]")
 
 ----
-.. 它的行为跟-> 差不多，但是它只支持对于java方法的调用（它还支持->所不支持的java静态方法）、
+.. 它的行为跟-> 差不多，但是它只支持对于java方法的调用（它还支持->所不支持的java静态方法）。
 点点是在->之前引入clojure的，现在已经很少使用。
 
 ->> 它把前面一个form插入后面一个form的最后一个元素的位置上。这个宏经常用来对一个序列或者其他数据结构进行转换。

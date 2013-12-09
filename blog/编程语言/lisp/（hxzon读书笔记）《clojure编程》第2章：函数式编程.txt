@@ -44,16 +44,16 @@ map,reduce（规约）,partial（部分应用函数）,comp（函数组合）,co
 匿名函数能给参数起个有意义的名字，可读性好些。
 
 (reduce
-	(fn [m v] 
-		(assoc m v (* v v)))
-	{}  ;初始是个空集合
-	[1 2 3 4])
+    (fn [m v] 
+        (assoc m v (* v v)))
+    {}  ;初始是个空集合
+    [1 2 3 4])
 ;= {4 16, 3 9, 2 4, 1 1}
 
 (reduce
-	#(assoc % %2 (* %2 %2))
-	{}
-	[1 2 3 4])
+    #(assoc % %2 (* %2 %2))
+    {}
+    [1 2 3 4])
 ;= {4 16, 3 9, 2 4, 1 1}
 
 ----
@@ -105,8 +105,8 @@ map,reduce（规约）,partial（部分应用函数）,comp（函数组合）,co
 (comp f3 f2 f1)
 
 (defn negated-sum-str
-	[& numbers]
-	(str (- (apply + numbers))))
+    [& numbers]
+    (str (- (apply + numbers))))
 ;= #'user/negated-sum-str
 
 (negated-sum-str 10 12 3.4)
@@ -122,9 +122,9 @@ map,reduce（规约）,partial（部分应用函数）,comp（函数组合）,co
 (require '[clojure.string :as str]) 
 
 (def camel->keyword (comp keyword
-	str/join
-	(partial interpose \-)
-	(partial map str/lower-case)
+                          str/join
+                          (partial interpose \-)
+                          (partial map str/lower-case)
 #(str/split % #"(?<=[a-z])(?=[A-Z])"))) 
 ;= #'user/camel->keyword
 
@@ -137,19 +137,20 @@ map,reduce（规约）,partial（部分应用函数）,comp（函数组合）,co
 可以通过串行宏来实现函数组合的功能：
 
 (defn camel->keyword
-	[s]
-	(->> (str/split s #"(?<=[a-z])(?=[A-Z])")
-		(map str/lower-case)
-		(interpose \-)
-		str/join
-		keyword))
+    [s]
+    (->> (str/split s #"(?<=[a-z])(?=[A-Z])")
+         (map str/lower-case)
+         (interpose \-)
+         str/join
+         keyword))
 
 --
-(def camel-pairs->map (comp (partial apply hash-map)
-	(partial map-indexed (fn [i x]
-		(if (odd? i)
-			x
-		(camel->keyword x))))))
+(def camel-pairs->map 
+    (comp   (partial apply hash-map)
+            (partial map-indexed (fn [i x]
+                                     (if (odd? i)
+                                         x
+                                         (camel->keyword x))))))
 ;= #'user/camel-pairs->map
 
 (camel-pairs->map ["CamelCase" 5 "lowerCamelCase" 3])
@@ -176,21 +177,22 @@ map,reduce（规约）,partial（部分应用函数）,comp（函数组合）,co
 clojure提供了一个memoize函数，可以返回一个函数的内存化版本：
 
 (defn prime? 
-	[n]
-	(cond
-		(== 1 n) false
-		(== 2 n) true
-		(even? n) false
-		:else (->> (range 3 (inc (Math/sqrt n)) 2)
-			(filter #(zero? (rem n %)))
-			empty?)))
-	(time (prime? 1125899906842679)) 
+    [n]
+    (cond
+        (== 1 n) false
+        (== 2 n) true
+        (even? n) false
+        :else (->>  (range 3 (inc (Math/sqrt n)) 2)
+                    (filter #(zero? (rem n %)))
+                    empty?)))
+
+(time (prime? 1125899906842679)) 
 ; "Elapsed time: 2181.014 msecs"
 ;= true
 
 (let [m-prime? (memoize prime?)]
-	(time (m-prime? 1125899906842679))
-	(time (m-prime? 1125899906842679)))
+    (time (m-prime? 1125899906842679))
+    (time (m-prime? 1125899906842679)))
 ; "Elapsed time: 2085.029 msecs" 
 ; "Elapsed time: 0.042 msecs" 
 ;= true
@@ -476,18 +478,18 @@ in the order they appeared in coll.
 ;= {0 [0 3 6 9], 1 [1 4 7], 2 [2 5 8]}
 
 (def playlist
-	[{:title "Elephant", :artist "The White Stripes", :year 2003}
-		{:title "Helioself", :artist "Papas Fritas", :year 1997}
-		{:title "Stories from the City, Stories from the Sea",:artist "PJ Harvey", :year 2000}
-		{:title "Buildings and Grounds", :artist "Papas Fritas", :year 2000}
-		{:title "Zen Rodeo", :artist "Mardi Gras BB", :year 2002}])
+    [   {:title "Elephant", :artist "The White Stripes", :year 2003}
+        {:title "Helioself", :artist "Papas Fritas", :year 1997}
+        {:title "Stories from the City, Stories from the Sea",:artist "PJ Harvey", :year 2000}
+        {:title "Buildings and Grounds", :artist "Papas Fritas", :year 2000}
+        {:title "Zen Rodeo", :artist "Mardi Gras BB", :year 2002}])
 
 (group-by :artist playlist)
 ;= {"Papas Fritas" [{:title "Helioself", :artist "Papas Fritas", :year 1997}
-;= 	{:title "Buildings and Grounds", :artist "Papas Fritas"}]
+;=     {:title "Buildings and Grounds", :artist "Papas Fritas"}]
 ;= ...}
 
 (into {} 
-	(for [[k v] (group-by key-fn coll)]
-		[k (summarize v)]))
+      (for [ [k v] (group-by key-fn coll)]
+           [ k (summarize v)]))
 
