@@ -463,3 +463,31 @@ returns a vector containing the result of applying each fn to the args (left-to-
 
 ((juxt a b c) x) => [(a x) (b x) (c x)]
 
+2，group-by
+function
+Usage: (group-by f coll)
+
+Returns a map of the elements of coll keyed by the result of f on each element. 
+The value at each key will be a vector of the corresponding elements, 
+in the order they appeared in coll.
+对集合的每个元素调用f，按结果分组。
+
+(group-by #(rem % 3) (range 10))
+;= {0 [0 3 6 9], 1 [1 4 7], 2 [2 5 8]}
+
+(def playlist
+	[{:title "Elephant", :artist "The White Stripes", :year 2003}
+		{:title "Helioself", :artist "Papas Fritas", :year 1997}
+		{:title "Stories from the City, Stories from the Sea",:artist "PJ Harvey", :year 2000}
+		{:title "Buildings and Grounds", :artist "Papas Fritas", :year 2000}
+		{:title "Zen Rodeo", :artist "Mardi Gras BB", :year 2002}])
+
+(group-by :artist playlist)
+;= {"Papas Fritas" [{:title "Helioself", :artist "Papas Fritas", :year 1997}
+;= 	{:title "Buildings and Grounds", :artist "Papas Fritas"}]
+;= ...}
+
+(into {} 
+	(for [[k v] (group-by key-fn coll)]
+		[k (summarize v)]))
+

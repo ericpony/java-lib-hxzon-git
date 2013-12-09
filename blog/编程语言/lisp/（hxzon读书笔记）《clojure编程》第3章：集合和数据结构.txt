@@ -1,0 +1,421 @@
+﻿（hxzon读书笔记）《clojure编程》第3章：集合和数据结构
+
+by hxzon
+《clojure编程》第3章：集合和数据结构
+
+==========
+1，《3.1，Abstractions over Implementations，抽象优于实现》
+
+一百种算法对一种数据结构操作，优于十种算法对十种数据结构操作。
+—Alan J. Perlis in the foreword to Structure and Interpretation of Computer Programs,
+http://mitpress.mit.edu/sicp/toc/toc.html
+
+clojure：更优的是一百种算法对一种抽象操作。
+
+clojure的核心是数据结构。
+
+2，《3.6，Putting Clojure’s Collections to Work，用Clojure的集合来小试牛刀》
+
+在《人月神话》中，Frederick Brooks说：“
+Show me your flowchart and conceal your tables, and I shall continue to be mystified.
+Show me your tables, and I won’t usually need your flowchart; it’ll be obvious.”
+
+告诉我数据库表就可以了，我不需要你的流程图。
+
+Eric Raymond说：“
+Show me your code and conceal your data structures, and I shall continue to be mystified.
+Show me your data structures, and I won’t usually need your code; it’ll be obvious.”。
+告诉我数据结构就可以了，我不需要你的代码。
+
+--
+标识符和循环引用。
+
+数据结构本身就是它们的最佳自然标识，不再需要复杂的人工的唯一标识。
+循环引用容易导致不一致性。
+
+===========
+3，主要的抽象：
+
+• Collection
+• Sequence 序列
+• Associative 关系型的
+• Indexed 可索引的
+• Stack 栈
+• Set
+• Sorted 有序的
+
+
+4，
+
+4.1，Collection
+
+seq
+conj
+into
+count
+empty 返回一个同样具体类型的空集合。
+= 比较集合相等。
+
+4.2，序列
+first
+rest
+next
+
+lazy-seq
+
+empty?
+
+序列不是迭代器。
+序列不是列表。
+
+延迟序列
+map,  for,  filter,  take, 和  drop 都返回延迟序列。
+file-seq, line-seq, 和 xml-seq 。
+
+doall
+dorun
+
+iterate([f x]) ，返回一个延迟序列，元素为x, (f x), (f (f x))。f不能有副作用。
+
+reverse ，返回一个非延迟序列，元素逆序。
+
+“头保持”问题。
+
+split-with，分割序列。
+
+4.3，关系型
+
+assoc
+dissoc
+get
+contains? ，是否含有指定的键。
+
+注意nil值。
+
+find。
+
+4.4，可索引的。
+
+nth。
+
+4.5，栈。
+
+conj。
+pop。
+peek。
+
+4.6，set。
+
+disj，移除元素。
+
+subset?,  superset?,  union,  intersection,  project。
+
+4.7，有序的。
+
+rseq。
+subseq。
+rsubreq。
+sorted-map。
+sorted-set。
+sorted-map-by。
+sorted-set-by。
+
+compare：默认顺序，即正序。
+
+clojure如何把二元谓词变成排序器？
+
+----
+线性插值。
+(defn interpolate
+	"Takes a collection of points (as [x y] tuples), returning a function
+	which is a linear interpolation between those points."
+	[points]
+	(let [results (into (sorted-map) (map vec points))] 
+		(fn [x]
+			(let [[xa ya] (first (rsubseq results <= x)) 
+				[xb yb] (first (subseq results > x))]
+				(if (and xa xb) 
+					(/ (+ (* ya (- xb x)) (* yb (- x xa))) 
+						(- xb xa))
+					(or ya yb))))))
+
+(def f (interpolate [[0 0] [10 10] [15 5]]))
+;= #'user/f
+
+(map f [2 10 12])
+;= (2 10 8)
+
+juxt。
+
+=======
+集合本身就是函数。
+
+([:a :b :c] 2)
+;= :c
+
+({:a 5 :b 6} :b)
+;= 6
+
+({:a 5 :b 6} :c 7)
+;= 7
+
+(#{1 2 3} 3)
+;= 3
+
+等价于：
+(get [:a :b :c] 2)
+;= :c
+
+(get {:a 5 :b 6} :b)
+;= 6
+
+(get {:a 5 :b 6} :c 7)
+;= 7
+
+(get #{1 2 3} 3)
+;= 3
+
+注意，
+([:a :b :c] -1)
+;= #<IndexOutOfBoundsException java.lang.IndexOutOfBoundsException>
+
+----
+集合的键也是函数，用来从集合中查找自己对应的值。
+
+(:b {:a 5 :b 6})
+;= 6
+
+(:c {:a 5 :b 6} 7)
+;= 7
+
+(:d #{:a :b :c})
+;= nil
+
+优先使用键，因为键是字面量，不会出现空指针异常。
+(coll idx)不能保证coll不为nil，也不能保证coll为集合。
+
+----
+集合和键都是高阶函数。
+
+(filter (comp (partial <= 25) :age) 
+	[{:age 21 :name "David"}
+		{:gender :f :name "Suzanne" :age 20}
+		{:name "Sara" :location "NYC" :age 34}])
+;= ({:age 34, :name "Sara", :location "NYC"})
+
+----
+列表。
+
+向量。
+公共api优先使用map作为参数和返回值，因为向量（元组）不是自解释的，
+除非是含义很清晰的，例如点的坐标。
+
+set。
+set，将集合转成set。
+
+映射。
+
+keys。
+vals。
+key。
+val。
+
+map作为临时结构。
+defrecord。
+
+group-by。
+
+(defn reduce-by
+[key-fn f init coll]
+(reduce (fn [summaries x]
+(let [k (key-fn x)]
+(assoc summaries k (f (summaries k init) x))))
+{} coll))
+
+(def orders
+[{:product "Clock", :customer "Wile Coyote", :qty 6, :total 300}
+{:product "Dynamite", :customer "Wile Coyote", :qty 20, :total 5000}
+{:product "Shotgun", :customer "Elmer Fudd", :qty 2, :total 800}
+{:product "Shells", :customer "Elmer Fudd", :qty 4, :total 100}
+{:product "Hole", :customer "Wile Coyote", :qty 1, :total 1000}
+{:product "Anvil", :customer "Elmer Fudd", :qty 2, :total 300}
+{:product "Anvil", :customer "Wile Coyote", :qty 6, :total 900}])
+
+(reduce-by :customer #(+ %1 (:total %2)) 0 orders)
+;= {"Elmer Fudd" 1200, "Wile Coyote" 7200}
+
+(reduce-by :product #(conj %1 (:customer %2)) #{} orders)
+;= {"Anvil" #{"Wile Coyote" "Elmer Fudd"},
+;= "Hole" #{"Wile Coyote"},
+;= "Shells" #{"Elmer Fudd"},
+;= "Shotgun" #{"Elmer Fudd"},
+;= "Dynamite" #{"Wile Coyote"},
+;= "Clock" #{"Wile Coyote"}}
+
+(fn [order]
+[(:customer order) (:product order)])
+#(vector (:customer %) (:product %))
+(fn [{:keys [customer product]}]
+[customer product])
+(juxt :customer :product)
+
+(reduce-by (juxt :customer :product)
+#(+ %1 (:total %2)) 0 orders)
+;= {["Wile Coyote" "Anvil"] 900,
+;= ["Elmer Fudd" "Anvil"] 300,
+;= ["Wile Coyote" "Hole"] 1000,
+;= ["Elmer Fudd" "Shells"] 100,
+;= ["Elmer Fudd" "Shotgun"] 800,
+;= ["Wile Coyote" "Dynamite"] 5000,
+;= ["Wile Coyote" "Clock"] 300}
+
+(defn reduce-by-in
+[keys-fn f init coll]
+(reduce (fn [summaries x]
+(let [ks (keys-fn x)]
+(assoc-in summaries ks
+(f (get-in summaries ks init) x))))
+{} coll))
+
+(reduce-by-in (juxt :customer :product)
+#(+ %1 (:total %2)) 0 orders)
+;= {"Elmer Fudd" {"Anvil" 300,
+;= "Shells" 100,
+;= "Shotgun" 800},
+;= "Wile Coyote" {"Anvil" 900,
+;= "Hole" 1000,
+;= "Dynamite" 5000,
+;= "Clock" 300}}
+
+(def flat-breakup
+{["Wile Coyote" "Anvil"] 900,
+["Elmer Fudd" "Anvil"] 300,
+["Wile Coyote" "Hole"] 1000,
+["Elmer Fudd" "Shells"] 100,
+["Elmer Fudd" "Shotgun"] 800,
+["Wile Coyote" "Dynamite"] 5000,
+["Wile Coyote" "Clock"] 300})
+
+(reduce #(apply assoc-in %1 %2) {} flat-breakup)
+;= {"Elmer Fudd" {"Shells" 100,
+;= "Anvil" 300,
+;= "Shotgun" 800},
+;= "Wile Coyote" {"Hole" 1000,
+;= "Dynamite" 5000,
+;= "Clock" 300,
+;= "Anvil" 900}}
+
+----
+==========
+不可变和持久性
+
+书： Okasaki《Purely  Functional  Data  Structures》
+
+树的森林。
+See http://blog.higher-order.net/2009/09/08/understanding-clojures-persistenthashmap-deftwicefor an
+overview of the hash array mapped trie implementation in Clojure’s PersistentHashMapclass.
+
+See  http://blog.higher-order.net/2009/02/01/understanding-clojures-persistentvector-implementation
+for an overview of the implementation in Clojure’s PersistentVectorclass.
+
+http:
+//eclipsesource.com/blogs/2009/12/13/persistent-trees-in-git-clojure-and-couchdb-data
+-structure-convergence
+
+=======
+易变集合
+
+(def x (transient [])) 
+;= #'user/x
+
+(def y (conj! x 1)) 
+;= #'user/y
+
+(count y) 
+;= 1
+
+(count x) 
+;= 1
+
+transient，
+conj! ，
+
+----
+(defn naive-into
+[coll source]
+(reduce conj coll source))
+(= (into #{} (range 500))
+(naive-into #{} (range 500)))
+;= true
+
+(time (do (into #{} (range 1e6)) 
+nil))
+; "Elapsed time: 1756.696 msecs"
+(time (do (naive-into #{} (range 1e6))
+nil))
+; "Elapsed time: 3394.684 msecs"
+
+(defn faster-into
+[coll source]
+(persistent! (reduce conj! (transient coll) source)))
+
+(time (do (faster-into #{} (range 1e6))
+nil))
+; "Elapsed time: 1639.156 msecs"
+
+(defn transient-capable?
+"Returns true if a transient can be obtained for the given collection.
+i.e. tests if `(transient coll)` will succeed."
+[coll]
+(instance? clojure.lang.IEditableCollection coll))
+
+(def v [1 2])
+;= #'user/v
+(def tv (transient v))
+;= #'user/tv
+(conj v 3)
+;= [1 2 3]
+(persistent! tv)
+;= [1 2]
+(get tv 0)
+;= #<IllegalAccessError java.lang.IllegalAccessError:
+;= Transient used after persistent! call>
+
+persistent! ，
+
+(nth (transient [1 2]) 1)
+;= 2
+(get (transient {:a 1 :b 2}) :a)
+;= 1
+((transient {:a 1 :b 2}) :a) 
+;= 1
+((transient [1 2]) 1)
+;= 2
+(find (transient {:a 1 :b 2}) :a)
+;= #<CompilerException java.lang.ClassCastException:
+;= clojure.lang.PersistentArrayMap$TransientArrayMap
+;= cannot be cast to java.util.Map (NO_SOURCE_FILE:0)>
+
+(let [tm (transient {})]
+(doseq [x (range 100)]
+(assoc! tm x 0)) 
+(persistent! tm))
+;= {0 0, 1 0, 2 0, 3 0, 4 0, 5 0, 6 0, 7 0}
+
+(let [t (transient {})]
+@(future (get t :a)))
+;= #<IllegalAccessError java.lang.IllegalAccessError:
+;= Transient used by non-owner thread>
+
+易变集合是不可组合的。
+
+(persistent! (transient [(transient {})]))
+;= [#<TransientArrayMap clojure.lang.PersistentArrayMap$TransientArrayMap@b57b39f>]
+
+(= (transient [1 2]) (transient [1 2]))
+;= false
+
+======
+元数据。见《（hxzon翻译）clojure元数据》。
+
+

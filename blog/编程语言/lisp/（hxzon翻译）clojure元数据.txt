@@ -46,7 +46,9 @@ Returns an object of the same type and value as obj, with map as its metadata.
 返回一个新对象，与原对象类型和值相同，加上元数据。
 
 ==========
-hxzon补充（《clojure编程》p135）：
+hxzon补充：
+
+《clojure编程》第3章：集合和数据结构-元数据，p135。
 
 (def b (with-meta a (assoc (meta a)
 	:modified (System/currentTimeMillis))))

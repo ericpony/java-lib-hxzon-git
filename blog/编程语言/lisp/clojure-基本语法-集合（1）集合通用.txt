@@ -1,3 +1,5 @@
+clojure-基本语法-集合（1）集合通用
+
 clojure-基本语法-集合（三）集合通用
 
 http://dead-knight.iteye.com/blog/1831446
@@ -384,6 +386,7 @@ If any levels do not exist, hash-maps will be created.
 ----
 get，如果是映射，返回指定键的值。
 如果是向量，返回指定索引的值。
+如果是set，返回键本身（集合看成元素到元素自身的映射）。
 (get map key)
 (get map key not-found)
 如果key不存在，返回not-found，如果不指定not-found，返回nil。
