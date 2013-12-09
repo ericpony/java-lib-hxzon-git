@@ -162,7 +162,7 @@ key用于返回元素的key名称。
 user=> (map key {:a 1 :b 2});map的作用在后续详细介绍  
 (:a :b)  
 
-user=> (key (first {:a 1 :b 2}));first函数返回map的第一个元素作为key的参数  
+user=> (key (first {:a 1 :b 2}));first函数返回map的第一个元素，作为key的参数  
 :a  
 
 

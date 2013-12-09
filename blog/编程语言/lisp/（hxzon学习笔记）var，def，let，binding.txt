@@ -4,6 +4,32 @@ by hxzon
 《clojure编程》第4章：多线程和并发-Vars
 
 var，def，let，binding
+
+hxzon摘要：
+1，定义var（def），私有var（^:private），私有函数（defn-），常量（^:const）。
+
+2，动态作用域（^:dynamic）。
+binding，在每个线程上覆盖这个根绑定的值（不影响其它线程）。
+
+3，前置声明declare（定义var时先不给它赋值）。
+
+4，defonce。
+
+======
+根绑定：变量的初始值称为根绑定。
+当你使用def和defn定义一个对象时，对象就存贮在变量中。
+--
+绑定：函数调用时，传入参数值绑定到参数名称，函数参数绑定有一个词法作用域：仅在函数体范围内可见。
+特殊形式let可以创建一组词法绑定：
+(let [bingdings*] exprs*)
+
+其中bingdings在exprs中有效，let返回exprs最后一个表达式的值。
+--
+Interning：命名空间维护了每个Var对象的全局符号映射。
+使用def定义变量时，如果没有在当前的命名空间找到该符号，就创建一个，否则使用现有的。
+创建或者寻找的过程被称作interning。
+（hxzon：intern的意思是扣留、羁押，这里指放入常量池。）
+
 ======
 1，clojure中有4种引用类型可以用来表示标识：var，ref，agent，atom。
 
@@ -205,3 +231,20 @@ j
 (defn- other-helper-fn
 	[arg1 arg2 arg3]
 	...)
+=========
+hxzon补充：
+
+11，defonce提供了 def 的一个变种：当且仅当给定符号还没有绑定时，它才为这个符号设置绑定：
+
+user=> (defonce s "a string")
+#'user/s
+
+user=> s
+"a string"
+
+user=> (defonce s "another string")     ; 设置无效
+nil
+
+user=> s
+"a string"
+
