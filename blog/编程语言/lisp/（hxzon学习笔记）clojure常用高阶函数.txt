@@ -344,7 +344,7 @@ Returns a lazy sequence of lists of n items each, at offsets step apart.
 If step is not supplied, defaults to n, i.e. the partitions do not overlap. 
 如果没有指定步长step，默认等于n，所以每个分区不会重叠。
 If a pad collection is supplied, use its elements as necessary to complete last partition upto n items.
-如果指定了pad集合，在最后一个分区不足n个元素时，用它来填充最后分区。 
+如果指定了pad集合，在最后一个分区不足n个元素时，用它的元素来填充最后分区。 
 In case there are not enough padding elements, return a partition with less than n items.
 如果填充元素不够，最后一个分区将不足n个元素。
 

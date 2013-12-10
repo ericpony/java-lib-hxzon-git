@@ -4,9 +4,10 @@ by hxzon
 
 hxzon摘要：
 
-1，获得下一代板子，基于二维数组下标，indexed-step。
-2，获得下一代板子不基于下标，index-free-step。
-3，stepper。
+1，繁衍函数，基于二维数组下标，indexed-step。
+2，繁衍函数，不基于下标，index-free-step。
+3，倒数第二版繁衍函数：step。
+4，最终版：繁衍函数工厂stepper。
 
 =======
 Revisiting a classic: Conway’s Game of Life
@@ -15,23 +16,25 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 生命游戏中，对于任意细胞，规则如下：
 
 1，每个细胞有两种状态-存活或死亡，每个细胞与以自身为中心的周围八格细胞产生互动。
-2，当前细胞为死亡状态时，当周围有3个存活细胞时，该细胞变成存活状态。 （模拟繁殖）
-3，当前细胞为存活状态时，当周围低于2个（不包含2个）存活细胞时， 该细胞变成死亡状态。（模拟人口稀少）
-4，当前细胞为存活状态时，当周围有2个或3个存活细胞时， 该细胞保持原样。
+2，当前细胞为存活状态时，当周围有2个或3个存活细胞时， 该细胞保持原样。
+3，当前细胞为死亡状态时，当周围有3个存活细胞时，该细胞变成存活状态。 （模拟繁殖）
+4，当前细胞为存活状态时，当周围低于2个（不包含2个）存活细胞时， 该细胞变成死亡状态。（模拟人口稀少）
 5，当前细胞为存活状态时，当周围有3个以上的存活细胞时，该细胞变成死亡状态。（模拟过度拥挤）
 
 可以把最初的细胞结构定义为种子，当所有在种子中的细胞同时被以上规则处理后，可以得到第一代细胞图。
 继续按规则处理当前的细胞图，可以得到下一代的细胞图，周而复始。
 
 ======
-生成板子（二维向量）。
+1，基于二维数组和下标。
+
+生成细胞图（二维向量）。
 (defn empty-board
     "Creates a rectangular empty board of the specified width and height."
     [w h]
     (vec (repeat w (vec (repeat h nil)))))
 
 --
-初始化板子。
+初始化细胞图。
 (defn populate
     "Turns :on each of the cells specified as [y, x] coordinates."
     [board living-cells]   ;living-cells，活格子的坐标
@@ -51,21 +54,21 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 ;   [nil nil nil nil nil nil]]
 
 --
-返回格子的8个邻居的坐标。
+返回细胞的8个邻居的坐标。
 (defn neighbours
     [[x y]]
     (for [dx [-1 0 1] dy [-1 0 1] :when (not= 0 dx dy)]
         [(+ dx x) (+ dy y)]))
 
 --
-计算格子的活邻居数。
+计算细胞的活邻居数。
 (defn count-neighbours
     [board loc]
     (count (filter #(get-in board %) (neighbours loc)))) 
 ;(filter #(get-in board %) (neighbours loc)) 返回活着的邻居的坐标。
 
 --
-得到下一代板子。
+繁衍函数，得到下一代细胞图。
 
 (defn indexed-step
     "Yields the next state of the board, using indices to determine neighbors,liveness, etc."
@@ -85,7 +88,7 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
                          (recur (assoc-in new-board [x y] new-liveness) x (inc y)))))))		;更新[x,y]格子的状态，逐列递归
 
 --
-第八代的结果。
+细胞图第八代的结果。
 
 注，(iterate f x)返回一个惰性序列， 序列元素的值为 x 、 (f x) 、 (f (f x)) 、 (f (f (f x))) ， 诸如此类。
 
@@ -137,15 +140,20 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
             board (for [x (range h) y (range w)] [x y]))))
 
 =========
+=========
+2，
+
 窗口函数，返回分区列表，
-每个分区3个元素，每个分区头相距一个步长，最后一个分区如果不满3个元素，用nil填充。
+每个分区3个元素，每个分区头相距一个步长。
+
 (defn window
     "Returns a lazy sequence of 3-item windows centered around each item of coll."
     [coll]
-    (partition 3 1 (concat [nil] coll [nil])))
+    (partition 3 1 (concat [nil] coll [nil])))	     ;先在coll前后添加一个nil元素。
 
 --
 注：partition，分区，每个分区3个元素，每个分区的头元素相距1个步长。
+注：range不包含end元素。
 
 (partition 3 1 (range 5))
 ;= ((0 1 2) (1 2 3) (2 3 4))
@@ -153,8 +161,11 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 (partition 3 1 (concat [nil] (range 5) [nil]))
 ;= ((nil 0 1) (0 1 2) (1 2 3) (2 3 4) (3 4 nil))
 
+(concat [\a \b ] [1 2 3 4 5 6 7 8 9 10])
+;= (\a \b 1 2 3 4 5 6 7 8 9 10)
+
 ----
-单元格块。
+邻居块函数。
 (defn cell-block
     "Creates a sequences of 3x3 windows from a triple of 3 sequences."
     [[left mid right]]
@@ -164,13 +175,13 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 注：(or left (repeat nil))，如果left为nil，返回元素为nil的无限序列。
 （triple，三重。）
 
-===========
-同上边的窗口函数，但是新增pad参数，pad作为一个元素用于填充。
+====
+同上边的窗口函数，但是新增pad参数。
 (defn window
     "Returns a lazy sequence of 3-item windows centered around each item of coll, padded as necessary with pad or nil."
     (   [coll] (window nil coll))
     (   [pad coll]      ;coll是一个3元素的向量，它的元素也是序列。
-        (partition 3 1 (concat [pad] coll [pad]))))
+        (partition 3 1 (concat [pad] coll [pad]))))    ;先在coll前后各添加[pad]元素（注意[]，所以不是添加pad里面的元素）。
 
 示例，注意，这里整个向量作为元素（而不是用向量的元素）用来填充：
 (window [\a \b ] [1 2 3 4 5 6 7 8 9 10])
@@ -186,23 +197,35 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 ;   ([11 12 13 14 15] [16 17] [\a \b])  )
 
 --
+？邻居块函数，将二维数组切成一系列的邻居块。
+
 (defn cell-block
     "Creates a sequences of 3x3 windows from a triple of 3 sequences."
     [[left mid right]]  ;left，mid，right都是序列。
     (window (map vector left mid right)))   ;将left，mid，right都转成向量。
 
-示例，注意，只处理前三个序列：
-(cell-block [ [1 2 3] [4 5 6] [7 8 9]])
-;= ((nil [1 4 7] [2 5 8]) ([1 4 7] [2 5 8] [3 6 9]) ([2 5 8] [3 6 9] nil))
+示例：
+(map vector [1 2 3] ["1" "2" "3"] [\a \b \c])
+;= ([1 "1" \a] [2 "2" \b] [3 "3" \c])
 
-(cell-block [ [1 2 3] [4 5 6] [7 8 9] [10 11 12]])
+注意，参数是一个序列，只解构（所以只处理）前三个元素（元素必须是序列）。
+(cell-block [ [1 2 3] ["1" "2" "3"] [\a \b \c] ])
+;= (    (nil [1 "1" \a] [2 "2" \b]) 
+;       ([1 "1" \a] [2 "2" \b] [3 "3" \c]) 
+;       ([2 "2" \b] [3 "3" \c] nil)     )
+
+(cell-block [ [1 2 3] [4 5 6] [7 8 9] [10 11 12]])  ;最后一个元素[10 11 12]]没被处理。
 ;= ((nil [1 4 7] [2 5 8]) ([1 4 7] [2 5 8] [3 6 9]) ([2 5 8] [3 6 9] nil))
 
 (cell-block [ [1 2 3 \a] [4 5 6 \b] [7 8 9 \c] [10 11 12 \d]])
-;= (    (nil [1 4 7] [2 5 8])   ([1 4 7] [2 5 8] [3 6 9])   ([2 5 8] [3 6 9] [\a \b \c])    ([3 6 9] [\a \b \c] nil)    )
+;= (    (nil [1 4 7] [2 5 8])   
+;       ([1 4 7] [2 5 8] [3 6 9])   
+;       ([2 5 8] [3 6 9] [\a \b \c])    
+;       ([3 6 9] [\a \b \c] nil)    )
+
 
 ----
-计算给定块的中心格子，在下一轮中的状态。
+计算“给定邻居块的中心细胞”在下一轮中的状态。
 
 (defn liveness
     "Returns the liveness (nil or :on) of the center cell for the next step."
@@ -222,7 +245,7 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
     (vec (map liveness (cell-block rows-triple))))
 
 ----
-得到下一代板子，不再依赖下标。
+繁衍函数，得到下一代细胞图，不再依赖下标。
 
 (defn index-free-step
     "Yields the next state of the board."
@@ -251,23 +274,45 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 ;   [nil nil nil nil nil nil] 
 ;   [nil nil nil nil nil nil]]
 
-=====
+============
+============
+3，倒数第二版：
+细胞图不必用二维数组表示，用活着的细胞表示即可。
+细胞用坐标作为它们的自然标识。
+
+--
+繁衍函数。
+根据活着的细胞，得到这些细胞的所有邻居。
+这些邻居出现的次数，即等于它们有多少个活邻居。
+只依赖于neighbours（计算邻居坐标）这一个函数。
+
 (defn step
     "Yields the next state of the world"
-    [cells]     ;cells，序列，元素为活格子的坐标。
-    (set (for [ [loc n] (frequencies (mapcat neighbours cells))     ;解构，loc是单元格的邻居数，n是邻居数出现的次数。
-                :when (or (= n 3) (and (= n 2) (cells loc)))    ]
-            loc)))
+    [cells]     ;cells，序列，元素为活细胞的坐标。
+    (set (for [ [loc n] (frequencies (mapcat neighbours cells))     ;解构，loc是细胞的坐标，n是细胞出现的次数。
+                :when (or (= n 3) (and (= n 2) (cells loc)))    ]   ;出现3次说明有3个活邻居，活着或复活。出现2次，且自身活着，保持活着。
+            loc)))      ;返回活着的细胞。
 
 注：
-;mapcat等同于调用 (concat (map f colls)) 。计算每个格子的邻居数。
+;mapcat等同于调用 (concat (map f colls)) 。计算每个细胞的邻居坐标。
 ;frequencies返回集合中，元素及元素出现的次数，如{"a" 3, "b" 1, "c" 2, "d" 1} 。
 
 示例：
+-1-1 -10 -12 -13 -14
+0-1 00 01 02 03 04
+1-1 10 11 12 13 14
+2-1 20 21 22 23 24
+3-1 30 31 32 33 34
+
+(mapcat neighbours  #{[2 0]} )
+;= ([1 -1] [1 0] [1 1] [2 -1] [2 1] [3 -1] [3 0] [3 1])
+
 (mapcat neighbours  #{[2 0] [2 1] [2 2] [1 2] [0 1]} )
-;= ( [1 0] [1 1] [1 2] [2 0] [2 2] [3 0] [3 1] [3 2] [1 1] [1 2] [1 3] [2 1] 
-;    [2 3] [3 1] [3 2] [3 3] [-1 0] [-1 1] [-1 2] [0 0] [0 2] [1 0] [1 1] [1 2] 
-;    [0 1] [0 2] [0 3] [1 1] [1 3] [2 1] [2 2] [2 3] [1 -1] [1 0] [1 1] [2 -1] [2 1] [3 -1] [3 0] [3 1])
+;= ( [1 0] [1 1] [1 2] [2 0] [2 2] [3 0] [3 1] [3 2] ; 21的邻居
+;	 [1 1] [1 2] [1 3] [2 1] [2 3] [3 1] [3 2] [3 3] ; 22的邻居
+;    [-1 0] [-1 1] [-1 2] [0 0] [0 2] [1 0] [1 1] [1 2] ;01的邻居
+;    [0 1] [0 2] [0 3] [1 1] [1 3] [2 1] [2 2] [2 3]    ;12的邻居
+;    [1 -1] [1 0] [1 1] [2 -1] [2 1] [3 -1] [3 0] [3 1])  ;20的邻居
 
 (frequencies (mapcat neighbours #{[2 0] [2 1] [2 2] [1 2] [0 1]} )  )
 ;={   [2 1] 3, [3 2] 2, [1 0] 3, [1 -1] 1, [2 2] 2, [3 3] 1, [-1 0] 1, [0 0] 1, 
@@ -288,11 +333,17 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 ; [nil nil nil nil nil nil]]
 
 ========
+4，最终版：
+自定义邻居的计算方式（根据neighbours参数），
+自定义存活方式（根据survive?参数），
+自定义复活方式（根据birth?参数），
+返回配置后的繁衍函数。
+
+繁衍函数工厂：
 (defn stepper
     "Returns a step function for Life-like cell automata.
-    neighbours takes a location and return a sequential collection
-    of locations. survive? and birth? are predicates on the number
-    of living neighbours."
+    neighbours takes a location and return a sequential collection of locations. 
+    survive? and birth? are predicates on the number of living neighbours."
 
     [neighbours birth? survive?]
     (fn [cells]
@@ -307,6 +358,9 @@ https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 
 (def hex-step (stepper hex-neighbours #{2} #{3 4}))
 ;= ; this configuration is an oscillator of period 4
+
+（oscillator，振荡器。）
+
 
 (hex-step #{[0 0] [1 1] [1 3] [0 4]})
 ;= #{[1 -1] [2 2] [1 5]}

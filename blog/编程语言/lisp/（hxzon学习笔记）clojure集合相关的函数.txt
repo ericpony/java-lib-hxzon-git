@@ -20,6 +20,16 @@ user=> (cons 1 (list 2 3 4 5))
 user=> (cons (list 1 2) '(3 4 5))  
 ((1 2) 3 4 5)
 
+1.1，concat
+function
+Usage: (concat)
+       (concat x)
+       (concat x y)
+       (concat x y & zs)
+
+Returns a lazy seq representing the concatenation of the elements in the supplied colls.
+返回一个延迟序列，元素为参数（是一个集合）里的元素。
+
 ----
 2，conj，如果是列表，在列表头部插入元素。
 如果是向量，在尾部插入元素。
@@ -511,7 +521,7 @@ user=> (list* 1 ())
 
 1.4，通过其它方式创建：
 
-user=> (range 1 10)  
+user=> (range 1 10)  ;不包含end元素。
 (1 2 3 4 5 6 7 8 9)  
 
 user=> (repeat 5 1)  
