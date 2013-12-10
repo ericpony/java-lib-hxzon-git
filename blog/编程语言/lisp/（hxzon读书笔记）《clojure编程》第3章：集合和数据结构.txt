@@ -29,6 +29,12 @@ Show me your code and conceal your data structures, and I shall continue to be m
 Show me your data structures, and I won’t usually need your code; it’ll be obvious.”。
 告诉我数据结构就可以了，我不需要你的代码。
 
+就像Brooks说的，具体的代码怎么编写是由你的数据建模方式决定的，
+同样的道理，要编写好的clojure代码也需要你正确地使用好的数据结构，
+而这些“好的数据结构”通常是自然标识符、set以及map。
+参见《（hxzon读书笔记）《clojure编程》第3章：集合和数据结构-生命游戏》
+和《（hxzon读书笔记）《clojure编程》第3章：集合和数据结构-迷宫，zipper》。
+
 --
 标识符和循环引用。
 

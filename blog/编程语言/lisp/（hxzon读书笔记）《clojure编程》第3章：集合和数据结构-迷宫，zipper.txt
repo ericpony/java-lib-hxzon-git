@@ -1,5 +1,32 @@
 （hxzon读书笔记）《clojure编程》第3章：集合和数据结构-迷宫，zipper
 
+by hxzon
+
+=========
+Wilson迷宫生成算法。
+Jamis Buck at http://weblog.jamisbuck.org/2011/2/7/maze-generation-algorithm-recap
+
+Wilson的算法是一个雕刻算法，它从一个全是墙、没有路径的迷宫开始，
+然后通过从这个迷宫中移除一些墙来雕刻出一个迷宫。
+
+规则如下：
+-1，随机选择一个坐标，把它标记成已经访问过。
+-2，随机选择一个还没有访问过的坐标，如果没有的话，那么返回这个迷宫。
+-3，从这个新选的坐标开始，在这个迷宫里面做一个随机的遍历，直到碰到一个已经访问过的坐标。
+若果在一次随机遍历过程中经过一个坐标多次，那么记住每次离开这个坐标的方向。
+-4，把这个随机遍历经过的所有坐标标记为已经访问过的，
+然后根据每个坐标的最后离开方向，把这个路径上的墙都拆掉。
+-5，从第2步开始重复。
+
+这个算法有这些实体：坐标，访问过的状态，这个迷宫本身，随机遍历，离开方向。
+
+用一个向量来表示坐标：[x y]。
+用一个set来保存访问过的坐标。
+迷宫本身是由墙组成的，而一堵墙处于两个坐标之间，因此一堵墙可以表示成含有两个坐标的set。
+迷宫则是一个墙的set。
+遍历其实就是坐标的序列。
+离开方向其实就是从离开的坐标到它新进入的坐标，可以用两个坐标的向量表示。
+
 (defn maze
     "Returns a random maze carved out of walls; walls is a set of
     2-item sets #{a b} where a and b are locations.
@@ -18,6 +45,8 @@
                            (recur (reduce disj walls (map set steps)) 
                                   (reduce disj unvisited (keys steps))))
                       walls))))
+
+两个工具函数，grid用来创建一个全是墙的迷宫。draw用来渲染生成好的迷宫，这里使用swing。
 
 (defn grid
     [w h]
@@ -50,6 +79,17 @@
 (draw 40 40 (maze (grid 40 40)))
 
 ====
+真正的Wilson算法。
+
+前面实现的并不是一个真正的Wilson算法。
+前面的代码，当随机遍历碰到一个已经在我们的迷宫中的坐标时，
+我们把这个随机遍历中经过的所有坐标都加入到这个迷宫里面去了，
+而不仅仅是这个子路径（从起点到终点）。
+显然我们的算法比Wilson算法要快，因为它每次添加的坐标更多。
+但是Wilson的卖点是每一种迷宫生成出来的几率是一样的。
+
+一个真正的Wilson算法只是加多两行代码。
+
 (defn wmaze
     "The original Wilson's algorithm."
     [walls]
@@ -61,14 +101,18 @@
                 (if-let [loc (when-let [s (seq unvisited)] (rand-nth s))]
                     (let [walk (iterate (comp rand-nth paths) loc)
                           steps (zipmap (take-while unvisited walk) (next walk))
-                          walk (take-while identity (iterate steps loc)) 
-                          steps (zipmap walk (next walk)) ] 
+                          walk (take-while identity (iterate steps loc))    ;这里只追溯随机遍历的最近的分支，从loc开始。
+                          steps (zipmap walk (next walk)) ]        ;把这个路径变成一个map，每个元素是一个[from-loc to-loc]键值对。
                         (recur  (reduce disj walls (map set steps))
                                 (reduce disj unvisited (keys steps))))
                         walls))))
 
 Generating Random Spanning Trees More Quickly than the Cover Timeby David Bruce Wilson 
 http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.47.8598
+
+注意，maze函数不关心一个坐标是怎么表示的，只要它不是nil或false。
+所以maze可以处理任何拓扑的迷宫。
+下面的代码生成一个六边形的迷宫。
 
 (defn hex-grid
     [w h]
@@ -121,8 +165,37 @@ http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.47.8598
 
 (hex-draw 40 40 (maze (hex-grid 40 40)))
 
-=======
+==========
+==========
+遍历、更新以及zipper
+
 clojure.zip
+
+不可变性就意味着反向引用不可用，所以不能依赖反向引用来遍历树。
+对于这个问题典型的解决办法是zipper。
+
+zipper从本质上来说，就是一个堆栈，包含了我们要遍历的所有节点，以及这些节点的子节点。
+因此它实际上是一种游标，它是一种遍历机制，也是一种对树进行修改的机制。
+你可以移动一个zipper，查看当前的节点以及坐标，然后对当前节点进行更新，
+再通过你的遍历路径来得到一棵新树。
+
+----
+操作zipper
+clojure.zip提供一个很通用的生成zipper的工厂函数，以及三个更具体的工厂函数。
+seq-zip处理嵌套的序列，vector-zip处理嵌套的向量，xml-zip处理由clojure.xml表示的xml文档。
+
+常用的函数：up（向根部移动），down（向叶子移动），left（向相邻节点移动），right，
+prev，next，leftmost（移动到最左边），rightmost。
+
+node（返回当前节点），branch?（当前节点是否分支节点），children（当前节点的子节点），lefts（当前节点的所有左边兄弟节点）
+，rights，root。
+
+remove（删除当前节点），replace（将当前节点替换成一个新节点），
+insert（在当前节点插入一个子节点，插在第一个位置），append（在当前节点插入一个子节点，插在最后面），
+edit（当前节点会被这个函数返回值所替换）。
+make-node（创建一个新节点，但不加到我们的树结构中）。
+
+end?（用来测试一个深度优先遍历有没有遍历到底部）。
 
 (require '[clojure.zip :as z])
 
@@ -143,8 +216,12 @@ https://en.wikipedia.org/wiki/Ariadne
 (-> v z/vector-zip z/down z/right (z/replace 56) z/node)
 ;= 56
 
+z/vector-zip 和 z/root一起配合构建了一个事务的边界。
+
 (-> v z/vector-zip z/down z/right (z/replace 56) z/root) 
 ;= [[1 2 [3 4]] 56]
+
+z/remove把zipper移到深度优先遍历的前一个位置。
 
 (-> v z/vector-zip z/down z/right z/remove z/node) 
 ;= 4
@@ -157,6 +234,11 @@ https://en.wikipedia.org/wiki/Ariadne
 
 ======
 自定义zipper。
+
+z/zipper
+谓词函数，判断一个节点是否可以有子节点。
+子节点序列函数。
+分支节点函数。
 
 (defn html-zip [root]
     (z/zipper
@@ -183,14 +265,17 @@ https://en.wikipedia.org/wiki/Ariadne
 ;= [:body [:h1 "Clojure"] [:p [:b "What a wonderful language!"]]]
 
 ======
+定义一个迷宫。
 (def labyrinth (maze (grid 10 10)))
 
 (def labyrinth (let [g (grid 10 10)] (reduce disj g (maze g))))
+
 
 (def theseus (rand-nth (distinct (apply concat labyrinth))))
 
 (def minotaur (rand-nth (distinct (apply concat labyrinth))))
 
+以方向作为节点。
 (defn ariadne-zip
     [labyrinth loc]
     (let [  paths (reduce  (fn  [index [a b]]
@@ -200,10 +285,12 @@ https://en.wikipedia.org/wiki/Ariadne
                          (seq (for [loc (paths to) 
                                     :when (not= loc from)]
                                    [to loc])))]
-        (z/zipper   (constantly true) 
+        (z/zipper   (constantly true)    ;因为所有的坐标都可能通向另外其它的坐标。
                     children
-                    nil 
-                    [nil loc])))
+                    nil    ;因为这个zipper是完全只读遍历的。
+                    [nil loc])))    ;初始方向，起点。
+
+对迷宫进行一个深度优先遍历就能找到目标。
 
 (->> theseus
     (ariadne-zip labyrinth)
@@ -217,6 +304,7 @@ https://en.wikipedia.org/wiki/Ariadne
 [6 0] [7 1] [7 2] [6 2] [6 1] [5 1] [4 1] [4 0] [5 0]
 [3 0] [4 2] [5 2] [3 2] [3 3] [4 3] [4 4] [4 5] [3 5])
 
+图形化。
 (defn draw
     [w h maze path]
     (doto   (javax.swing.JFrame. "Maze")
@@ -235,7 +323,7 @@ https://en.wikipedia.org/wiki/Ariadne
                                                  (.drawLine g xa ya xc yc)))
                                     (.translate g -0.5 -0.5)
                                     (.setColor g java.awt.Color/RED)
-                                    (doseq  [[[xa ya] [xb yb]] path] 
+                                    (doseq  [[[xa ya] [xb yb]] path]    ;path保存的是一个个坐标对
                                             (.drawLine g xa ya xb yb)))))
                         (.setPreferredSize (java.awt.Dimension.
                                                 (* 10 (inc w)) (* 10 (inc h))))))
@@ -256,6 +344,6 @@ https://en.wikipedia.org/wiki/Ariadne
                     (filter #(= minotaur (first (z/node %))))
                     first 
                     z/path 
-                    rest) ]
+                    rest) ]    ;这里用rest代替了(map second)，因为路径的第一个坐标是起点，它前面没有别的坐标。
      (draw w h walls path))
 

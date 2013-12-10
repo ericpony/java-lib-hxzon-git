@@ -1,5 +1,7 @@
 （hxzon学习笔记）clojure常用高阶函数
 
+by hxzon
+
 http://clojure-api-cn.readthedocs.org/en/latest/index.html
 http://clojure.github.io/clojure/
 
@@ -74,6 +76,9 @@ user=> (reductions + 10 (range 1 10))   ; 它还作为每个中间值的初始�
 
 (map f [a b c] [x y x]) 相当于 [(f a x) (f b y) (f c z)] 。
 
+map的结果跟它最短的参数一样长。
+
+----
 6，mapcat
 (mapcat f & colls)
 
@@ -347,6 +352,12 @@ If a pad collection is supplied, use its elements as necessary to complete last 
 如果指定了pad集合，在最后一个分区不足n个元素时，用它的元素来填充最后分区。 
 In case there are not enough padding elements, return a partition with less than n items.
 如果填充元素不够，最后一个分区将不足n个元素。
+
+(partition 3 1 (range 5))
+;= ((0 1 2) (1 2 3) (2 3 4))
+
+(partition 4 1 [\a \b] (range 5))
+;= 
 
 29.1，partition-all
 function
