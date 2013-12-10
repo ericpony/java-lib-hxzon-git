@@ -1,9 +1,31 @@
-clojure-基本语法-流程控制
+（hxzon学习笔记）clojure流程控制
 
+补充by hxzon
+======
+
+clojure-基本语法-流程控制
 http://dead-knight.iteye.com/blog/1828668
 http://dead-knight.iteye.com/blog/1829618
 
+hxzon摘要：
 
+1，标准流程控制
+if，if-not，if-let，
+when，when-not，when-let，
+cond，case，do，
+loop..recur。
+
+2，异常处理
+try..catch..finally，throw。
+assert。
+
+3，基于函数的流程控制
+repeatedly，iterate。
+
+4，基于序列的流程控制。
+dotimes，doseq，for。
+
+============
 一、标准的流程控制 
 
 ----
@@ -417,19 +439,14 @@ Returns nil.
 3，for： 
 for、doseq都支持遍历多个集合(最右边的最快)，同时还可以用:when 和 :while来过滤。 
 
-user=> (for [x (range 3 7)] (* x x))  
-(9 16 25 36)  
-  
-user=> (for [x [0 1 2 3 4 5] :let [y (* x 3)] :when (even? y)] y)  
-(0 6 12)  
-
-上面第二条语句可理解为：先定义x为集合，再使用let将y赋值为x*3，最后判断y是否为偶数，偶数才返回。
-
 --
 http://qiujj.com/static/clojure-handbook.html
 
 clojure中的for，类似于scala的for..yield和Python的list comps。
 用于简化map、filter、#()、fn。
+
+user=> (for [x (range 3 7)] (* x x))  
+(9 16 25 36) 
 
 (for [i (range 10)] (* i i)) 
 ; (0 1 4 9 16 25 36 49 64 81)
@@ -441,6 +458,11 @@ clojure中的for，类似于scala的for..yield和Python的list comps。
 
 (for [i (range 10) :let [ii (* i i)] :when (> 20 ii)] ii)
 map对单个集合的操作都可以用for来代替（选择原则：很简单的用map，其他都用for）。
+
+user=> (for [x [0 1 2 3 4 5] :let [y (* x 3)] :when (even? y)] y)  
+(0 6 12)  
+
+上面语句可理解为：先定义x为集合，再使用let将y赋值为x*3，最后判断y是否为偶数，偶数才返回。
 
 例子：
 (map (comp count str) '[aa bbb cccc])      

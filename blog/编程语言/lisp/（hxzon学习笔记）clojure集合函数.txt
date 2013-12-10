@@ -1,5 +1,175 @@
-clojure-基本语法-集合（1）集合通用
+（hxzon学习笔记）clojure集合函数
 
+by hxzon
+========
+
+向量看成以索引为键的映射。
+set看成元素到自身的映射。
+
+列表是以单向链接列表的形式来实现的。
+读取列表的第一个元素或者在列表头添加一个元素的操作都可以在常量时间内完成，然而访问列表的第N个元素却需要N次操作。 
+向量支持高效地根据索引来访问元素，与数组类似。
+
+----
+1，cons，(cons x seq)，返回一个新的序列， 序列的第一个元素是 x ， 而 seq 则是序列的其余部分。
+
+----
+2，conj，如果是列表，在列表头部插入元素。
+如果是向量，在尾部插入元素。
+也支持映射，set。
+(conj coll x)
+(conj coll x & xs)
+
+当 coll 等于 nil ， 也即是，执行 (conj nil item) 时， 结果为 (item) 。
+--
+; 处理多个元素的 conj
+; 注意向量和列表的结果之间的不同
+
+user=> (conj [0 1 2] 3 4 5)
+[0 1 2 3 4 5]
+
+user=> (conj (list 0 1 2) 3 4 5)
+(5 4 3 0 1 2)
+
+----
+3，assoc，如果是映射，更新（或添加）指定的键的值。
+如果是向量，更新指定索引的值，注意，索引不能超出范围，否则抛出异常。
+
+----
+3.1，assoc-in，
+function
+Usage: (assoc-in m [k & ks] v)
+
+Associates a value in a nested associative structure, 
+where ks is a sequence of keys and v is the new value and returns a new nested structure.
+If any levels do not exist, hash-maps will be created.
+用来更新嵌套的关系型结构，ks是一个键的序列。
+如果某一层级不存在，将创建一个hash-map。
+
+----
+4，get，如果是映射，返回指定键的值。
+如果是向量，返回指定索引的值。
+如果是set，返回键本身（集合看成元素到元素自身的映射）。
+(get map key)
+(get map key not-found)
+如果key不存在，返回not-found，如果不指定not-found，返回nil。
+
+----
+4.1，get-in，
+function
+Usage: (get-in m ks)
+       (get-in m ks not-found)
+
+Returns the value in a nested associative structure,where ks is a sequence of keys. 
+Returns nil if the key is not present, or the not-found value if supplied.
+根据指定的键序列，获取嵌套的关系型结构中的值。
+如果键不存在，且没指定not-found，返回nil。
+
+----
+5，dissoc
+function
+Usage: (dissoc map)
+       (dissoc map key)
+       (dissoc map key & ks)
+
+dissoc[iate]. Returns a new map of the same (hashed/sorted) type,that does not contain a mapping for key(s).
+从映射中去除指定的键。
+
+----
+6，disj
+function
+Usage: (disj set)
+       (disj set key)
+       (disj set key & ks)
+
+disj[oin]. Returns a new set of the same (hashed/sorted) type, that does not contain key(s).
+从set中去除指定的键。
+
+user=> (disj #{1 3 5 7} 3 7)  
+#{1 5}  
+
+----
+7，find，(find map key)，
+如果是映射，返回指定的键值对（用向量表示）。
+如果是向量，返回指定的索引和值（用向量表示）。
+如果键不存在，返回nil。
+
+Returns the map entry for key, or nil if key not present.
+
+----
+8，first，返回第一个元素（传入的coll会被seq处理）。
+如果 coll 为 nil ，返回 nil 。
+支持向量，列表，映射，set。
+
+----
+9，last，Return the last item in coll, in linear time。
+在线性时间内返回集合的最后一个元素。
+
+----
+10，pop，如果是列表，返回去除了头部元素的新列表。
+如果是向量，返回去除尾部元素的新向量。
+如果列表或向量是空的，抛出异常。
+
+11，peek，如果是列表或队列，类似于first。
+如果是向量，类似last，但更高效。
+如果列表或向量是空的，返回nil。
+
+----
+12，next，
+Returns a seq of the items after the first. 
+Calls seq on its argument.  
+If there are no more items, returns nil.
+返回除去第一个元素后的序列。
+内部对参数调用seq。
+如果没有更多元素，返回nil。
+
+13，rest，
+Returns a possibly empty seq of the items after the first. Calls seq on its argument.
+返回除去第一个元素后的序列，内部对参数调用seq。
+如果没有更多元素，返回空序列。
+
+----
+14，rseq，在常数时间内，返回 rev 的逆序序列。
+rev 只能是向量或者 sorted-map 。
+rev 为空时，返回 nil 。
+
+----
+15，subseq，
+(subseq sc test key)
+(subseq sc start-test start-key end-test end-key)
+过滤 sc 并返回一个序列，序列里的所有实体(entry)的键 ek 都必须符合条件 (true? (test (.. sc comparator (compare ek key)) 0)) 。
+
+如果没有任何实体符合条件，则返回 nil 。
+参数 sc 必须是一个 sorted collection ，测试条件 test 可以是 < 、 <= 、 > 或者 >= 。
+
+user=> (def numbers (sorted-map 1 "one" 2 "two" 3 "three" 4 "four" 5 "five"))
+#'user/numbers
+
+user=> numbers
+{1 "one", 2 "two", 3 "three", 4 "four", 5 "five"}
+
+
+; 过滤所有键小于 3 的键-值对
+user=> (subseq numbers >= 3)
+([3 "three"] [4 "four"] [5 "five"])
+
+
+; 过滤所有键小于 1 大于 4 的键-值对
+user=> (subseq numbers >= 2 <= 4)
+([2 "two"] [3 "three"] [4 "four"])
+
+
+; 过滤所有键小于 10 的键-值对，返回 nil
+user=> (subseq numbers >= 10)
+nil
+
+----
+16，rsubseq，
+(rsubseq sc test key)
+(rsubseq sc start-test start-key end-test end-key)
+用法和 `subseq`_ 一样，但是返回的序列是逆序排序的。
+
+==========
 clojure-基本语法-集合（三）集合通用
 
 http://dead-knight.iteye.com/blog/1831446
@@ -336,172 +506,4 @@ false
 
 public class PersistentList extends ASeq  
   implements IPersistentList, IReduce, List, Counted  
-
-=======
-hxzon补充：
-
-向量看成以索引为键的映射。
-set看成元素到自身的映射。
-
-列表是以单向链接列表的形式来实现的。
-读取列表的第一个元素或者在列表头添加一个元素的操作都可以在常量时间内完成，然而访问列表的第N个元素却需要N次操作。 
-向量支持高效地根据索引来访问元素，与数组类似。
-
-----
-cons，(cons x seq)，返回一个新的序列， 序列的第一个元素是 x ， 而 seq 则是序列的其余部分。
-
-----
-conj，如果是列表，在列表头部插入元素。
-如果是向量，在尾部插入元素。
-也支持映射，set。
-(conj coll x)
-(conj coll x & xs)
-
-当 coll 等于 nil ， 也即是，执行 (conj nil item) 时， 结果为 (item) 。
---
-; 处理多个元素的 conj
-; 注意向量和列表的结果之间的不同
-
-user=> (conj [0 1 2] 3 4 5)
-[0 1 2 3 4 5]
-
-user=> (conj (list 0 1 2) 3 4 5)
-(5 4 3 0 1 2)
-
-----
-assoc，如果是映射，更新（或添加）指定的键的值。
-如果是向量，更新指定索引的值，注意，索引不能超出范围，否则抛出异常。
-
-----
-assoc-in，
-function
-Usage: (assoc-in m [k & ks] v)
-
-Associates a value in a nested associative structure, 
-where ks is a sequence of keys and v is the new value and returns a new nested structure.
-If any levels do not exist, hash-maps will be created.
-用来更新嵌套的关系型结构，ks是一个键的序列。
-如果某一层级不存在，将创建一个hash-map。
-
-----
-get，如果是映射，返回指定键的值。
-如果是向量，返回指定索引的值。
-如果是set，返回键本身（集合看成元素到元素自身的映射）。
-(get map key)
-(get map key not-found)
-如果key不存在，返回not-found，如果不指定not-found，返回nil。
-
-----
-get-in，
-function
-Usage: (get-in m ks)
-       (get-in m ks not-found)
-
-Returns the value in a nested associative structure,where ks is a sequence of keys. 
-Returns nil if the key is not present, or the not-found value if supplied.
-根据指定的键序列，获取嵌套的关系型结构中的值。
-如果键不存在，且没指定not-found，返回nil。
-
-----
-dissoc
-function
-Usage: (dissoc map)
-       (dissoc map key)
-       (dissoc map key & ks)
-
-dissoc[iate]. Returns a new map of the same (hashed/sorted) type,that does not contain a mapping for key(s).
-从映射中去除指定的键。
-
-----
-disj
-function
-Usage: (disj set)
-       (disj set key)
-       (disj set key & ks)
-
-disj[oin]. Returns a new set of the same (hashed/sorted) type, that does not contain key(s).
-从set中去除指定的键。
-
-user=> (disj #{1 3 5 7} 3 7)  
-#{1 5}  
-
-----
-find，(find map key)，
-如果是映射，返回指定的键值对（用向量表示）。
-如果是向量，返回指定的索引和值（用向量表示）。
-如果键不存在，返回nil。
-
-Returns the map entry for key, or nil if key not present.
-
-----
-first，返回第一个元素（传入的coll会被seq处理）。
-如果 coll 为 nil ，返回 nil 。
-支持向量，列表，映射，set。
-
-----
-last，Return the last item in coll, in linear time。
-在线性时间内返回集合的最后一个元素。
-
-----
-pop，如果是列表，返回去除了头部元素的新列表。
-如果是向量，返回去除尾部元素的新向量。
-如果列表或向量是空的，抛出异常。
-
-peek，如果是列表或队列，类似于first。
-如果是向量，类似last，但更高效。
-如果列表或向量是空的，返回nil。
-
-next，
-Returns a seq of the items after the first. 
-Calls seq on its argument.  
-If there are no more items, returns nil.
-返回除去第一个元素后的序列。
-内部对参数调用seq。
-如果没有更多元素，返回nil。
-
-rest，
-Returns a possibly empty seq of the items after the first. Calls seq on its argument.
-返回除去第一个元素后的序列，内部对参数调用seq。
-如果没有更多元素，返回空序列。
-
-----
-rseq，在常数时间内，返回 rev 的逆序序列。
-rev 只能是向量或者 sorted-map 。
-rev 为空时，返回 nil 。
-
-----
-subseq，
-(subseq sc test key)
-(subseq sc start-test start-key end-test end-key)
-过滤 sc 并返回一个序列，序列里的所有实体(entry)的键 ek 都必须符合条件 (true? (test (.. sc comparator (compare ek key)) 0)) 。
-
-如果没有任何实体符合条件，则返回 nil 。
-参数 sc 必须是一个 sorted collection ，测试条件 test 可以是 < 、 <= 、 > 或者 >= 。
-
-user=> (def numbers (sorted-map 1 "one" 2 "two" 3 "three" 4 "four" 5 "five"))
-#'user/numbers
-
-user=> numbers
-{1 "one", 2 "two", 3 "three", 4 "four", 5 "five"}
-
-
-; 过滤所有键小于 3 的键-值对
-user=> (subseq numbers >= 3)
-([3 "three"] [4 "four"] [5 "five"])
-
-
-; 过滤所有键小于 1 大于 4 的键-值对
-user=> (subseq numbers >= 2 <= 4)
-([2 "two"] [3 "three"] [4 "four"])
-
-
-; 过滤所有键小于 10 的键-值对，返回 nil
-user=> (subseq numbers >= 10)
-nil
-
-----
-rsubseq，
-(rsubseq sc test key)
-(rsubseq sc start-test start-key end-test end-key)
-用法和 `subseq`_ 一样，但是返回的序列是逆序排序的。
 

@@ -371,7 +371,11 @@ clojure内置的一些宏，都是这种风格，如let、if-let、for和with-op
         y (range x)]
      [x y])
 
-（hxzon：(range x)？）
+（相当于java中的：
+    (for x=0;x<=10;x++){
+        (for y=0;y<=x;y++){...}
+    }
+）
 
 for是一个有趣的例子，因为它这里的“初始化表达式”提供的值并不是对应绑定的值，
 x不会被初始化成(range 10)，在for里面，它的意思是x将作为遍历过程中(range 10)的每个元素的引用。
