@@ -312,7 +312,7 @@ user=> (keep-indexed #(if (even? %1) %2 nil) (range 10))
 (0 2 4 6 8)
 
 ----
-14，reductions
+14，reductions，规约历史。
 (reductions f coll)
 (reductions f init coll)
 
@@ -492,4 +492,46 @@ in the order they appeared in coll.
 (into {} 
       (for [ [k v] (group-by key-fn coll)]
            [ k (summarize v)]))
+
+3，partition，分区。
+function
+Usage: (partition n coll)
+       (partition n step coll)
+       (partition n step pad coll)
+
+Returns a lazy sequence of lists of n items each, at offsets step apart. 
+返回一个延迟序列，序列元素为列表，每个列表含n个元素，根据偏移量step来切分，step表示每个列表的第一个元素之间的距离。
+If step is not supplied, defaults to n, i.e. the partitions do not overlap. 
+如果没有指定步长step，默认等于n，所以每个分区不会重叠。
+If a pad collection is supplied, use its elements as necessary to complete last partition upto n items.
+如果指定了pad集合，在最后一个分区不足n个元素时，用它来填充最后分区。 
+In case there are not enough padding elements, return a partition with less than n items.
+如果填充元素不够，最后一个分区将不足n个元素。
+
+3.1，partition-all
+function
+Usage: (partition-all n coll)
+       (partition-all n step coll)
+
+Returns a lazy sequence of lists like partition, but may include partitions with fewer than n items at the end.
+和partition一样，但允许最后一个分区少于n个元素。
+
+3.2，partition-by
+function
+Usage: (partition-by f coll)
+
+Applies f to each value in coll, splitting it each time f returns a new value.  
+Returns a lazy seq of partitions.
+对每个元素调用f，每当f返回一个新的值时，开始一个新的分区。
+
+4，drop
+function
+Usage: (drop n) ，hxzon：抛出异常。
+       (drop n coll)
+
+Elides the first n values from the reduction of coll.
+（Elides，滑动，幻灯片。）
+
+(drop 2 [\a \b \c \d \e \f])
+;= (\c \d \e \f)
 
