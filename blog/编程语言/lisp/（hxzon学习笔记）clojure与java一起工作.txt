@@ -125,6 +125,13 @@ user=> (into-array String ["Easier" "array" "creation"])
 (into-array ["a" "b" "c"])
 ;= #<String[] [Ljava.lang.String;@4413515e>
 
+----
+aclone
+function
+Usage: (aclone array)
+Returns a clone of the Java array. Works on arrays of known types.
+
+
 11，
 aset 设置Java数组项值：
 一维数组 (aset java-array index value)

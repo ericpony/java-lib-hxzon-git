@@ -1,16 +1,6 @@
 （hxzon学习笔记）clojure集合相关的函数
 
 by hxzon
-
-clojure-基本语法-集合（一）列表和向量
-http://dead-knight.iteye.com/blog/1830583
-
-clojure-基本语法-集合（二）映射和集合
-http://dead-knight.iteye.com/blog/1830683
-
-clojure-基本语法-集合（三）集合通用
-http://dead-knight.iteye.com/blog/1831446
-
 ========
 
 向量看成以索引为键的映射。
@@ -353,6 +343,21 @@ user=> (subseq (sorted-map :a 1 :c 2 :b 4) >= :b)
 
 user=> (rsubseq (sorted-map :a 1 :c 2 :b 4) >= :b)
 ([:c 2] [:b 4])
+
+----
+13，drop
+function
+Usage: (drop n) ，hxzon：抛出异常。
+       (drop n coll)
+
+Elides the first n values from the reduction of coll.
+（Elides，滑动，幻灯片。）
+
+(drop 2 [\a \b \c \d \e \f])
+;= (\c \d \e \f)
+
+14，take
+
 
 ----------
 set操作：
@@ -1096,3 +1101,14 @@ false
 public class PersistentList extends ASeq  
   implements IPersistentList, IReduce, List, Counted  
 
+=======
+参考：
+
+clojure-基本语法-集合（一）列表和向量
+http://dead-knight.iteye.com/blog/1830583
+
+clojure-基本语法-集合（二）映射和集合
+http://dead-knight.iteye.com/blog/1830683
+
+clojure-基本语法-集合（三）集合通用
+http://dead-knight.iteye.com/blog/1831446

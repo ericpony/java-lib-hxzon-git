@@ -547,3 +547,45 @@ Supported modifiers are:
  :let [binding-form expr ...], :while test, :when test.
 
 (take 100 (for [x (range 100000000) y (range 1000000) :while (< y x)] [x y]))
+
+========
+========
+1，or
+macro
+Usage: (or)
+       (or x)
+       (or x & next)
+
+Evaluates exprs one at a time, from left to right. 
+If a form returns a logical true value, or returns that value 
+and doesn't evaluate any of the other expressions, 
+otherwise it returns the value of the last expression. (or) returns nil.
+
+从左到右，每次计算一个形式，如果该形式返回逻辑真值，停下，返回该值。
+否则，继续，直到返回最后一个形式的值。
+如果没有任何形式，返回nil。
+
+2，and
+macro
+Usage: (and)
+       (and x)
+       (and x & next)
+
+Evaluates exprs one at a time, from left to right. 
+If a form returns logical false (nil or false), 
+and returns that value and doesn't evaluate any of the other expressions, 
+otherwise it returns the value of the last expr. 
+(and) returns true.
+
+从左到右，每次计算一个形式，如果该形式返回逻辑假值（nil或false），停下，返回该值。
+否则，继续，直到返回最后一个形式的值。
+如果没有任何形式，返回true。
+
+3，not
+function
+Usage: (not x)
+
+Returns true if x is logical false, false otherwise.
+返回相反的逻辑值。
+
+4，
