@@ -1,8 +1,9 @@
-Programming Clojure学习笔记——函数编程
+（hxzon读书笔记）《clojure程序设计》第3章：函数式编程
 
+Programming Clojure学习笔记——函数编程
 http://blog.csdn.net/zh2qiang/article/details/7234486
 
-
+==========
 5.1 函数编程概念
 
 1. 纯函数

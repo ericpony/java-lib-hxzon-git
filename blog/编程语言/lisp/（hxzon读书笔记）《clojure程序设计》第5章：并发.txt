@@ -1,8 +1,9 @@
-Programming Clojure学习笔记——并发
+（hxzon读书笔记）《clojure程序设计》第5章：并发
 
+Programming Clojure学习笔记——并发
 http://blog.csdn.net/zh2qiang/article/details/7234518
 
-
+========
 Clojure提供强大的并发库，由四个API组成，增强不同并发模型：
 
 引用(refs): 管理对共享状态的并发同步修改；
