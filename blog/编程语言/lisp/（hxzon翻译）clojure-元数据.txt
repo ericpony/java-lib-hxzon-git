@@ -1,4 +1,4 @@
-（hxzon翻译）clojure元数据
+（hxzon翻译）clojure-元数据
 
 by hxzon
 

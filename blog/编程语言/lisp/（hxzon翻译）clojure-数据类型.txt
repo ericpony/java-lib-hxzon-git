@@ -1,0 +1,254 @@
+（hxzon翻译）clojure-数据类型
+
+by hxzon
+http://clojure.org/datatypes
+
+=======
+目录：
+
+Motivation
+Basics
+deftype and defrecord
+Why have both deftype and defrecord?
+Datatypes and protocols are opinionated
+reify
+
+=======
+Datatypes - deftype, defrecord and reify
+
+Motivation
+
+Clojure is written in terms of abstractions. 
+clojure面向各种抽象。
+There are abstractions for sequences, collections, callability, etc. 
+In addition, Clojure supplies many implementations of these abstractions. 
+clojure为这些抽象提供各种具体实现。
+The abstractions are specified by host interfaces, and the implementations by host classes. 
+这些抽象使用接口描述，而具体实现则基于类。
+
+While this was sufficient for bootstrapping the language, 
+it left Clojure without similar abstraction and low-level implementation facilities. 
+The protocols and datatypes features add powerful and flexible mechanisms for abstraction and data structure definition 
+with no compromises vs the facilities of the host platform.
+（compromises，妥协。）
+（facilities，设备。）
+协议和数据类型为这些抽象和数据结构定义添加了强大和灵活的机制，使得不用向宿主平台提供的设施妥协。
+
+-----------
+Basics
+
+The datatype features - deftype , defrecord and reify , 
+provide the mechanism for defining implementations of abstractions, 
+提供了实现抽象的机制。
+and in the case of reify, instances of those implementations.
+ 
+The abstractions themselves are defined by either protocols or interfaces. 
+这些抽象使用协议或接口定义。
+A datatype provides a host type, (named in the case of deftype and defrecord, anonymous in the case of reify),
+datatype提供宿主类型，deftype和defrecord用于具名的场景，而reify用于匿名的场景。 
+with some structure (explicit fields in the case of deftype and defrecord, 
+implicit closure in the case of reify), and optional in-type implementations of abstraction methods. 
+
+They support, in a relatively clean manner, 
+access to the highest-performance primitive representation and polymorphism mechanisms of the host. 
+N.B. that they are not merely host-in-parens constructs. 
+They support only a circumscribed subset of the host facilities, often with more dynamism than the host itself. 
+The intent is that, unless interop forces one to go beyond their circumscribed scope, 
+one need not leave Clojure to get the highest-performing data structures possible on the platform.
+
+-----------
+deftype and defrecord
+
+deftype and defrecord dynamically generate compiled bytecode 
+for a named class with a set of given fields, and, optionally, methods for one or more protocols and/or interfaces. 
+They are suitable for dynamic and interactive development, 
+need not be AOT compiled, and can be re-evaluated in the course of a single session. 
+They are similar to defstruct in generating data structures with named fields, but differ from defstruct in that:
+
+They generate a unique class, with fields corresponding to the given names.
+the resulting class has a proper type, unlike conventions for encoding type for structs in metadata
+because they generate a named class, 
+it has an accessible constructor fields can have type hints, 
+and can be primitive note that currently a type hint of a non-primitive type will not be used to constrain the field type nor the constructor arg, 
+but will be used to optimize its use in the class methods constraining the field type 
+and constructor arg is planned a deftype/defrecord can implement one or more protocols 
+and/or interfaces deftype/defrecord can be written with a special reader syntax #my.thing[1 2 3] where:
+each element in the vector form is passed to the deftype/defrecord's constructor un-evaluated
+the deftype/defrecord name must be fully qualified
+only available in Clojure versions later than 1.3
+when a deftype/defrecord Foo is defined a corresponding function ->Foo 
+is defined that passes its arguments to the constructor (versions 1.3 and later only)
+
+--
+deftype and defrecord differ in the following ways:
+deftype和defrecord有以下不同：
+
+deftype provides no functionality not specified by the user, other than a constructor
+deftype除了提供构造器，没有其它功能。
+
+defrecord provides a complete implementation of a persistent map, including:
+defrecord提供一个持久map实现，包括：
+
+value-based equality and hashCode
+基于值的相等方法和哈希码方法。
+
+metadata support
+支持元数据。
+
+associative support
+支持关联性。
+
+keyword accessors for fields
+字段可通过关键字访问。
+
+extensible fields (you can assoc keys not supplied with the defrecord definition)
+可新增字段（通过assoc加入新的键）。
+
+etc
+deftype supports mutable fields, defrecord does not
+deftype支持可变字段，而defrecord不支持。
+
+defrecord support an additional reader form of #my.record{:a 1, :b 2} taking a map that initializes a defrecord according to:
+defrecord支持额外的读者形式，使用一个map来初始化它。这个读者形式有以下规则：
+
+the defrecord name must be fully qualified
+记录名必须是全限定的。
+
+the elements in the map are un-evaluated
+map中的元素是未求值的。
+
+existing defrecord fields take the keyed values
+在记录中存在的字段获得对应的值。
+
+defrecord fields without keyed values in the literal map are initialized to nil
+不在初始map中的记录字段初始化为nil。
+
+additional keyed values are allowed and added to the defrecord
+不在记录中的字段，会添加到记录中。
+
+only available in Clojure versions later than 1.3
+clojure1.3及以后才支持。
+
+when a defrecord Bar is defined a corresponding function map->Bar 
+is defined that takes a map and initializes a new record instance with its contents (versions 1.3 and later only)
+（corresponding，相应的。）
+
+----------
+Why have both deftype and defrecord?
+为什么同时有deftype和defrecord？
+
+It ends up that classes in most OO programs fall into two distinct categories: 
+those classes that are artifacts of the implementation/programming domain, e.g. String or collection classes, 
+or Clojure's reference types; 
+一种是程序设计中使用的数据结构，例如字符串，集合类，clojure中的引用类型。
+and classes that represent application domain information, e.g. Employee, PurchaseOrder etc.
+一种是领域中的信息，例如雇员， 采购订单等。
+It has always been an unfortunate characteristic of using classes for application domain information 
+that it resulted in information being hidden behind class-specific micro-languages, 
+e.g. even the seemingly harmless employee.getName() is a custom interface to data. 
+Putting information in such classes is a problem, 
+much like having every book being written in a different language would be a problem. 
+You can no longer take a generic approach to information processing. 
+This results in an explosion of needless specificity, and a dearth of reuse.
+
+This is why Clojure has always encouraged putting such information in maps, 
+and that advice doesn't change with datatypes. 
+这也是clojure鼓励你使用map，而建议不使用datatype的原因。
+
+By using defrecord you get generically manipulable information, 
+plus the added benefits of type-driven polymorphism, and the structural efficiencies of fields. 
+OTOH, it makes no sense for a datatype that defines a collection like vector to have a default implementation of map, 
+thus deftype is suitable for defining such programming constructs.
+
+Overall, records will be better than structmaps for all information-bearing purposes, 
+and you should move such structmaps to defrecord. 
+记录比结构映射更好。
+
+It is unlikely much code was trying to use structmaps for programming constructs, 
+but if so, you will find deftype much more suitable.
+
+AOT-compiled deftype/defrecord may be suitable for some of the use cases of gen-class, 
+where their limitations are not prohibitive. 
+In those cases, they will have better performance than gen-class.
+在这些场景，它们比gen-class有更好的性能。
+
+---------------
+Datatypes and protocols are opinionated
+
+While datatypes and protocols have well-defined relationships with host constructs, 
+and make for a great way to expose Clojure functionality to Java programs, 
+they are not primarily interop constructs. 
+That is, they make no effort to completely mimic or adapt to all of the OO mechanisms of the host. 
+In particular, they reflect the following opinions:
+
+Concrete derivation is bad
+具体继承是有害的。
+you cannot derive datatypes from concrete classes, only interfaces
+只实现接口，而不继承具体类。
+You should always program to protocols or interfaces
+应该始终面向协议或接口编程。
+datatypes cannot expose methods not in their protocols or interfaces
+datatype不应该暴露不属于协议或接口的方法。
+Immutability should be the default
+默认应该不可变。
+and is the only option for records
+记录只能是不可变的。
+Encapsulation of information is folly
+信息封装是愚蠢的。
+fields are public, use protocols/interfaces to avoid dependencies
+字段是公开的，使用协议或接口避免依赖。
+Tying polymorphism to inheritance is bad
+基于多态继承的类型识别是有害的。
+protocols free you from that
+协议使你避开这种困境。
+
+If you use datatypes and protocols you will have a clean, interface-based API to offer your Java consumers. 
+如果你使用datatype和协议，会为java用户产生一个干净的api。
+
+If you are dealing with a clean, interface-based Java API, datatypes and protocols can be used to interoperate with and extend it. 
+如果java提供的api是干净的基于接口的，datatype和协议让你能够继承java接口，互操作。
+
+If you have a 'bad' Java API, you will have to use gen-class. 
+如果java提供的api很糟糕，你只能使用gen-class。
+
+Only in this way can the programming constructs you use to design and implement your Clojure programs 
+be free of the incidental complexities of OO.
+避开OO附带的复杂性。
+
+-----------
+reify
+
+While deftype and defrecord define named types, 
+reify defines both an anonymous type and creates an instance of that type. 
+deftype和defrecord定义具名的类型，
+而reify直接生成一个匿名类型的实例。
+
+The use case is where you need a one-off implementation of one or more protocols or interfaces 
+and would like to take advantage of the local context. 
+In this respect it is use case similar to proxy, or anonymous inner classes in Java.
+在这点上，它类似proxy，或者java中的匿名内部类。
+
+The method bodies of reify are lexical closures, and can refer to the surrounding local scope. 
+reify的方法体是一个词法闭包，能引用环境中的本地变量。
+
+reify differs from proxy in that:
+reify与proxy的不同：
+
+Only protocols or interfaces are supported, no concrete superclass.
+只支持协议和接口，不支持具体类型。
+
+The method bodies are true methods of the resulting class, not external fns.
+方法时类的真实的方法，不是外部函数。
+
+Invocation of methods on the instance is direct, not using map lookup.
+方法调用是直接的，不是在map中查找。
+
+No support for dynamic swapping of methods in the method map.
+不支持动态更换方法。
+
+The result is better performance than proxy, both in construction and invocation. 
+这使得reify比proxy性能更好，无论是构造对象时还是调用方法时。
+reify is preferable to proxy in all cases where its constraints are not prohibitive.
+（prohibitive，望而却步。）
+（constraints，约束。）
+reify在各种情况下都比proxy要好。
