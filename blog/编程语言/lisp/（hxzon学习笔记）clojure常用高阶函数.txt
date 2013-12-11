@@ -349,24 +349,44 @@ Returns a lazy sequence of lists of n items each, at offsets step apart.
 If step is not supplied, defaults to n, i.e. the partitions do not overlap. 
 如果没有指定步长step，默认等于n，所以每个分区不会重叠。
 If a pad collection is supplied, use its elements as necessary to complete last partition upto n items.
-如果指定了pad集合，在最后一个分区不足n个元素时，用它的元素来填充最后分区。 
 In case there are not enough padding elements, return a partition with less than n items.
-如果填充元素不够，最后一个分区将不足n个元素。
 
-(partition 3 1 (range 5))
-;= ((0 1 2) (1 2 3) (2 3 4))
+如果没有指定pad集合，不会包含不足元素个数的分区。
+如果指定pad集合，会在末尾添加pad集合中的元素，然后再切一个分区（即最后分区）。
+最后分区有可能不足元素个数。
+
+注意对比有无填充集合的区别（指定比不指定总是多一个分区）：
+(partition 4 1 (range 5))
+;= ((0 1 2 3) (1 2 3 4))
 
 (partition 4 1 [\a \b] (range 5))
-;= 
+;= ((0 1 2 3) (1 2 3 4) (2 3 4 \a))     ;注意没有(3 4 \a \b) 。
 
+(partition 3 1 [\a \b] (range 5))
+;=  ((0 1 2) (1 2 3) (2 3 4) (3 4 \a))  ;注意没有(4 \a \b) 。
+
+(partition 4 4 [\a \b] (range 13))
+;=  ((0 1 2 3) (4 5 6 7) (8 9 10 11) (12 \a \b))
+
+(partition 1 4 [\a \b] (range 13))
+;=  ((0) (4) (8) (12))
+
+----
 29.1，partition-all
 function
 Usage: (partition-all n coll)
        (partition-all n step coll)
 
 Returns a lazy sequence of lists like partition, but may include partitions with fewer than n items at the end.
-和partition一样，但允许最后一个分区少于n个元素。
+和partition一样，但包含所有不足元素个数的分区。
 
+(partition-all 4 1 (range 5))
+;= ((0 1 2 3) (1 2 3 4) (2 3 4) (3 4) (4))
+
+(partition-all 4 (range 5))
+;=  ((0 1 2 3) (4))
+
+----
 29.2，partition-by
 function
 Usage: (partition-by f coll)
@@ -375,6 +395,10 @@ Applies f to each value in coll, splitting it each time f returns a new value.
 Returns a lazy seq of partitions.
 对每个元素调用f，每当f返回一个新的值时，开始一个新的分区。
 
+(partition-by #(= 0 (mod % 4)) (range 14))
+;=  ((0) (1 2 3) (4) (5 6 7) (8) (9 10 11) (12) (13))
+
+----
 30，memoize，内存化，即缓存函数调用结果。
 
 31，

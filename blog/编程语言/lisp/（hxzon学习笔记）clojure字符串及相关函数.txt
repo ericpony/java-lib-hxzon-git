@@ -1,0 +1,230 @@
+（hxzon学习笔记）clojure字符串及相关函数
+
+补充by hxzon
+
+---------
+clojure-基本语法-字符串类型
+http://dead-knight.iteye.com/blog/1827681
+=======
+一、创建
+ 
+函数str： 
+函数 (str) 接受任意数量的参数。
+如果参数不是字符串则将其转换为字符串，返回创建的新字符串。
+如果没有参数或为nil，则返回空字符串""。 
+
+user=> (str 1)  
+"1"  
+user=> (str -2.5)  
+"-2.5"  
+user=> (str "a")  
+"a"  
+user=> (str "abc" 123)  
+"abc123"  
+
+user=> (str)  
+""  
+
+user=> (str '(1 2 3))  
+"(1 2 3)"  
+
+user=> (str nil)  
+""  
+
+
+其它比较少用的创建函数：
+print-str、println-str、pr-str、prn-str、with-out-str 
+
+======
+二、string操作 
+
+----
+count函数： 
+count函数接受字符串参数时，返回字符串的字符数。 
+
+user=> (count "abc123")  
+6  
+user=> (count nil)  
+0  
+
+----
+subs函数： 
+subs函数接受两个或三个参数, 第一个是字符串，第二个是一个整数偏移量，第三个（可选）是另一个整数偏移量。
+函数返回从第一个偏移量（含），到第二个（不含）偏移量或者结尾（如果没有第二个偏移量）截取的子字符串。 
+
+user=> (subs "Clojure" 1)  
+"lojure"  
+user=> (subs "Clojure" 1 3)  
+"lo"  
+user=> (subs "Clojure" 1 20)  
+StringIndexOutOfBoundsException String index out of range: 20  java.lang.String.  
+substring (String.java:1934)  
+
+----
+format函数： 
+format函数用于格式化字符串。使用jdk的java.util.Formatter类完成格式化。 
+
+user=> (format "hello there, %s" "clojure")  
+"hello there, clojure"  
+
+user=> (format "%5d" 3)  
+"    3"  
+
+user=> (format "pad with leading zeros %07d" 5432)  
+"pad with leading zeros 0005432"  
+
+----
+检查函数 
+字符串检查函数 (string?) 接受一个参数，如果是字符串返回true，否则返回false 。
+
+user=> (string? "abc")  
+true  
+
+user=> (string? 12)  
+false  
+
+----
+字符检查函数(char?)接受一个参数，如果是字符类型返回true，否则返回false 。
+
+user=> (char? "abc")  
+false  
+
+user=> (char? \a)  
+true  
+
+user=> (char? 1)  
+false  
+
+========
+========
+命名空间：clojure.string
+http://clojure.github.io/clojure/clojure.string-api.html
+
+----
+1，blank?
+(blank? s)
+
+True if s is nil, empty, or contains only whitespace.
+判断字符串是否为nil，空字符串，或空白符字符串。
+
+----
+2，capitalize
+将首字母转成大写。
+
+----
+3，escape
+(escape s cmap)
+
+Return a new string, using cmap to escape each character ch from s as follows:
+
+If (cmap ch) is nil, append ch to the new string.
+If (cmap ch) is non-nil, append (str (cmap ch)) instead.
+
+对每个字符调用cmap，如果返回值为nil，使用原字符，否则使用返回值替换原字符。
+
+----
+4，join
+(join coll)
+(join separator coll)
+
+Returns a string of all elements in coll, as returned by (seq coll),separated by an optional separator.
+
+----
+5，lower-case
+转成全小写。
+
+----
+6，re-quote-replacement
+(re-quote-replacement replacement)
+
+Given a replacement string that you wish to be a literal replacement 
+for a pattern match in replace or replace-first, 
+do the necessary escaping of special characters in the replacement.
+
+对字符串中的“正则表达式特殊字符”进行转义。
+
+----
+7，replace
+(replace s match replacement)
+
+Replaces all instance of match with replacement in s.
+将字符串中所有匹配的子字符串替换成另一个字符串。
+
+match/replacement can be:
+
+string / string
+char / char
+pattern / (string or function of match).
+
+See also replace-first.
+
+The replacement is literal (i.e. none of its characters are treated specially) 
+for all cases above except pattern / string.
+
+For pattern / string, $1, $2, etc. in the replacement string are
+substituted with the string that matched the corresponding
+parenthesized group in the pattern.  
+If you wish your replacement string r to be used literally, 
+use (re-quote-replacement r) as the replacement argument.  
+See also documentation for java.util.regex.Matcher's appendReplacement method.
+
+Example:
+(clojure.string/replace "Almost Pig Latin" #"\b(\w)(\w+)\b" "$2$1ay")
+-> "lmostAay igPay atinLay"
+
+----
+8，replace-first
+(replace-first s match replacement)
+
+Replaces the first instance of match with replacement in s.
+
+和replace相同，但只替换第一个匹配的子串。
+
+Example:
+(clojure.string/replace-first "swap first two words"
+                              #"(\w+)(\s+)(\w+)" "$3$2$1")
+-> "first swap two words"
+
+----
+9，reverse，反转字符顺序。
+
+----
+10，split
+(split s re)
+(split s re limit)
+
+Splits string on a regular expression.  
+Optional argument limit is the maximum number of splits. 
+Not lazy. Returns vector of the splits.
+
+根据正则表达式分割字符串，limit为最大分段数。
+返回这些分段的向量，非延迟序列。
+
+----
+11，split-lines
+(split-lines s)
+
+Splits s on \n or \r\n.
+
+根据换行符分割字符串。
+
+----
+12，trim，去除两边的空白字符。
+
+----
+13，trim-newline
+
+Removes all trailing newline \n or return \r characters from string.  
+Similar to Perl's chomp.
+
+去除所有尾部的换行符。
+
+----
+14，triml，去除左边的空白字符。
+
+----
+15，trimr，去除右边的空白字符。
+
+----
+16，upper-case，全部转成大写。
+

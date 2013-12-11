@@ -1,8 +1,13 @@
-Programming Clojure学习笔记——使用序列统一数据
+（hxzon学习笔记）clojure-使用序列统一数据
 
-http://blog.csdn.net/zh2qiang/article/details/7234413
 修订by hxzon。
+
+Programming Clojure学习笔记——使用序列统一数据
+http://blog.csdn.net/zh2qiang/article/details/7234413
 =======
+
+摘要：
+
 4.1 一切皆序列。
 4.2 使用序列库。
 4.3 延迟序列，无限序列，强迫延迟序列计算。

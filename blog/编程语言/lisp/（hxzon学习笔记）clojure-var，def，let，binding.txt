@@ -1,4 +1,4 @@
-（hxzon学习笔记）var，def，let，binding
+（hxzon学习笔记）clojure-var，def，let，binding
 
 by hxzon
 《clojure编程》第4章：多线程和并发-Vars

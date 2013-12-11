@@ -1,8 +1,9 @@
-clojure-基本语法-数字类型
+（hxzon学习笔记）clojure数字相关的函数
 
+clojure-基本语法-数字类型
 http://dead-knight.iteye.com/blog/1827360
 
-
+=========
 一、算术运算 
 
 加法+： 

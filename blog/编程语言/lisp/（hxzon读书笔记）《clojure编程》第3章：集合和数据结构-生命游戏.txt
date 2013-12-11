@@ -183,7 +183,7 @@ range不包含end元素。
 邻居块函数，为每个细胞创建一个3*3的邻居。
 (defn cell-block
     "Creates a sequences of 3x3 windows from a triple of 3 sequences."
-    [[left mid right]]
+    [[left mid right]]   ;将参数（行组，含有3行）解构成三部分，left，mid，right都必须是序列。
     (window (map vector
                  (or left (repeat nil)) mid (or right (repeat nil)))))
 
@@ -197,7 +197,7 @@ range不包含end元素。
 (defn window
     "Returns a lazy sequence of 3-item windows centered around each item of coll, padded as necessary with pad or nil."
     (   [coll] (window nil coll))
-    (   [pad coll]      ;coll是一个3元素的向量，它的元素也是序列。
+    (   [pad coll]      
         (partition 3 1 (concat [pad] coll [pad]))))    ;先在coll前后各添加[pad]元素（注意[]，所以不是添加pad里面的元素）。
 
 注，注意，这里整个向量作为元素（而不是用向量的元素）用来填充：
@@ -206,7 +206,7 @@ range不包含end元素。
 ;       (4 5 6) (5 6 7) (6 7 8) 
 ;       (7 8 9) (8 9 10) (9 10 [\a \b]))
 
-(window [\a \b] [[1 2 3] [4 5 6]  [7 8 9 10] [11 12 13 14 15] [16 17] ])
+(window [\a \b] [  [1 2 3] [4 5 6]  [7 8 9 10] [11 12 13 14 15] [16 17]  ])
 ;=( ([\a \b] [1 2 3] [4 5 6]) 
 ;   ([1 2 3] [4 5 6] [7 8 9 10]) 
 ;   ([4 5 6] [7 8 9 10] [11 12 13 14 15]) 
@@ -214,11 +214,11 @@ range不包含end元素。
 ;   ([11 12 13 14 15] [16 17] [\a \b])  )
 
 --
-？邻居块函数，将二维数组切成一系列的邻居块。
+邻居块函数，将行组（含有3行）切成一系列的邻居块。
 
 (defn cell-block
     "Creates a sequences of 3x3 windows from a triple of 3 sequences."
-    [[left mid right]]  ;left，mid，right都是序列。
+    [[left mid right]]  ;将参数（行组，含有3行）解构成三部分，left，mid，right都必须是序列。
     (window (map vector left mid right)))   ;将left，mid，right都转成向量。
 
 示例：
@@ -256,10 +256,12 @@ range不包含end元素。
                3 :on
                nil)))
 
+--
 (defn- step-row
     "Yields the next state of the center row."
     [rows-triple]
     (vec (map liveness (cell-block rows-triple))))
+;cell-block将行组（行组含有3行）切成一系列邻居块（3*3），然后计算每个邻居块中心点的下一轮状态。
 
 ----
 繁衍函数，得到下一代细胞图，不再依赖下标。
@@ -268,6 +270,7 @@ range不包含end元素。
     "Yields the next state of the board."
     [board]
     (vec (map step-row (window (repeat nil) board))))
+;window函数先给board两边各添加一列nil，然后切成一系列行组，每个行组3行。
 
 检验新的函数是否和旧的函数元算结果相同。
 (= (nth (iterate indexed-step glider) 8)
