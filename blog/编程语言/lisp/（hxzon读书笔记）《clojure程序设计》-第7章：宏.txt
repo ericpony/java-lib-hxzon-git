@@ -1,7 +1,8 @@
+（hxzon读书笔记）《clojure程序设计》第7章：宏
+
+
 Programming Clojure学习笔记——宏
-
 http://blog.csdn.net/zh2qiang/article/details/7234538
-
 ========
 hxzon学习笔记：
 

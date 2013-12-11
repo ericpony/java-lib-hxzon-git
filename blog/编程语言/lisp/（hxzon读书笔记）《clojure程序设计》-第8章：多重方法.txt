@@ -1,5 +1,6 @@
-Programming Clojure学习笔记——多重方法
+（hxzon读书笔记）《clojure程序设计》第8章：多重方法
 
+Programming Clojure学习笔记——多重方法
 http://blog.csdn.net/zh2qiang/article/details/7303638
 
 =========

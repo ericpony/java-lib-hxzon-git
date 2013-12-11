@@ -1,0 +1,247 @@
+（hxzon翻译）-clojure-io相关的函数
+
+by hxzon
+========
+命名空间：clojure.java.io
+http://clojure.github.io/clojure/clojure.java.io-api.html
+
+---------
+Protocols
+-----
+Coercions
+as-file，as-url，将参数转成相应对象。
+-----
+IOFactory
+make-input-stream，make-output-stream，make-reader，make-writer，创建相应对象。
+---------
+Vars and Functions
+
+as-relative-path，将参数转成表示“相对路径”的字符串。
+file，返回file对象。
+input-stream，output-stream，reader，writer，将参数转成相应对象。
+
+delete-file
+copy
+make-parents
+resource
+
+
+========
+一，Protocols
+协议。
+
+-------------
+Coercions
+Protocol
+Coerce between various 'resource-namish' things.
+Known implementations: java.io.File, java.lang.String, java.net.URI, java.net.URL, nil
+
+----
+as-file
+function
+Usage: (as-file x)
+
+Coerce argument to a file.
+将参数转成file对象。
+
+----
+as-url
+function
+Usage: (as-url x)
+
+Coerce argument to a URL.
+将参数转成URL对象。
+
+------------
+IOFactory
+Protocol
+
+Factory functions that create ready-to-use, buffered versions of the various Java I/O stream types, 
+on top of anything that can be unequivocally converted to the requested kind of stream.
+工厂函数，用来创建各种可用的、缓存的java io流。
+
+Common options include
+
+  :append    true to open stream in append mode
+  :encoding  string name of encoding to use, e.g. "UTF-8".
+
+Callers should generally prefer the higher level API provided by
+reader, writer, input-stream, and output-stream.
+
+Known implementations: 
+array-of-bytes, array-of-characters, java.io.BufferedInputStream, java.io.BufferedOutputStream, 
+java.io.BufferedReader, java.io.BufferedWriter, java.io.File, 
+java.io.InputStream, java.io.OutputStream, java.io.Reader, java.io.Writer, 
+java.lang.String, java.net.Socket, java.net.URI, java.net.URL, Object
+
+----
+make-input-stream
+function
+Usage: (make-input-stream x opts)
+
+Creates a BufferedInputStream. See also IOFactory docs.
+
+----
+make-output-stream
+function
+Usage: (make-output-stream x opts)
+
+Creates a BufferedOutputStream. See also IOFactory docs.
+
+----
+make-reader
+function
+Usage: (make-reader x opts)
+
+Creates a BufferedReader. See also IOFactory docs.
+
+----
+make-writer
+function
+Usage: (make-writer x opts)
+
+Creates a BufferedWriter. See also IOFactory docs.
+
+==========
+Public Variables and Functions
+二，公开变量和函数。
+
+----
+as-relative-path
+function
+Usage: (as-relative-path x)
+
+Take an as-file-able thing and return a string if it is a relative path, else IllegalArgumentException.
+转成表示相对路径的字符串。
+
+copy
+function
+Usage: (copy input output & opts)
+
+Copies input to output.  
+Returns nil or throws IOException.
+Input may be an InputStream, Reader, File, byte[], or String.
+Output may be an OutputStream, Writer, or File.
+将输入流复制到输出流。
+返回nil或者抛出io异常。
+
+Options are key/value pairs and may be one of
+
+  :buffer-size  buffer size to use, default is 1024.
+  :encoding     encoding to use if converting between
+                byte and char streams.   
+
+Does not close any streams except those it opens itself (on a File).
+除了copy函数自己打开的流（当参数为file对象），不关闭任何流。
+
+----
+delete-file
+function
+Usage: (delete-file f & [silently])
+
+Delete file f. Raise an exception if it fails unless silently is true.
+删除文件。失败时抛出异常，除非设置为静默。
+
+----
+file
+function
+Usage: (file arg)
+       (file parent child)
+       (file parent child & more)
+
+Returns a java.io.File, passing each arg to as-file.  
+Multiple-arg versions treat the first argument as parent 
+and subsequent args as children relative to the parent.
+返回File对象，内部在每个参数上调用as-file方法。
+
+----
+input-stream
+function
+Usage: (input-stream x & opts)
+
+Attempts to coerce its argument into an open java.io.InputStream.
+Default implementations always return a java.io.BufferedInputStream.
+将参数转为一个InputStream对象，默认是一个BufferedInputStream对象。
+
+Default implementations are defined for OutputStream, File, URI, URL,
+Socket, byte array, and String arguments.
+
+If the argument is a String, it tries to resolve it first as a URI, 
+then as a local file name.  
+URIs with a 'file' protocol are converted to local file names.
+如果参数是一个字符串，先视为uri，失败后视为本地文件名。
+如果uri以file开头，也视为本地文件名。
+
+Should be used inside with-open to ensure the InputStream is properly closed.
+需要在with-open宏中使用，以确保关闭输入流。
+
+----
+make-parents
+function
+Usage: (make-parents f & more)
+
+Given the same arg(s) as for file, creates all parent directories of the file they represent.
+将参数视为file，为这些file创建所有父文件夹。
+
+----
+output-stream
+function
+Usage: (output-stream x & opts)
+
+Attempts to coerce its argument into an open java.io.OutputStream.
+Default implementations always return a java.io.BufferedOutputStream.
+将参数转为OutputStream对象，默认是一个BufferedOutputStream对象。
+
+Default implementations are defined for OutputStream, File, URI, URL,
+Socket, and String arguments.
+
+If the argument is a String, it tries to resolve it first as a URI, 
+then as a local file name.  
+URIs with a 'file' protocol are converted to local file names.
+
+Should be used inside with-open to ensure the OutputStream is properly closed.
+
+----
+reader
+function
+Usage: (reader x & opts)
+
+Attempts to coerce its argument into an open java.io.Reader.
+Default implementations always return a java.io.BufferedReader.
+
+Default implementations are provided for Reader, BufferedReader,
+InputStream, File, URI, URL, Socket, byte arrays, character arrays,
+and String.
+
+If argument is a String, it tries to resolve it first as a URI, 
+then as a local file name.  
+URIs with a 'file' protocol are converted to local file names.
+
+Should be used inside with-open to ensure the Reader is properly closed.
+
+----
+resource
+function
+Usage: (resource n)
+       (resource n loader)
+
+Returns the URL for a named resource. 
+Use the context class loader if no loader is specified.
+返回一个url，如果没有指定加载器的话，使用当前上下文的类加载器。
+
+----
+writer
+function
+Usage: (writer x & opts)
+
+Attempts to coerce its argument into an open java.io.Writer.
+Default implementations always return a java.io.BufferedWriter.
+
+Default implementations are provided for Writer, BufferedWriter,
+OutputStream, File, URI, URL, Socket, and String.
+
+If the argument is a String, it tries to resolve it first as a URI, 
+then as a local file name.  
+URIs with a 'file' protocol are converted to local file names.
+
+Should be used inside with-open to ensure the Writer is properly closed.

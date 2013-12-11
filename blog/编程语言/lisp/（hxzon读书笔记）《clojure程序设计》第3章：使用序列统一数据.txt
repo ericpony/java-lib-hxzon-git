@@ -1,4 +1,4 @@
-（hxzon学习笔记）clojure-使用序列统一数据
+（hxzon读书笔记）《clojure程序设计》第3章：使用序列统一数据
 
 修订by hxzon。
 
