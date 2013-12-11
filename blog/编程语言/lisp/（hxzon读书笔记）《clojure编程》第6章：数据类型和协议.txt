@@ -1,0 +1,381 @@
+（hxzon读书笔记）《clojure编程》第6章：数据类型和协议
+
+by hxzon
+
+摘要：
+1，动态表达力问题。
+2，协议。
+3，定义新类型：defrecord和deftype。
+4，记录类型。
+5，普通类型。
+6，实现协议。
+
+========
+1，动态表达力问题
+
+编程中，某些对象不是你能控制的，需要使用一个适配器或者代理。
+如果使用的语言足够动态，允许猴子补丁，我们就可以在运行时让它实现你的接口。
+这里，我们问题的根源被命名为“表达力问题”：
+
+表达力问题是对于一个旧问题的新名字。
+我们的目标是根据情况定义数据类型，也就是说，我们可以根据情况往数据类型里面添加新函数，
+而不用重新编译现有代码，而且保持了静态类型安全性（比如说不用进行类型转换）。
+——Philip Wadler, http://www.daimi.au.dk/~madst/tool/papers/expression.txt
+
+在业界有一些争论：动态语言里面的表达力问题还是不是Philip Wadler所指出的那个问题。
+我们把这个问题叫做“动态表达力问题”。
+
+动态表达力问题是一个旧问题的新名字。
+我们的目标是让一个新的类型来实现已有的接口；
+让一个已有的类型实现一个新的接口，而不用重新编译现有代码。
+
+这个问题的前半部分，任何面向对象的语言都提供了这个能力。
+这个问题的后半部分，很少有语言尝试解决。
+
+2，协议
+
+clojure里面接口的对应物我们成为“协议”，而“接口”这个词特指java接口。
+
+一个协议由一个或多个方法组成，每个方法可以有多个方法体。
+所有方法都至少有一个参数，这个参数相当于java里面的this。
+
+协议里面的每个方法的第一个参数是特殊的，根据这个参数来决定使用这个协议的哪个实现。
+因此协议提供的是基于单个参数类型的函数分派，这是一种很受限的多态分派方式，但这种方式是被虚拟机优化过的。
+
+(defprotocol ProtocolXX
+	"doc..."
+	(methodXX [this arg1 arg2] "doc...")
+	(methodYY [x] [x arg] "doc..."))
+
+协议的命名使用驼峰风格，因为它们最终会被编译成jvm的接口和类。
+从用户的角度看，协议的方法就是函数。
+但是设计协议时应该是面向协议的实现者，而不是面向最终使用者的。
+
+虽然协议的方法是函数，但是不能对协议方法的参数使用解构，
+也不能使用剩余参数，因为jvm接口不支持剩余参数。
+
+对一个协议进行扩展有如下方法：
+-1，extend-protocol
+-2，extend-type
+-3，extend
+-4，内联实现
+
+不需要实现协议定义的所有方法，如果调用到那些没有实现的方法，会抛出异常。
+
+----
+extend-protocol把一个协议扩展到多个类型，
+extend-type把多个协议扩展到一个类型。
+
+(extend-type TypeAA
+	ProtocolXX
+	(methodXX1 [this x] (...))
+	ProtocolYY
+	(methodYY1 [this x] (...))
+	(methodYY2 [this x] (...)))
+
+(extend-protocol ProtocolAA
+	TypeXX
+	(methodAA1 [this x] (...))
+	TypeYY
+	(methodAA1 [this x] (...))
+	(methodAA2 [this x] (...)))
+
+可以把一个协议扩展到nil，使得不必再担心NullPointerException。
+
+因为这些实现函数是命名空间限定的，所以一个协议的方法不会跟另外一个协议的方法相冲突。
+
+--
+示例：矩阵协议。
+
+(defprotocol Matrix
+"Protocol for working with 2d datastructures."
+(lookup [matrix i j])
+(update [matrix i j value])
+(rows [matrix])
+(cols [matrix])
+(dims [matrix]))
+
+(extend-protocol Matrix
+clojure.lang.IPersistentVector
+(lookup [vov i j]
+(get-in vov [i j]))
+(update [vov i j value]
+(assoc-in vov [i j] value))
+(rows [vov]
+(seq vov))
+(cols [vov]
+(apply map vector vov))
+(dims [vov]
+[(count vov) (count (first vov))]))
+
+(extend-protocol Matrix
+nil
+(lookup [x i j])
+(update [x i j value])
+(rows [x] [])
+(cols [x] [])
+(dims [x] [0 0]))
+(lookup nil 5 5)
+;= nil
+(dims nil)
+;= [0 0]
+
+;扩展到java数组
+(extend-protocol Matrix
+(Class/forName "[[D") 
+(lookup [matrix i j]
+(aget matrix i j))
+(update [matrix i j value] 
+(let [clone (aclone matrix)]
+(aset clone i
+(doto (aclone (aget clone i))
+(aset j value)))
+clone))
+(rows [matrix]
+(map vec matrix))
+(cols [matrix]
+(apply map vector matrix))
+(dims [matrix]
+(let [rs (count matrix)]
+(if (zero? rs)
+[0 0]
+[rs (count (aget matrix 0))]))))
+
+(def matrix (make-array Double/TYPE 2 3))
+;= #'user/matrix
+(rows matrix)
+;= ([0.0 0.0 0.0]
+;= [0.0 0.0 0.0])
+(rows (update matrix 1 1 3.4))
+;= ([0.0 0.0 0.0]
+;= [0.0 3.4 0.0])
+(lookup (update matrix 1 1 3.4) 1 1)
+;= 3.4
+(cols (update matrix 1 1 3.4))
+;= ([0.0 0.0]
+;= [0.0 3.4]
+;= [0.0 0.0])
+(dims matrix)
+;= [2 3]
+
+===========
+3，定义新类型：deftype，defrecord
+
+记录类型：(defrecord Point [x y])
+普通类型：(deftype Point [x y])
+
+共同点：
+-1，都会定义出一个新的java类，以public和final修饰x和y两个字段。
+-2，直接调用构造函数创建新实例：(Point. 3 4)。
+-3，访问和更新这些字段的值，比map的操作要快很多。可以使用java互操作语法。
+
+-4，定义的每个字段都是Object类型，
+可以通过提示类型定义成原始类型。
+如果提示类型为非原始类型，则这个字段仍然为Object类型。
+
+-5，可以通过getBasis获得所有字段的集合。
+(defrecord NamedPoint [^String name ^long x ^long y])
+
+(NamedPoint/getBasis)
+;= [name x y]
+
+(map meta (NamedPoint/getBasis))
+;= ({:tag String} {:tag long} {:tag long})
+
+--
+不同点：
+记录类型是设计用来表示应用级别的数据的，
+而deftype则是设计用来表示比较底层的一些类型的，例如新的数据结构。
+
+记录类型提供了与clojure以及java互操作的一些默认行为，
+而deftype则提供了一些对底层操作进行优化的能力。
+所以大多数时候用的是记录类型，而很少用deftype。
+
+----
+使用defrecord或者deftype定义了一个新类型，这个定义好的类型是被定义在所在命名空间对应的java包里面。
+它会被默认引入所定义的命名空间，所以无需限定名。
+但如果切换到另外一个命名空间，即使use或require了定义它的命名空间，
+还是需要显示地import这个类，因为它是宿主语言的类，不是var。
+
+========
+4，记录类型
+
+记录类型其实是由deftype定义的类型的一种特例，添加了一些额外特性。
+
+-1，值语义，记录类型是不可变的，记录自动提供正确而一致的equals和hashCode实现。
+-2，实现了关系型数据结构的接口。可以通过关键字来访问字段。
+当关键字放在函数位置上时，编译器会对这个调用进行优化。
+记录类型也实现了java.util.Map接口。
+
+可以给记录类型添加新的字段。
+(assoc (Point. 3 4) :z 5) 
+;= #user.Point{:x 3, :y 4, :z 5}
+
+可以从记录类型实例去掉一个预定义的字段，但返回的就不再是记录类型，而被降级成普通map。
+
+(let [p (assoc (Point. 3 4) :z 5)] 
+(dissoc p :x))
+;= {:y 4, :z 5}
+
+如果去掉的是额外添加的字段，则返回的仍然是记录类型。
+(let [p (assoc (Point. 3 4) :z 5)] 
+(dissoc p :z))
+;= #user.Point{:x 3, :y 4}
+
+注意，这些运行时额外添加的字段是保存在一个单独的hashmap里，它们并没有真的添加到底层那个java类上。
+
+-3，支持元数据。
+
+-4，支持读者形式。
+记录字面量。
+#user.Point{:x 3, :y 4, :z 5}
+
+(pr-str (assoc (Point. 3 4) :z [:a :b]))
+;= "#user.Point{:x 3, :y 4, :z [:a :b]}"
+
+(= (read-string *1)
+(assoc (Point. 3 4) :z [:a :b]))
+;= true
+
+-5，提供一个额外的方便的构造函数，使得可以在创建实例时添加元数据和额外字段。
+
+(Point. 3 4 {:foo :bar} {:z 5})
+;= #user.Point{:x 3, :y 4, :z 5}
+(meta *1)
+;= {:foo :bar}
+
+等价于（但是前者更高效）：
+(-> (Point. 3 4)
+(with-meta {:foo :bar})
+(assoc :z 5))
+
+----
+构造函数和工厂函数
+
+构造函数通常不应该作为公开的api，而应该提供一些工厂函数。
+因为，
+-1，工厂函数可能更适合调用者使用，因为deftype和defrecord生成的构造函数通常太底层，包含了一些调用者不关心的细节。
+-2，可以把工厂函数作为普通函数一样传给其它高阶函数，以对生成的记录进行处理。
+-3，可以最大化api的稳定性，即使在底层模型发生变化时。
+
+clojure的类型不允许自定义构造函数，因此构造逻辑应该都写到工厂函数里。
+
+deftype和defrecord都会隐式创建一个形如->TypeXX的工厂函数，它接受的参数跟定义类型时的字段列表一样。
+
+(->Point 3 4)
+;= #user.Point{:x 3, :y 4}
+
+记录类型还隐式生成另外一个工厂函数map->TypeXX，它接受一个map作为参数，包含要填充给新实例的信息。
+
+(map->Point {:x 3, :y 4, :z 5})
+;= #user.Point{:x 3, :y 4, :z 5}
+
+有利于和高阶函数一起使用。
+
+(apply ->Point [5 6])
+;= #user.Point{:x 5, :y 6}
+
+(map (partial apply ->Point) [[5 6] [7 8] [9 10]])
+;= (#user.Point{:x 5, :y 6}
+;= #user.Point{:x 7, :y 8}
+;= #user.Point{:x 9, :y 10})
+
+(map map->Point [{:x 1 :y 2} {:x 5 :y 6 :z 44}])
+;= (#user.Point{:x 1, :y 2}
+;= #user.Point{:x 5, :y 6, :z 44})
+
+记录类型的这个map->TypeXX还可以通过静态方法create来访问。
+
+(Point/create {:x 3, :y 4, :z 5})
+;= #user.Point{:x 3, :y 4, :z 5}
+
+很多情况下，工厂函数出现在从普通map转换到记录类型的时候。
+
+(defn point [x y]
+{:x x, :y y})
+
+----
+注：早期clojure提供defstruct,create-struct,struct-map,struct，这些都过时了。
+如果你需要一个很灵活的struct，使用map。
+如果你需要一个比较正式的模型，使用记录类型。
+
+----
+普通map vs 记录类型
+
+通常鼓励先使用map，
+当需要基于类型的多态时（由协议、记录类型、普通类型提供），
+或者需要优化字段的访问性能时，切换成记录类型。
+大多数代码不需要修改。
+
+但有一个陷阱：记录类型不是函数（而map是）。
+另一个陷阱是，普通map和记录类型永远不可能相等。
+
+
+
+=============
+5，普通类型
+
+deftype是clojure最底层的定义形式。
+defrecord只是包装了deftype功能的宏。
+
+deftype被设计来定义那种最底层的框架类型的，例如新的数据结构或者引用类型。
+这种低级别的类型提供一种特性：可修改的字段。
+
+deftype定义的类型没有实现关系型数据结构的接口，不能使用关键字来访问。
+
+可修改的字段有两种类型：volatile和非synchronized的，加上元数据^:volatile-mutable或者^:unsynchronized-mutable即可。
+
+volatile保证对于该字段的读写是原子的，并且必须以代码中指定的顺序发生。
+也就是它们不能被JIT编译器或者CPU重排序。
+所以volatile修饰的字段是多线程安全的，但是多线程之间是没有协调的，因此还是可能产生竞争条件。
+
+非synchronized字段则是一个普通java可修改字段，只有在它上面显示加一个锁，它才会线程安全。
+
+
+不可修改字段始终是public的，而可修改字段始终是private的，
+并且只能在定义类型的那个形式的那些内联方法里面使用。
+
+在类型的实现体里面我们可以通过直接引用这个可变字段来访问它。
+可修改字段在方法体内跟本地绑定看起来差不多。
+但如果使用let定义一个同名的本地绑定，它会遮住这个可修改字段。
+
+----
+示例：薛定谔的猫
+
+(deftype SchrödingerCat [^:unsynchronized-mutable state]
+clojure.lang.IDeref
+(deref [sc]
+(locking sc
+(or state
+(set! state (if (zero? (rand-int 2))
+:dead
+:alive))))))
+
+(defn schrödinger-cat
+"Creates a new Schrödinger's cat. Beware, the REPL may kill it!"
+[]
+(SchrödingerCat. nil))
+
+(def felix (schrödinger-cat))
+;= #'user/felix 
+
+@felix 
+;= :dead
+
+(schrödinger-cat)
+;= #<SchrödingerCat@3248bc64: :dead>
+
+(schrödinger-cat)
+;= #<SchrödingerCat@3248bc64: :alive>
+
+----
+使用修改字段还是引用/数据流类型？
+
+大多数情况下，一个应用的可修改性需求可以由clojure的引用类型（agent，atom，ref），
+数据流类型（future，promise，delay）来满足，
+或者可以使用java并发包里面的类。
+使用这些手段比使用可修改字段简单很多。尽可能不要去碰可修改字段。
+
+==========
+6，实现协议
+
