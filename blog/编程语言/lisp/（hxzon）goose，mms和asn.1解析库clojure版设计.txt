@@ -1,4 +1,4 @@
-goose，mms和asn.1解析库clojure版设计
+（hxzon）goose，mms和asn.1解析库clojure版设计
 
 by hxzon
 ===========

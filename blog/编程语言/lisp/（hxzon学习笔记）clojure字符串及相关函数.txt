@@ -269,6 +269,9 @@ Example:
 (clojure.string/replace "Almost Pig Latin" #"\b(\w)(\w+)\b" "$2$1ay")
 -> "lmostAay igPay atinLay"
 
+(clojure.string/replace "hello\r\n xxyy" #"[\r\n]" "")
+;= "hello xxyy"
+
 ----
 8，replace-first
 (replace-first s match replacement)

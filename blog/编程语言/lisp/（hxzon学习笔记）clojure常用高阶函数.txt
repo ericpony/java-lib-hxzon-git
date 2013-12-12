@@ -401,5 +401,11 @@ Returns a lazy seq of partitions.
 ----
 30，memoize，内存化，即缓存函数调用结果。
 
-31，
+31，replace
+function
+Usage: (replace smap coll)
 
+Given a map of replacement pairs and a vector/collection, 
+returns a vector/seq with any elements = a key in smap replaced with the corresponding val in smap.
+
+将coll集合中的元素替换成smap中该元素（键）对应的值。
