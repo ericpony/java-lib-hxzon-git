@@ -5,7 +5,9 @@ by hxzon
 
 var，def，let，binding
 
+----------
 hxzon摘要：
+
 1，定义var（def），私有var（^:private），私有函数（defn-），常量（^:const）。
 
 2，动态作用域（^:dynamic）。
@@ -13,7 +15,7 @@ binding，在每个线程上覆盖这个根绑定的值（不影响其它线程�
 
 3，前置声明declare（定义var时先不给它赋值）。
 
-4，defonce。
+4，defonce（只赋值一次）。
 
 ======
 根绑定：变量的初始值称为根绑定。
@@ -39,8 +41,19 @@ Interning：命名空间维护了每个Var对象的全局符号映射。
 clojure对一个符号进行求值，其实就是在当前命名空间寻找名字是这个符号的那个var，
 并对它解引用获取它的值。
 
+======
 3，定义var：使用def或者它的引申物。
 
+user=> (def x "just a value, nothing else." 10086)
+#'user/x
+
+user=> (doc x)
+-------------------------
+user/x
+  just a value, nothing else.
+  nil
+
+========
 4，私有var
 
 通过给var添加一个:private的元数据。
@@ -64,6 +77,13 @@ everything
 
 @#'user/everything
 ;= 42
+
+--
+user=> (def ^{:private true} v 123)
+#'user/v
+
+user=> (meta #'v)
+{:ns #<Namespace user>, :name v, :private true, :line 36, :file "NO_SOURCE_PATH"}
 
 5，私有函数
 通过defn-来定义，和defn完全一样，只是会自动加上一个:private元数据。
@@ -114,7 +134,7 @@ everything
 ----
 每个var有一个根绑定，是使用def及其变种定义var的时候赋予的值，同时也是一般情况下对它解引用得到的值。
 
-但如果把一个var定义成动态的（加上:dynamic元数据），就可以利用binding在每个线程上覆盖这个根绑定的值（不影响其它线程）。
+但如果把一个var定义成动态的（加上:dynamic元数据），就可以利用binding在当前线程上覆盖这个根绑定的值（不影响其它线程）。
 
 (def ^:dynamic *max-value* 255)
 ;= #'user/*max-value*

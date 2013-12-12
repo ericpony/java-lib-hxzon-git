@@ -1,0 +1,250 @@
+（hxzon翻译）clojure-Var和全局环境
+
+by hxzon
+http://clojure.org/vars
+http://www.blogjava.net/steven2012/archive/2012/07/31/384387.html
+=======
+目录：
+
+Vars and the Global Environment
+(set! var-symbol expr)
+Interning
+Non-interned Vars
+Related functions
+
+=======
+Vars and the Global Environment
+Var和全局环境。
+
+Clojure is a practical language that recognizes the occasional need to maintain a persistent reference to a changing value 
+and provides 4 distinct mechanisms for doing so in a controlled manner 
+- Vars, Refs, Agents and Atoms. 
+
+clojure是个很实用的语言，偶尔需要维护和改变数据的值，
+所以clojure提供了4种不同的方式来操作变量：Vars, Refs, Agents, 和Atoms。
+
+Vars provide a mechanism to refer to a mutable storage location 
+that can be dynamically rebound (to a new storage location) on a per-thread basis. 
+
+Vars机制是指向一个可改变的数据的位置，你可以为每个线程动态的绑定一个新值（指向一个新的存储位置）。
+
+Every Var can (but needn't) have a root binding, 
+which is a binding that is shared by all threads that do not have a per-thread binding.
+
+每个Var可以初始化根绑定（但不是必须），这个根绑定值在所有线程上共享。
+
+Thus, the value of a Var is the value of its per-thread binding, 
+or, if it is not bound in the thread requesting the value, the value of the root binding, if any.
+因此，线程里，如果这个Var没有线程本地绑定，将使用根绑定值。
+
+The special form def creates (and interns) a Var. 
+特殊形式def创建并池化一个Var。
+
+If the Var did not already exist and no initial value is supplied, the var is unbound:
+如果该Var不存在，且定义时没有指定初始值，则称它是“未绑定的”。
+
+user=> (def x)
+#'user/x
+
+user=> x
+java.lang.IllegalStateException: Var user/x is unbound.
+
+Supplying an initial value binds the root (even if it was already bound).
+初始化根绑定（如果已存在，就被再次绑定）。
+
+user=> (def x 1)
+#'user/x
+ 
+user=> x
+1
+
+By default Vars are static, 
+默认情况下，Var是静态的。
+
+but per-thread bindings for Vars defined with metadata marking them as dynamic 
+can be established via the macro binding and within-thread they obey a stack discipline:
+如果定义Var时附带了元数据^:dynamic，则Var是动态的。
+可以使用binding宏设置一个线程本地的绑定。
+
+user=> (def ^:dynamic x 1)
+user=> (def ^:dynamic y 1)
+user=> (+ x y)
+2
+ 
+user=> (binding [x 2 y 3]
+         (+ x y))
+5
+ 
+user=> (+ x y)
+2
+
+--------
+（补充）
+如果你想让函数编译为static的，并且指定返回值，可以看下面的例子
+(速度提升不少，关键的调用函数可以采用这种方式加速)：
+
+ (defn fib [n]   (if (<= n 1)
+
+    1
+
+    (+ (fib (dec n)) (fib (- n 2)))))
+
+#'user/fib
+
+ (defn ^:static fib2 ^long [^long n]
+
+  (if (<= n 1)
+
+    1
+
+    (+ (fib2 (dec n)) (fib2 (- n 2)))))
+
+#'user/fib2
+
+user=> (time (fib 38))
+
+"Elapsed time: 1831.113 msecs"
+
+63245986
+
+user=> (time (fib2 38))
+
+"Elapsed time: 328.715 msecs"
+
+63245986
+
+user=> (meta (var fib))
+
+{:arglists ([n]), :ns #<Namespace user>, :name fib, :line 1, :file "NO_SOURCE_PATH"}
+
+user=> (meta (var fib2))
+
+{:arglists ([n]), :ns #<Namespace user>, :name fib2, :static true, :line 4, :file "NO_SOURCE_PATH"}
+
+user=>
+
+-----------
+
+Bindings created with binding cannot be seen by any other thread.
+binding宏创建的本地绑定，其它线程不可见。
+ 
+Likewise, bindings created with binding can be assigned to, 
+which provides a means for a nested context to communicate with code before it on the call stack.
+
+
+This capability is opt-in only by setting a metadata tag :dynamic to true as in the code block above. 
+
+There are scenarios that one might wish to redefine static Vars within a context 
+and Clojure (since version 1.3) provides the functions with-redefs and with-redefs-fn for such purposes.
+
+在某些上下文如果想临时重定义一个静态Var，从clojure1.3开始，可以使用with-redefs 和 with-redefs-fn 函数。
+
+Functions defined with defn are stored in Vars, allowing for the re-definition of functions in a running program. 
+This also enables many of the possibilities of aspect- or context-oriented programming. 
+For instance, you could wrap a function with logging behavior only in certain call contexts or threads.
+
+defn定义的函数也是Var，所以可以在运行时被重新定义。
+这也为aop编程带来很多方便，你可以在某个上下文或者某个线程给一个函数添加日志等行为。
+
+=====
+(set! var-symbol expr)
+
+Assignment special form.
+
+When the first operand is a symbol, it must resolve to a global var. 
+第一个参数必须是全局Var。
+The value of the var's current thread binding is set to the value of expr. 
+当前线程绑定被设置为表达式的值。
+
+Currently, it is an error to attempt to set the root binding of a var using set!, 
+i.e. var assignments are thread-local.
+不能用set!设置Var的根绑定，否则抛出异常，
+Var的重新赋值都是线程本地的。
+
+In all cases the value of expr is returned.
+
+Note - you cannot assign to function params or local bindings. 
+Only Java fields, Vars, Refs and Agents are mutable in Clojure.
+注意，你不能重新对函数参数和本地绑定赋值。
+只有java字段，Var，Ref，Agent是可变的。
+
+Using set for Java fields is documented in Java Interop.
+
+=========
+Interning，池化。
+
+The Namespace system maintains global maps of symbols to Var objects (see Namespaces). 
+命名空间维护了每个Var对象的全局符号映射。
+
+If a def expression does not find an interned entry in the current namespace for the symbol being def-ed, 
+it creates one, otherwise it uses the existing Var. 
+使用def时，如果在当前命名空间没有找到该符号名，会创建一个，否则重用已有的符号名。
+
+This find-or-create process is called interning. 
+这个查找或者创建的过程称为“池化”。
+
+This means that, unless they have been unmap-ed, 
+Var objects are stable references and need not be looked up every time. 
+这就意味着，
+Var是一个稳定的引用，不需要每次都重新查找，除非Var被取消映射。
+（所以不要在循环中引用Var的全局变量，否则将非常慢。）
+
+It also means that namespaces constitute a global environment in which, 
+as described in Evaluation, the compiler attempts to resolve all free symbols as Vars.
+命名空间在Evaluation中构建了全局环境，编译器也把所有free symbols当做Vars来解析了。
+（通过let或者binding让全局变量取消映射来提高速度。）
+
+The var special form or the #' reader macro (see Reader) can be used to get an interned Var object instead of its current value.
+可以通过读者宏#'获得Var本身。
+
+=======
+Non-interned Vars，没有池化的Var。
+
+It is possible to create vars that are not interned by using with-local-vars. 
+可以使用with-local-vars 创建不池化的Var。
+
+These vars will not be found during free symbol resolution, 
+and their values have to be accessed manually. 
+But they can serve as useful thread-local mutable cells.
+
+这些Var在free symbol解析的时候将不会被发现，
+它们的值只能手工获取，但是它们仍可以用作当前线程的变量。
+
+----
+（补充）
+user=> (defn factorial [x]
+
+         (with-local-vars [acc 1, cnt x]
+
+           (while (> @cnt 0)
+
+             (var-set acc (* @acc @cnt))
+
+             (var-set cnt (dec @cnt)))
+
+           @acc))
+
+#'user/factorial
+
+user=> (factorial 7)
+
+5040
+
+=======
+Related functions
+
+Variants of def: 定义Var
+defn defn- definline defmacro defmethod defmulti defonce defstruct
+
+Working with interned Vars:池化Var 
+declare intern binding find-var var
+
+Working with Var objects: 
+with-local-vars var-get var-set alter-var-root var? with-redefs with-redefs-fn
+
+Var validators: Var校验器
+set-validator get-validator
+
+Common Var metadata: Var元数据
+doc find-doc test
+
