@@ -1,0 +1,90 @@
+（hxzon翻译）clojure-其它函数和宏
+
+by hxzon
+http://clojure.org/other_functions
+=======
+目录：
+
+Other Useful Functions and Macros
+
+Creating functions
+Printing
+Regex Support
+
+=====
+Other Useful Functions and Macros
+
+Boolean and comparison functions: 
+= == identical? not= not true? false? nil? 
+
+Miscellaneous: 
+identity dotimes time assert with-open 
+
+======
+Creating functions
+
+Function
+Example expression
+Return value
+
+fn
+(map (fn [x] (+ 2 x)) [1 2 3])
+(3 4 5)
+
+#() reader macro
+(map #(+ 2 %) [1 2 3])
+(3 4 5)
+
+partial
+(map (partial + 2) [1 2 3])
+(3 4 5)
+
+comp
+(map (comp - *) [2 4 6] [1 2 3])
+(-2 -8 -18)
+
+complement
+(map (complement zero?) [3 2 1 0])
+(true true true false)
+
+constantly
+(map (constantly 9) [1 2 3])
+(9 9 9)
+
+=======
+Printing
+
+Several functions are provided to print objects to the output stream that is the current value of *out*. 
+The -str versions bind *out* to a StringWriter, print to that, and return the resulting string. pr prints the object(s), 
+separated by spaces if there is more than one. prn does the same and follows it with a newline. 
+print and println call pr and prn respectively, with *print-readably* (which defaults to true) bound to nil, 
+which causes strings to print without surrounding quotes or any escape character encoding, 
+and characters to print without the leading '\', or any escape character encoding. 
+By default, pr and prn print in a way that objects can be read by the reader, 
+while print and println produce output for human consumption. 
+When *print-readably* is non-nil, the printing of metadata is toggled by *print-meta*, which defaults to nil.
+
+--
+Related functions
+Print to *out*: pr prn print println newline
+Print to string: pr-str prn-str print-str println-str with-out-str
+
+======
+Regex Support
+
+Regex patterns can be compiled at read-time via the #"pattern" reader macro, or at run time with re-pattern. Both forms produce java.util.regex.Pattern objects.
+user=> (re-seq #"[0-9]+" "abs123def345ghi567")
+("123" "345" "567")
+user=> (re-find #"([-+]?[0-9]+)/([0-9]+)" "22/7")
+["22/7" "22" "7"]
+user=> (let [[a b c] (re-matches #"([-+]?[0-9]+)/([0-9]+)" "22/7")]
+         [a b c])
+["22/7" "22" "7"]
+user=> (re-seq #"(?i)[fq].." "foo bar BAZ QUX quux")
+("foo" "QUX" "quu")
+
+--
+Related functions
+re-matcher re-find re-matches re-groups re-seq
+
+

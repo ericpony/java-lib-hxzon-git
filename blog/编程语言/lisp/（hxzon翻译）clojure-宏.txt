@@ -1,0 +1,31 @@
+（hxzon翻译）clojure-宏
+
+by hxzon
+http://clojure.org/macros
+=======
+Macros
+
+Clojure has a programmatic macro system which allows the compiler to be extended by user code. Macros can be used to define syntactic constructs which would require primitives or built-in support in other languages. Many core constructs of Clojure are not, in fact, primitives, but are normal macros.
+
+Some macros produce simple combinations of primitive forms. For example, when combines if and do:
+user=> (macroexpand '(when (pos? a) (println "positive") (/ b a)))
+(if (pos? a) (do (println "positive") (/ b a)))
+Other macros re-arrange forms in useful ways, like the -> macro, which recursively inserts each expression as the first argument of the next expression:
+user=> (-> {} (assoc :a 1) (assoc :b 2))
+{:b 2, :a 1}
+user=> (macroexpand '(-> {} (assoc :a 1) (assoc :b 2)))
+(assoc (clojure.core/-> {} (assoc :a 1)) :b 2)
+All of the following macros are documented on the API page. Many are also discussed on topic pages as noted:
+
+Creating macros: defmacro definline macroexpand-1 macroexpand
+Branching: and or when when-not when-let when-first if-not if-let cond condp
+Looping (see also Sequences): for doseq dotimes while
+Working with vars (see also Vars and Environment): ns declare defn defmacro definline defmethod defmulti defn- defonce defstruct
+Arranging code differently: .. doto ->
+Dynamic scopes (see also Vars and Environment): binding locking time with-in-str with-local-vars with-open with-out-str with-precision
+Creating lazy things (see also Sequences): lazy-cat lazy-cons delay
+Java interop macros: .. amap areduce gen-class gen-interface proxy proxy-super memfn
+Documenting code: assert comment doc
+Transactions: dosync io!
+
+A few special_forms are actually implemented as macros, primarily to provide destructuring: fn let loop
