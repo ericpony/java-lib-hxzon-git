@@ -14,16 +14,19 @@ if，if-not，if-let，
 when，when-not，when-let，
 cond，case，do，
 loop..recur。
+while（循环）。
 
 2，异常处理
 try..catch..finally，throw。
 assert。
 
 3，基于函数的流程控制
-repeatedly，iterate。
+repeatedly（重复执行函数），iterate（返回延迟序列）。
 
 4，基于序列的流程控制。
 dotimes，doseq，for。
+
+5，or，and，not。
 
 ============
 一、标准的流程控制 
@@ -296,6 +299,17 @@ Evaluates the exprs in a lexical context in
 which the symbols in the binding-forms are bound to their respective init-exprs or parts therein. 
 Acts as a recur target.
 
+----
+11，while
+macro
+Usage: (while test & body)
+
+Repeatedly executes body while test expression is true. 
+Presumes some side-effect will cause test to become false/nil. 
+Returns nil.
+当test表达式为true时不断执行body，确保test能变为false或nil。
+返回nil。
+
 ============
 二、异常处理
  
@@ -383,7 +397,7 @@ user=> (take 10 (iterate #(* % 2) 2)) ; (2 4 8 16 32 64 128 256 512 1024)
 
 ----
 1，dotimes： 
-dotimes 会执行给定的表达式一定次数, 一个本地binding会被给定值：从0到一个给定的数值。如下： 
+dotimes 会执行给定的表达式一定次数, 一个本地binding会被给定值：从0到一个给定的数值。
 
 user=> (dotimes [num 3] (println "number:" (inc num)))  
 number: 1  

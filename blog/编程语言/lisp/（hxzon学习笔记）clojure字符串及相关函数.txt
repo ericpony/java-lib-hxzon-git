@@ -2,9 +2,26 @@
 
 补充by hxzon
 
----------
-clojure-基本语法-字符串类型
-http://dead-knight.iteye.com/blog/1827681
+----------
+摘要：
+
+字符串操作：
+str string? 
+pr-str prn-str print-str println-str with-out-str
+pr prn
+
+count（字符串长度），subs（子字符串），format 。
+
+blank? capitalize escape join lower-case 
+re-quote-replacement replace replace-first 
+reverse split split-lines 
+trim trim-newline triml trimr upper-case 
+
+字符操作：
+char char-name-string char-escape-string
+
+char?
+
 =======
 一、创建
  
@@ -34,6 +51,63 @@ user=> (str nil)
 
 其它比较少用的创建函数：
 print-str、println-str、pr-str、prn-str、with-out-str 
+
+----
+print-str
+function
+Usage: (print-str & xs)
+
+print to a string, returning it.
+
+----
+println-str
+function
+Usage: (println & more)
+
+Same as print followed by (newline).
+
+----
+pr
+dynamic function
+Usage: (pr)
+       (pr x)
+       (pr x & more)
+
+Prints the object(s) to the output stream that is the current value of *out*.  
+Prints the object(s), separated by spaces if there is more than one.  
+By default, pr and prn print in a way that objects can be read by the reader.
+默认情况下，pr 和 prn 打印出对象的读者形式。
+
+----
+prn
+function
+Usage: (prn & more)
+
+Same as pr followed by (newline). 
+Observes *flush-on-newline* .
+
+----
+pr-str
+function
+Usage: (pr-str & xs)
+
+pr to a string, returning it.
+
+----
+prn-str
+function
+Usage: (prn-str & xs)
+
+prn to a string, returning it.
+
+----
+with-out-str
+macro
+Usage: (with-out-str & body)
+
+Evaluates exprs in a context in which *out* is bound to a fresh StringWriter.  
+Returns the string created by any nested printing calls.
+将“打印输出”绑定到一个StringWriter，返回这个字符串。
 
 ======
 二、string操作 
@@ -74,6 +148,26 @@ user=> (format "pad with leading zeros %07d" 5432)
 "pad with leading zeros 0005432"  
 
 ----
+printf
+function
+Usage: (printf fmt & args)
+
+Prints formatted output, as per format.
+
+-------
+----
+char-name-string
+var
+
+Returns name string for char or nil if none.
+
+----
+char-escape-string
+var
+
+Returns escape string for char or nil if none.
+
+----
 检查函数 
 字符串检查函数 (string?) 接受一个参数，如果是字符串返回true，否则返回false 。
 
@@ -95,6 +189,9 @@ true
 user=> (char? 1)  
 false  
 
+---------
+clojure-基本语法-字符串类型
+http://dead-knight.iteye.com/blog/1827681
 ========
 ========
 命名空间：clojure.string

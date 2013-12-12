@@ -129,6 +129,7 @@ user=> (into-array String ["Easier" "array" "creation"])
 aclone
 function
 Usage: (aclone array)
+
 Returns a clone of the Java array. Works on arrays of known types.
 
 
@@ -145,6 +146,19 @@ alength获取数字长度：
 (alength java-array)
 
 对多维数组处理的性能问题，见下文“Use Primitive Arrays Judiciously”部分。
+
+----
+aset-boolean， aset-byte， aset-char， aset-double， aset-float， aset-int， aset-long， aset-short 。
+
+aset-char
+function
+Usage: (aset-char array idx val)
+       (aset-char array idx idx2 & idxv)
+
+Sets the value at the index/indices. 
+Works on arrays of char. 
+Returns val.
+
 
 =======
 12，（数组循环）
