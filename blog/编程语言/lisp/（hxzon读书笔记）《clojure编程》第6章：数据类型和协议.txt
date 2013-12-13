@@ -8,7 +8,11 @@ by hxzon
 3，定义新类型：defrecord和deftype。
 4，defrecord，记录类型。
 5，deftype，普通类型。
-6，实现协议。内联实现（defrecord和deftype，reify）。重用实现（extend）。
+
+6，实现协议。
+内联实现（defrecord和deftype，reify）。
+重用实现（extend），示例：重用实现，混入。
+
 7，协议自省（extenders，extends? ，satisfies? ）。
 8，协议函数分派的边界场景。
 
@@ -395,46 +399,51 @@ volatile保证对于该字段的读写是原子的，并且必须以代码中指
 当在类型之外访问类型字段时，需要用关键字或者java互操作方法来访问。
 内联实现时，因为这些字段名在词法范围内，可以直接引用字段名字。
 
+--
+;内联实现
 (defrecord Point [x y]
-Matrix
-(lookup [pt i j]
-(when (zero? j)
-(case i
-0 x
-1 y)))
-(update [pt i j value]
-(if (zero? j)
-(condp = i
-0 (Point. value y)
-1 (Point. x value))
-pt))
-(rows [pt] [[x] [y]])
-(cols [pt] [[x y]])
-(dims [pt] [2 1]))
+    Matrix
+    (lookup [pt i j]
+        (when (zero? j)
+            (case i
+                  0 x
+                  1 y)))
+    (update [pt i j value]
+        (if (zero? j)
+            (condp = i
+                0 (Point. value y)  ;if (= i 0) (Point. value y)
+                1 (Point. x value))
+            pt))
+    (rows [pt] [[x] [y]])
+    (cols [pt] [[x y]])
+    (dims [pt] [2 1]))
 
+--
 (defrecord Point [x y])
+
 (extend-protocol Matrix
-Point
-(lookup [pt i j]
-(when (zero? j)
-(case i
-0 (:x pt)
-1 (:y pt))))
-(update [pt i j value]
-(if (zero? j)
-(condp = i
-0 (Point. value (:y pt))
-1 (Point. (:x pt) value))
-pt))
-(rows [pt]
-[[(:x pt)] [(:y pt)]])
-(cols [pt]
-[[(:x pt) (:y pt)]])
-(dims [pt] [2 1]))
+    Point
+    (lookup [pt i j]
+        (when   (zero? j)
+                (case i
+                      0 (:x pt)
+                      1 (:y pt))))
+    (update [pt i j value]
+        (if (zero? j)
+            (condp = i
+                0 (Point. value (:y pt))
+                1 (Point. (:x pt) value))
+            pt))
+    (rows [pt]
+        [[(:x pt)] [(:y pt)]])
+    (cols [pt]
+        [[(:x pt) (:y pt)]])
+    (dims [pt] [2 1]))
 
 -------
 6.1，内联实现
 
+6.1.1，
 优点：
 内联实现的性能会好些，
 内联实现时，能直接访问类型的字段；
@@ -453,23 +462,22 @@ pt))
 而用extend-type等方法，则没有这个问题，因为这个注册行为不会影响类型本身的创建，类本身没有发生变化。
 
 (defprotocol ClashWhenInlined
-(size [x]))
+    (size [x]))
 ;= ClashWhenInlined
 
 (defrecord R []
-ClashWhenInlined
-(size [x]))    ;这个方法跟java.util.Map的size方法冲突。
+    ClashWhenInlined
+    (size [x]))    ;这个方法跟java.util.Map的size方法冲突。
 ;= #<CompilerException java.lang.ClassFormatError:
-;= Duplicate method name&signature in class file user/R, 
-compiling:(NO_SOURCE_PATH:1)>
+;= Duplicate method name&signature in class file user/R, compiling:(NO_SOURCE_PATH:1)>
 
 
 (defrecord R [])
 ;= user.R
 
 (extend-type R 
-ClashWhenInlined
-(size [x]))
+    ClashWhenInlined
+    (size [x]))
 ;= nil
 
 --
@@ -478,51 +486,52 @@ ClashWhenInlined
 内联实现是静态的，所以应该在性能优化时才考虑这种方式。
 
 ----
+6.1.2，
 要实现java接口，只能用内联方式。
 Object的方法也可作为接口来实现，除此以外，任何其他类（抽象类或非抽象类），都不能内联继承。
 跟实现协议一样，不需要实现接口的所有方法。调用未实现的方法会自动抛出异常。
 内联实现无法获得所定义类型的引用。
 
 (deftype MyType [a b c]
-java.lang.Runnable
-(run [this] ...)
-Object
-(equals [this that] ...)
-(hashCode [this] ...)
-Protocol1
-(method1 [this ...] ...)
-Protocol2
-(method2 [this ...] ...)
-(method3 [this ...] ...))
+    java.lang.Runnable
+    (run [this] ...)
+    Object
+    (equals [this that] ...)
+    (hashCode [this] ...)
+    Protocol1
+    (method1 [this ...] ...)
+    Protocol2
+    (method2 [this ...] ...)
+    (method3 [this ...] ...))
 
 (deftype Point [x y]
-Matrix
-(lookup [pt i j]
-(when (zero? j)
-(case i
-0 x
-1 y)))
-(update [pt i j value]
-(if (zero? j)
-(case i
-0 (Point. value y)
-1 (Point. x value))
-pt))
-(rows [pt]
-[[x] [y]])
-(cols [pt]
-[[x y]])
-(dims [pt]
-[2 1])
-Object
-(equals [this other]
-(and (instance? (class this) other)   ;内联实现无法获得所定义类型的引用。
-(= x (.x other)) (= y (.y other))))
-(hashCode [this]
-(-> x hash (hash-combine y))))
+    Matrix
+    (lookup [pt i j]
+        (when (zero? j)
+            (case   i
+                    0 x
+                    1 y)))
+    (update [pt i j value]
+        (if (zero? j)
+            (case   i
+                    0 (Point. value y)
+                    1 (Point. x value))
+            pt))
+    (rows [pt]
+        [[x] [y]])
+    (cols [pt]
+        [[x y]])
+    (dims [pt]
+        [2 1])
+    Object
+    (equals [this other]
+        (and (instance? (class this) other)   ;内联实现无法获得所定义类型的引用。
+             (= x (.x other)) (= y (.y other))))
+    (hashCode [this]
+        (-> x hash (hash-combine y))))
 
 ----
-用reify定义匿名类型
+6.1.3，用reify定义匿名类型
 
 跟deftype和defrecord不同，reify不是一个顶级形式，它不会定义出一个有名的类型，
 它直接求值出一个匿名类型的实例，相当于java中的匿名内部类。
@@ -530,24 +539,24 @@ Object
 reify不定义任何字段。
 
 (reify
-Protocol-or-Interface-or-Object
-(method1 [this x]
-(implementation))
-Another-Protocol-or-Interface
-(method2 [this x y]
-(implementation))
-(method3 [this x]
-(implementation)))
+    Protocol-or-Interface-or-Object
+    (method1 [this x]
+        (implementation))
+    Another-Protocol-or-Interface
+    (method2 [this x y]
+        (implementation))
+    (method3 [this x]
+        (implementation)))
 
 由reify所创建的类实例创建了一个闭包，方法的实现体可以直接访问当前词法范围内的任何本地绑定。
 
 (defn listener
-"Creates an AWT/Swing `ActionListener` that delegates to the given function."
-[f]
-(reify
-java.awt.event.ActionListener
-(actionPerformed [this e]
-(f e))))
+    "Creates an AWT/Swing `ActionListener` that delegates to the given function."
+    [f]
+    (reify
+        java.awt.event.ActionListener
+        (actionPerformed [this e]
+            (f e))))
 
 reify与proxy的使用场景有重合。
 但是，
@@ -564,23 +573,23 @@ reify与proxy的使用场景有重合。
 (defrecord Point [x y])
 
 (extend Point
-Matrix
-{:lookup (fn [pt i j]
-(when (zero? j)
-(case i
-0 (:x pt)
-1 (:y pt))))
-:update (fn [pt i j value]
-(if (zero? j)
-(condp = i
-0 (Point. value (:y pt))
-1 (Point. (:x pt) value))
-pt))
-:rows (fn [pt]
-[[(:x pt)] [(:y pt)]])
-:cols (fn [pt]
-[[(:x pt) (:y pt)]])
-:dims (fn [pt] [2 1]))
+    Matrix
+    {:lookup (fn [pt i j]
+                (when (zero? j)
+                    (case i
+                        0 (:x pt)
+                        1 (:y pt))))
+     :update (fn [pt i j value]
+                (if (zero? j)
+                    (condp = i
+                        0 (Point. value (:y pt))
+                        1 (Point. (:x pt) value))
+                    pt))
+     :rows (fn [pt]
+                [[(:x pt)] [(:y pt)]])
+     :cols (fn [pt]
+                [[(:x pt) (:y pt)]])
+     :dims (fn [pt] [2 1])})
 
 extend的第3个参数是一个map，键名是方法名，值是方法实现。
 通过对这个map操作，可以实现“继承”“traits”和“混入”。
@@ -589,96 +598,103 @@ extend的第3个参数是一个map，键名是方法名，值是方法实现。
 示例，为一些方法提供默认实现。
 
 (def abstract-matrix-impl
-{:cols (fn [pt]
-(let [[h w] (dims pt)]
-(map
-(fn [x] (map #(lookup pt x y) (range 0 w)))
-(range 0 h))))
-:rows (fn [pt]
-(apply map vector (cols pt)))})
+    {:cols (fn [pt]
+                (let [[h w] (dims pt)]
+                    (map
+                        (fn [x] (map #(lookup pt x y) (range 0 w)))
+                        (range 0 h))))
+     :rows (fn [pt]
+                (apply map vector (cols pt)))})
 
 (extend Point
-Matrix
-(assoc abstract-matrix-impl
-:lookup (fn [pt i j]
-(when (zero? j)
-(case i
-0 (:x pt)
-1 (:y pt))))
-:update (fn [pt i j value]
-(if (zero? j)
-(condp = i
-0 (Point. value (:y pt))
-1 (Point. (:x pt) value))
-pt))
-:dims (fn [pt] [2 1])))
+    Matrix
+    (assoc abstract-matrix-impl ;在abstract-matrix-impl里添加新方法实现。
+        :lookup (fn [pt i j]
+                    (when (zero? j)
+                        (case i
+                            0 (:x pt)
+                            1 (:y pt))))
+        :update (fn [pt i j value]
+                    (if (zero? j)
+                        (condp = i
+                            0 (Point. value (:y pt))
+                            1 (Point. (:x pt) value))
+                        pt))
+        :dims (fn [pt] [2 1])))
 
 ----
 示例，混入。
 
 (defprotocol Measurable
-"A protocol for retrieving the dimensions of widgets."
-(width [measurable] "Returns the width in px.")
-(height [measurable] "Returns the height in px."))
+    "A protocol for retrieving the dimensions of widgets."
+    (width [measurable] "Returns the width in px.")
+    (height [measurable] "Returns the height in px."))
 
 (defrecord Button [text])
+
 (extend-type Button
-Measurable
-(width [btn]
-(* 8 (-> btn :text count)))
-(height [btn] 8))
+    Measurable
+    (width [btn]
+        (* 8 (-> btn :text count)))
+    (height [btn] 8))
+
 (def bordered
-{:width #(* 2 (:border-width %))
-:height #(* 2 (:border-height %))})
+    {:width #(* 2 (:border-width %))
+     :height #(* 2 (:border-height %))})
 
 Measurable
 ;= {:impls
-;= {user.Button
-;= {:height #<user$eval2056$fn__2057 user$eval2056$fn__2057@112f8578>,
-;= :width #<user$eval2056$fn__2059 user$eval2056$fn__2059@74b90ff7>}},
-;= :on-interface user.Measurable,
-;= :on user.Measurable,
-;= :doc "A protocol for retrieving the 2D dimensions of widgets.",
-;= :sigs
-;= {:height
-;= {:doc "Returns the height in px.",
-;= :arglists ([measurable]),
-;= :name height},
-;= :width
-;= {:doc "Returns the width in px.",
-;= :arglists ([measurable]),
-;= :name width}},
-;= :var #'user/Measurable,
-;= :method-map {:width :width, :height :height},
-;= :method-builders
-;= {#'user/height #<user$eval2012$fn__2013 user$eval2012$fn__2013@27aa7aac>,
-;= #'user/width #<user$eval2012$fn__2024 user$eval2012$fn__2024@4848268a>}}
+;=  {user.Button
+;=      {:height #<user$eval2056$fn__2057 user$eval2056$fn__2057@112f8578>,
+;=  :width #<user$eval2056$fn__2059 user$eval2056$fn__2059@74b90ff7>}},
+;=  :on-interface user.Measurable,
+;=  :on user.Measurable,
+;=  :doc "A protocol for retrieving the 2D dimensions of widgets.",
+;=  :sigs
+;=  {   :height
+;=      {   :doc "Returns the height in px.",
+;=          :arglists ([measurable]),
+;=          :name height},
+;=      :width
+;=      {   :doc "Returns the width in px.",
+;=          :arglists ([measurable]),
+;=          :name width}},
+;=  :var #'user/Measurable,
+;=  :method-map {:width :width, :height :height},
+;=  :method-builders
+;=  {   #'user/height #<user$eval2012$fn__2013 user$eval2012$fn__2013@27aa7aac>,
+;=      #'user/width #<user$eval2012$fn__2024 user$eval2012$fn__2024@4848268a>}}
+
 
 ;获得Button类对于Measurable协议的实现map。
 (get-in Measurable [:impls Button])
 ;= {:height #<user$eval1251$fn__1252 user$eval1251$fn__1252@744589eb>,
 ;= :width #<user$eval1251$fn__1254 user$eval1251$fn__1254@40735f45>}
 
+--
 (defn combine
-"Takes two functions f and g and returns a fn that takes a variable number
-of args, applies them to f and g and then returns the result of
-(op rf rg) where rf and rg are the results of the calls to f and g."
-[op f g]
-(fn [& args]
-(op (apply f args) (apply g args))))
+    "Takes two functions f and g and returns a fn that takes a variable number
+    of args, applies them to f and g and then returns the result of
+    (op rf rg) where rf and rg are the results of the calls to f and g."
+    [op f g]
+    (fn [& args]
+        (op (apply f args) (apply g args))))
 
 (defrecord BorderedButton [text border-width border-height])
+
+;？
 (extend BorderedButton
-Measurable
-(merge-with (partial combine +)
-(get-in Measurable [:impls Button])
-bordered))
+    Measurable
+    (merge-with (partial combine +)
+        (get-in Measurable [:impls Button])
+        bordered))
 
 (let [btn (Button. "Hello World")]
-[(width btn) (height btn)])
+     [(width btn) (height btn)])
 ;= [88 8]
+
 (let [bbtn (BorderedButton. "Hello World" 6 4)]
-[(width bbtn) (height bbtn)])
+     [(width bbtn) (height bbtn)])
 ;= [100 16]
 
 ----
@@ -687,16 +703,19 @@ bordered))
 ============
 7，协议自省
 
+--
 extenders，返回实现了某个协议的所有类。
 
 (extenders Measurable)
 ;= (user.BorderedButton user.Button)
 
+--
 extends? ，判断一个类型是否扩展了某个协议。
 
 (extends? Measurable Button)
 ;= true
 
+--
 satisfies? ，相当于java中的instance? ，测试某个实例是否扩展了某个协议。
 
 (satisfies? Measurable (Button. "hello"))
@@ -713,17 +732,18 @@ satisfies? ，相当于java中的instance? ，测试某个实例是否扩展了�
 因为协议的方法产生的是命名空间限定的函数，所以两个协议的函数永远不会相互冲突。
 
 -1，如果一个类型对于一个协议有两个不同的实现，后一个实现将覆盖前一个实现。
+
 -2，如果扩展协议到类继承链上的两个类，始终选择继承层级较低的那个实现。
 
 (defprotocol P
-(a [x]))
+    (a [x]))
 ;= P
 
 (extend-protocol P
-java.util.Collection
-(a [x] :collection!)
-java.util.List
-(a [x] :list!))
+    java.util.Collection
+    (a [x] :collection!)
+    java.util.List
+    (a [x] :list!))
 ;= nil
 
 (a [])
@@ -732,14 +752,14 @@ java.util.List
 -3，如果扩展一个协议的两种类型本身没有任何继承关系，将随机选择一个实现。
 
 (defprotocol P
-(a [x]))
+    (a [x]))
 
 (extend-protocol P
-java.util.Map
-(a [x] :map!)
-java.io.Serializable
-(a [x] :serializable!))
+    java.util.Map
+    (a [x] :map!)
+    java.io.Serializable
+    (a [x] :serializable!))
 
 (a {})
-;= :serializable!
+;= :serializable! ;但这个结果不是固定的，重启后，结果也可能为:map! 。
 

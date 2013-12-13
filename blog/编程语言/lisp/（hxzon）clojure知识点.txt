@@ -27,24 +27,13 @@ zipper。
 
 易变数据结构。
 
-
-3，命名空间。
-
+=======
 4，Var（四种引用类型之一），let，binding。
 
 根绑定，本地绑定，动态绑定。
 
-5，agent，ref，atom（其它三种引用类型）。
-
-6，数据类型和协议：defprotocol， defrecord， deftype。
-
-记录字面量。
-
-7，多重方法：
-定义多重方法：(defmulti nameXX dispatch-fnYY)
-定义多重方法实现：(defmethod nameXX dispatch-val & [param1,...] (...))
-
-dispatch-fnYY对参数进行调用，返回值用来与dispatch-val匹配。
+=======
+3，命名空间。
 
 8，函数式编程。
 
@@ -54,40 +43,14 @@ dispatch-fnYY对参数进行调用，返回值用来与dispatch-val匹配。
 
 消灭语言缺陷而产生的设计模式。
 
-9，与java互操作。
-
-类型提示，原始类型，原始类型数组。
-用于java的2种特殊形式：点号和new。
-用于java的各种语法糖。
-
-java io相关的函数。
-
-10，宏。
-
-11，16种特殊形式。
-
-quote，do（代码块），def（定义var引用），let（本地绑定），fn，if，
-loop，recur，var（获得引用本身），
-.（调用java方法），new（调用java构造函数），
-try，throw，set!（状态修改），
-monitor-enter，monitor-exit（锁原语）。
-
-12，元数据。
-
-meta，获得对象的元数据（是一个映射）。
-
-with-meta是把一个值的元数据完全替换成给定的元数据。
-
-vary-meta则通过给定的函数（它的参数是当前的元数据）进行更新。
-
-13，读者形式。
-
+========
 14，流程控制。
 
 -1，标准流程控制
 if，if-not，if-let，
 when，when-not，when-let，
-cond，case，do，
+cond，cond，condp，cond-> ，cond->> ，
+case，do，
 loop..recur。
 while（循环）。
 
@@ -103,5 +66,46 @@ dotimes，doseq，for。
 
 -5，or，and，not。
 
+========
+9，与java互操作。
+
+类型提示，原始类型，原始类型数组。
+用于java的2种特殊形式：点号和new。
+用于java的各种语法糖。
+
+java io相关的函数。
+
+=======
 15，clojure标准库函数，常用库。
 
+11，16种特殊形式。
+
+quote，do（代码块），def（定义var引用），let（本地绑定），fn，if，
+loop，recur，var（获得引用本身），
+.（调用java方法），new（调用java构造函数），
+try，throw，set!（状态修改），
+monitor-enter，monitor-exit（锁原语）。
+
+10，宏。
+
+12，元数据。
+
+meta，获得对象的元数据（是一个映射）。
+
+with-meta是把一个值的元数据完全替换成给定的元数据。
+
+vary-meta则通过给定的函数（它的参数是当前的元数据）进行更新。
+
+13，读者形式。
+
+5，agent，ref，atom（其它三种引用类型）。
+
+6，数据类型和协议：defprotocol， defrecord， deftype。
+
+记录字面量。
+
+7，多重方法：
+定义多重方法：(defmulti nameXX dispatch-fnYY)
+定义多重方法实现：(defmethod nameXX dispatch-val & [param1,...] (...))
+
+dispatch-fnYY对参数进行调用，返回值用来与dispatch-val匹配。

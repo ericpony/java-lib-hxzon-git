@@ -1,6 +1,35 @@
 （hxzon学习笔记）clojure集合相关的函数
 
 by hxzon
+---------
+cons，concat，conj，
+assoc，assoc-in，get，get-in，
+find，dissoc，disj，
+last，first，rest，next，peek，pop，
+rseq，subseq，rsubreq，
+drop，take。
+
+clojure.set/union，clojure.set/select，
+clojure.set/difference，clojure.set/intersection。
+
+keys，vals，key，val。
+select-keys，update-in，merge，merge-with。
+
+list，list* ，range，repeat。
+
+vector，vec ，vector-of ，subvec。
+
+hash-map ，array-map，sorted-map，zip-map，
+sorted-map-by，bean，frequencies。
+
+set，hash-set，sorted-set，sorted-set-by。
+
+count，empty，not-empty，into，
+contains? ，distinct? ，empty? ，
+every? ，not-every? ，some，not-any? 。
+sequential? ，associative? ，sorted? ，
+counted? ，reversible? ，
+coll? ，seq? ，vector? ，list? ，map? ，set? 。
 ========
 
 向量看成以索引为键的映射。
@@ -602,7 +631,7 @@ Map形式以“{:a 1 :b 2}“符号表示。
 user=> (def my-map {:a 1 :b 2 :c 3})  
 #'user/my-map  
 
-user=> (type my-map);type查看符号的类型，这里默认采用哈希映射  
+user=> (type my-map)  ;type查看符号的类型，这里默认采用哈希映射  
 clojure.lang.PersistentHashMap  
 
 

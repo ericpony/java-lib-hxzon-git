@@ -12,7 +12,8 @@ hxzon摘要：
 1，标准流程控制
 if，if-not，if-let，
 when，when-not，when-let，
-cond，case，do，
+cond，condp，cond-> ，cond->> ，
+case，do，
 loop..recur。
 while（循环）。
 
@@ -180,7 +181,8 @@ cond 可以有任意个“判断/表达式”对，作为它的参数。
 如果没有满足第一个条件，就会尝试后面的判断表达式，以此类推。
 如果一个都没有满足，那么返回 nil 。
 除非你用一个 :else 关键字放在最后来抓住剩下的所有可能性。
-cond类似于java中的switch..case..default语句，如： 
+
+cond类似于java中的if..else if...else语句。 
 
 user=> (defn f [n] (cond (< n 0) "<0" (< n 10) "<10" :else ">=10"))  
 #'user/f  
@@ -193,6 +195,94 @@ user=> (f 2)
 
 user=> (f 10)  
 ">=10"  
+
+----
+7.1，condp
+macro
+Usage: (condp pred expr & clauses)
+
+condp类似于if(pred test-expr expr)...else if(pred test-expr expr) 。
+
+Takes a binary predicate, an expression, and a set of clauses.
+pred是一个两元谓词。
+
+Each clause can take the form of either:
+test-expr result-expr
+result-expr :>> result-fn
+Note :>> is an ordinary keyword.
+（ordinary，普通。）
+每个子句或者含有测试表达式和结果表达式两部分，
+或者含有 test-expr  :>> result-fn 三部分（这里，:>> 只是一个普通关键字）。
+
+For each clause, (pred test-expr expr) is evaluated. 
+pred以expr表达式和每个子句的测试表达式求值。
+If it returns logical true, the clause is a match. 
+如果谓词返回真，这个子句匹配。
+If a binary clause matches, the result-expr is returned, 
+如果子句是两部分，返回子句的result-expr的值。
+if a ternary clause matches, its result-fn,
+which must be a unary function, is called with the result of the predicate as its argument, 
+the result of that call being the return value of condp. 
+如果子句是三部分，
+子句的result-fn部分必须是一元函数，将谓词表达式的值作为它的参数，返回result-fn的值。
+
+A single default expression can follow the clauses,
+and its value will be returned if no clause matches. 
+在最后，可以有一个没有测试表达式的子句，作为默认值。
+If no default expression is provided and no clause matches, 
+an IllegalArgumentException is thrown.
+如果没有子句匹配，也没有提供默认值，将抛出异常。
+
+(defrecord Point [x y]
+    Matrix
+    (lookup [pt i j]
+        (when (zero? j)
+            (case i
+                  0 x
+                  1 y)))
+    (update [pt i j value]
+        (if (zero? j)
+            (condp = i
+                0 (Point. value y)
+                1 (Point. x value))
+            pt))
+    (rows [pt] [[x] [y]])
+    (cols [pt] [[x y]])
+    (dims [pt] [2 1]))
+
+(condp some [1 2 3 4]
+         #{0 6 7} :>> inc
+         #{4 5 9} :>> dec
+         #{1 2 3} :>> #(+ % 3))
+;= 3
+
+(some #{0 6 7}  [1 2 3 4] )
+;= nil
+(some #{4 5 9} [1 2 3 4])
+;= 4
+----
+7.2，cond->
+macro
+Usage: (cond-> expr & clauses)
+
+Takes an expression and a set of test/form pairs. 
+Threads expr (via ->) through each form for which the corresponding test expression is true. 
+
+Note that, unlike cond branching, 
+cond-> threading does not short circuit after the first true test expression.
+和cond不一样，cond->不是短路的。
+
+----
+7.3，cond->>
+macro
+Usage: (cond->> expr & clauses)
+
+Takes an expression and a set of test/form pairs. 
+Threads expr (via ->>) through each form for which the corresponding test expression is true.
+  
+Note that, unlike cond branching, 
+cond->> threading does not short circuit after the first true test expression.
+和cond不一样，cond->>不是短路的。
 
 ----
 8，case： 

@@ -21,33 +21,33 @@ Miscellaneous:
 identity dotimes time assert with-open 
 
 ======
-Creating functions
+Creating functions，创建方法。
 
 Function
 Example expression
 Return value
 
-fn
+fn，匿名函数。
 (map (fn [x] (+ 2 x)) [1 2 3])
 (3 4 5)
 
-#() reader macro
+#() reader macro，函数字面量。
 (map #(+ 2 %) [1 2 3])
 (3 4 5)
 
-partial
+partial，部分参数应用。
 (map (partial + 2) [1 2 3])
 (3 4 5)
 
-comp
+comp，函数组合。
 (map (comp - *) [2 4 6] [1 2 3])
 (-2 -8 -18)
 
-complement
+complement，返回值取反。
 (map (complement zero?) [3 2 1 0])
 (true true true false)
 
-constantly
+constantly，固定返回值。
 (map (constantly 9) [1 2 3])
 (9 9 9)
 
@@ -66,6 +66,7 @@ When *print-readably* is non-nil, the printing of metadata is toggled by *print-
 
 --
 Related functions
+
 Print to *out*: pr prn print println newline
 Print to string: pr-str prn-str print-str println-str with-out-str
 
@@ -85,6 +86,7 @@ user=> (re-seq #"(?i)[fq].." "foo bar BAZ QUX quux")
 
 --
 Related functions
+
 re-matcher re-find re-matches re-groups re-seq
 
 
