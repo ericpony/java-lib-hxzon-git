@@ -2,6 +2,14 @@
 
 by hxzon
 《clojure编程》第3章：集合和数据结构
+--------
+摘要：
+
+主要抽象：Collection，Sequence（序列），Associative（关系型的），Indexed（索引的），Stack（栈），Set，Sorted（有序的）。
+
+不可变性，持久性，结构共享。
+
+易变集合。
 
 ==========
 1，《3.1，Abstractions over Implementations，抽象优于实现》
@@ -52,33 +60,63 @@ Show me your data structures, and I won’t usually need your code; it’ll be o
 • Set
 • Sorted 有序的
 
-
-4，
-
-4.1，Collection
+3.1，Collection，所有数据结构都实现了此抽象。
 
 seq
-conj
+conj ，保证高效的添加元素。
 into
-count
-empty 返回一个同样具体类型的空集合。
+count ，保证高效的。（但序列除外，因为序列的长度可能是未知的。）
+empty ，返回一个同样具体类型的空集合。
 = 比较集合相等。
 
-4.2，序列
-first
-rest
-next
+3.2，序列
 
-lazy-seq
+seq。
+可序列类型：
+所有clojure集合类型。
+所有java集合类型，即java.util.* 。
+所有java map。
+所有java.lang.CharSequence，包括String。
+实现了java.lang.Iterable的任意类型。
+数组。
+nil。
+任何实现了clojure.lang.Seqable接口的类型。
+
+seq对于任何nil或者任何类型的空集合都返回nil。
+很多函数都在内部对参数调用seq。
+--
+遍历序列：first，rest，next 。
+
+lazy-seq，创建一个内容是一个表达式结果的惰性序列。
 
 empty?
 
-序列不是迭代器。
-序列不是列表。
+--
+序列不是迭代器。有状态的迭代器一旦被遍历，就不能再遍历了。
 
+序列不是列表。计算一个序列的长度是耗时的，而列表会保存它的长度。
+序列的内容可能是惰性的，可能是无限的，所以也就是不可数的。
+
+--
 延迟序列
 map,  for,  filter,  take, 和  drop 都返回延迟序列。
 file-seq, line-seq, 和 xml-seq 。
+
+next始终返回nil而不是空的序列，因为它始终会去强制实例化序列尾巴的第一个元素。
+而rest则始终简单的返回序列的尾巴。
+顺序结构始终使用next而不是rest。所以如果你在解构一个惰性序列时，始终会实例化它的尾巴的头元素。
+
+(defn random-ints
+    [limit]
+    (lazy-seq
+        (println "realizing random number") 
+        (cons (rand-int limit)
+            (random-ints limit))))
+
+(let [[x & rest] (random-ints 50)])
+; realizing random number
+; realizing random number
+;= nil
 
 doall
 dorun
@@ -91,34 +129,33 @@ reverse ，返回一个非延迟序列，元素逆序。
 
 split-with，分割序列。
 
-4.3，关系型
+3.3，关系型
 
 assoc
 dissoc
 get
 contains? ，是否含有指定的键。
 
-注意nil值。
+注意nil值（无法区分正好是nil值还是找不到），使用find，因为返回的是键值对，或者nil（找不到）。
 
-find。
+3.4，可索引的。
+下标是新的指针。
 
-4.4，可索引的。
+nth。下标越界，nth会跑出异常，而get返回nil。
 
-nth。
-
-4.5，栈。
+3.5，栈。clojure没有独立的“栈”集合。
 
 conj。
 pop。
 peek。
 
-4.6，set。
+3.6，set。
 
 disj，移除元素。
 
 subset?,  superset?,  union,  intersection,  project。
 
-4.7，有序的。
+3.7，有序的。
 
 rseq。
 subseq。
@@ -153,7 +190,6 @@ clojure如何把二元谓词变成排序器？
 (map f [2 10 12])
 ;= (2 10 8)
 
-juxt。
 
 =======
 集合本身就是函数。
@@ -211,6 +247,7 @@ juxt。
 		{:name "Sara" :location "NYC" :age 34}])
 ;= ({:age 34, :name "Sara", :location "NYC"})
 
+4，数据结构的类型
 ----
 列表。
 
@@ -315,7 +352,7 @@ group-by。
 
 ----
 ==========
-不可变和持久性
+5，不可变和持久性
 
 书： Okasaki《Purely  Functional  Data  Structures》
 
@@ -330,8 +367,11 @@ http:
 //eclipsesource.com/blogs/2009/12/13/persistent-trees-in-git-clojure-and-couchdb-data
 -structure-convergence
 
+持久性与结构共享。
+持久性图解。
+
 =======
-易变集合
+6，易变集合
 
 (def x (transient [])) 
 ;= #'user/x

@@ -6,6 +6,7 @@
 
 ;一个用数组实现的set，在保存的数据数量较少时，它将比标准的set有更好的性能，使用更少的内存。
 
+;查看接口包含了哪些方法
 (defn scaffold
   "Given an interface, returns a 'hollow' body suitable for use with `deftype`."
   [interface]
@@ -30,15 +31,18 @@
 ; (count [this])
 ; (cons [this G__5620])
 ; (empty [this])
-; (equiv [this G__5621])
+; (equiv [this G__5621])    ;equiv跟equals类似，但是它确保数字之间的值语义。
 ; clojure.lang.Seqable 
 ; (seq [this])
 ; clojure.lang.Counted
-; (count [this]) 
+; (count [this])    ;这里有两个count方法，其中一个会被遮住。
+
+;----
+;示例：用vector实现的set
 
 (declare empty-array-set)
 
-(def ^:private ^:const max-size 4)
+(def ^:private ^:const max-size 4)  ;当数据量多于4时（已不在最佳范围），自动升级为一个普通的hashset。
 
 (deftype ArraySet [^objects items
                    ^int size
@@ -71,14 +75,14 @@
   (count [this] size)
   (cons [this x]
     (cond
-      (.contains this x) this
+      (.contains this x) this       ;当数据量多于4时，自动升级为一个普通hashset。
       (== size max-size) (into #{x} this)
       :else (ArraySet. (doto (aclone items)
                          (aset size x))
               (inc size)
               -1)))
   (empty [this] empty-array-set)
-  (equiv [this that] (.equals this that))
+  (equiv [this that] (.equals this that))   ;equiv直接代理给equals，使得ArraySet的行为跟clojure.lang.APersistentSet行为一致。
   clojure.lang.Seqable
   (seq [this] (take size items))
   Object
@@ -97,11 +101,12 @@
 
 (def ^:private empty-array-set (ArraySet. (object-array max-size) 0 -1))
 
-(defn array-set
+(defn array-set     ;对用户友好的工厂函数，而不是让用户直接使用ArraySet构造函数。
   "Creates an array-backed set containing the given values."
   [& vals]
   (into empty-array-set vals))
 
+;测试
 (array-set)
 ;= #{}
 
@@ -123,12 +128,15 @@
 (= (array-set) #{})
 ;= true
 
+;故障，array-set不是函数。
 ((apply array-set "hello") \h)
 ; #<ClassCastException java.lang.ClassCastException:
 ; user.ArraySet cannot be cast to clojure.lang.IFn>
 
+;故障，打破了=的对称性，根源在于clojure set也是java.util.Set。
 (= #{} (array-set))
 ;= false
+
 
 (scaffold java.util.Set)
 ; java.util.Set
@@ -148,6 +156,7 @@
 ; (containsAll [this G__6147])
 ; (retainAll [this G__6148])
 
+;只需要读的那部分即可。
 java.util.Set
 (isEmpty [this])
 (size [this])
@@ -156,6 +165,8 @@ java.util.Set
 (iterator [this])
 (containsAll [this G__6147])
 
+;----
+;使用数组实现的set
 (deftype ArraySet [^objects items
                    ^int size
                    ^:unsynchronized-mutable ^int hashcode]
@@ -205,13 +216,13 @@ java.util.Set
   (equals [this that]
     (or
       (identical? this that)
-      (and (instance? java.util.Set that)
+      (and (instance? java.util.Set that)       ;简化为测试that是否实现java.util.Set接口。
         (= (count this) (count that))
         (every? #(contains? this %) that))))
   clojure.lang.IFn
   (invoke [this key] (.get this key))
 
-  (applyTo [this args]
+  (applyTo [this args]      ;对于通过apply来产生的调用，IFn定义了applyTo函数，它的参数是apply参数的序列。
     (when (not= 1 (count args))
       (throw (clojure.lang.ArityException. (count args) "ArraySet")))
     (this (first args)))
@@ -219,20 +230,22 @@ java.util.Set
   (isEmpty [this] (zero? size))
   (size [this] size)
   (toArray [this array]
-    (.toArray ^java.util.Collection (sequence items) array))
+    (.toArray ^java.util.Collection (sequence items) array))        ;sequence从来不会返回nil，而seq会返回nil。
   (toArray [this] (into-array (seq this)))
-  (iterator [this] (.iterator ^java.util.Collection (sequence this)))
+  (iterator [this] (.iterator ^java.util.Collection (sequence this)))   ;序列本身是java集合，直接返回序列的Iterator。
   (containsAll [this coll]
     (every? #(contains? this %) coll)))
 
 (def ^:private empty-array-set (ArraySet. (object-array max-size) 0 -1))
 
+;测试
 (= #{3 1 2 0} (array-set 0 1 2 3))
 ;= true
 
 ((apply array-set "hello") \h)
 ;= \h
 
+;性能测试
 (defn microbenchmark
   [f & {:keys [size trials] :or {size 4 trials 1e6}}]
   (let [items (repeatedly size gensym)]

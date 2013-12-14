@@ -52,7 +52,7 @@ lisp的宏强大。更高的抽象能力，更好的复用。
 
 common lisp：
 scheme：抽象能力最强大？直接编译成可执行文件时比clojure更快？
-clojure：对java友好。
+clojure：对java友好。改善lisp（不过度使用括号）。
 
 7，haskell
 
@@ -272,7 +272,7 @@ Visual Studio：windows应用程序开发。
 Qt：设计模仿swing，较舒适。
 
 使用广泛的语言，需求量大，薪酬高。
-C++规则过于复杂且缺乏一致性，可适当学习，不抠细节，避免使用。
+C++规则过于复杂且缺乏一致性，可适当学习，不抠细节，避免使用。（用go更佳？）
 
 
 2，java swing，swt，javaFx
