@@ -135,10 +135,7 @@ http://book.realworldhaskell.org/read/
 --
 Parallel and Concurrent Programming in Haskell
 
---
-Haskell函数式编程基础(第3版)
-汤普森 (Simon Thompson) (作者)，2013年7月1日，585页，中英？
-77.40(6折)，
+
 
 ==========================
 178，

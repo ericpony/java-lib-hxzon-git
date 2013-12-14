@@ -1,0 +1,112 @@
+本周算法：加锁并发算法 vs 无锁并发算法
+
+http://www.importnew.com/7774.html
+
+本文由 ImportNew - 靳禹 翻译自 dzone。如需转载本文，请先参见文章末尾处的转载要求。
+
+======
+Heinz Kabutz 在上周举办了一次成功 JCrete 研讨会，我在会上参加了对一种新的
+StampedLock（http://gee.cs.oswego.edu/dl/jsr166/dist/docs/java/util/concurrent/locks/StampedLock.html） 
+（于JSR166中引入） 进行的评审。
+StampedLock （邮戳锁） 旨在解决系统中共享资源的争用问题。
+在一个系统中，如果多个需要读写某一共享状态的程序并发访问这个共享对象时，争用问题就产生了。
+在设计上，StampedLock 试图通过一种“乐观读取”的方式来减小系统开销，
+从而提供比 ReentrantReadWriteLock （重入读写锁） 更好的性能。
+
+在评审过程中，我产生了许多想法：
+首先，这是我第一次评审Java 中最新锁机制的实现。
+其次，尽管 StampedLock 看起来是一个对 JDK 不错的补充，但是它似乎忽略了一个事实
+——无锁算法通常在多读取程序访问共享资源时能提供更好的性能。
+
+测试用例
+
+为了比较不同的实现，我首先需要一个 API 调用作为测试用例。
+这个 API 调用不能在某些算法或条件下表现出特别的性质，比如这个调用不应产生垃圾对象，同时调用的方法可以具有原子性。
+据此我构造了一个简单的测试用例
+——构建一个宇宙飞船，这个飞船可以在二维的空间上根据其当前的坐标进行移动，其坐标（横纵坐标）可以使用原子操作进行读取。
+这样，我们在一次移动操作时，至少有两个需要被读取或修改的数据。
+这种条件足以让我们系统的并发性能进行测试。
+
+
+public interface Spaceship
+{
+    int readPosition(final int[] coordinates);
+    int move(final int xDelta, final int yDelta);
+}
+
+如果不使用不可修改（immutable）的坐标对象，上面的接口定义可以更清晰一些。
+但是我希望保留它，这样该接口不会产生无效对象。
+同时，这样做还可以更明确地表明该接口会修改多个内部变量。
+此外，这个接口还可以很容易地在保持原子性的前提下扩展到三维空间。
+我实现了多种不同的并发算法来操作飞船，并用一个测试程序来执行不同的实现。
+代码和所有的执行结果可以这里找到。（https://github.com/mjpt777/rw-concurrency）
+
+测试程序（https://github.com/mjpt777/rw-concurrency/blob/master/src/PerfTest.java）将按照
+超多态分发（megamorphic dispatch，http://mechanical-sympathy.blogspot.co.uk/2012/04/invoke-interface-optimisations.html）模式
+依次运行不同的实现。
+这是为了防止 JVM 在运行时优化并发调用的接口，例如用函数实现替换函数接口、弱化锁机制或者展开循环。
+这些优化会影响我们的测评结果。
+
+每种并发算法的实现都在四种不同的线程环境下进行了测试，并表现出不同的特征：
+
+单读取、单写入
+双读取、单写入
+三读取、单写入
+双读取、双写入
+
+所有的测试均在下面环境中进行，Java 1.7.0_25 64-位、Linux 3.6.30 、双核 2.2GHz Ivy Bridge i7-3632QM CPU。
+每一种实现的测试均重复5次以确保结果的稳定性，具体的吞吐量是以5秒为周期进行测量。
+下面的结果显示了综合5次测试结果后的每秒平均吞吐量。
+为了贴近通常的 Java 部署环境，测试中没有配置线程绑定（由指定核运行）或对CPU的分工进行划分，因为对CPU的使用的划分在极大程度上会降低实现间的差异。
+
+注意： 使用其他CPU和操作系统可能导致迥异的测试结果。
+
+图1
+图2
+图3
+图4
+
+上图中的原始数据可以在这里找到。（https://github.com/mjpt777/rw-concurrency/tree/master/data）
+
+分析
+
+真正让我惊讶的是 ReentrantReadWriteLock 在测试所表现出的性能。
+对于 ReentrantReadWriteLock，最适合的应用场景应该是当系统中存在有大量的读取需求以及极少的写入需求时（如上图2、图3所示）。
+
+下面是这次测试的主要收获：
+
+StampedLock 是对现有锁机制实现的一个很好补充，当更多的读取者参与竞争时尤其如此。
+StampedLock 有着复杂的API，可能会引起对其方法或者锁定动作的误用。
+在解决两个线程间的竞争问题时，synchronized 是一个不错的通用的锁机制。
+
+如之前提到的（http://mechanical-sympathy.blogspot.co.uk/2011/11/java-lock-implementations.html），
+当线程数增加时ReentrantLock 可以作为一个不错的通用锁机制解决竞争问题。
+在考虑是否选择使用 ReentrantReadWriteLock 时，首先需要进行仔细并恰当的测试来衡量其性能。
+好比所有重要的决策，都应该根据真实数据来进行评估和决策。
+
+无锁实现在提高吞吐量方面的能力远超有锁的同步算法。
+
+=======
+总结
+
+无锁技术在有锁同步算法中的应用带来了可喜的结果。
+在读取对象时采用乐观策略无疑是对无锁算法中的技术的有效利用。
+
+在我《教授》（http://www.real-logic.co.uk/training.html）
+无锁算法以及实际的开发经历中，无锁技术不仅仅提供了更高的吞吐量——如测试中验证的那样，
+同时在响应延迟上的抖动上也要较有锁算法小很多。
+
+Results
+
+
+Figure 1.
+
+Figure 2.
+
+Figure 3.
+
+Figure 4.
+
+原文链接： dzone 翻译： ImportNew.com - 靳禹
+译文链接： http://www.importnew.com/7774.html
+
