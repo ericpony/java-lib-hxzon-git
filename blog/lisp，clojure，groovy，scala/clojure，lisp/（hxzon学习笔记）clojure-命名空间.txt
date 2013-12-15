@@ -1,0 +1,172 @@
+（hxzon学习笔记）clojure-命名空间
+
+by hxzon
+《clojure编程》第8章：clojure项目的组织与构建-项目布局
+
+==========
+clojure的命名空间，是从符号到java类名和var的动态映射。
+
+1，ns。
+
+in-ns，refer，require，use，import等命名空间函数一般是保留在repl下使用。
+在代码文件中应该使用ns，它对上述函数做了封装。
+
+(ns examples.ns
+    (:refer-clojure :exclude [next replace remove])
+    (:require (clojure  [string :as string]
+                        [set :as set])
+              [clojure.java.shell :as sh])
+    (:use (clojure zip xml))
+    (:import java.util.Date
+             java.text.SimpleDateFormat
+             (java.util.concurrent Executors
+                LinkedBlockingQueue)))
+
+等价于：
+(in-ns 'examples.ns)
+
+(clojure.core/refer 'clojure.core :exclude '[next replace remove])
+
+(require '(clojure [string :as string]
+                   [set :as set])
+         '[clojure.java.shell :as sh])
+
+(use '(clojure zip xml))
+
+(import 'java.util.Date
+        'java.text.SimpleDateFormat
+        '(java.util.concurrent Executors
+            LinkedBlockingQueue))
+
+--
+命名空间与文件：
+-1，一个命名空间一个文件。源文件在根目录下的位置必须与命名空间的节段对应。
+-2，命名空间含连字线时，文件名用下划线。
+-3，每个命名空间以完整的ns形式开始。（可让代码阅读者立刻了解依赖关系。）
+
+-4，避免命名空间循环依赖。
+
+#<Exception java.lang.Exception:
+Cyclic load dependency:
+[ /some/namespace/X ]->/some/namespace/Y->[ /some/namespace/X ]>
+
+-5，用declare启用前向引用。
+-6，避免单节段的命名空间。
+如果提前编译，一个单节段命名空间会产生一个不在java包的光杆class文件，
+在某些环境，这会阻止命名空间被载入，
+也总会阻止被java使用，因为java语言限制默认包里的class文件的使用。
+
+命名空间最终通过classpath载入。
+classpath默认情况下是空的（没有包含当前工作目录）。
+
+
+========
+2，in-ns。
+
+*ns* ，当前命名空间。
+
+使用in-ns 可以转到其他命名空间（如果不存在就创建）。
+切换到新空间后，特殊形式还是可用的，但是clojure.core里的函数（例如+）都不再直接可用了（和user空间不同）。
+
+3，refer。
+假设某个命名空间已经载入，可以用refer把这个命名空间里的映射加入到我们的命名空间。
+可以使用可选关键字，:exclude :only :rename 来指定排除、包含或重命名某些var。
+
+refer很少直接使用，而是通过use来间接使用它。
+
+(clojure.core/refer 'clojure.core
+    :exclude '(range)
+    :rename '{+ add
+    - sub
+    / div
+    * mul})
+;= nil
+
+(-> 5 (add 18) (mul 2) (sub 6))
+;= 40
+
+(range -20 20 4)
+;= #<CompilerException java.lang.RuntimeException:
+;= Unable to resolve symbol: range in this context, compiling:(NO_SOURCE_PATH:1)>
+
+
+4，require和use。
+
+require确保命名空间被载入，可为命名空间里的名字建立别名。
+
+use基于require和refer，以简洁的方式，让代码不需要限定就可以使用其他命名空间的var。
+use会把所有的参数传给refer。
+
+有效使用require、refer和use。
+总是用require，给每个命名空间提供别名。
+或者使用use，但是用别名和 :only 来明确包含。
+避免无节制地使用use，这样可以表明你的代码使用了其他命名空间的什么部分，
+也避免函数库修改，产生名字冲突。
+
+(require '[clojure.set :as set]) 
+;= nil
+
+(set/union #{1 2 3} #{4 5 6})
+;= #{1 2 3 4 5 6}
+
+(require '(clojure string [set :as set]))
+
+--
+(use 'clojure.xml)等价于：
+(require 'clojure.xml)
+(refer 'clojure.xml)
+
+--
+(use '(clojure [string :only (join) :as str]
+               [set :exclude (join)]))
+;= nil
+
+join
+;= #<string$join clojure.string$join@2259a735>
+
+intersection
+;= #<set$intersection clojure.set$intersection@2f7fc44f>
+
+str/trim
+;= #<string$trim clojure.string$trim@283aa791>
+
+5，import
+
+符号也可映射到java类和接口。
+import使得类的简短名称在当前命名空间可用。
+java.lang包的所有类默认总是被引进每个命名空间。
+
+不能把两个相同简名的类引进同一个命名空间。
+
+如果需要引入一个内部类，需要用java的内部记法，即使用美元符号。
+
+(Date.) 
+;= #<CompilerException java.lang.IllegalArgumentException:
+;= Unable to resolve classname: Date, compiling:(NO_SOURCE_PATH:1)>
+
+(java.util.Date.) 
+;= #<Date Mon Jul 18 12:31:38 EDT 2011>
+
+(import 'java.util.Date 'java.text.SimpleDateFormat) 
+;= java.text.SimpleDateFormat
+
+(.format (SimpleDateFormat. "MM/dd/yyyy") (Date.)) 
+;= "07/18/2011"
+
+--
+(import '(java.util Arrays Collections))
+;= java.util.Collections
+
+(->> (iterate inc 0)
+     (take 5)
+     into-array
+     Arrays/asList
+     Collections/max)
+;= 4
+
+--
+(import 'java.awt.List 'java.util.List)
+;= #<IllegalStateException java.lang.IllegalStateException:
+;= List already refers to: class java.awt.List in namespace: user>
+
+
