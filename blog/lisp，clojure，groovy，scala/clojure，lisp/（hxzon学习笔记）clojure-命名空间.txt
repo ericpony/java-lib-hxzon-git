@@ -2,6 +2,7 @@
 
 by hxzon
 《clojure编程》第8章：clojure项目的组织与构建-项目布局
+《clojure编程》第10章：面向REPL的编程-工具集-内省命名空间
 
 ==========
 clojure的命名空间，是从符号到java类名和var的动态映射。
@@ -169,4 +170,65 @@ java.lang包的所有类默认总是被引进每个命名空间。
 ;= #<IllegalStateException java.lang.IllegalStateException:
 ;= List already refers to: class java.awt.List in namespace: user>
 
+==========
+6，内省命名空间
+
+(apropos #"(ns-|-ns)") 会提供一个更完整的列表。
+
+
+6.1，报告不同类型的映射：
+ns-map，ns-imports，ns-refers，ns-publics，ns-aliases，ns-interns。
+
+(ns clean-namespace)
+;= nil
+
+(ns-aliases *ns*)
+;= {}
+
+(require '[clojure.set :as set])
+;= nil
+
+(ns-aliases *ns*)
+;= {set #<Namespace clojure.set>}
+
+(ns-publics *ns*)
+;= {}
+
+(def x 0)
+;= #'clean-namespace/x
+
+(ns-publics *ns*)
+;= {x #'clean-namespace/x}
+
+6.2，ns-map，删除符号到var（或引进的类）的映射。
+ns-unalias，删除命名空间别名。
+
+(ns-unalias *ns* 'set)
+;= nil
+
+(ns-aliases *ns*)
+;= {}
+
+(ns-unmap *ns* 'x)
+;= nil
+
+(ns-publics *ns*)
+;= {}
+
+6.3，remove-ns，删除一个命名空间。
+
+在丢弃的命名空间里内化的var所定义的所有代码和数据都无法访问并等待垃圾回收。
+但如果在其它命名空间还有指向这些函数、协议或数据的引用，则不会被垃圾回收。
+
+(in-ns 'user)
+;= #<Namespace user>
+
+(filter #(= 'clean-namespace (ns-name %)) (all-ns))
+;= (#<Namespace clean-namespace>)
+
+(remove-ns 'clean-namespace)
+;= #<Namespace clean-namespace>
+
+(filter #(= 'clean-namespace (ns-name %)) (all-ns))
+;= ()
 
