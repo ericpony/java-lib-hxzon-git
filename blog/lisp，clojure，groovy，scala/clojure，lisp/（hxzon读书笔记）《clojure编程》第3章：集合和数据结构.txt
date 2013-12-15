@@ -9,7 +9,7 @@ by hxzon
 
 不可变性，持久性，结构共享。
 
-易变集合。
+易变集合（只是一种性能优化手段）。
 
 ==========
 1，《3.1，Abstractions over Implementations，抽象优于实现》
@@ -271,20 +271,20 @@ defrecord。
 group-by。
 
 (defn reduce-by
-[key-fn f init coll]
-(reduce (fn [summaries x]
-(let [k (key-fn x)]
-(assoc summaries k (f (summaries k init) x))))
-{} coll))
+    [key-fn f init coll]
+    (reduce (fn [summaries x]
+                (let [k (key-fn x)]
+                    (assoc summaries k (f (summaries k init) x))))
+            {} coll))
 
 (def orders
-[{:product "Clock", :customer "Wile Coyote", :qty 6, :total 300}
-{:product "Dynamite", :customer "Wile Coyote", :qty 20, :total 5000}
-{:product "Shotgun", :customer "Elmer Fudd", :qty 2, :total 800}
-{:product "Shells", :customer "Elmer Fudd", :qty 4, :total 100}
-{:product "Hole", :customer "Wile Coyote", :qty 1, :total 1000}
-{:product "Anvil", :customer "Elmer Fudd", :qty 2, :total 300}
-{:product "Anvil", :customer "Wile Coyote", :qty 6, :total 900}])
+    [   {:product "Clock", :customer "Wile Coyote", :qty 6, :total 300}
+        {:product "Dynamite", :customer "Wile Coyote", :qty 20, :total 5000}
+        {:product "Shotgun", :customer "Elmer Fudd", :qty 2, :total 800}
+        {:product "Shells", :customer "Elmer Fudd", :qty 4, :total 100}
+        {:product "Hole", :customer "Wile Coyote", :qty 1, :total 1000}
+        {:product "Anvil", :customer "Elmer Fudd", :qty 2, :total 300}
+        {:product "Anvil", :customer "Wile Coyote", :qty 6, :total 900}])
 
 (reduce-by :customer #(+ %1 (:total %2)) 0 orders)
 ;= {"Elmer Fudd" 1200, "Wile Coyote" 7200}
@@ -298,14 +298,17 @@ group-by。
 ;= "Clock" #{"Wile Coyote"}}
 
 (fn [order]
-[(:customer order) (:product order)])
+    [(:customer order) (:product order)])
+
 #(vector (:customer %) (:product %))
+
 (fn [{:keys [customer product]}]
-[customer product])
+    [customer product])
+
 (juxt :customer :product)
 
-(reduce-by (juxt :customer :product)
-#(+ %1 (:total %2)) 0 orders)
+(reduce-by  (juxt :customer :product)
+            #(+ %1 (:total %2)) 0 orders)
 ;= {["Wile Coyote" "Anvil"] 900,
 ;= ["Elmer Fudd" "Anvil"] 300,
 ;= ["Wile Coyote" "Hole"] 1000,
@@ -315,15 +318,15 @@ group-by。
 ;= ["Wile Coyote" "Clock"] 300}
 
 (defn reduce-by-in
-[keys-fn f init coll]
-(reduce (fn [summaries x]
-(let [ks (keys-fn x)]
-(assoc-in summaries ks
-(f (get-in summaries ks init) x))))
-{} coll))
+    [keys-fn f init coll]
+    (reduce (fn [summaries x]
+                (let [ks (keys-fn x)]
+                     (assoc-in summaries ks
+                        (f (get-in summaries ks init) x))))
+            {} coll))
 
 (reduce-by-in (juxt :customer :product)
-#(+ %1 (:total %2)) 0 orders)
+              #(+ %1 (:total %2)) 0 orders)
 ;= {"Elmer Fudd" {"Anvil" 300,
 ;= "Shells" 100,
 ;= "Shotgun" 800},
@@ -333,13 +336,13 @@ group-by。
 ;= "Clock" 300}}
 
 (def flat-breakup
-{["Wile Coyote" "Anvil"] 900,
-["Elmer Fudd" "Anvil"] 300,
-["Wile Coyote" "Hole"] 1000,
-["Elmer Fudd" "Shells"] 100,
-["Elmer Fudd" "Shotgun"] 800,
-["Wile Coyote" "Dynamite"] 5000,
-["Wile Coyote" "Clock"] 300})
+    {   ["Wile Coyote" "Anvil"] 900,
+        ["Elmer Fudd" "Anvil"] 300,
+        ["Wile Coyote" "Hole"] 1000,
+        ["Elmer Fudd" "Shells"] 100,
+        ["Elmer Fudd" "Shotgun"] 800,
+        ["Wile Coyote" "Dynamite"] 5000,
+        ["Wile Coyote" "Clock"] 300})
 
 (reduce #(apply assoc-in %1 %2) {} flat-breakup)
 ;= {"Elmer Fudd" {"Shells" 100,
@@ -350,7 +353,6 @@ group-by。
 ;= "Clock" 300,
 ;= "Anvil" 900}}
 
-----
 ==========
 5，不可变和持久性
 
@@ -363,9 +365,7 @@ overview of the hash array mapped trie implementation in Clojure’s PersistentH
 See  http://blog.higher-order.net/2009/02/01/understanding-clojures-persistentvector-implementation
 for an overview of the implementation in Clojure’s PersistentVectorclass.
 
-http:
-//eclipsesource.com/blogs/2009/12/13/persistent-trees-in-git-clojure-and-couchdb-data
--structure-convergence
+http://eclipsesource.com/blogs/2009/12/13/persistent-trees-in-git-clojure-and-couchdb-data-structure-convergence
 
 持久性与结构共享。
 持久性图解。
@@ -373,10 +373,16 @@ http:
 =======
 6，易变集合
 
+持久化集合保证一个值的历史版本的完整性，而易变集合不做这个保证。
+在对一个易变集合做修改后，对于旧版本易变集合的任何引用都不能再使用了，
+这个旧版本可能是旧的，可能包含了新值，也可能已经被垃圾回收了。
+
+易变集合只是设计来对某些场景进行优化的。
+
 (def x (transient [])) 
 ;= #'user/x
 
-(def y (conj! x 1)) 
+(def y (conj! x 1))     ;conj!是conj的易变版本
 ;= #'user/y
 
 (count y) 
@@ -389,77 +395,112 @@ transient，
 conj! ，
 
 ----
+自己实现一个into函数。
+
 (defn naive-into
-[coll source]
-(reduce conj coll source))
-(= (into #{} (range 500))
-(naive-into #{} (range 500)))
+    [coll source]
+    (reduce conj coll source))
+
+(=  (into #{} (range 500))
+    (naive-into #{} (range 500)))
 ;= true
 
+和into函数对比一下性能。
 (time (do (into #{} (range 1e6)) 
-nil))
+          nil))
 ; "Elapsed time: 1756.696 msecs"
+
 (time (do (naive-into #{} (range 1e6))
-nil))
+          nil))
 ; "Elapsed time: 3394.684 msecs"
 
-(defn faster-into
-[coll source]
-(persistent! (reduce conj! (transient coll) source)))
+naive-into慢两倍。因为into在任何可以使用易变集合的地方都使用了易变集合。
+也就是说，当目标集合是vector，或者无序map，或者无序set时，使用了易变集合（它们是目前有易变集合的几种集合）。
 
+--
+使用易变集合来实现into函数。
+(defn faster-into
+      [coll source]
+      (persistent! (reduce conj! (transient coll) source)))
+
+性能已经和into相当了。
 (time (do (faster-into #{} (range 1e6))
-nil))
+          nil))
 ; "Elapsed time: 1639.156 msecs"
 
-(defn transient-capable?
-"Returns true if a transient can be obtained for the given collection.
-i.e. tests if `(transient coll)` will succeed."
-[coll]
-(instance? clojure.lang.IEditableCollection coll))
+----
+目前没有一个标准谓词可以检测一个集合是否有易变版本。
+可以检测一个集合是不是clojure.lang.IEditableCollection的实例，它标明一个集合可以产生可变版本。
 
+(defn transient-capable?
+    "Returns true if a transient can be obtained for the given collection.
+    i.e. tests if `(transient coll)` will succeed."
+    [coll]
+    (instance? clojure.lang.IEditableCollection coll))
+
+----
 (def v [1 2])
 ;= #'user/v
+
 (def tv (transient v))
 ;= #'user/tv
+
 (conj v 3)
 ;= [1 2 3]
+
+用persistent!来把一个易变集合变成持久性集合，会使得易变集合不再可用。
 (persistent! tv)
 ;= [1 2]
+
 (get tv 0)
 ;= #<IllegalAccessError java.lang.IllegalAccessError:
 ;= Transient used after persistent! call>
 
-persistent! ，
 
 (nth (transient [1 2]) 1)
 ;= 2
+
 (get (transient {:a 1 :b 2}) :a)
 ;= 1
+
+易变集合也是函数。
 ((transient {:a 1 :b 2}) :a) 
 ;= 1
+
 ((transient [1 2]) 1)
 ;= 2
+
 (find (transient {:a 1 :b 2}) :a)
 ;= #<CompilerException java.lang.ClassCastException:
 ;= clojure.lang.PersistentArrayMap$TransientArrayMap
 ;= cannot be cast to java.util.Map (NO_SOURCE_FILE:0)>
 
+易变集合不支持seq，因为一个序列可能会比它的数据源活得时间更长，而易变集合是可变的，因此不适合做序列的数据源。
+
 (let [tm (transient {})]
-(doseq [x (range 100)]
-(assoc! tm x 0)) 
-(persistent! tm))
+     (doseq [x (range 100)]
+            (assoc! tm x 0))
+     (persistent! tm))
 ;= {0 0, 1 0, 2 0, 3 0, 4 0, 5 0, 6 0, 7 0}
 
+易变集合只是一种优化手段。
+使用时控制它的范围，通常限制在单个函数（或者一个库里面几个相关的私有函数之间）。
+这个最佳实践其实在实现层上被强制了
+——易变集合在实现的时候提供了一个并发保护——易变集合只能在创建这个集合的线程内操作。
+
 (let [t (transient {})]
-@(future (get t :a)))
+     @(future (get t :a)))
 ;= #<IllegalAccessError java.lang.IllegalAccessError:
 ;= Transient used by non-owner thread>
 
 易变集合是不可组合的。
+persistent!不会遍历你创建的嵌套易变集合，
+因此对最上层调用persistent!，对于内嵌的子集合是没有效果的。
 
 (persistent! (transient [(transient {})]))
 ;= [#<TransientArrayMap clojure.lang.PersistentArrayMap$TransientArrayMap@b57b39f>]
 
+在任何情况下，因为易变集合是可修改的，所以没有值语义。
 (= (transient [1 2]) (transient [1 2]))
 ;= false
 

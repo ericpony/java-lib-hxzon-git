@@ -1,0 +1,31 @@
+（hxzon读书笔记）《clojure编程》第18章：明智地选择clojure类型定义形式
+
+by hxzon
+======
+6种形式用于定义类型：
+
+普通map，最灵活的临时类型。
+deftype，defrecord，reify，clojure的主要数据类型抽象。
+proxy和gen-class，提供全部的java和jvm交互性。
+
+https://github.com/cemerick/clojure-type-selection-flowchart
+
+“效率敏感代码”的一个例子是在热点循环里访问某些槽。在这种情况下，
+常规的映射太慢。
+使用关键字访问一个记录或deftype实例，会接近java的效率。
+使用直接字段访问，即(.field obj)用于记录或deftype实例，会与java一样快。
+
+但这只是一种优化手段。
+高效的字段访问把使用它的代码跟特定类型绑定在一起，
+经常会使通用功能的实现复杂化，并限制可组合性。
+
+reify，会扩展java类或实现接口，只需要匿名类型的实例，不需要扩展已有的基类。
+proxy，会扩展java类或实现接口，只需要匿名类型的实例，需要扩展已有的基类。
+
+普通map：不扩展java类或实现接口，不用于协议，效率不敏感。
+
+gen-class，需要扩展已有的基类；除了接口所定义的方法，还需要定义其它方法；需要定义静态方法；需要定义多个构造函数。
+
+defrecord，是对领域值建模，需要得益于hashmap的功能和语义；不需要定义可变字段。
+deftype，不是对领域值建模，不需要得益于hashmap的功能和语义；需要定义可变字段。
+
