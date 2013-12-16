@@ -1,0 +1,534 @@
+（hxzon翻译）Changes to Clojure in Version 1.5.x
+
+by hxzon
+（2013.12.16）
+https://github.com/clojure/clojure/blob/master/changes.md
+===========
+
+Changes to Clojure in Version 1.5.1
+
+fix for leak caused by ddc65a96fdb1163b
+
+=======
+Changes to Clojure in Version 1.5
+CONTENTS
+
+目录：
+ 1 Deprecated and Removed Features
+ 
+    1.1 Clojure 1.5 reducers library requires Java 6 or later
+ 
+ 2 New and Improved Features
+    2.1 Reducers
+    2.2 Reader Literals improved
+    2.3 clojure.core/set-agent-send-executor!, set-agent-send-off-executor!, and send-via
+    2.4 New threading macros
+    2.5 Column metadata captured by reader
+    2.6 gen-class improvements
+    2.7 Support added for marker protocols
+    2.8 clojure.pprint/print-table output compatible with Emacs Org mode
+    2.9 clojure.string/replace and replace-first handle special characters more predictably
+    2.10 Set and map constructor functions allow duplicates
+    2.11 More functions preserve metadata
+    2.12 New edn reader, improvements to *read-eval*
+ 3 Performance Enhancements
+ 4 Improved error messages
+ 5 Improved documentation strings
+ 6 Bug Fixes
+ 7 Binary Compatibility Notes
+
+========
+1 Deprecated and Removed Features，过时并移除的功能。
+
+1.1 Clojure 1.5 reducers library requires Java 6 or later
+
+The new reducers library (see below) requires Java 6 plus a ForkJoin library, or Java 7 or later. 
+Clojure 1.5 can still be compiled and run with Java 5. 
+The only limitations with Java 5 are that the new reducers library will not work, 
+and building Clojure requires skipping the test suite (e.g. by using the command "ant jar").
+
+新的规约库依赖于ForkJoin框架，所以需要java 6及7以上。
+
+=======
+2 New and Improved Features，新功能或改进。
+
+2.1 Reducers，规约库。
+
+Reducers provide a set of high performance functions for working with collections. 
+The actual fold/reduce algorithms are specified via the collection being reduced. 
+This allows each collection to define the most efficient way to reduce its contents.
+
+The implementation details of reducers are available at the Clojure blog 
+and therefore won't be repeated in these change notes. 
+规约库的实现细节可以在clojure博客上看到。
+
+However, as a summary:
+
+There is a new namespace: clojure.core.reducers
+新的命名空间。
+
+It contains new versions of map, filter etc based upon transforming reducing functions - reducers
+It contains a new function, fold, which is a parallel reduce+combine fold uses fork/join 
+when working with (the existing!) Clojure vectors and maps
+包含了一个新的方法，fold，工作在向量和映射时，是并行的。
+
+Your new parallel code has exactly the same shape as your existing seq-based code
+The reducers are composable
+Reducer implementations are primarily functional - no iterators
+
+The model uses regular data structures, not 'parallel collections' or other OO malarkey
+It's fast, and can become faster still
+This is work-in-progress
+
+Examples:
+
+user=> (require '[clojure.core.reducers :as r])
+user=> (reduce + (r/filter even? (r/map inc [1 1 1 2])))
+;=> 6
+
+
+;;red is a reducer awaiting a collection
+user=> (def red (comp (r/filter even?) (r/map inc)))
+user=> (reduce + (red [1 1 1 2]))
+;=> 6
+
+user=> (into #{} (r/filter even? (r/map inc [1 1 1 2])))
+;=> #{2}
+
+2.2 Reader Literals improved，字面量改进。
+
+CLJ-1034 "Conflicting data-reader mapping" should no longer be thrown where there really isn't a conflict. 
+Until this patch, having data_readers.clj on the classpath twice would cause the above exception.
+
+CLJ-927 Added *default-data-reader-fn* to clojure.core. 
+When no data reader is found for a tag and *default-data-reader-fn*is non-nil, 
+it will be called with two arguments, the tag and the value. 
+If *default-data-reader-fn* is nil (the default), an exception will be thrown for the unknown tag.
+
+2.3 clojure.core/set-agent-send-executor!, set-agent-send-off-executor!, and send-via
+
+Added two new functions:
+添加了两个新函数。
+
+clojure.core/set-agent-send-executor!
+
+Allows the user to set the java.util.concurrent.Executor used when calling clojure.core/send. 
+Defaults to a fixed thread pool of size: (numCores + 2)
+
+clojure.core/set-agent-send-off-executor!
+
+Allows the user to set the java.util.concurrent.Executor used when calling clojure.core/send-off. 
+Defaults to a cached thread pool.
+
+clojure.core/send-via
+
+Like send, and send-off, except the first argument to this function is an executor to use when sending.
+
+
+2.4 New threading macros，新的串行宏。
+
+--
+clojure.core/cond-> [expr & clauses]
+
+Takes an expression and a set of test/form pairs. 
+Threads the expression (via ->) through each form for which the corresponding test expression (not threaded) is true.
+
+Example:
+
+user=> (cond-> 1
+               true inc
+               false (* 42)
+               (= 2 2) (* 3))
+6
+
+--
+clojure.core/cond->> [expr & clauses]
+
+Takes an expression and a set of test/form pairs. 
+Threads expr (via ->>) through each form for which the corresponding test expression (not threaded) is true.
+
+Example:
+
+user=> (def d [0 1 2 3])
+#'user/d
+user=> (cond->> d
+                true (map inc)
+                (seq? d) (map dec)
+                (= (count d) 4) (reduce +)) ;; no threading in the test expr
+                                            ;; so d must be passed in explicitly
+10
+
+--
+clojure.core/as-> [expr name & forms]
+
+Binds name to expr, evaluates the first form in the lexical context of that binding, 
+then binds name to that result, repeating for each successive form
+
+Note: this form does not actually perform any threading. 
+Instead it allows the user to assign a name and lexical context to a value created by a parent threading form.
+
+Example:
+
+user=> (-> 84
+           (/ 4)
+           (as-> twenty-one          ;; uses the value from ->
+                  (* 2 twenty-one)))  ;; no threading here
+42
+
+--
+clojure.core/some-> [expr & forms]
+
+When expr is not nil, threads it into the first form (via ->), 
+and when that result is not nil, through the next etc.
+
+Example:
+
+user=> (defn die [x] (assert false))
+#'user/die
+
+user=> (-> 1 inc range next next next die)
+AssertionError Assert failed: false  user/die (NO_SOURCE_FILE:65)
+
+user=> (some-> 1 inc range next next next die)
+nil
+
+--
+clojure.core/some->> [expr & forms]
+
+When expr is not nil, threads it into the first form (via ->>), 
+and when that result is not nil, through the next etc.
+
+Same as some-> except the value is threaded as the last argument in each form.
+
+
+2.5 Column metadata captured by reader，列元数据，通过读者捕获。
+
+CLJ-960 Data read by the clojure reader is now tagged with :column in addition to :line.
+
+2.6 gen-class improvements，改进gen-class 。
+
+CLJ-745 It is now possible to expose protected final methods via :exposes-methods in gen-class. 
+This allows Clojure classes created via gen-class to access protected methods of its parent class.
+可以通过元数据 :exposes-methods 来暴露受保护的最终方法。
+
+Example:
+
+(gen-class :name clojure.test_clojure.genclass.examples.ProtectedFinalTester
+           :extends java.lang.ClassLoader
+           :main false
+           :prefix "pf-"
+           :exposes-methods {findSystemClass superFindSystemClass})
+
+--
+CLJ-948 It is now possible to annotate constructors via gen-class.
+
+Example:
+
+(gen-class :name foo.Bar
+           :extends clojure.lang.Box
+           :constructors {^{Deprecated true} [Object] [Object]}
+           :init init
+           :prefix "foo")
+
+
+2.7 Support added for marker protocols
+
+CLJ-966 defprotocol no longer requires that at least one method be given in the definition of the protocol. 
+This allows for marker protocols, whose sole reason of existence is to allow satisfies? to be true for a given type.
+协议可以不含有任何方法，这样协议可以作为一个标记。
+
+Example:
+
+user=> (defprotocol P (hi [_]))
+P
+
+user=> (defprotocol M) ; marker protocol
+M
+
+user=> (deftype T [a] M P (hi [_] "hi there"))
+user.T
+
+user=> (satisfies? P (T. 1))
+true
+
+user=> (satisfies? M (T. 1))
+true
+
+user=> (hi (T. 1))
+"hi there"
+
+user=> (defprotocol M2 "marker for 2") ; marker protocol again
+M2
+
+user=> (extend-type T M2)
+nil
+
+user=> (satisfies? M2 (T. 1))
+true
+
+
+2.8 clojure.pprint/print-table output compatible with Emacs Org mode
+
+For the convenience of those that use Emacs Org mode, 
+clojure.pprint/print-table now prints tables in the form used by that mode. 
+Emacs Org mode has features to make it easy to edit such tables, 
+and even to do spreadsheet-like calculations on their contents. 
+See the Org mode documentation on tables for details.
+
+user=> (clojure.pprint/print-table [:name :initial-impression]
+           [{:name "Rich" :initial-impression "rock star"}
+            {:name "Andy" :initial-impression "engineer"}])
+| :name | :initial-impression |
+|-------+---------------------|
+|  Rich |           rock star |
+|  Andy |            engineer |
+
+
+2.9 clojure.string/replace and replace-first handle special characters more predictably
+字符串替换函数改动。
+
+clojure.string/replace and clojure.string/replace-first are now consistent in the way that 
+they handle the replacement strings: 
+all characters in the replacement strings are treated literally, including backslash and dollar sign characters.
+替换字符串中的所有字符都当成字面量，包括反斜杠和美元符号。
+
+user=> (require '[clojure.string :as s])
+
+user=> (s/replace-first "munge.this" "." "$")
+;=> "munge$this"
+
+user=> (s/replace "/my/home/dir" #"/" (fn [s] "\\"))
+;=> "\\my\\home\\dir"
+
+There is one exception, which is described in the doc strings. 
+If you call these functions with a regex to search for and a string as the replacement, 
+then dollar sign and backslash characters in the replacement string are treated specially. 
+如果使用正则表达式的话，且使用替换字符串（而不是替换函数），
+则替换字符串的反斜杠和美元符号还是特殊符号。
+Occurrences of $1 in the replacement string are replaced with the string 
+that matched the first parenthesized subexpression of the regex, 
+occurrences of $2 are replaced with the match of the second parenthesized subexpression, etc.
+
+user=> (s/replace "x12, b4" #"([a-z]+)([0-9]+)" "$1 <- $2")
+;=> "x <- 12, b <- 4"
+
+Individual occurrences of $ or \ in the replacement string that you wish to be treated literally 
+can be escaped by prefixing them with a \. 
+If you wish your replacement string to be treated literally 
+and its contents are unknown to you at compile time 
+(or you don't wish to tarnish your constant string with lots of backslashes), 
+you can use the new function clojure.string/re-quote-replacement to do the necessary escaping of special characters for you.
+
+user=> (s/replace "x12, b4" #"([a-z]+)([0-9]+)"
+                     (s/re-quote-replacement "$1 <- $2"))
+;=> "$1 <- $2, $1 <- $2"
+
+
+2.10 Set and map constructor functions allow duplicates
+所有的set和map构造函数都允许重复元素。
+
+All of the functions that construct sets such as set and sorted-set allow duplicate elements to appear in their arguments, 
+and they are documented to treat this case as if by repeated uses of conj.
+
+Similarly, all map constructor functions such as hash-map, array-map, and sorted-map allow duplicate keys, 
+and are documented to treat this case as if by repeated uses of assoc.
+
+As before, literal sets, e.g. #{1 2 3}, do not allow duplicate elements, 
+and while elements can be expressions evaluated at run time such as #{(inc x) (dec y)}, 
+this leads to a check for duplicates at run time whenever the set needs to be constructed, 
+throwing an exception if any duplicates are found.
+
+Similarly, literal maps do not allow duplicate keys. 
+
+New to Clojure 1.5 is a performance optimization: 
+if all keys are compile time constants but one or more values are expressions requiring evaluation at run time, 
+duplicate keys are checked for once at compile time only, not each time a map is constructed at run time.
+
+CLJ-1065 Allow duplicate set elements and map keys for all set and map constructors
+
+
+2.11 More functions preserve metadata
+更多的函数会保留元数据。
+
+Most functions that take a collection and return a "modified" version of that collection 
+preserve the metadata that was on the input collection, e.g. conj, assoc, dissoc, etc.
+ 
+One notable exception was into, which would return a collection with metadata nil 
+for several common types of input collections.
+除了into函数，它会丢弃元数据。
+
+Now the functions into, select-keys, clojure.set/project, and clojure.set/rename 
+return collections with the same metadata as their input collections.
+
+
+2.12 New edn reader, improvements to *read-eval*
+
+The new clojure.edn namespace reads edn (http://edn-format.org) data, 
+and should be used for reading data from untrusted sources.
+
+Clojure's core read* functions can evaluate code, 
+and should not be used to read data from untrusted sources. 
+As of 1.5, *read-eval* supports a documented set of thread-local bindings, see the doc string for details.
+
+*read-eval*'s default can be set to false by setting a system property:
+
+-Dclojure.read.eval=false
+
+=======
+3 Performance Enhancements，性能改进。
+
+CLJ-988 Multimethod tables are now protected by a read/write lock instead of a synchronized method. 
+This should result in a performance boost for multithreaded code using multimethods.
+
+CLJ-1061 when-first now evaluates its expression only once.
+
+CLJ-1084 PersistentVector$ChunkedSeq now implements Counted interface, 
+to avoid some cases where vector elements were being counted by iterating over their elements.
+
+CLJ-867 Records with same fields and field values, but different types, now usually hash to different values.
+
+CLJ-1000 Cache hasheq() for seqs, sets, vectors, maps and queues
+
+(no ticket) array-map perf tweaks
+
+CLJ-1111 Allows loop to evaluate to primitive values
+
+
+4 Improved error messages，异常信息改进。
+
+CLJ-103 Improved if-let error message when form has a improperly defined body.
+
+CLJ-897 Don't use destructuring in defrecord/deftype arglists to get a slightly better error message 
+when forgetting to specify the fields vector
+
+CLJ-788 Add source and line members and getters to CompilerException
+
+CLJ-157 Better error messages for syntax errors w/ defn and fn
+
+CLJ-940 Passing a non-sequence to refer :only results in uninformative exception
+
+CLJ-1052 assoc now throws an exception if the last key argument is missing a value.
+
+
+5 Improved documentation strings，文档改进。
+
+CLJ-893 Document that vec will alias Java arrays
+
+CLJ-892 Clarify doc strings of sort and sort-by: they will modify Java array arguments
+
+CLJ-1019 ns-resolve doc has a typo
+
+CLJ-1038 Docstring for deliver doesn't match behavior
+
+CLJ-1055 "be come" should be "become"
+
+CLJ-917 clojure.core/definterface is not included in the API docs
+
+(no ticket) clojure.core/read, read-string, and read-eval all have more extensive documentation.
+
+========
+6 Bug Fixes，bug修复。
+
+CLJ-962 Vectors returned by subvec allow access at negative indices
+subvec返回的向量，允许使用负下标。（hxzon：从而可以访问原向量元素。）
+
+CLJ-952 bigdec does not properly convert a clojure.lang.BigInt
+
+CLJ-975 inconsistent destructuring behaviour when using nested maps
+内嵌映射结构行为不一致。
+
+CLJ-954 TAP support in clojure.test.tap Needs Updating
+
+CLJ-881 exception when cl-format is given some ~f directive/value combinations
+
+CLJ-763 Do not check for duplicates in destructuring map creation
+不检查重复元素。
+
+CLJ-667 Allow loops fully nested in catch/finally
+
+CLJ-768 cl-format bug in ~f formatting
+
+CLJ-844 NPE calling keyword on map from bean
+bean返回的map，使用关键字函数时抛出空指针异常。
+
+CLJ-934 disj! Throws exception when attempting to remove multiple items in one call
+
+CLJ-943 When load-lib fails, a namespace is still created
+
+CLJ-981 clojure.set/rename-keys deletes keys when there's a collision
+
+CLJ-961 with-redefs loses a Var's root binding if the Var is thread-bound
+
+CLJ-1032 seque leaks threads from the send-off pool
+
+CLJ-1041 reduce-kv on sorted maps should stop on seeing a Reduced value
+
+CLJ-1011 clojure.data/diff should cope with null and false values in maps
+
+CLJ-977 (int \a) returns a value, (long \a) throws an exception
+
+CLJ-964 test-clojure/rt.clj has undeclared dependency on clojure.set
+
+CLJ-923 Reading ratios prefixed by + is not working
+
+CLJ-1012 partial function should also accept 1 arg (just f)
+
+CLJ-932 contains? Should throw exception on non-keyed collections
+
+CLJ-730 Create test suite for functional fns (e.g. juxt, comp, partial, etc.)
+
+CLJ-757 Empty transient maps/sets return wrong value for .contains
+
+CLJ-828 clojure.core/bases returns a cons when passed a class and a Java array when passed an interface
+
+CLJ-1062 CLJ-940 breaks compilation of namespaces that don't have any public functions
+
+CLJ-1070 PersistentQueue's hash function does not match its equality
+
+CLJ-987 pprint doesn't flush the underlying stream
+
+CLJ-963 Support pretty printing namespace declarations under code-dispatch
+
+CLJ-902 doc macro broken for namespaces
+
+CLJ-909 Make LineNumberingPushbackReader's buffer size configurable
+
+CLJ-910 Allow for type-hinting the method receiver in memfn
+
+CLJ-1048 add test.generative to Clojure's tests
+
+CLJ-1071 ExceptionInfo does no abstraction
+
+CLJ-1085 clojure.main/repl unconditionally refers REPL utilities into *ns*
+
+(no ticket) Rich Hickey fix: syntax-quote was walking records, returning maps
+
+CLJ-1116 More REPL-friendly 'ns macro
+
+(no ticket) Rich Hickey fix: deref any j.u.c.Future
+
+CLJ-1092 New function re-quote-replacement has incorrect :added metadata
+
+CLJ-1098 Implement IKVReduce and CollFold for nil
+
+(no ticket) Rich Hickey fix: impose once semantics on fabricated closures for e.g. loops
+
+CLJ-1140 Restore {:as x} destructuring for empty lists
+
+CLJ-1150 Make some PersistentVector's and APersistentVector.SubVector's internals public
+
+(no ticket) Rich Hickey fix: use non-loading classForName
+
+CLJ-1106 Fixing set equality
+
+========
+7 Binary Compatibility Notes，二进制兼容问题。
+
+public static inner class LispReader.ReaderException(int line, Throwable cause) Constructor 
+changed to ReaderException(int line, int column, Throwable cause) 
+添加了列号。
+
+public Object clojure.lang.Agent.dispatch(IFn fn, ISeq args, boolean solo) 
+Replaced with dispatch(IFn fn, ISeq args, Executor exec) 
+参数改为Executor。
+
