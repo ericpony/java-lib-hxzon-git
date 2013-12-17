@@ -1,0 +1,521 @@
+Building a Database-Backed Clojure Web Application
+
+注释by hxzon。
+
+https://devcenter.heroku.com/articles/clojure-web-application
+Last Updated: 27 February 2013
+
+=========
+Table of Contents
+目录：
+
+Prerequisites
+Connecting to PostgreSQL with clojure.java.jdbc
+Web bindings with Compojure
+HTML templating with Hiccup
+Putting it all together
+Testing locally
+Deploy
+
+======
+This article will explore creating a database-backed Clojure web application.
+
+The app is called Shouter, a small Twitter clone that lets users enter in “shouts” 
+which are stored in a PostgreSQL database and displayed on the front page of the app. 
+You can see an example of the finished Shouter deployed to Heroku or view the finished source.
+
+数据存储在PostgreSQL。部署在Heroku。
+
+Let’s get started!
+
+Prerequisites
+
+You have read and understood the Clojure getting started article.
+You have the PostgreSQL database server installed and running locally.
+A Heroku user account. Signup is free and instant.
+
+======
+Connecting to PostgreSQL with clojure.java.jdbc
+
+Database persistence is important for many web applications, including this example app. 
+Clojure’s officially supported libraries conveniently include the clojure.java.jdbc for database persistence through the JDBC standard.
+
+To start, create a new project called shouter with Leiningen:
+
+$ lein new shouter
+
+In the shouter project, add the Clojure JDBC and PostgreSQL driver dependencies:
+
+project.clj
+
+(defproject shouter "0.0.1"
+  :description "Shouter app"
+  :url "http://github.com/abedra/shouter"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :dependencies [[org.clojure/clojure "1.4.0"]
+                 [org.clojure/java.jdbc "0.2.3"]
+                 [postgresql "9.1-901.jdbc4"]])
+
+Rather than running PostgreSQL as a system-level background daemon as some package managers do by default, 
+it’s recommended for development work that you launch postgres yourself to avoid permissions issues and improve visibility:
+这里不把PostgreSql作为后台服务，而是自己启动。
+
+$ initdb pg
+$ postgres -D pg &
+
+If these executables aren’t found, try adding /usr/lib/postgresql/*/bin to your$PATH.
+
+Then create a local PostgreSQL database for development work:
+
+$ createdb shouter
+
+Applications on Heroku are encouraged to use environment variables for configuration, and the database is no exception. 
+You may want to set this in a git-ignored file like .env 
+that you can source in your shell whenever you’re working on a given project, 
+but for now you can just export it in the shell for this session.
+
+$ export DATABASE_URL=postgresql://localhost:5432/shouter
+
+The above URL indicates that you have a local PostgreSQL database calledshouter.
+
+Boot up a REPL to start experimenting:
+
+$ lein repl
+
+The first thing we’ll try is creating a table in the database. 
+Bring in the JDBC functions:
+
+user=> (require '[clojure.java.jdbc :as sql])
+nil
+
+This resolves the clojure.java.jdbc namespace and aliases it for use as sql. 
+
+To create the table:
+创建数据库表。
+
+user=> (sql/with-connection (System/getenv "DATABASE_URL")
+         (sql/create-table :testing [:data :text]))
+(0)
+
+This creates a table named testing inside the database with a text field nameddata. 
+
+Let’s put some data into the data field:
+插入数据。
+
+user=> (sql/with-connection (System/getenv "DATABASE_URL")
+         (sql/insert-record :testing {:data "Hello World"}))
+{:data "Hello World"}
+
+Now that you have created some data, ask the database to give it back:
+查询数据。
+
+user=> (sql/with-connection (System/getenv "DATABASE_URL")
+         (sql/with-query-results results
+           ["select * from testing"]
+           (into [] results)))
+[{:data "Hello World"}]
+
+Excellent, the data is easily retrievable. 
+Notice at the end of the query calling the into function is called. 
+This takes the result set sequence (which is a lazy sequence), and puts it into a Clojure vector. 
+The final result is a vector of maps containing the data.
+
+Drop the table so it’s not hanging around for later:
+删除数据库表。
+
+user=> (sql/with-connection (System/getenv "DATABASE_URL")
+         (sql/drop-table :testing))
+(0)
+
+That’s all the database basics needed to get started. 
+For a full reference of supported functions in clojure.java.jdbc see its source.
+
+=====
+Web bindings with Compojure
+使用Compojure，路由请求。
+
+Clojure is a relatively young language. 
+That being said, a clear path in web development has emerged with Compojure. 
+This library is at the core of Shouter.
+
+Compojure is built on top of Ring, a general-purpose web application library similar to Ruby’s Rack. 
+Ring will implement much of the app’s low-level glue, 
+while Compojure will provide a concise syntax with which to define application logic.
+
+Add Compojure to the project.clj file along with a Jetty HTTP server adapter:
+
+project.clj
+
+If you’re using an older version of Leiningen you may need to manually run lein deps to fetch the updated dependencies here.
+
+(defproject shouter "0.0.1"
+  :description "Shouter app"
+  :url "http://github.com/abedra/shouter"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :dependencies [[org.clojure/clojure "1.4.0"]
+                 [org.clojure/java.jdbc "0.2.3"]
+                 [postgresql "9.1-901.jdbc4"]
+                 [ring/ring-jetty-adapter "1.1.6"]
+                 [compojure "1.1.3"]
+  :main shouter.core)
+
+Now add some initial code in src/shouter/core.clj:
+
+src/shouter/core.clj
+
+(ns shouter.core
+  (:use [compojure.core :only (defroutes GET)]
+        [ring.adapter.jetty :as ring]))
+
+定义路由。
+
+(defroutes routes
+  (GET "/" [] "<h2>Hello World</h2>"))
+
+(defn -main []
+  (run-jetty routes {:port 8080 :join? false}))
+
+Launch a new REPL and give it a spin:
+
+$ lein run
+2013-01-06 15:44:44.393:INFO:oejs.Server:jetty-7.6.1.v20120215
+#<Server org.eclipse.jetty.server.Server@dc67248>
+2013-01-06 15:44:44.446:INFO:oejs.AbstractConnector:Started       
+SelectChannelConnector@0.0.0.0:8080
+
+You can now point your browser to http://localhost:8080 to see the fruits of your labor. 
+The next step is HTML templates.
+
+=======
+HTML templating with Hiccup
+使用Hiccup，html模板。
+
+Clojure has a wide variety of HTML templating libraries, but the simplest is Hiccup. 
+Hiccup templates are just Clojure forms; 
+Hiccup translates these forms into HTML. 
+
+hiccup将clojure形式转成html代码。
+
+Let’s add some simple HTML templating to the app with Hiccup.
+
+First, add Hiccup to the project.clj file:
+
+project.clj
+
+(defproject shouter "0.0.1"
+  :description "Shouter app"
+  :url "http://github.com/abedra/shouter"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :dependencies [[org.clojure/clojure "1.4.0"]
+                 [org.clojure/java.jdbc "0.2.3"]
+                 [postgresql "9.1-901.jdbc4"]
+                 [ring/ring-jetty-adapter "1.1.6"]
+                 [compojure "1.1.3"]
+                 [hiccup "1.0.2"]]
+  :main shouter.core)
+
+Now start a REPL and take a quick look at how Hiccup works:
+
+user=> (require '[hiccup.core :as h])
+nil
+
+user=> (h/html [:h1 "Hello Word"])
+"<h1>Hello Word</h1>"
+
+You can use Hiccup inside of the current Compojure application to produce all the HTML needed. 
+In src/shouter/core.clj, 
+add hiccup.page-helpers to the nsdeclaration:
+
+(:use [hiccup.page :only (html5)]) 
+
+Now add a simple index function after the ns declaration:
+
+(defn index []
+  (html5
+    [:head
+      [:title "Hello World"]]
+    [:body
+      [:div {:id "content"} "Hello World"]]))
+
+Finally, add the index function to the routes. 
+Your routes should end up like this:
+
+(defroutes routes
+  (GET "/" [] (index)))
+
+Restart your application and navigate to http://localhost:8080. 
+You should see"Hello World" in smaller text this time. 
+If you inspect the source you should see a proper HTML document as well.
+
+Just like Compojure, Hiccup goes deeper. 
+This brief introduction is enough to get you moving to your real objective.
+
+========
+Putting it all together
+
+Now that the basics have been covered, you can build the full Shouter application.
+
+You can find the complete code for the Shouter application here, 
+（https://github.com/abedra/shouter）
+including aresources directory with a set of styles. 
+Feel free to copy this directory into your project to get the same look and feel.
+
+For the app application itself, start with src/shouter/core.clj:
+
+src/shouter/core.clj
+
+(ns shouter.core
+  (:use [compojure.core :only (defroutes)]
+        [ring.adapter.jetty :as ring])
+  (:require [compojure.route :as route]
+            [compojure.handler :as handler]
+            [shouter.controllers.shouts :as shouts]
+            [shouter.views.layout :as layout]))
+
+(defroutes routes
+  shouts/routes
+  (route/resources "/")
+  (route/not-found (layout/four-oh-four)))
+
+(def application (handler/site routes))
+
+(defn start [port]
+  (run-jetty application {:port port :join? false}))
+
+(defn -main []
+  (let [port (Integer/parseInt 
+               (or (System/getenv "PORT") "8080"))]
+  (start port)))
+
+You’ll notice that the index function is now removed and some additional routes are in place. 
+Don’t worry about the index function, that will get pulled out later. 
+The new -main function is how you will start the application from the command line, 
+and the start function is how you will work from within a REPL. 
+Notice the addition of the shouts controller namespace. 
+Head there and fill in the code:
+
+src/shouter/controllers/shouts.clj
+
+(ns shouter.controllers.shouts
+  (:use [compojure.core :only (defroutes GET POST)])
+  (:require [clojure.string :as str]
+            [ring.util.response :as ring]
+            [shouter.views.shouts :as view]
+            [shouter.models.shout :as model]))
+
+(defn index []
+  (view/index (model/all)))
+
+(defn create [shout]
+  (when-not (str/blank? shout)
+    (model/create shout))
+  (ring/redirect "/"))
+
+(defroutes routes
+  (GET  "/" [] (index))
+  (POST "/" [shout] (create shout)))
+
+The code above is the infrastructure for handling user actions. 
+Working from bottom to top you find the piece of code linked in core.clj, the routes. 
+This describes how routes should be handled in this controller. 
+Using this technique, routes can be kept in each controller for reference, 
+and then referred to in the global routes contained in core.clj. 
+The index and create functions are just the simple responders. 
+
+Next is the view layer:
+视图层代码。
+
+src/shouter/views/layout.clj
+
+(ns shouter.views.layout
+  (:use [hiccup.core :only (html)]
+        [hiccup.page :only (html5 include-css)]))
+
+(defn common [title & body]
+  (html5
+    [:head
+      [:meta {:charset "utf-8"}]
+      [:meta {:http-equiv "X-UA-Compatible" :content "IE=edge,chrome=1"}]
+      [:meta {:name "viewport" :content "width=device-width, initial-scale=1, maximum-scale=1"}]
+      [:title title]
+  (include-css "/stylesheets/base.css"
+               "/stylesheets/skeleton.css"
+               "/stylesheets/screen.css")
+  (include-css "http://fonts.googleapis.com/css?family=Sigmar+One&v1")]
+  [:body
+    [:div {:id "header"}
+      [:h1 {:class "container"} "SHOUTER"]]
+    [:div {:id "content" :class "container"} body]]))
+
+(defn four-oh-four []
+  (common "Page Not Found"
+          [:div {:id "four-oh-four"}
+          "The page you requested could not be found"]))
+
+This is the base for rendering views. 
+It sets up a template that you can call in the display functions to reduce the amount of duplication. 
+The four-oh-four function is just a small extension that is setup in the global routes. 
+
+Now on to the real views:
+真正的视图。
+
+src/shouter/views/shouts.clj
+
+(ns shouter.views.shouts
+  (:use [hiccup.core :only (h)]
+        [hiccup.form :only (form-to label text-area submit-button)])
+  (:require [shouter.views.layout :as layout]))
+
+(defn shout-form []
+  [:div {:id "shout-form" :class "sixteen columns alpha omega"}
+    (form-to [:post "/"]
+      (label "shout" "What do you want to SHOUT?")
+      (text-area "shout")
+      (submit-button "SHOUT!"))])
+
+(defn display-shouts [shouts]
+  [:div {:id "shouts sixteen columns alpha omega"}
+    (map
+      (fn [shout] [:h2 {:class "shout"} (h (:body shout))])
+      shouts)])
+
+(defn index [shouts]
+  (layout/common "SHOUTER"
+    (shout-form)
+    [:div {:class "clear"}]
+    (display-shouts shouts)))
+
+This is the meat of the display logic. 
+Notice how the addition of the code inlayout.clj made things a little easier. 
+Now that the front end is in place, move on to the data layer:
+
+src/shouter/models/migration.clj
+
+(ns shouter.models.migration
+  (:require [clojure.java.jdbc :as sql]))
+
+(defn create-shouts []
+  (sql/with-connection (System/getenv "DATABASE_URL")
+    (sql/create-table :shouts
+      [:id :serial "PRIMARY KEY"]
+      [:body :varchar "NOT NULL"]
+      [:created_at :timestamp "NOT NULL" "DEFAULT CURRENT_TIMESTAMP"])))
+
+(defn -main []
+  (print "Creating database structure...") (flush)
+  (create-shouts)
+  (println " done"))
+
+Here is the code to create the shouts table in the database and define the necessary fields. 
+Running this will allow you to store shouts:
+
+src/shouter/models/shout.clj
+
+(ns shouter.models.shout
+  (:require [clojure.java.jdbc :as sql]))
+
+(defn all []
+  (sql/with-connection (System/getenv "DATABASE_URL")
+    (sql/with-query-results results
+      ["select * from shouts order by id desc"]
+      (into [] results))))
+
+(defn create [shout]
+  (sql/with-connection (System/getenv "DATABASE_URL")
+    (sql/insert-values :shouts [:body] [shout])))
+
+The actual data model is quite simple. 
+All you care about is input and collecting all of the shouts.
+
+Finally, specify how to run the Shouter application from the command line with a Procfile:
+通过Procfile文件，来从命令行启动程序。
+
+Procfile
+
+web: lein trampoline run -m shouter.core
+
+With this, you have a complete application.
+
+=====
+Testing locally
+本地测试。
+
+Test your application locally to ensure that it works as expected.
+
+Run the migration script to create the shouts table:
+
+$ lein run -m shouter.models.migration
+Migrating database... done
+
+Finally, start your application locally with Foreman:
+
+$ foreman start
+18:39:37 web.1     | started with pid 25391
+18:39:40 web.1     | 2011-07-04 18:39:40.703:INFO::Logging to STDERR via org.mortbay.log.StdErrLog
+18:39:40 web.1     | 2011-07-04 18:39:40.704:INFO::jetty-6.1.26
+18:39:40 web.1     | 2011-07-04 18:39:40.719:INFO::Started SocketConnector@0.0.0.0:5000
+
+A fully functional Shouter app should now be running at http://localhost:5000.
+
+======
+Deploy
+部署到Heroku。
+
+Now that you’ve confirmed everything works as expected locally, 
+it’s time to deploy the app to Heroku’s Cedar stack.
+
+Start by committing the app to Git:
+
+$ git init
+$ git add .
+$ git commit -m "init"
+
+Next, create the the app on Heroku:
+
+$ heroku create
+Creating stormy-fog-408... done, stack is cedar
+http://stormy-fog-408.herokuapp.com/ | git@heroku.com:stormy-fog-408.git
+Git remote heroku added
+
+Now you need to provision a database for the app. 
+Earlier you used the createdbcommand to provision a local PostgreSQL database. 
+On Heroku we can use theHeroku PostgreSQL database add-on to provision a remote database:
+
+$ heroku addons:add heroku-postgresql:dev
+-----> Adding heroku-postgresql:dev to stormy-fog-408... done, v2 (free)
+
+This will add a DATABASE_URL to the app’s environment, 
+which the app will use at run-time to connect to its remote database resource. 
+The Heroku Postgres Starter Tier addon is free.
+
+Now that your database is provisioned you can deploy the code:
+
+$ git push heroku master
+
+Run the database migration against the app’s newly provisioned database:
+
+$ heroku run lein run -m shouter.models.migration
+Running lein run -m shouter.models.migration attached to terminal... up, run.1
+Migrating database... done
+
+With the database migrated, you can scale web dynos up:
+
+$ heroku ps:scale web=1
+Scaling web processes... done, now running 1
+
+Your application should now be running. 
+Confirm that the web process is up with:
+
+$ heroku ps
+Process       State               Command
+------------  ------------------  ------------------------------
+web.1         up for 15s          lein trampoline run -m shouter.core
+
+Finally, check out the finished, live application:
+
+$ heroku open
+Opening http://stormy-fog-408.herokuapp.com/
+
