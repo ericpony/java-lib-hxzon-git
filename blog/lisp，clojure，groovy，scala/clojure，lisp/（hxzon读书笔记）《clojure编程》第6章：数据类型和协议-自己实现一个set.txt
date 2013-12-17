@@ -171,45 +171,48 @@ java.util.Set
                    ^int size
                    ^:unsynchronized-mutable ^int hashcode]
   clojure.lang.IPersistentSet
-  (get [this x]
+  (get [this x]	;查看是否包含x
     (loop [i 0]
       (when (< i size)
-        (if (= x (aget items i))
+        (if (= x (aget items i))	;如果找到x，返回x，否则递增i（即进入下一个元素）
           (aget items i)
           (recur (inc i))))))
   (contains [this x]
     (boolean
       (loop [i 0]
         (when (< i size)
-          (or (= x (aget items i)) (recur (inc i)))))))
-  (disjoin [this x]
+          (or (= x (aget items i)) (recur (inc i)))))))	;如果找到x，返回true，否则递增i（即进入下一个元素）
+  (disjoin [this x]		;删除x
     (loop [i 0]
       (if (== i size)
         this
         (if (not= x (aget items i))
-          (recur (inc i))
+          (recur (inc i))	;如果不是x，递增i（即进入下一个元素）
           (ArraySet. (doto (aclone items)
-                       (aset i (aget items (dec size)))
-                       (aset (dec size) nil))
+                       (aset i (aget items (dec size)))	;在i处找到x，将末尾的值放入i处
+                       (aset (dec size) nil))		;删除末尾（已放到i处），size是自定义字段。
             (dec size)
             -1)))))
+
   clojure.lang.IPersistentCollection
   (count [this] size)
-  (cons [this x]
+  (cons [this x]	;添加x
     (cond
       (.contains this x) this
-      (== size max-size) (into #{x} this)
+      (== size max-size) (into #{x} this)	;元素个数超过阀值时，自动升级成普通hashmap。
       :else (ArraySet. (doto (aclone items)
-                         (aset size x))
+                         (aset size x))	;末尾添加x
               (inc size)
               -1)))
   (empty [this] empty-array-set)
   (equiv [this that] (.equals this that))
+
   clojure.lang.Seqable
-  (seq [this] (take size items))
+  (seq [this] (take size items))	;为何使用take？
+
   Object
   (hashCode [this]
-    (when (== -1 hashcode)
+    (when (== -1 hashcode)		;hashcode是自定义字段。
       (set! hashcode (int (areduce items idx ret 0
                             (unchecked-add-int ret (hash (aget items idx)))))))
     hashcode)
@@ -218,7 +221,8 @@ java.util.Set
       (identical? this that)
       (and (instance? java.util.Set that)       ;简化为测试that是否实现java.util.Set接口。
         (= (count this) (count that))
-        (every? #(contains? this %) that))))
+        (every? #(contains? this %) that))))	;that的每个元素都在this中（前面已确保了元素个数一样）。
+
   clojure.lang.IFn
   (invoke [this key] (.get this key))
 
@@ -226,14 +230,15 @@ java.util.Set
     (when (not= 1 (count args))
       (throw (clojure.lang.ArityException. (count args) "ArraySet")))
     (this (first args)))
+
   java.util.Set
   (isEmpty [this] (zero? size))
   (size [this] size)
-  (toArray [this array]
+  (toArray [this array]		;将集合中的元素放到array数组中。
     (.toArray ^java.util.Collection (sequence items) array))        ;sequence从来不会返回nil，而seq会返回nil。
   (toArray [this] (into-array (seq this)))
   (iterator [this] (.iterator ^java.util.Collection (sequence this)))   ;序列本身是java集合，直接返回序列的Iterator。
-  (containsAll [this coll]
+  (containsAll [this coll]	;是否含有coll的所有元素。
     (every? #(contains? this %) coll)))
 
 (def ^:private empty-array-set (ArraySet. (object-array max-size) 0 -1))
