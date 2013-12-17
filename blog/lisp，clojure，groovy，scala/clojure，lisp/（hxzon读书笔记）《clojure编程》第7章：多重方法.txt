@@ -1,0 +1,421 @@
+（hxzon读书笔记）《clojure编程》第7章：多重方法
+
+by hxzon
+======
+1，多重方法可以根据参数的任何属性选择调用的具体实现，支持任意层级，支持解歧多重继承。
+
+跳出基于类型的单转发。
+从被操作的数据中解放出来。
+
+定义多重方法：(defmulti nameXX dispatch-fnYY)
+定义多重方法实现：(defmethod nameXX dispatch-val & [param1,...] (...))
+
+dispatch-fnYY对参数进行调用，返回值用来与dispatch-val匹配。
+
+多重方法和其它函数定义有点不一样，区别在于：
+-1，一个多重方法并不显示指定它的参数个数。它支持它的转发函数支持的所有参数个数。
+-2，defmulti形式真正定义了一个新var，每个defmethod形式只是在“根”多重方法上注册了一个新的实现方法，
+defmethod并不定义或重定义任何var。
+
+有一个特别的转发值，:default，可用来定义默认实现方法。
+但如果它已经作为一个非默认实现方法的转发值，可以在defmulti中，用:default指定默认值。
+
+(defmulti nameXX dispatch-fnYY :default default-valueZZ)
+
+2，通往层级之路
+
+(ns-unmap *ns* 'fill)
+;这里对命名空间用了ns-unmap，使得可以重新定义fill。
+;defmulti有defonce的语义，所以如果不撤销对多重方法根var的映射，转发函数就不能改变。
+
+
+(defn- fill-dispatch [node value]
+(if (= :input (:tag node))
+[(:tag node) (-> node :attrs :type)]
+(:tag node)))
+
+(defmulti fill
+"Fill a xml/html node (as per clojure.xml)
+with the provided value."
+#'fill-dispatch         ;使用#'增加了一层重定向，这使得可以修改转发函数而不需使用ns-unmap。如果没有#'就会捕获转发函数的值，随后就不会再更新。
+:default nil)
+(defmethod fill nil
+[node value]
+(assoc node :content [(str value)]))
+(defmethod fill [:input nil]
+[node value]
+(assoc-in node [:attrs :value] (str value)))
+(defmethod fill [:input "hidden"]
+[node value]
+(assoc-in node [:attrs :value] (str value)))
+(defmethod fill [:input "text"]
+[node value]
+(assoc-in node [:attrs :value] (str value)))
+(defmethod fill [:input "radio"]
+[node value]
+(if (= value (-> node :attrs :value))
+(assoc-in node [:attrs :checked] "checked")
+(update-in node [:attrs] dissoc :checked)))
+(defmethod fill [:input "checkbox"]
+[node value]
+(if (= value (-> node :attrs :value))
+(assoc-in node [:attrs :checked] "checked")
+(update-in node [:attrs] dissoc :checked)))
+(defmethod fill :default
+[node value]
+(assoc-in node [:attrs :name] (str value)))
+
+测试一下：
+(fill {:tag :input
+:attrs {:value "first choice"
+:type "checkbox"}}
+"first choice") 
+;= {:tag :input,
+;= :attrs {:checked "checked",
+;= :type "checkbox",
+;= :value "first choice"}}
+(fill *1 "off") 
+;= {:tag :input
+;= :attrs {:type "checkbox",
+;= :value "first choice"}}
+
+3，层级
+
+层级可以表达转发值之间的关系。
+
+层级使用具名对象（关键字或符号，一般关键字更受偏爱）和类之间的关系定义的。
+具名对象是实现了clojure.lang.Named接口，可以对它调用name和namespace。
+
+可以有多个层级。
+有一个全局（默认的）层级，还有在需要时通过make-hierarchy创建的层级。
+
+层级和多重方法不受限于单个命名空间。
+
+全局层级是共享的，访问它更受保护。
+不带命名空间的关键字（或符号）不能用于全局层级。
+这有助于防止两个函数库由于无意中选择同一个关键字来表示不同的语义而相互干扰。
+
+用derive来定义一个层级关系。
+
+(derive ::checkbox ::checkable) 
+;= nil
+(derive ::radio ::checkable)
+;= nil
+(derive ::checkable ::input)
+;= nil
+(derive ::text ::input)
+;= nil
+
+可以用isa?来测试层级里的这些关系。
+isa?很少在repl之外使用。
+如果发现自己使用它的次数较多，这意味着你应该提取一个多重方法。
+就像instance?的存在意味着你应该提取一个转发设施（java接口、协议或多重方法）。
+
+还有一些其他内省函数：underive，ancestors，parents，descendants。
+
+所有层级相关的函数（derive，parents，isa?等）要求层级值作为附加的第一个参数。
+derive是这组函数里最特别的，因为如果没有显示的层级，这是一个产生副作用的函数，它会修改全局层级。
+而如果有显示的层级，它是一个纯函数。
+
+类和接口也可以在层级里使用，不过只能作为派生的子节点，永远不能作为父节点。
+
+整个java类层级总是每个层级的一部分，即使这个层级是刚用make-hierarchy创建的。
+
+(def h (make-hierarchy))
+;= #'user/h
+
+(isa? h java.util.ArrayList java.util.Collection)
+;= true
+
+所以，isa?是instance? 的超集，可用于测试一个类是否从另一个类派生，或者一个类是否实现一个接口。
+
+----
+独立层级
+
+nil和向量不能参与层级，没有命名空间的关键字不能参与全局层级。
+
+一种解决方案是让fill-dispatch返回带命名空间的关键字，或者，使用一个私有层级。
+
+derive隐式的修改了全局层级。
+如果使用自定义的层级，要把层级放在一个引用类型里，var是一个安全的选择，全局层级就是一个var。
+（注，这是安全的选择，因为层级不会经常变化，且希望层级的变化对所有线程都是可见的。
+如果有其它需求，例如事务式变化或动态作用域，则要选择相关的引用类型。）
+
+示例：用自定义层级实现fill。
+
+(ns-unmap *ns* 'fill)
+(def fill-hierarchy (-> (make-hierarchy) 
+(derive :input.radio ::checkable)
+(derive :input.checkbox ::checkable)
+(derive ::checkable :input)
+(derive :input.text :input)
+(derive :input.hidden :input)))
+
+(defn- fill-dispatch [node value]
+(if-let [type (and (= :input (:tag node))
+(-> node :attrs :type))]
+(keyword (str "input." type))
+(:tag node)))
+
+(defmulti fill
+"Fill a xml/html node (as per clojure.xml)
+with the provided value."
+#'fill-dispatch
+:default nil
+:hierarchy #'fill-hierarchy) 
+
+;多重方法预期某种类型的引用类型作为:hierarchy选项的值，而不是一个层级值，这让你在必要时可以在运行时更新层级。
+;在这种情况下，我们提供fill-hierarchy var，而不是它在求值defmulti形式时的值。
+;可以用alter-var-root来动态修改层级，不需要重新定义多重方法的根。
+
+(defmethod fill nil [node value]
+(assoc node :content [(str value)]))
+(defmethod fill :input [node value]
+(assoc-in node [:attrs :value] (str value)))
+(defmethod fill ::checkable [node value]
+(if (= value (-> node :attrs :value))
+(assoc-in node [:attrs :checked] "checked")
+(update-in node [:attrs] dissoc :checked)))
+
+关键字里的点号没有特别意义，它只是名称的一部分。
+
+我们还没有表达出未知输入类型应该视作文本。
+
+(fill {:tag :input
+:attrs {:type "date"}}
+"20110820")
+;= {:content ["20110820"], :attrs {:type "date"}, :tag :input}
+
+问题是未知类型的输入是一个开放的集合，所以无法预先创建所需的所有派生。
+而且，因为转发值的集合比只含输入标签的那些转发值的集合大，也不能用默认值来覆盖意料之外的输入类型。
+
+其实，层级不是静态的。这意味着我们的默认情形可以作为一个安全网，
+动态定义需要的派生以便对于给定的一个新的输入类型，默认情形将只会碰到一次。
+
+示例，动态更新fill用到的层级。
+(defmethod fill nil [node value]
+(if (= :input (:tag node))
+(do
+(alter-var-root #'fill-hierarchy
+derive (fill-dispatch node value) :input) 
+(fill node value)) 
+(assoc node :content [(str value)])))
+
+现在可以工作了。
+
+(fill {:tag :input
+:attrs {:type "date"}}
+"20110820")
+;= {:attrs {:value "20110820", :type "date"}, :tag :input}
+
+----
+实现这一结果的一个不那么聪明的方法是引入一个fill-input多重方法，从fill的:input这种情形来调用它。
+
+(ns-unmap *ns* 'fill)
+(def input-hierarchy (-> (make-hierarchy)
+(derive :input.radio ::checkable)
+(derive :input.checkbox ::checkable))) 
+(defn- fill-dispatch [node value]
+(:tag node))
+(defmulti fill
+"Fill a xml/html node (as per clojure.xml)
+with the provided value."
+#'fill-dispatch
+:default nil) 
+(defmulti fill-input
+"Fill an input field."
+(fn [node value] (-> node :attrs :type))
+:default nil
+:hierarchy #'input-hierarchy)
+(defmethod fill nil [node value]
+(assoc node :content [(str value)]))
+(defmethod fill :input [node value]
+(fill-input node value))
+(defmethod fill-input nil [node value]
+(assoc-in node [:attrs :value] (str value)))
+(defmethod fill-input ::checkable [node value]
+(if (= value (-> node :attrs :value))
+(assoc-in node [:attrs :checked] "checked")
+(update-in node [:attrs] dissoc :checked)))
+
+4，真正实现多重
+
+当转发值是向量的时候，isa?一个元素一个元素地处理。
+它递归的工作，所以可以用向量的向量作为转发值。
+
+(isa? fill-hierarchy [:input.checkbox :text] [::checkable :input])
+;= true
+
+(isa? fill-hierarchy [:input.checkbox String] [::checkable CharSequence])
+;= true
+
+可利用这一特性使得fill更聪明，让它根据value参数的类型做出适当的反应。
+
+(defn- fill-dispatch [node value]
+(if-let [type (and (= :input (:tag node))
+(-> node :attrs :type))]
+[(keyword (str "input." type)) (class value)]
+[(:tag node) (class value)]))
+
+多选框接受集合值，一个多选框被勾选当且仅当它的值属于这个集合。
+
+(ns-unmap *ns* 'fill)
+(def fill-hierarchy (-> (make-hierarchy)
+(derive :input.radio ::checkable)
+(derive :input.checkbox ::checkable)))
+(defn- fill-dispatch [node value]
+(if-let [type (and (= :input (:tag node))
+(-> node :attrs :type))]
+[(keyword (str "input." type)) (class value)]
+[(:tag node) (class value)]))
+(defmulti fill
+"Fill a xml/html node (as per clojure.xml)
+with the provided value."
+#'fill-dispatch
+:default nil
+:hierarchy #'fill-hierarchy)
+(defmethod fill nil
+[node value]
+(if (= :input (:tag node))
+(do
+(alter-var-root #'fill-hierarchy
+derive (first (fill-dispatch node value)) :input) 
+(fill node value))
+(assoc node :content [(str value)])))
+(defmethod fill
+[:input Object] [node value]
+(assoc-in node [:attrs :value] (str value)))
+(defmethod fill [::checkable clojure.lang.IPersistentSet]
+[node value]
+(if (contains? value (-> node :attrs :value))
+(assoc-in node [:attrs :checked] "checked")
+(update-in node [:attrs] dissoc :checked)))
+
+测试一下。
+
+(fill {:tag :input
+:attrs {:value "yes"
+:type "checkbox"}}
+#{"yes" "y"})
+;= {:attrs {:checked "checked", :type "checkbox", :value "yes"}, :tag :input}
+
+(fill *1 #{"no" "n"})
+;= {:attrs {:type "checkbox", :value "yes"}, :tag :input}
+
+(fill {:tag :input :attrs {:type "text"}} "some text")
+;= {:attrs {:value "some text", :type "text"}, :tag :input}
+
+(fill {:tag :h1} "Big Title!")
+;= {:content ["Big Title!"], :tag :h1}
+
+--
+多重继承的问题，更偏爱哪个转发值。
+
+(defmulti run "Executes the computation." class)
+(defmethod run Runnable
+[x]
+(.run x))
+(defmethod run java.util.concurrent.Callable
+[x]
+(.call x))
+
+(run #(println "hello!"))
+;= #<IllegalArgumentException java.lang.IllegalArgumentException:
+;= Multiple methods in multimethod 'run' match dispatch value:
+;= class user$fn__1422 -> interface java.util.concurrent.Callable and
+;= interface java.lang.Runnable, and neither is preferred>
+
+(prefer-method run java.util.concurrent.Callable Runnable)
+;= #<MultiFn clojure.lang.MultiFn@6dc98c1b>
+
+(run #(println "hello!"))
+;= hello!
+;= nil
+
+这个偏好机制让我们可以声明式的解决菱形继承问题。偏好是的多重继承关系明确，易于推理。
+
+----
+内省多重方法
+
+有一些罕用的函数可以在多重方法上元编程：remove-method，remove-all-methods，prefers，methods，get-method。
+这些函数可以查询、更新多重方法。
+
+--
+(macroexpand-1 '(defmethod mmethod-name dispatch-value [args] body))
+;= (. mmethod-name clojure.core/addMethod dispatch-value (clojure.core/fn [args] 
+body)) 
+
+(defn add-method [multifn dispatch-val f]
+(.addMethod multifn dispatch-val f))
+
+这依赖于实现细节。
+
+----
+(type x)通常返回与(class x)同样的值，除非x有 :type 元数据。
+:type 元数据是一种把数据分成不同类型，让这些类型用于多重方法的简洁办法。
+
+(ns-unmap *ns* 'run)
+(defmulti run "Executes the computation." type) 
+(defmethod run Runnable
+[x]
+(.run x))
+(defmethod run java.util.concurrent.Callable
+[x]
+(.call x))
+(prefer-method run java.util.concurrent.Callable Runnable)
+(defmethod run :runnable-map
+[m]
+(run (:run m)))
+(run #(println "hello!"))
+;= hello!
+;= nil
+(run (reify Runnable
+(run [this] (println "hello!"))))
+;= hello!
+;= nil
+(run ^{:type :runnable-map}
+{:run #(println "hello!") :other :data})
+;= hello!
+;= nil
+
+----
+转发函数的范围是无限的。
+多重方法的转发函数可以不仅依赖参数返回值。
+
+考虑一个信号系统，对每个信号的处理根据它的优先级而不同。
+
+(def priorities (atom {:911-call :high
+:evacuation :high
+:pothole-report :low
+:tree-down :low}))
+(defmulti route-message
+(fn [message] (@priorities (:type message))))
+(defmethod route-message :low
+[{:keys [type]}]
+(println (format "Oh, there's another %s. Put it in the log." (name type))))
+(defmethod route-message :high
+[{:keys [type]}]
+(println (format "Alert the authorities, there's a %s!" (name type))))
+
+测试一下。
+(route-message {:type :911-call})
+;= Alert the authorities, there's a 911-call!
+;= nil
+
+(route-message {:type :tree-down})
+;= Oh, there's another tree-down. Put it in the log.
+;= nil
+
+如果想让信号的优先级动态改变？
+只要调整驱动转发函数的数据，route-message就可以改变，不需要对代码或数据进行任何修改。
+
+(swap! priorities assoc :tree-down :high)
+;= {:911-call :high, :pothole-report :low, :tree-down :high, :evacuation :high}
+
+(route-message {:type :tree-down})
+;= Alert the authorities, there's a tree-down!
+;= nil
+
+不过，一个多重方法的行为不是严格地依赖于参数所提供的值，则它不是幂等的。
+这会让它更难以理解、测试和与其它函数组合。
+
