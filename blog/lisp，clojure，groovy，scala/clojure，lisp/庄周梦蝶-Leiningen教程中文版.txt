@@ -1,0 +1,550 @@
+庄周梦蝶-Leiningen教程中文版
+
+http://wiki.fnil.net/index.php?title=Leiningen_tutorial%E4%B8%AD%E6%96%87%E7%89%88
+
+目录：
+1 Leiningen教程
+1.1 声明
+
+1.2 Leiningen是什么
+1.3 本教程覆盖范围
+1.4 获得帮助
+
+1.5 Leiningen项目
+1.6 创建一个项目
+1.6.1 目录布局
+1.6.2 文件名-到-命名空间的映射惯例
+
+1.7 project.clj
+
+1.8 依赖
+1.8.1 概览
+1.8.2 Artifact IDs, Groups和Versions
+1.8.3 Snapshot版本
+1.8.4 仓库
+1.8.5 checkout依赖
+
+1.9 运行代码
+
+1.10 测试
+
+1.11 使用项目
+1.11.1 Uberjar
+1.11.2 框架 (Uber)jars
+1.11.3 服务端项目
+1.11.4 发行类库
+
+1.12 That's It!
+
+=========
+Leiningen教程
+
+原文：https://github.com/technomancy/leiningen/blob/master/doc/TUTORIAL.md
+译者：dennis (killme2008@gmail.com)，转载请注明出处
+本文链接：http://wiki.fnil.net/index.php?title=Leiningen_tutorial中文版
+
+声明
+
+本Wiki上的任何文字信息均在GNU自由文档许可证1.3或更高版本下发布，如果用于任何商业用途都需经本人同意。任何转载都请注明出处。
+本Wiki上的内容来自本人的学习笔记，来源可能包括原创、书籍、网页、链接等，如果侵犯了您的知识产权，请与本人联系，我将及时删除。
+我的联系方式 killme2008@gmail.com
+
+=======
+Leiningen是什么
+
+Leiningen是一个用于自动化（构建）clojure项目的工具，使你免于心急火燎的窘境。
+它处理各种各样项目相关的任务，可以做到：
+
+创建新项目
+管理你的项目的依赖关系
+运行测试
+运行一个REPL（你不需要再关心如何将依赖加入classpath)
+编译Java源码（如果有的话）
+运行项目（如果项目是一个app的话）
+为项目产生一个Maven风格的pom文件
+为了部署，编译和打包项目
+发布类库到Maven仓库，例如Clojars
+运行Clojure编写的自定义的自动化任务（称为Leiningen插件）
+
+如果你来自Java世界，Leiningen就是Maven和Ant的无痛结合。
+如果你是Ruby或者Python世界的人们，则Leiningen就是那个组合了RubyGems/Bundler/Rake和pip/Fabric等功能的一个单一工具。
+
+======
+本教程覆盖范围
+
+本教程主要覆盖了项目结构、依赖管理、运行测试、REPL以及跟部署相关的话题。
+
+对于那些从来没有接触过Ant或者Maven的JVM初哥，（忠告是）：不要惊慌失措。
+Leiningen也是为了你们而设计。
+这个教程会帮助你快速开始，并解释Leiningen如何处理项目自动化以及JVM的依赖管理。
+
+获得帮助
+
+另外，记住Leiningen发行附带了相当全面的帮助；
+lein help可以获得一个任务列表，同时lein help task可以获取任务的详细信息。 
+更多的文档，例如readme,示范配置以及本教程也同时提供给您。
+
+======
+Leiningen项目
+
+Leiningen是跟项目打交道。
+一个项目就是一个包含了一组Clojure（可能也有Java）源码文件的目录，同时附带一些元信息。 元信息存在根目录的一个称为project.clj（默认名称）的文件。
+project.clj就是你用来告诉Leiningen项目是什么样的，它包括：
+
+项目名称
+项目描述
+你的项目依赖哪些类库
+使用的Clojure版本是什么
+哪里找到（项目）源码
+App的主namespace是什么（译注：就跟Java App里会有一个main的public class一样）
+等等。
+
+大多数Leiningen的任务仅在项目的上下文里才有意义（译者注：也就是大多数任务不能脱离某个项目使用）。
+但是有些任务如 lein repl也可以从任何目录全局地工作。
+
+接下来，让我们看看项目是如何创建的。
+
+创建一个项目
+
+我们假设你已经按照README安装了Leiningen。 创建一个项目很简单：
+   $ lein new my-stuff
+
+基于'default'模板，生成了一个名为my-stuff的项目：
+   $ cd my-stuff
+   $ tree
+   .
+   |-- project.clj
+   |-- README.md
+   |-- src
+   |   `-- my_stuff
+   |       `-- core.clj
+   `-- test
+       `-- my_stuff
+           `-- core_test.clj
+
+----
+目录布局
+
+到这一步，我们得到了项目的README，一个包含了代码的src/目录，一个 test/目录，以及一个向Leiningen描述项目的project.clj文件。 
+
+src/my_stuff/core.clj文件对应my-stuff.core命名空间。
+
+尽管大多数纯Clojure项目都不需要定制目录布局，但是Leiningen允许你这样做。
+
+文件名-到-命名空间的映射惯例
+
+注意到我们使用my-stuff.core作为命名空间，而不只是my-sutff， 
+这是因为Clojure不鼓励使用只有一段（single-segment，译者注：意思是没有"."连接的的单一名称）的命名空间。 
+另外我们也注意到含有波折号（也就是减号）的命名空间，会被映射到波折号被下划线替换的文件，这是因为JVM加载含有波折号的文件会遇到问题。
+
+命名空间的错综复杂是新手感到困扰的一个常见来源，虽然我们已经偏离本教程的范围，但是你可以在别处阅读到它们。
+
+=========
+project.clj
+
+一个默认的project.clj文件初始看起来类似这样：
+
+   (defproject my-stuff "0.1.0-SNAPSHOT"
+     :description "FIXME: write description"
+     :url "http://example.com/FIXME"
+     :license {:name "Eclipse Public License"
+               :url "http://www.eclipse.org/legal/epl-v10.html"}
+     :dependencies org.clojure/clojure "1.4.0")
+
+如果你没有为description填写一个简短的（描述）句子，你的项目会很难在搜索结果里找到，所以请填写一下。
+也请顺便填写下:url（译注：项目地址URL）。
+有时候，你也需要充实下README文件，但是现在让我们略过（这一步）去设置下:dependencies。
+注意到，不像其他语言那样，Clojure在这里也只是另一个依赖罢了，你可以很容易地切换Clojure版本。
+
+========
+依赖
+
+概览
+
+Clojure是一门寄宿语言（译注：寄宿于JVM之上），并且Clojure的类库也像其他JVM语言那样作为JAR发布。
+JAR(jar文件）基本上仅仅是是一些附加了JVM特有元信息的.zip文件。 
+它们通常包含有.class文件（JVM字节码），和.clj源码文件， 
+但是它们也可以包含其他一些东西，例如配置文件、JavaScript文件或者含有静态数据的文本文件。
+
+已发布的JVM类库拥有identifiers标识符（artifact group, artifact id）和versions版本号。
+
+Artifact IDs, Groups和Versions
+
+你可以使用web接口搜索Clojars，搜索clj-http的结果页显示为：
+   [clj-http "0.5.5"]
+
+有两种不同的途径来设置依赖clj-http类库的最新版本，一种是类似于上面所展示的Leiningen格式，另一种是Maven格式。
+我们现在略过Maven的方式，但是你需要为使用)来自Maven central的Java类库学习一下（maven方式）。
+你可以直接拷贝Leiningen版本到project.clj里的:dependencies vector。
+
+在vector里，"clj-http"被称为"artifact id"（译者注：有maven经验的童鞋会很熟悉）。
+"0.5.5"就是版本号。
+一些类库还会有"group id"，显示成这样：
+   [com.cedarsoft.utils.legacy/hibernate "1.3.4"]
+
+group-id就是斜杠之前的部分。
+特别是对于Java类库来说，它通常是倒序的域名。
+而Clojure类库通常使用相同的group-id和artifact-id（例如clj-http），这种情况下你可以忽略group-id。 
+
+如果某个类库从属于一个很大的分组（例如ring-jetty-adapter是ring项目的一部分），那么通常所有子项目的group-id保持一样。
+
+----
+Snapshot版本
+
+有时候版本号会以 "-SNAPSHOT"结尾。
+这意味着这不是一个正式的release版本，而是一个开发阶段构建（版本）。
+不鼓励依赖snapshot版本，但是有时候这也是必须的，例如你需要bug fix等，但还没有将它们发布。
+尽管如此，snapshot版本不被保证停留（stick around），
+所以很重要的一点是非开发阶段的release绝不依赖你无法控制的snapshot版本。
+添加一个snapshot依赖到你的项目里，会导致Leiningen每天主动查找该依赖的最新版本（而正常的release版本会缓存在本地仓库），
+所以如果你使用了很多snapshot版本，可能会拖慢Leiningen一些。
+
+请注意，有一些类库会让它们的group-id和artifact-id对应到它们jar里提供的命名空间，但是这一点仅是惯例。
+并不保证总是能匹配起来，因此，在你写下:require和:import语句之前请翻阅下类库的文档。
+
+----
+仓库
+
+依赖库存储在maven仓库（正式的名称是maven artifact仓库，允许一点模棱两可的话也可以简称为仓库）。
+如果你熟悉Perl的CPAN，Python的Cheeseshop(也就是PyPi)，Ruby的rubygems.org或者Node.js的NPM，它们其实是一类东西。 
+
+Leiningen重用已有的JVM仓库设施。已经有一些很流行的开源仓库。
+Leiningen默认使用它们中的两个： clojars.org和Maven Central。
+
+Clojars是Clojure社区的中心Maven仓库，而Central是更广泛的JVM社区的中心Maven仓库。
+
+你可以添加第三方仓库，通过设置project.clj里的:repositories关键字。
+查看sample.project.clj示范。
+
+----
+checkout依赖
+
+有时候需要并行地开发两个项目，但是为了让变更生效，
+总是要运行lein install并重启你的REPL，这样做非常不方便。
+Leiningen提供了一种称为checkout依赖（简称checkouts）的解决办法。
+
+为了使用它，你需要在项目根目录下创建一个名为checkouts的目录，类似：
+   .
+   |-- project.clj
+   |-- README.md
+   |-- checkouts
+   |-- src
+   |   `-- my_stuff
+   |       `-- core.clj
+   `-- test
+       `-- my_stuff
+           `-- core_test.clj
+
+然后，在checkouts目录里，创建你需要的项目的符号链接：
+   .
+   |-- project.clj
+   |-- README.md
+   |-- checkouts
+   |   `-- superlib2 [link to ~/code/oss/superlib2]
+   |   `-- superlib3 [link to ~/code/megacorp/superlib3]
+   |-- src
+   |   `-- my_stuff
+   |       `-- core.clj
+   `-- test
+       `-- my_stuff
+           `-- core_test.clj
+
+checkouts目录里的类库比从仓库拉取的类库优先级更高，
+但是这不是用来替代罗列在项目project.clj里的:dependencies，而只是为了方便使用的一种补充手段。
+checkouts特性是非传递性的（译注：A依赖B,B依赖C，那么A将依赖C，这称为依赖传递）：
+换句话说，Leiningen不会查找一个checkout依赖库的checkout依赖。
+
+==========
+运行代码
+
+配置够了，让我们看看代码运行。启动一个REPL（读取-求值-打印循环:read-eval-print loop）：
+
+   $ lein repl
+   nREPL server started on port 40612
+   Welcome to REPL-y!
+   Clojure 1.4.0
+       Exit: Control+D or (exit) or (quit)
+   Commands: (user/help)
+       Docs: (doc function-name-here)
+             (find-doc "part-of-name-here")
+     Source: (source function-name-here)
+             (user/sourcery function-name-here)
+    Javadoc: (javadoc java-object-or-class-here)
+   Examples from clojuredocs.org: [clojuredocs or cdoc]
+             (user/clojuredocs name-here)
+             (user/clojuredocs "ns-here" "name-here")
+   user=>
+
+REPL是一种你可以输入任意代码运行在项目上下文里的交互式提示。
+因为我们已经添加了clj-http依赖到:dependencies里，我们就可以从项目的src/目录的my-stuff.core命名空间里加载它：
+
+   user=> (require 'my-stuff.core)
+   nil
+   user=> (my-stuff.core/-main)
+   Hello, World!
+   nil
+   user=> (require '[clj-http.client :as http])
+   nil
+   user=> (def response (http/get "http://leiningen.org"))
+   #'user/response
+   user=> (keys response)
+   (:trace-redirects :status :headers :body)
+
+调用-main显示一起打印了输出（"Hello, World!"）和返回值nil。
+
+通过doc可以使用内置文档，并且clojuredocs提供更全面的例子，来自ClojureDocs站点：
+
+   user=> (doc reduce)
+   -------------------------
+   clojure.core/reduce
+   ([f coll] [f val coll])
+     f should be a function of 2 arguments. If val is not supplied,
+     returns the result of applying f to the first 2 items in coll, then
+     applying f to that result and the 3rd item, etc. If coll contains no
+     items, f must accept no arguments as well, and reduce returns the
+     result of calling f with no arguments.  If coll has only 1 item, it
+     is returned and f is not called.  If val is supplied, returns the
+     result of applying f to val and the first item in coll, then
+     applying f to that result and the 2nd item, etc. If coll contains no
+     items, returns val and f is not called.
+
+   user=> (user/clojuredocs pprint)
+   Loading clojuredocs-client...
+   ========== vvv Examples ================
+     user=> (def *map* (zipmap
+                         [:a :b :c :d :e]
+                         (repeat
+                           (zipmap [:a :b :c :d :e]
+                             (take 5 (range))))))
+     #'user/*map*
+     user=> *map*
+     {:e {:e 4, :d 3, :c 2, :b 1, :a 0}, :d {:e 4, :d 3, :c 2, :b 1, :a 0}, :c {:e 4, :d 3, :c 2, :b 1, :a 0}, :b {:e 4, :d 3, :c 2, :b 1, :a 0}, :a {:e 4, :d 3, :c 2, :b 1, :a 0}}
+     user=> (clojure.pprint/pprint *map*)
+     {:e {:e 4, :d 3, :c 2, :b 1, :a 0},
+      :d {:e 4, :d 3, :c 2, :b 1, :a 0},
+      :c {:e 4, :d 3, :c 2, :b 1, :a 0},
+      :b {:e 4, :d 3, :c 2, :b 1, :a 0},
+      :a {:e 4, :d 3, :c 2, :b 1, :a 0}}
+     nil
+   ========== ^^^ Examples ================
+   1 example found for clojure.pprint/pprint
+
+你甚至能查看函数的源码：
+
+   user=> (source my-stuff.core/-main)
+   (defn -main
+     "I don't do a whole lot."
+     [& args]
+     (println "Hello, World!"))
+   user=> ; use control+d to exit
+
+如果已经编写了-main函数的代码等待执行，你并不需要交互式地键入代码，执行run任务更简单：
+   $ lein run -m my-stuff.core
+   Hello, World!
+
+提供替代的-m参数来告诉Leiningen在另一个命名空间里查找-main函数。
+设置project.clj里默认的:main关键字，可以让你省略-m参数。
+
+对于长时间运行的lein run进程，可能你希望利用高阶的trampoline任务来节省内存，
+它允许Leiningen的JVM进程在启动项目的JVM之前退出。
+（译注，可以通过lein help trampoline来查看任务的详细说明）：
+   $ lein trampoline run -m my-stuff.server 5000
+
+=========
+测试
+
+我们还没有编写任何测试，但是我们能运行从项目模板里包含过来的失败测试：
+
+   $ lein test
+   lein test my.test.stuff
+   FAIL in (a-test) (stuff.clj:7)
+   FIXME, I fail.
+   expected: (= 0 1)
+     actual: (not (= 0 1))
+   Ran 1 tests containing 1 assertions.
+   1 failures, 0 errors.
+
+一旦我们填充了测试套件，会更有用一些。
+有时候你有一个很大的测试套件，但是你一次只想运行其中一到两个命名空间，lein test my.test.stuff可以帮你做到。
+也许你也想要使用测试选择器(test selector）拆散（break up）测试，请看lein help test获取详情。
+
+从命令行运行lein test适合回归测试，
+但是JVM的缓慢启动时间让它和那种需要紧凑反馈循环的测试风格配合不良。
+在这种情况下，可以通过保持运行一个开启的repl，用来跑 clojure.test/run-tests，或者使用编辑器整合插件如clojure-test-mode。
+
+请谨记在心，虽然保持一个运行的进程是很方便，但是这很容易让进程进入这样一种状态：
+没有反射磁盘上的文件——函数被加载，接着从文件删除，
+却仍然保存在内存里，让你很容易错过那些由丢失的函数引起的问题
+（通常被称为"getting slimed"，和稀泥，捣糨糊）。
+正因为这个原因，任何情况下都建议你定期使用一个"新鲜"的instance运行lein test，或许在你提交之前。
+
+========
+使用项目
+
+通常来讲，Leiningen项目的有三种典型的不同用途：
+
+可以分发给终端用户的应用
+服务端应用
+其他Clojure项目可以使用的类库
+
+对于第一种用途，通常会构建一个uberjar。
+对于类库，你会想将它们发布到Clojars或者私有的某个仓库。
+对于服务端应用，会如下文描述的那样有所变化。
+利用lein new app myapp生成一个项目，会让你从拥有一些额外默认（配置）适合非类库项目开始。
+
+----
+Uberjar
+
+最简单的事情是分发一个uberjar。
+这是一个单一的独立的可执行jar文件，特别适合给非技术用户。
+为了让它工作，你必须设置命名空间，作为project.clj里的:main。
+此时，我们的project.clj看起来像这样：
+
+   (defproject my-stuff "0.1.0-SNAPSHOT"
+     :description "FIXME: write description"
+     :url "http://example.com/FIXME"
+     :license {:name "Eclipse Public License"
+               :url "http://www.eclipse.org/legal/epl-v10.html"}
+     :dependencies [[org.clojure/clojure "1.3.0"]
+                    [org.apache.lucene/lucene-core "3.0.2"]
+                    [clj-http "0.4.1"]]
+     :profiles {:dev {:dependencies midje "1.3.1"}}
+     :test-selectors {:default (complement :integration)
+                     :integration :integration
+                     :all (fn [_] true)}
+     :main my.stuff)
+
+你设置的命名空间必须包含一个-main函数，它将在独立的可执行文件运行的时候被调用。
+这个命名空间必须在顶层的ns form里有一个:gen-class声明，-main函数会接收命令行参数，
+让我们在src/my/stuff.clj尝试点简单的玩意：
+
+   (ns my.stuff
+     (:gen-class))
+   (defn -main [& args]
+     (println "Welcome to my project! These are your args:" args))
+
+现在我们已经准备好产生一个uberjar：
+
+   $ lein uberjar
+   Compiling my.stuff
+   Compilation succeeded.
+   Created /home/phil/src/leiningen/my-stuff/target/my-stuff-0.1.0-SNAPSHOT.jar
+   Including my-stuff-0.1.0-SNAPSHOT.jar
+   Including clj-http-0.4.1.jar
+   Including clojure-1.3.0.jar
+   Including lucene-core-3.0.2.jar
+   Created /home/phil/src/leiningen/my-stuff/target/my-stuff-0.1.0-SNAPSHOT-standalone.jar
+
+这样将创建一个包含了所有依赖内容的单一jar文件。
+用户可以通过java调用运行它，或者在某些操作系统上，可以通过双击该jar文件来运行。
+
+   $ java -jar my-stuff-0.1.0-standalone.jar Hello world.
+   Welcome to my project! These are your args: (Hello world.)
+
+你可以利用java命令行运行一个普通的（非uber）jar，但是这需要你自己构建classpath，对于终端用户来说这不是一个好办法。
+
+当然，如果你的用户已经安装了Leiningen，你可以教导他们使用上文介绍的lein run。
+
+----
+框架 (Uber)jars
+
+大多数Java框架要求一个部署（deployment）配置，来自一个jar文件或者衍生的打包子格式，包含应用必需的依赖库的一个子集。
+框架希望能在运行时能自己提供缺失的依赖库。
+框架提供的这种方式的依赖库，通常在:provided配置里。
+这样的依赖库将在编译、测试等阶段有效，
+但是默认不会被包含在uberjar任务或者创建稳定部署artifacts的插件任务里。
+（译注：熟悉maven的朋友一定知道provided scope吧）
+
+例如，Hadoop job的jar可能仅仅是一个普通的（uber）jar文件，包含了所有的依赖，除了Hadoop类库自身：
+
+   (project example.hadoop "0.1.0"
+     ...
+     :profiles {:provided
+                {:dependencies
+                 org.apache.hadoop/hadoop-core "0.20.2-dev"}}
+     :main example.hadoop)
+
+   $ lein uberjar
+   Compiling example.hadoop
+   Created /home/xmpl/src/example.hadoop/example.hadoop-0.1.0.jar
+   Including example.hadoop-0.1.0.jar
+   Including clojure-1.4.0.jar
+   Created /home/xmpl/src/example.hadoop/example.hadoop-0.1.0-standalone.jar
+   $ hadoop jar example.hadoop-0.1.0-standalone.jar
+   12/08/24 08:28:30 INFO util.Util: resolving application jar from found main method on: example.hadoop
+   12/08/24 08:28:30 INFO flow.MultiMapReducePlanner: using application jar: /home/xmpl/src/example.hadoop/./example.hadoop-0.1.0-standalone.jar
+   ...
+
+插件被要求产生框架部署jar的衍生物（例如WAR文件），包含了额外的元信息；
+但是:provided配置提供了更通用的机制来处理框架依赖。
+
+----
+服务端项目
+
+有很多种方式可以让你的项目作为服务端应用来部署。
+除了明显的uberjar方式之外，简单的程序可以使用lein-tar插件伴随着shell脚本打包成tarball，
+然后使用pallet,chef或者其他机制部署。
+
+Web应用可以作为uberjar部署，利用ring-jetty-adapter使用内嵌的Jetty，
+或者是使用lein-ring插件创建的.war文件。
+在uberjar之外，服务端部署是如此多变，以至于更好使用插件而非Leiningen内置的任务来处理。
+
+如果你最终在生产环境里使用了类似lein trampoline run的任务来运行，
+那么确保你在部署之前采取了冻结所有依赖的措施，否则最终很容易会以不可重复的部署终结。
+考虑在你的部署单元里，连同项目代码包含~/.m2/repository。
+使用Leiningen在一个持续的集成配置里创建一个可部署的artifact是推荐的做法。
+
+例如，你可以用Jenkins作为持续集成服务器(CI）来跑项目的所有测试套件，
+如果测试通过，上传tarball到S3（译者注：amazon的Simple Storage Service）。
+那么部署就变成只是在你的生产服务器下载并解压一个已知是良好的tarball的事情。
+
+另外，请记住run任务默认会包括user,dev和default配置项，这些并不适合生产环境。
+使用lein trampoline with-profile production run -m myapp.main是更推荐做法的。
+默认情况下，生产配置是空的，
+但是如果你的部署包含了~/.m2/repository，这个部署是从产生tarball的CI运行得来的，
+那么你应该在:production配置里添加它的路径作为:local-repo，
+并且和:offline? true一起。
+
+保持离线，可以让已经部署的项目跟CI环境里测试的版本彻底分开。
+
+----
+发行类库
+
+如果你的项目是一个类库，并且你想让别人可以在他们的项目里将它作为依赖类库来使用，你就需要把它放到一个公开的仓库里。
+虽然你可以维护一个你自己的私有仓库，或者放到Central仓库，
+但是最简单的办法还是发布到Clojars。
+当你创建一个帐号后，发布变得很简单：
+
+   $ lein deploy clojars
+   Created ~/src/my-stuff/target/my-stuff-0.1.0-SNAPSHOT.jar
+   Wrote ~/src/my-stuff/pom.xml
+   No credentials found for clojars
+   See `lein help deploying` for how to configure credentials.
+   Username: me
+   Password: 
+   Retrieving my-stuff/my-stuff/0.1.0-SNAPSHOT/maven-metadata.xml (1k)
+       from https://clojars.org/repo/
+   Sending my-stuff/my-stuff/0.1.0-SNAPSHOT/my-stuff-0.1.0-20120531.032047-14.jar (5k)
+       to https://clojars.org/repo/
+   Sending my-stuff/my-stuff/0.1.0-SNAPSHOT/my-stuff-0.1.0-20120531.032047-14.pom (3k)
+       to https://clojars.org/repo/
+   Retrieving my-stuff/my-stuff/maven-metadata.xml (1k)
+       from https://clojars.org/repo/
+   Sending my-stuff/my-stuff/0.1.0-SNAPSHOT/maven-metadata.xml (1k)
+       to https://clojars.org/repo/
+   Sending my-stuff/my-stuff/maven-metadata.xml (1k)
+       to https://clojars.org/repo/
+
+一旦发布成功，这个类库将将作为一个包（package），可以在别的项目里依赖它。
+通过保存你凭证的指令，你就不需要每次都重新输入它们，查看lein help deploying。
+当发布一个非snapshot的release的时候，Leiningen会尝试使用GPG来对它进行签名，证明你对这个release的著作权。
+查看部署指南获取详细的设置信息。
+部署指南也包括了如何部署到其他仓库的指令。
+
+That's It!
+
+现在可以开始coding你的下一个项目了！
+	 	 
+
+本页面最后修改于2012年12月10日 (星期一) 00:49。
+

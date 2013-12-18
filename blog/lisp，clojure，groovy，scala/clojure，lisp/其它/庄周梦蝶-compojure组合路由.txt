@@ -1,0 +1,29 @@
+庄周梦蝶-compojure组合路由
+
+A middleware to merge routes in compojure
+http://blog.fnil.net/index.php/archives/159
+
+=======
+有时候，我们可能定义很多个不同的route，
+有的可能有context，有的没有，有的是动态请求，有的是静态请求，
+那么就有组合route的需求，利用compojure的routing函数即可做到：
+
+帮助
+
+(use 'compojure.core)
+
+(defn merge-routes [& handlers]
+    (fn [req]
+        (apply routing req handlers)))
+
+使用：
+
+(defroutes api-routes
+    (context "/v1" [] our-routes))
+
+(defroutes static-routes
+    (route/resources "/console"))
+
+(def app
+    (handler/site (merge-routes api-routes static-routes) ......))
+
