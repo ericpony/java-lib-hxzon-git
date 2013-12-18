@@ -8,8 +8,6 @@ http://blog.fnil.net/index.php/archives/159
 有的可能有context，有的没有，有的是动态请求，有的是静态请求，
 那么就有组合route的需求，利用compojure的routing函数即可做到：
 
-帮助
-
 (use 'compojure.core)
 
 (defn merge-routes [& handlers]
