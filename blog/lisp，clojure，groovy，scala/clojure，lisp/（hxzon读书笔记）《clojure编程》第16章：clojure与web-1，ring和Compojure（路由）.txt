@@ -20,6 +20,16 @@ https://github.com/fhd/clostache
 http://mustache.github.com
 https://github.com/mmcgrana/ring
 
+Noir (http://www.webnoir.org) ，已停止开发。
+Ringfinger (https://github.com/myfreeweb/ringfinger)
+
+Immutant ，http://immutant.org ，基于JBoss的服务器。
+
+添加依赖项：
+[ring "1.0.0"]
+[compojure "1.0.1"]
+
+=========
 2，Ring
 
 Ring的规范：
@@ -32,34 +42,46 @@ Ring规范用clojure数据结构定义了一个标准的数据模式来表示web
 
 请求映射：
 :server-port The port on which the request is being handled.
+
 :server-name The resolved server name, or the server IP address as a string.
+
 :remote-addr The IP address of the client or the last proxy that sent the request.
+
 :uri The request URI, as a string. Must start with “/”.
+
 :scheme The transport protocol, must be one of :httpor :https.
-:request-method The HTTP request method, must be one of :get, :head, :options, :put, :post,
-or :delete.
+
+:request-method The HTTP request method, must be one of :get, :head, :options, :put, :post,or :delete.
+
 :headers A Clojure map of downcased header name Strings to corresponding header value Strings.
+
 :content-type  The MIME type of the request body as a string, if known.
+
 :content-length   The number of bytes in the request body, if known.
+
 :character-encoding   The name of the character encoding used in the request body as a string, if known.
+
 :query-string   The query string, if present.
+
 :body   A java.io.InputStreamfor the request body, if present.
 
 响应映射：
 :status The HTTP status code, must be greater than or equal to 100.
-:headers A Clojure map of HTTP header names to header values. These values may be either Strings, in which case
-one name/value header will be sent in the HTTP response, or a seq of Strings, in which case a name/value
-header will be sent for each such String value.
+
+:headers A Clojure map of HTTP header names to header values. 
+These values may be either Strings, in which case one name/value header will be sent in the HTTP response, 
+or a seq of Strings, in which case a name/value header will be sent for each such String value.
+
 :body   Optionally a String, a Clojure sequence of strings, a java.io.File, or a java.io.InputStream.
 
 示例：
 {:status 200
-:headers {"Content-Type" "text/html"}
-:body "<html>...</html>"}
+ :headers {"Content-Type" "text/html"}
+ :body "<html>...</html>"}
 
 {:status 200
-:headers {"Content-Type" "image/png"}
-:body (java.io.File. "/path/to/file.png")}
+ :headers {"Content-Type" "image/png"}
+ :body (java.io.File. "/path/to/file.png")}
 
 {:status 201 :headers {}}
 
@@ -320,50 +342,58 @@ Server: Jetty(6.1.25)
 完整代码。
 
 (ns com.clojurebook.url-shortener
-(:use [compojure.core :only (GET PUT POST defroutes)])
-(:require (compojure handler route)
-[ring.util.response :as response]))
-(def ^:private counter (atom 0))
-(def ^:private mappings (ref {}))
-(defn url-for
-[id]
-(@mappings id))
-(defn shorten!
-"Stores the given URL under a new unique identifier, or the given identifier
-if provided. Returns the identifier as a string.
-Modifies the global mapping accordingly." 
-([url]
-(let [id (swap! counter inc)
-id (Long/toString id 36)]
-(or (shorten! url id)
-(recur url))))
-([url id]
-(dosync
-(when-not (@mappings id)
-(alter mappings assoc id url)
-id))))
-(defn retain
-[& [url id :as args]]
-(if-let [id (apply shorten! args)]
-{:status 201
-:headers {"Location" id}
-:body (list "URL " url " assigned the short identifier " id)}
-{:status 409 :body (format "Short URL %s is already taken" id)}))
-(defn redirect
-[id]
-(if-let [url (url-for id)]
-(response/redirect url)
-{:status 404 :body (str "No such short URL: " id)}))
-(defroutes app*
-(GET "/" request "Welcome!")
+  (:use [compojure.core :only (GET PUT POST defroutes)])
+  (:require (compojure handler route)
+            [ring.util.response :as response]))
 
-(PUT "/:id" [id url] (retain url id))
-(POST "/" [url] (if (empty? url)
-{:status 400 :body "No `url` parameter provided"}
-(retain url)))
-(GET "/:id" [id] (redirect id))
-(GET "/list/" [] (interpose "\n" (keys @mappings)))
-(compojure.route/not-found "Sorry, there's nothing here."))
+(def ^:private counter (atom 0))
+
+(def ^:private mappings (ref {}))
+
+(defn url-for
+  [id]
+  (@mappings id))
+
+(defn shorten!
+  "Stores the given URL under a new unique identifier, or the given identifier
+  if provided. Returns the identifier as a string.
+  Modifies the global mapping accordingly."
+  ([url]
+    (let [id (swap! counter inc)
+          id (Long/toString id 36)]
+      (or (shorten! url id)
+        (recur url))))
+  ([url id]
+    (dosync
+      (when-not (@mappings id)
+        (alter mappings assoc id url)
+        id))))
+
+(defn retain
+  [& [url id :as args]]
+  (if-let [id (apply shorten! args)]
+    {:status 201
+     :headers {"Location" id}
+     :body (list "URL " url " assigned the short identifier " id)}
+    {:status 409 :body (format "Short URL %s is already taken" id)}))
+
+(defn redirect
+  [id]
+  (if-let [url (url-for id)]
+    (response/redirect url)
+    {:status 404 :body (str "No such short URL: " id)}))
+
+(defroutes app*
+  (GET "/" request "Welcome!")
+
+  (PUT "/:id" [id url] (retain url id))
+  (POST "/" [url] (if (empty? url)
+                    {:status 400 :body "No `url` parameter provided"}
+                    (retain url)))
+  (GET "/:id" [id] (redirect id))
+  (GET "/list/" [] (interpose "\n" (keys @mappings)))
+  (compojure.route/not-found "Sorry, there's nothing here."))
+
 (def app (compojure.handler/api app*))
 ;; ; To run locally:
 ;; (use '[ring.adapter.jetty :only (run-jetty)]) 
@@ -379,3 +409,4 @@ id))))
     (POST "/admin/some-admin-action" request ...)
     app*)
 
+app*是另一层路由。

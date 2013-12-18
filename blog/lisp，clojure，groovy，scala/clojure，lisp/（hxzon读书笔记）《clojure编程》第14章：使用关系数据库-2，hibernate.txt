@@ -1,0 +1,181 @@
+（hxzon读书笔记）《clojure编程》第14章：使用关系数据库-2，hibernate
+
+by hxzon
+========
+Hibernate
+
+[org.hibernate/hibernate-core "4.0.0.Final"]
+
+package com.clojurebook.hibernate;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Entity;
+import org.hibernate.annotations.GenericGenerator;
+
+@Entity
+public class Author {
+    private Long id;
+    private String firstName;
+    private String lastName;
+    
+    public Author () {}
+
+    public Author (String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+    @Id
+    @GeneratedValue(generator="increment")
+    @GenericGenerator(name="increment", strategy = "increment")
+    public Long getId () {
+        return this.id;
+    }
+
+    public String getFirstName () {
+        return this.firstName;
+    }
+
+    public String getLastName () {
+        return this.lastName;
+    }
+
+    public void setId (Long id) {
+        this.id = id;
+    }
+
+    public void setFirstName (String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName (String lastName) {
+        this.lastName = lastName;
+    }
+}
+
+rsrc/hibernate.cfg.xml
+<!DOCTYPE hibernate-configuration SYSTEM
+"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.connection.driver_class">org.sqlite.JDBC</property>
+        <property name="hibernate.connection.url">jdbc:sqlite::memory:</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
+        <!-- Drop and re-create the database schema on startup -->
+        <property name="hbm2ddl.auto">create</property>
+        <mapping class="com.clojurebook.hibernate.Author"/>
+    </session-factory>
+</hibernate-configuration>
+
+|-- project.clj
+|-- rsrc
+| `-- hibernate.cfg.xml
+|-- java
+| `-- com
+| `-- clojurebook
+| `-- hibernate
+| |-- Author.java
+
+% lein javac
+...
+% lein repl
+
+(import 'org.hibernate.SessionFactory
+			'org.hibernate.cfg.Configuration
+			'com.clojurebook.hibernate.Author)
+
+public class HibernateUtil {
+    private static final SessionFactory sessionFactory = buildSessionFactory();
+    
+    private static SessionFactory buildSessionFactory() {
+        try {
+            return new Configuration().configure().buildSessionFactory();
+        }
+        catch (Throwable ex) {
+            System.err.println("Initial SessionFactory creation failed." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+    }
+
+    public static SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
+}
+
+(defonce session-factory
+  (delay (-> (Configuration.)
+           .configure
+           .buildSessionFactory)))
+
+保存数据。
+
+public static void saveAuthors (Author... authors) {
+    Session session = sessionFactory.openSession();
+    session.beginTransaction();
+    for (Author author : authors) {
+        session.save(author);
+    }
+    session.getTransaction().commit();
+    session.close();
+}
+
+saveAuthors(new Author("Christophe", "Grand"), new Author("Brian", "Carper"), ...);
+
+(defn add-authors
+  [& authors]
+  (with-open [session (.openSession @session-factory)]
+    (let [tx (.beginTransaction session)]
+      (doseq [author authors]
+        (.save session author))
+      (.commit tx))))
+
+(add-authors (Author. "Christophe" "Grand") (Author. "Brian" "Carper")
+  (Author. "Chas" "Emerick"))
+
+查询。
+
+Session session = HibernateUtil.getSessionFactory().openSession();
+try {
+    return (List<Author>)newSession.createQuery("from Author").list();
+} finally {
+    session.close();
+}
+
+(defn get-authors
+  []
+  (with-open [session (.openSession @session-factory)]
+    (-> session
+      (.createQuery "from Author")
+      .list)))
+
+(for [{:keys [firstName lastName]} (map bean (get-authors))]
+  (str lastName ", " firstName))
+;= ("Carper, Brian" "Emerick, Chas" "Grand, Christophe")
+
+(defmacro with-session
+  [session-factory & body]
+  `(with-open [~'session (.openSession ~(vary-meta session-factory assoc
+                                          :tag 'SessionFactory))]
+     ~@body))
+
+(defn get-authors
+  []
+  (with-session @session-factory
+    (-> session
+      (.createQuery "from Author")
+      .list)))
+
+(defmacro with-transaction
+  [& body]
+  `(let [~'tx (.beginTransaction ~'session)]
+     ~@body
+     (.commit ~'tx)))
+
+(defn add-authors
+  [& authors]
+  (with-session @session-factory
+    (with-transaction
+      (doseq [author authors]
+        (.save session author)))))
+
+

@@ -30,50 +30,58 @@ defmethod并不定义或重定义任何var。
 
 
 (defn- fill-dispatch [node value]
-(if (= :input (:tag node))
-[(:tag node) (-> node :attrs :type)]
-(:tag node)))
+    (if (= :input (:tag node))
+        [(:tag node) (-> node :attrs :type)]
+        (:tag node)))
 
 (defmulti fill
-"Fill a xml/html node (as per clojure.xml)
-with the provided value."
-#'fill-dispatch         ;使用#'增加了一层重定向，这使得可以修改转发函数而不需使用ns-unmap。如果没有#'就会捕获转发函数的值，随后就不会再更新。
-:default nil)
+    "Fill a xml/html node (as per clojure.xml)
+    with the provided value."
+    #'fill-dispatch         ;使用#'增加了一层重定向，这使得可以修改转发函数而不需使用ns-unmap。如果没有#'就会捕获转发函数的值，随后就不会再更新。
+    :default nil)
+
 (defmethod fill nil
-[node value]
-(assoc node :content [(str value)]))
+    [node value]
+    (assoc node :content [(str value)]))
+
 (defmethod fill [:input nil]
-[node value]
-(assoc-in node [:attrs :value] (str value)))
+    [node value]
+    (assoc-in node [:attrs :value] (str value)))
+
 (defmethod fill [:input "hidden"]
-[node value]
-(assoc-in node [:attrs :value] (str value)))
+    [node value]
+    (assoc-in node [:attrs :value] (str value)))
+
 (defmethod fill [:input "text"]
-[node value]
-(assoc-in node [:attrs :value] (str value)))
+    [node value]
+    (assoc-in node [:attrs :value] (str value)))
+
 (defmethod fill [:input "radio"]
-[node value]
-(if (= value (-> node :attrs :value))
-(assoc-in node [:attrs :checked] "checked")
-(update-in node [:attrs] dissoc :checked)))
+    [node value]
+    (if (= value (-> node :attrs :value))
+        (assoc-in node [:attrs :checked] "checked")
+        (update-in node [:attrs] dissoc :checked)))
+
 (defmethod fill [:input "checkbox"]
-[node value]
-(if (= value (-> node :attrs :value))
-(assoc-in node [:attrs :checked] "checked")
-(update-in node [:attrs] dissoc :checked)))
+    [node value]
+    (if (= value (-> node :attrs :value))
+        (assoc-in node [:attrs :checked] "checked")
+        (update-in node [:attrs] dissoc :checked)))
+
 (defmethod fill :default
-[node value]
-(assoc-in node [:attrs :name] (str value)))
+    [node value]
+    (assoc-in node [:attrs :name] (str value)))
 
 测试一下：
-(fill {:tag :input
-:attrs {:value "first choice"
-:type "checkbox"}}
-"first choice") 
+(fill { :tag :input
+        :attrs {:value "first choice"
+        :type "checkbox"}}
+      "first choice") 
 ;= {:tag :input,
 ;= :attrs {:checked "checked",
 ;= :type "checkbox",
 ;= :value "first choice"}}
+
 (fill *1 "off") 
 ;= {:tag :input
 ;= :attrs {:type "checkbox",
@@ -99,10 +107,13 @@ with the provided value."
 
 (derive ::checkbox ::checkable) 
 ;= nil
+
 (derive ::radio ::checkable)
 ;= nil
+
 (derive ::checkable ::input)
 ;= nil
+
 (derive ::text ::input)
 ;= nil
 
@@ -144,46 +155,48 @@ derive隐式的修改了全局层级。
 示例：用自定义层级实现fill。
 
 (ns-unmap *ns* 'fill)
+
 (def fill-hierarchy (-> (make-hierarchy) 
-(derive :input.radio ::checkable)
-(derive :input.checkbox ::checkable)
-(derive ::checkable :input)
-(derive :input.text :input)
-(derive :input.hidden :input)))
+                        (derive :input.radio ::checkable)
+                        (derive :input.checkbox ::checkable)
+                        (derive ::checkable :input)
+                        (derive :input.text :input)
+                        (derive :input.hidden :input)))
 
 (defn- fill-dispatch [node value]
-(if-let [type (and (= :input (:tag node))
-(-> node :attrs :type))]
-(keyword (str "input." type))
-(:tag node)))
+    (if-let [type (and (= :input (:tag node))
+                       (-> node :attrs :type))]
+            (keyword (str "input." type))
+            (:tag node)))
 
 (defmulti fill
-"Fill a xml/html node (as per clojure.xml)
-with the provided value."
-#'fill-dispatch
-:default nil
-:hierarchy #'fill-hierarchy) 
+    "Fill a xml/html node (as per clojure.xml) with the provided value."
+    #'fill-dispatch
+    :default nil
+    :hierarchy #'fill-hierarchy) 
 
 ;多重方法预期某种类型的引用类型作为:hierarchy选项的值，而不是一个层级值，这让你在必要时可以在运行时更新层级。
 ;在这种情况下，我们提供fill-hierarchy var，而不是它在求值defmulti形式时的值。
 ;可以用alter-var-root来动态修改层级，不需要重新定义多重方法的根。
 
 (defmethod fill nil [node value]
-(assoc node :content [(str value)]))
+    (assoc node :content [(str value)]))
+
 (defmethod fill :input [node value]
-(assoc-in node [:attrs :value] (str value)))
+    (assoc-in node [:attrs :value] (str value)))
+
 (defmethod fill ::checkable [node value]
-(if (= value (-> node :attrs :value))
-(assoc-in node [:attrs :checked] "checked")
-(update-in node [:attrs] dissoc :checked)))
+    (if (= value (-> node :attrs :value))
+        (assoc-in node [:attrs :checked] "checked")
+        (update-in node [:attrs] dissoc :checked)))
 
 关键字里的点号没有特别意义，它只是名称的一部分。
 
 我们还没有表达出未知输入类型应该视作文本。
 
-(fill {:tag :input
-:attrs {:type "date"}}
-"20110820")
+(fill { :tag :input
+        :attrs {:type "date"}}
+      "20110820")
 ;= {:content ["20110820"], :attrs {:type "date"}, :tag :input}
 
 问题是未知类型的输入是一个开放的集合，所以无法预先创建所需的所有派生。
@@ -194,49 +207,57 @@ with the provided value."
 
 示例，动态更新fill用到的层级。
 (defmethod fill nil [node value]
-(if (= :input (:tag node))
-(do
-(alter-var-root #'fill-hierarchy
-derive (fill-dispatch node value) :input) 
-(fill node value)) 
-(assoc node :content [(str value)])))
+    (if (= :input (:tag node))
+        (do
+            (alter-var-root #'fill-hierarchy
+                derive (fill-dispatch node value) :input) 
+            (fill node value))
+    (assoc node :content [(str value)])))
 
 现在可以工作了。
 
-(fill {:tag :input
-:attrs {:type "date"}}
-"20110820")
+(fill { :tag :input
+        :attrs {:type "date"}}
+      "20110820")
 ;= {:attrs {:value "20110820", :type "date"}, :tag :input}
 
 ----
 实现这一结果的一个不那么聪明的方法是引入一个fill-input多重方法，从fill的:input这种情形来调用它。
 
 (ns-unmap *ns* 'fill)
+
 (def input-hierarchy (-> (make-hierarchy)
-(derive :input.radio ::checkable)
-(derive :input.checkbox ::checkable))) 
+                         (derive :input.radio ::checkable)
+                         (derive :input.checkbox ::checkable))) 
+
 (defn- fill-dispatch [node value]
-(:tag node))
+    (:tag node))
+
 (defmulti fill
-"Fill a xml/html node (as per clojure.xml)
-with the provided value."
-#'fill-dispatch
-:default nil) 
+    "Fill a xml/html node (as per clojure.xml)
+    with the provided value."
+    #'fill-dispatch
+    :default nil)
+
 (defmulti fill-input
-"Fill an input field."
-(fn [node value] (-> node :attrs :type))
-:default nil
-:hierarchy #'input-hierarchy)
+    "Fill an input field."
+    (fn [node value] (-> node :attrs :type))
+    :default nil
+    :hierarchy #'input-hierarchy)
+
 (defmethod fill nil [node value]
-(assoc node :content [(str value)]))
+    (assoc node :content [(str value)]))
+
 (defmethod fill :input [node value]
-(fill-input node value))
+    (fill-input node value))
+
 (defmethod fill-input nil [node value]
-(assoc-in node [:attrs :value] (str value)))
+    (assoc-in node [:attrs :value] (str value)))
+
 (defmethod fill-input ::checkable [node value]
-(if (= value (-> node :attrs :value))
-(assoc-in node [:attrs :checked] "checked")
-(update-in node [:attrs] dissoc :checked)))
+    (if (= value (-> node :attrs :value))
+        (assoc-in node [:attrs :checked] "checked")
+        (update-in node [:attrs] dissoc :checked)))
 
 4，真正实现多重
 
@@ -252,51 +273,56 @@ with the provided value."
 可利用这一特性使得fill更聪明，让它根据value参数的类型做出适当的反应。
 
 (defn- fill-dispatch [node value]
-(if-let [type (and (= :input (:tag node))
-(-> node :attrs :type))]
-[(keyword (str "input." type)) (class value)]
-[(:tag node) (class value)]))
+    (if-let [type (and (= :input (:tag node))
+                       (-> node :attrs :type))]
+            [(keyword (str "input." type)) (class value)]
+            [(:tag node) (class value)]))
 
 多选框接受集合值，一个多选框被勾选当且仅当它的值属于这个集合。
 
 (ns-unmap *ns* 'fill)
+
 (def fill-hierarchy (-> (make-hierarchy)
-(derive :input.radio ::checkable)
-(derive :input.checkbox ::checkable)))
+                        (derive :input.radio ::checkable)
+                        (derive :input.checkbox ::checkable)))
+
 (defn- fill-dispatch [node value]
-(if-let [type (and (= :input (:tag node))
-(-> node :attrs :type))]
-[(keyword (str "input." type)) (class value)]
-[(:tag node) (class value)]))
+    (if-let [type (and (= :input (:tag node))
+                       (-> node :attrs :type))]
+            [(keyword (str "input." type)) (class value)]
+            [(:tag node) (class value)]))
+
 (defmulti fill
-"Fill a xml/html node (as per clojure.xml)
-with the provided value."
-#'fill-dispatch
-:default nil
-:hierarchy #'fill-hierarchy)
+    "Fill a xml/html node (as per clojure.xml) with the provided value."
+    #'fill-dispatch
+    :default nil
+    :hierarchy #'fill-hierarchy)
+
 (defmethod fill nil
-[node value]
-(if (= :input (:tag node))
-(do
-(alter-var-root #'fill-hierarchy
-derive (first (fill-dispatch node value)) :input) 
-(fill node value))
-(assoc node :content [(str value)])))
+    [node value]
+    (if (= :input (:tag node))
+        (do
+            (alter-var-root #'fill-hierarchy
+                derive (first (fill-dispatch node value)) :input) 
+            (fill node value))
+        (assoc node :content [(str value)])))
+
 (defmethod fill
-[:input Object] [node value]
-(assoc-in node [:attrs :value] (str value)))
+    [:input Object] [node value]
+    (assoc-in node [:attrs :value] (str value)))
+
 (defmethod fill [::checkable clojure.lang.IPersistentSet]
-[node value]
-(if (contains? value (-> node :attrs :value))
-(assoc-in node [:attrs :checked] "checked")
-(update-in node [:attrs] dissoc :checked)))
+    [node value]
+    (if (contains? value (-> node :attrs :value))
+        (assoc-in node [:attrs :checked] "checked")
+        (update-in node [:attrs] dissoc :checked)))
 
 测试一下。
 
-(fill {:tag :input
-:attrs {:value "yes"
-:type "checkbox"}}
-#{"yes" "y"})
+(fill { :tag :input
+        :attrs {:value "yes"
+        :type "checkbox"}}
+      #{"yes" "y"})
 ;= {:attrs {:checked "checked", :type "checkbox", :value "yes"}, :tag :input}
 
 (fill *1 #{"no" "n"})
@@ -312,12 +338,14 @@ derive (first (fill-dispatch node value)) :input)
 多重继承的问题，更偏爱哪个转发值。
 
 (defmulti run "Executes the computation." class)
+
 (defmethod run Runnable
-[x]
-(.run x))
+    [x]
+    (.run x))
+
 (defmethod run java.util.concurrent.Callable
-[x]
-(.call x))
+    [x]
+    (.call x))
 
 (run #(println "hello!"))
 ;= #<IllegalArgumentException java.lang.IllegalArgumentException:
@@ -334,47 +362,40 @@ derive (first (fill-dispatch node value)) :input)
 
 这个偏好机制让我们可以声明式的解决菱形继承问题。偏好是的多重继承关系明确，易于推理。
 
-----
-内省多重方法
-
-有一些罕用的函数可以在多重方法上元编程：remove-method，remove-all-methods，prefers，methods，get-method。
-这些函数可以查询、更新多重方法。
-
---
-(macroexpand-1 '(defmethod mmethod-name dispatch-value [args] body))
-;= (. mmethod-name clojure.core/addMethod dispatch-value (clojure.core/fn [args] 
-body)) 
-
-(defn add-method [multifn dispatch-val f]
-(.addMethod multifn dispatch-val f))
-
-这依赖于实现细节。
 
 ----
 (type x)通常返回与(class x)同样的值，除非x有 :type 元数据。
 :type 元数据是一种把数据分成不同类型，让这些类型用于多重方法的简洁办法。
 
 (ns-unmap *ns* 'run)
+
 (defmulti run "Executes the computation." type) 
+
 (defmethod run Runnable
-[x]
-(.run x))
+    [x]
+    (.run x))
+
 (defmethod run java.util.concurrent.Callable
-[x]
-(.call x))
+    [x]
+    (.call x))
+
 (prefer-method run java.util.concurrent.Callable Runnable)
+
 (defmethod run :runnable-map
-[m]
-(run (:run m)))
+    [m]
+    (run (:run m)))
+
 (run #(println "hello!"))
 ;= hello!
 ;= nil
+
 (run (reify Runnable
-(run [this] (println "hello!"))))
+        (run [this] (println "hello!"))))
 ;= hello!
 ;= nil
+
 (run ^{:type :runnable-map}
-{:run #(println "hello!") :other :data})
+     {:run #(println "hello!") :other :data})
 ;= hello!
 ;= nil
 
@@ -384,18 +405,21 @@ body))
 
 考虑一个信号系统，对每个信号的处理根据它的优先级而不同。
 
-(def priorities (atom {:911-call :high
-:evacuation :high
-:pothole-report :low
-:tree-down :low}))
+(def priorities (atom { :911-call :high
+                        :evacuation :high
+                        :pothole-report :low
+                        :tree-down :low}))
+
 (defmulti route-message
-(fn [message] (@priorities (:type message))))
+    (fn [message] (@priorities (:type message))))
+
 (defmethod route-message :low
-[{:keys [type]}]
-(println (format "Oh, there's another %s. Put it in the log." (name type))))
+    [{:keys [type]}]
+    (println (format "Oh, there's another %s. Put it in the log." (name type))))
+
 (defmethod route-message :high
-[{:keys [type]}]
-(println (format "Alert the authorities, there's a %s!" (name type))))
+    [{:keys [type]}]
+    (println (format "Alert the authorities, there's a %s!" (name type))))
 
 测试一下。
 (route-message {:type :911-call})
@@ -419,3 +443,18 @@ body))
 不过，一个多重方法的行为不是严格地依赖于参数所提供的值，则它不是幂等的。
 这会让它更难以理解、测试和与其它函数组合。
 
+==========
+5，内省多重方法
+
+有一些罕用的函数可以在多重方法上元编程：remove-method，remove-all-methods，prefers，methods，get-method。
+这些函数可以查询、更新多重方法。
+
+--
+(macroexpand-1 '(defmethod mmethod-name dispatch-value [args] body))
+;= (. mmethod-name clojure.core/addMethod dispatch-value (clojure.core/fn [args] 
+body)) 
+
+(defn add-method [multifn dispatch-val f]
+    (.addMethod multifn dispatch-val f))
+
+这依赖于实现细节。

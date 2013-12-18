@@ -1,0 +1,191 @@
+（hxzon读书笔记）《clojure编程》第16章：clojure与web-Enlive（模板）
+
+by hxzon
+========
+Enlive：基于css选择器的html转换。
+
+http://github.com/cgrand/enlive
+
+添加依赖项：[enlive/enlive "1.0.0"]
+
+(require '[net.cgrand.enlive-html :as h])
+;= nil
+
+(h/sniptest "<h1>Lorem Ipsum</h1>")
+;= "<h1>Lorem Ipsum</h1>"
+
+(h/sniptest "<h1>Lorem Ipsum</h1>"
+				[:h1] (h/content "Hello Reader!"))
+;= "<h1>Hello Reader!</h1>"
+
+(h/html-snippet "<p>x, <a id=\"home\" href=\"/\">y</a>, <a href=\"..\">z</a></p>")
+;= ({:tag :p,
+;= :attrs nil,
+;= :content
+;= ("x, "
+;= {:tag :a, :attrs {:href "/", :id "home"}, :content ("y")}
+;= ", "
+;= {:tag :a, :attrs {:href ".."}, :content ("z")})})
+
+
+(h/sniptest "<p>x, <a id=\"home\" href=\"/\">y</a>, <a href=\"..\">z</a></p>"
+  [:a#home] (h/set-attr :href "http://clojurebook.com")
+  [[:a (h/attr= :href "..")]] (h/content "go up"))
+;= "<p>x, <a href=\"http://clojurebook.com\" id=\"home\">y</a>, <a href=\"..\">go up</a>
+</p>"
+
+
+[:div [:span :.phone]] 等价于 [:div :span.phone] 。
+[:div [:span [:.phone :.mobile]]] 等价于 [:div :span.phone.mobile] 。
+
+ :h1 不是有效的选择器， [:h1] 才是。
+ 
+div#info span.phone, div#info span.email 表示为  #{[:div#info :span.phone] [:div#info :span.email]}
+
+[:div#info #{:span.phone :span.email}] 和  [:div#info [:span #{:.phone :.email}]] 相同。
+
+总结：
+sets denote disjunction, inner vectors denote conjunction, outermost vectors denote hierarchical chaining.
+
+(h/sniptest "<p class=\"\"><a href=\"\" class=\"\"></a></p>"
+  [[:p (h/attr? :class)]] (h/content "XXX"))
+;= "<p class=\"\">XXX</p>"
+
+(h/sniptest "<p class=\"\"><a href=\"\" class=\"\"></a></p>"
+  [[:p (h/attr? :class)]] (h/content "XXX"))
+;= "<p class=\"\"><a class=\"\" href=\"\">XXX</a></p>"
+
+
+(defn some-attr=
+  "Selector step, matches elements where at least one attribute
+  has the specified value."
+  [value]
+  (h/pred (fn [node]
+            (some #{value} (vals (:attrs node))))))
+
+(h/sniptest "<ul><li id=\"foo\">A<li>B<li name=\"foo\">C</li></ul>"
+  [(some-attr= "foo")] (h/set-attr :found "yes"))
+;= "<ul>
+;= <li found=\"yes\" id=\"foo\">A</li>
+;= <li>B</li>
+;= <li found=\"yes\" name=\"foo\">C</li>
+;= </ul>"
+
+迭代和分支
+
+(defn display
+  [msg]
+  (h/sniptest "<div><span class=\"msg\"></span></div>"
+    [:.msg] (when msg (h/content msg))))
+;= #'user/display
+
+(display "Welcome back!")
+;= "<div><span class=\"msg\">Welcome back!</span></div>"
+
+(display nil)
+;= "<div></div>"
+
+(defn display
+  [msg]
+  (h/sniptest "<div><span class=\"msg\"></span></div>"
+    [:.msg] (if msg
+              (h/content msg)
+              (h/add-class "hidden"))))
+;= #'user/display
+
+(display nil)
+;= "<div><span class=\"msg hidden\"></span></div>"
+
+(defn countdown
+  [n]
+  (h/sniptest "<ul><li></li></ul>"
+    [:li] (h/clone-for [i (range n 0 -1)]
+            (h/content (str i)))))
+;= #'user/countdown
+
+(countdown 0)
+;= "<ul></ul>"
+
+(countdown 3)
+;= "<ul><li>3</li><li>2</li><li>1</li></ul>"
+
+(defn countdown
+  [n]
+  (h/sniptest "<ul><li id=\"foo\"></li></ul>"
+    [:#foo] (h/do->
+              (h/remove-attr :id)
+              (h/clone-for [i (range n 0 -1)]
+                (h/content (str i))))))
+;= #'user/countdown
+
+(countdown 3)
+;= "<ul><li>3</li><li>2</li><li>1</li></ul>"
+
+;footer.html
+<div class="footer"/>
+
+
+(h/defsnippet footer "footer.html" [:.footer]
+  [message]
+  [:.footer] (h/content message))
+
+(footer "hello")
+;= ({:tag :div, :attrs {:class "footer"}, :content ("hello")})
+
+friends.html
+<h1>Hello, <span class="username"/></h1>
+<p>These are your friends:</p>
+<ul class="friends"><li/></ul>
+
+(h/deftemplate friends-list "friends.html"
+  [username friends]
+  [:.username] (h/content username)
+  [:ul.friends :li] (h/clone-for [f friends]
+                      (h/content f)))
+
+(friends-list "Chas" ["Christophe" "Brian"]) 
+;= ("<html>" "<body>" "<h1>" "Hello, " "<span class=\"username\">"
+;= "Chas" "</span>" "</h1>" "\n" "<p>These are your friends:</p>"
+;= "\n" "<ul class=\"friends\">" "<li>" "Christophe" "</li>" "<li>"
+;= "Brian" "</li>" "</ul>" "\n" "</body>" "</html>")
+
+(h/deftemplate friends-list "friends.html"
+  [username friends friend-class]
+  [:.username] (h/content username)
+  [:ul.friends :li] (h/clone-for [f friends]
+                      (h/do-> (h/content f)
+                        (h/add-class friend-class))))
+
+(friends-list "Chas" ["Christophe" "Brian"] "programmer")
+;= ("<html>" "<body>" "<h1>" "Hello, " "<span class=\"username\">" "Chas"
+;= "</span>" "</h1>" "\n" "<p>These are your friends:</p>" "\n"
+;= "<ul class=\"friends\">" "<" "li" " " "class" "=\"" "programmer" "\""
+;= ">" "Christophe" "</" "li" ">" "<" "li" " " "class" "=\"" "programmer"
+;= "\"" ">" "Brian" "</" "li" ">" "</ul>" "\n" "</body>" "</html>")
+
+<h1>Hello, <%= @user.name %></h1>
+<p>These are your friends:</p>
+<ul>
+<% @user.friends.each do |friend| %>
+<li class="<%= @friendclass %>"><%= friend.name %></li>
+<% end %>
+</ul>
+
+(h/deftemplate friends-list "friends.html"
+  [username friends friend-class]
+  [:.username] (h/content username)
+  [:ul.friends :li] (h/clone-for [f friends]
+                      (h/do-> (h/content f)
+                        (h/add-class friend-class)))
+  [:body] (h/append (footer (str "Goodbye, " username))))
+
+(friends-list "Chas" ["Christophe" "Brian"] "programmer")
+;= ("<html>" "<body>" "<h1>" "Hello, " "<span class=\"username\">" "Chas"
+;= "</span>" "</h1>" "\n" "<p>These are your friends:</p>" "\n"
+;= "<ul class=\"friends\">" "<" "li" " " "class" "=\"" "programmer" "\""
+;= ">" "Christophe" "</" "li" ">" "<" "li" " " "class" "=\"" "programmer"
+;= "\"" ">" "Brian" "</" "li" ">" "</ul>" "\n" "<div class=\"footer\">"
+;= "Goodbye, Chas" "</div>" "</body>" "</html>")
+
+
+

@@ -1,6 +1,0 @@
-（hxzon读书笔记）《clojure编程》第16章：clojure与web-Enlive（模板）
-
-by hxzon
-========
-Enlive：基于选择器的html转换。
-
