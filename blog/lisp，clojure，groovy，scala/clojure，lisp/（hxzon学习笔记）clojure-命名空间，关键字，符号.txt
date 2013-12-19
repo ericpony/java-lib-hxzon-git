@@ -1,8 +1,9 @@
-（hxzon学习笔记）clojure-命名空间
+（hxzon学习笔记）clojure-命名空间，关键字，符号
 
 by hxzon
 《clojure编程》第8章：clojure项目的组织与构建-项目布局
 《clojure编程》第10章：面向REPL的编程-工具集-内省命名空间
+《clojure编程》第1章：进入clojure仙境-关键字
 
 ==========
 clojure的命名空间，是从符号到java类名和var的动态映射。
@@ -231,4 +232,144 @@ ns-unalias，删除命名空间别名。
 
 (filter #(= 'clean-namespace (ns-name %)) (all-ns))
 ;= ()
+
+==============
+==============
+7，关键字
+
+关键字求值成它们自身。
+关键字经常作为访问器来获取它们对应的值。
+
+语法上，关键字始终以冒号开头。
+如果关键字包含斜杠，表示这个关键字是命名空间限定的。
+如果关键字以两个冒号开头，表示是当前命名空间的关键字。
+如果关键字以两个冒号开头，同时又包含斜杠，表示是某个特定命名空间里的关键字。
+这个设计与xml里的命名空间实体的用法和动机是一样的。
+
+命名空间限定的关键字，在多重方法以及isa?体系里面有很多的使用。
+
+
+
+
+一、创建： 
+
+----
+Keyword： 
+
+关键字是一个内部字符串; 两个同样的关键字指向同一个对象; 通常被用来作为map的key。 
+
+user=> (keyword 'foo)  
+:foo  
+user=> (keyword "foo")  
+:foo  
+user=> (keyword "user" "foo")  
+:user/foo  
+user=> (keyword "abc def")  
+:abc def  
+user=> (keyword "abcdef")  
+:abcdef  
+user=> (keyword "/abc/def/ghi")  
+:/abc/def/ghi  
+
+----
+Symbol： 
+
+Symbol是用来给东西命名的. 这些名字是被限制在名字空间里面的，要么是指定的名字空间，要么是当前的名字空间. 
+
+user=> (symbol 'foo)  
+foo  
+user=> (symbol "foo")  
+foo  
+user=> (symbol "clojure.core" "foo")  
+clojure.core/foo  
+user=> (symbol "abc def")  
+abc def  
+user=> (symbol "abcdef")  
+abcdef  
+
+=========
+二、用法：
+
+---- 
+1，name： 
+
+name函数接受一个参数，如果该参数为字符串，则直接返回该参数。
+如果不是字符串，则返回名称值。
+
+user=> (name :foo)  
+"foo"  
+user=> (name 'x)  
+"x"  
+user=> (name "x")  
+"x"  
+
+----
+2，intern: 
+
+intern函数有两个实现：(intern ns name)、(intern ns name val)。 
+根据命名空间ns中查找是否存在符号name，不存在，则创建；
+最后一个参数val作为值与符号进行绑定。
+
+user=> (intern 'user 'x)  
+#'user/x  
+
+user=> x  
+#<Unbound Unbound: #'user/x>  
+
+user=> (intern 'user 'x "1")  
+#'user/x  
+
+user=> x  
+"1"  
+
+----
+3，namespace： 
+
+namespace函数根据给定的符号、或者关键字返回所在的命名空间名称，如果当前没有，则返回nil。
+
+user=> (symbol 'xx)  
+xx  
+
+user=> (namespace 'user/xxx)  
+"user"  
+
+user=> (namespace 'xxx)  
+nil  
+
+user=> (def x :val)  
+#'user/x  
+
+user=> (namespace 'x)  
+nil  
+
+user=> (namespace 'user/x)  
+"user"  
+
+=========
+三、检查：
+ 
+keyword?、symbol?用于检查指定的参数是否为关键字、或者是符号，是则返回true，否则返回false。 
+
+user=> (symbol? 'x)  
+true  
+
+user=> (symbol? "x")  
+false  
+
+user=> (keyword? 'x)  
+false  
+
+user=> (keyword? :x)  
+true  
+
+user=> (keyword? "x")  
+false  
+
+参考资料：
+clojure-基本语法-符号及关键字
+http://dead-knight.iteye.com/blog/1830465
+
+
+
+
 

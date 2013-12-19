@@ -1,13 +1,48 @@
-clojure-基本语法-函数定义
+（hxzon学习笔记）clojure-定义函数
 
-http://dead-knight.iteye.com/blog/1828075
+by hxzon
+《clojure编程》第1章：进入clojure仙境-定义函数（fn），函数字面量
 
-
+=======
 一、创建函数：
 
 ---- 
 1，fn： 
-fn是一个宏（后面进行详细描述），用于定义一个简单的函数。
+fn是一个特殊形式，用来创建一个函数。
+
+fn接受let样式的绑定数组，let解构在这里同样适用。
+
+函数可以有多个参数列表（即函数可以根据参数个数不同进行重载）。
+定义多参数列表的函数时，每套“参数-函数体”都要放在一个单独的括号内。
+
+fn的第一个参数是一个可选的函数名字，使得可以在函数体中引用函数自己。
+
+(def strange-adder (fn  adder-self-reference
+                        ([x] (adder-self-reference x 1))
+                        ([x y] (+ x y))))
+;= #'user/strange-adder
+
+(strange-adder 10)
+;= 11
+
+(strange-adder 10 50)
+;= 60
+
+----
+1.1，用letfn来解决函数定义互相引用的问题。
+
+具名函数使得可以很简单的创建自递归的函数。
+
+一种更极端的情况是，定义两个互相引用的函数。
+这可以使用letfn来解决。
+
+(letfn [ (odd? [n]
+                (even? (dec n)))
+         (even? [n]
+            (or (zero? n)
+                (odd? (dec n))))] 
+       (odd? 11))
+;= true
 
 user=> (fn [] "hello")  
 #<user$eval375$fn__376 user$eval375$fn__376@eabd2f>  
@@ -19,7 +54,96 @@ user=> ((fn [x] x) "hello") ; 带参数
 "hello"  
 
 ----
-2，简短的函数可以使用#()，%表示唯一的参数；%1、%2 ..表示第1、2、..个参数；%&表示所有参数。
+1.2，defn是一个封装了def和fn的宏。
+
+----
+1.3，解构函数参数
+
+defn使用let来做函数参数的绑定。
+
+-1，可变参函数。
+使用&表示“剩余参数”。
+“剩余参数”列表可以像其它序列一样进行解构。
+
+(defn concat-rest
+    [x & rest]  ;不定参数
+    (apply str (butlast rest)))
+;= #'user/concat-rest
+
+(concat-rest 0 1 2 3 4)
+;= "123"
+
+(defn make-user
+    [& [user-id]]   ;解构“剩余参数”
+    {:user-id (or user-id
+        (str (java.util.UUID/randomUUID)))})
+;= #'user/make-user
+
+(make-user)
+;= {:user-id "ef165515-6d6f-49d6-bd32-25eeb024d0b4"}
+
+(make-user "Bobby")
+;= {:user-id "Bobby"}
+
+-2，关键字参数。
+有些参数不是必选的，有些参数可能有默认值，有时希望使用者可以不必按照某个特定顺序来传参。
+关键字参数跟在固定位置参数后面。
+
+(defn make-user
+    [username & {:keys [email join-date] 
+                 :or {join-date (java.util.Date.)}}]    ;给join-date定义了默认值。
+    {:username username
+     :join-date join-date
+     :email email
+     ;; 2.592e9 -> one month in ms
+     :exp-date (java.util.Date. (long (+ 2.592e9 (.getTime join-date))))})
+;= #'user/make-user
+
+(make-user "Bobby") 
+;= {:username "Bobby", :join-date #<Date Mon Jan 09 16:56:16 EST 2012>,
+;= :email nil, :exp-date #<Date Wed Feb 08 16:56:16 EST 2012>}
+
+(make-user "Bobby" 
+    :join-date (java.util.Date. 111 0 1)
+    :email "bobby@example.com")     ;多余的参数被当做map解构。
+;= {:username "Bobby", :join-date #<Date Sun Jan 01 00:00:00 EST 2011>,
+;= :email "bobby@example.com", :exp-date #<Date Tue Jan 31 00:00:00 EST 2011>}
+
+注：因为关键字参数是利用let的map解构的特性来实现的，
+所以关键字的参数名字理论上可以用任何类型的值（比如数字，字符串，甚至集合）。
+下面的示例，使用一个向量做关键字。
+
+(defn foo
+    [& {k ["m" 9]}]
+    (inc k))
+;= #'user/foo
+
+(foo ["m" 9] 19)
+;= 20
+
+
+----
+1.4，前置条件和后置条件。
+
+fn提供对函数参数和函数返回值进行检查的前置和后置条件。
+这在单元测试以及确保参数正确性方面非常有用。
+
+
+----
+2，函数字面量。
+简短的函数可以使用#()，即函数字面量，省去了fn，以及参数列表。
+%和%1表示第1个参数，%2，%n ..表示第2、n..个参数；最大的n表示参数个数。
+
+使用 %& 可以定义不定参数， 并且通过 %& 来引用那些剩余的参数。
+
+函数字面量不能嵌套。函数字面量嵌套会很难读懂，也没法区分参数是属于内层还是外层函数。
+
+函数字面量没有隐式地使用do。
+
+#(do (println (str %1 \^ %2))
+     (Math/pow %1 %2))
+
+
 
 user=> (#(/ % 3) 4);结果为3/4  
 4/3  
@@ -285,3 +409,6 @@ true
 user=> (fn? 1)  
 false  
 
+参考资料：
+clojure-基本语法-函数定义
+http://dead-knight.iteye.com/blog/1828075
