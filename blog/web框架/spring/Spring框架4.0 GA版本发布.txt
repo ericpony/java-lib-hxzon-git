@@ -1,0 +1,100 @@
+Spring框架4.0 GA版本发布
+
+作者 张卫滨 发布于 十二月 17, 2013
+http://www.infoq.com/cn/news/2013/12/spring4-release
+
+本月12日，SpringSourceCTOAdrian Colyer在博客中宣布Spring框架4.0 GA版本正式发布。
+
+这个版本支持了众多Java 8的新特性，新增了对WebSocket、STOMP等技术的支持，并增强了测试、Web开发的便利性，
+另外，在这个版本中还删除了废弃的方法和类。
+
+近十年来，Spring框架成为企业级Java开发中占据主导地位的编程模型，
+该框架最早发布于2004年，其后发布了几个重大的版本更新：
+
+在Spring 2.0中提供对XML命名空间和AspectJ的支持；
+Spring 2.5中新增了注解驱动的配置；
+在Spring 3.0版本中引入了很强大的使用Java 5+的基础功能以及基于Java的@Configuration模型。
+
+Spring 4.0 是最新的主版本，这个版本中包含了大量的新特性以应对Java语言和Java EE规范的发展。
+Spring 4.0是首个完全支持 Java 8 特性的框架，这个版本对环境的最低要求是Java SE 6。
+Spring 4.0连同其他的Spring项目，将会应对并带动下一个十年JVM的新趋势，
+包括开发人员生产率（Developer Productivity）、大数据、云、REST以及微服务架构（Micro Service Architecture）。
+
+
+Spring框架4.0的整体架构如下图所示：
+
+Spring 4.0的新特性包括：
+
+----
+对Java 8诸多特性的支持。
+
+现在开发者可以在Spring的回调接口中使用lambda表达式以及方法引用（method reference），
+对java.time（JSR-310）提供了很好的支持，
+一些注解也被更新为@Repeatable。
+
+尽管Spring 4.0还支持Java SE6，但是官方还是建议在使用Spring 4的新项目中，使用Java 7或8。
+
+----
+对Java EE 6和7的支持。
+
+Spring在JCP中协助定义相关的规范，框架中对这些规范提供了很好的支持。
+Spring框架的4.0版本考虑到了JavaEE6以及更高的版本规范，尤其是JPA 2.0和Servlet 3.0规范。
+
+为了更具技术前瞻性，Spring 框架4.0还支持Java EE 7 中已可用的规范，
+包括JMS 2.0、JTA 1.2、JPA 2.1、Bean Validation 1.1以及JSR-236 Concurrency Utilities。
+另外，对其他开源库的支持也提升到了最新版本，如Hibernate、Quartz、EhCache等。
+
+----
+对WebSocket、SockJS以及STOMP的支持。
+
+Spring 4.0提供了一个名为spring-websocket的新模块，以支持基于WebSocket的、客户端-服务器的双向通信，
+它与JSR-356Java WebSocket API兼容。
+
+另外，还提供了基于SockJS（对WebSocket的模拟）的回调方案，以适应不支持WebSocket协议的浏览器。
+
+新增的spring-messaging模块提供了对STOMP的支持，以及用于路由和处理来自WebSocket客户端的STOMP消息的注解编程模型。
+spring-messaging模块中还包含了Spring Integration项目中的核心抽象类，
+如Message、MessageChannel、MessageHandler。
+
+----
+对动态语言Groovy的支持。
+
+应用可以部分或完全使用Groovy编写。
+借助于Spring 4.0，能够使用Groovy DSL定义外部的Bean配置，
+这类似于XML Bean声明，但是语法更为简洁。
+使用Groovy还能够在启动代码中直接嵌入Bean的声明。
+
+----
+简化Spring的学习过程。
+
+Spring.io网站上提供了全新的“Getting Started”指导和样例帮助你学习Spring技术。
+基于Spring框架4.0构建的Spring Boot项目也可以极大地简化应用开发中相关配置的复杂性。
+
+----
+对未来新架构的考量。
+
+Adrian Colyer的博客还着重提到了新的应用架构。
+像Amazon、Google、Facebook这样的行业的领导者，目前正在抛弃庞大的Java架构，
+而是更加倾向于微服务架构（MSA，更多资料可以参见该文章）以及REST。
+James Lewis曾经在QCon上发表过一个演讲来阐述MSA的特征。
+针对这种趋势，Spring 4.0中做了充分考虑，在Spring框架中REST是一等公民，
+在其他组件如Spring Boot、Spring HATEOAS、Spring Security、Spring Social、Spring Data均是如此。
+借助于Spring 框架4.0，
+开发人员可以使用非阻塞的AsyncRestTemplate以及Java语言中的Futures等特性，
+构建出更加具有交互性、事件驱动的REST服务。
+
+Spring对HTML5/WebSocket RFC 6455/JSR-356的支持均有助于创建事件驱动的应用程序。
+
+----
+Spring框架4.0删除了所有废弃的方法和类。
+
+如果你想从一个之前的版本中升级到4.0的话，需要将所有对废弃方法和类的引用进行更新。
+升级到4.0迁移文档可以在Spring框架GitHub Wiki中的该页面查看，
+完整的用户指导文档，可以查看该页面。
+
+----
+除了核心框架以外，近年来，Spring中新增了许多新的项目以应对新的技术趋势和应用潮流，
+如Spring Boot、Spring XD、Spring HATEOAS、Spring Integration、Spring Batch、Spring Social、Spring Data等，
+您可以通过项目列表页面了解Spring各项目的最新进展。
+
+
