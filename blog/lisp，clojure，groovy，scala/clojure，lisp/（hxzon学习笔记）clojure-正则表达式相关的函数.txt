@@ -1,4 +1,4 @@
-（hxzon学习笔记）clojure正则表达式相关的函数
+（hxzon学习笔记）clojure-正则表达式相关的函数
 
 clojure-基本语法-正则表达式
 http://dead-knight.iteye.com/blog/1827994

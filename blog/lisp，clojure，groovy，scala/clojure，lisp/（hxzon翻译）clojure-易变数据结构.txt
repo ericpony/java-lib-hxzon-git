@@ -13,40 +13,110 @@ Summary
 
 =========
 Transient Data Structures
+易变数据结构。
 
 Rationale
 
 If a tree falls in the woods, does it make a sound?
+如果一棵树在森林中倒下，那么它发出声音了吗？
 If a pure function mutates some local data in order to produce an immutable return value, is that ok?
+一个纯函数在内部使用可变数据结构，但返回不可变对象，是否有问题？
 
-It's an interesting question. Clojure data structures use mutation every time you call, e.g. assoc, creating one or more arrays and mutating them, before returning them for immutable use thereafter. The reason is performance - you simply can't get as fast using only pure functions and immutable data. Once constructed and shared however, being immutable and persistent is essential to robust programs. The things Clojure mutates internally are small, newly allocated arrays that constitute the internal nodes of its data structures. No one ever sees the arrays.
+It's an interesting question. 
+Clojure data structures use mutation every time you call, 
+e.g. assoc, creating one or more arrays and mutating them, 
+before returning them for immutable use thereafter. 
 
-You run into a similar scenario, at a higher level, when you want to initialize or transform a large persistent data structure using multiple steps, none of which will be seen by any code other than the constructing/transforming code. The challenge here is that the source of a transformation will be an existing persistent data structure, and the result of the function will be shared. Copying into a traditional mutable data structure and back involves O(n) copying, and the internal code is an imperative mess quite unlike the rest of your Clojure code. Furthermore, there are no guards against accidentally sharing or aliasing the mutable data structure, especially if you need to call helper functions to do the work. In short, it would be a shame if you had to leave Clojure's model in order to speed up a piece of code like this. Transient data structures are a solution to this optimization problem that integrates with the Clojure model and provides the same thread safety guarantees you expect of Clojure.
+The reason is performance 
+- you simply can't get as fast using only pure functions and immutable data. 
+原因是性能。
+Once constructed and shared however, being immutable and persistent is essential to robust programs. 
+The things Clojure mutates internally are small, newly allocated arrays that constitute the internal nodes of its data structures. 
+No one ever sees the arrays.
+clojure在内部创建和使用数组（可变数据结构），外部看不见它。
+
+You run into a similar scenario, at a higher level, 
+when you want to initialize or transform a large persistent data structure using multiple steps, 
+none of which will be seen by any code other than the constructing/transforming code. 
+The challenge here is that the source of a transformation will be an existing persistent data structure, 
+and the result of the function will be shared. 
+Copying into a traditional mutable data structure and back involves O(n) copying, 
+and the internal code is an imperative mess quite unlike the rest of your Clojure code. 
+Furthermore, there are no guards against accidentally sharing or aliasing the mutable data structure, 
+especially if you need to call helper functions to do the work. 
+In short, it would be a shame if you had to leave Clojure's model in order to speed up a piece of code like this.
+ 
+Transient data structures are a solution to this optimization problem 
+that integrates with the Clojure model and provides the same thread safety guarantees you expect of Clojure.
+易变数据结构就是为了优化这个问题，提供一致的线程安全保障。
 
 ======
 How they work
 
-Transient data structures are always created from an existing persistent Clojure data structure. As of Clojure 1.1.0, vectors, hash-maps, and hash-sets are supported. Note that not all Clojure data structures can support this feature, but most will. Lists will not, as there is no benefit to be had.
+Transient data structures are always created from an existing persistent Clojure data structure. 
+As of Clojure 1.1.0, vectors, hash-maps, and hash-sets are supported. 
+从clojure 1.1.0开始，向量，哈希映射，哈希集合支持易变数据结构。
 
-You obtain a transient 'copy' of a data structure by calling transient. This creates a new transient data structure that is a copy of the source, and has the same performance characteristics. In fact, it mostly is the source data structure, and highlights the first feature of transients - creating one is O(1). It shares structure with its source, just as persistent copies share structure.
+Note that not all Clojure data structures can support this feature, but most will. 
+Lists will not, as there is no benefit to be had.
+其它数据结构以后也会有易变版本，除了列表，列表拥有易变版本没有意义。
 
-The second feature of transients is that creating one does not modify the source, and the source cannot be modified via use of the transient. Your source data is immutable and persistent as always.
+You obtain a transient 'copy' of a data structure by calling transient. 
+This creates a new transient data structure that is a copy of the source, 
+and has the same performance characteristics.
+ 
+In fact, it mostly is the source data structure, and highlights the first feature of transients 
+- creating one is O(1). 
+It shares structure with its source, just as persistent copies share structure.
+创建一个易变版本的效率是O(1)。
+它共享原有版本的数据结构。
 
-Transients support the read-only interface of the source, i.e. you can call nth, get, count and fn-call a transient vector, just like a persistent vector.
+The second feature of transients is that creating one does not modify the source, 
+and the source cannot be modified via use of the transient. 
+Your source data is immutable and persistent as always.
+创建了易变版本后，原有的版本仍然是不可变的。
 
-Transients do not support the persistent interface of the source data structure. assoc, conj etc will all throw exceptions, because transients are not persistent. Thus you cannot accidentally leak a transient into a context requiring a persistent.
+Transients support the read-only interface of the source, 
+i.e. you can call nth, get, count and fn-call a transient vector, just like a persistent vector.
+易变版本支持原来版本的读取接口。
 
-Transients support a parallel set of 'changing' operations, with similar names followed by ! - assoc!, conj! etc. These do the same things as their persistent counterparts except the return values are themselves transient. Note in particular that transients are not designed to be bashed in-place. You must capture and use the return value in the next call. In this way, they support the same code structure as the functional persistent code they replace. As the example will show, this will allow you to easily enhance the performance of a piece of code without structural change.
+Transients do not support the persistent interface of the source data structure. 
+assoc, conj etc will all throw exceptions, because transients are not persistent. 
+Thus you cannot accidentally leak a transient into a context requiring a persistent.
+易变版本不支持原来版本的持久化接口。
+使用assoc，conj会抛出异常。
 
-When you are finished building up your results, you can create a persistent data structure by calling persistent! on the transient. This operation is also O(1). Subsequent to calling persistent!, the transient should not be used, and all operations will throw exceptions. This will be true also for any aliases you might have created.
+Transients support a parallel set of 'changing' operations, 
+with similar names followed by ! - assoc!, conj! etc. 
+These do the same things as their persistent counterparts 
+except the return values are themselves transient. 
+易变版本支持写操作，函数名通常加上惊叹号后缀，它们语义相同，但是返回易变对象。
+Note in particular that transients are not designed to be bashed in-place. 
+You must capture and use the return value in the next call. 
+必须使用易变函数的返回值，而不是同一个易变对象。
+In this way, they support the same code structure as the functional persistent code they replace. 
+As the example will show, this will allow you to easily enhance the performance of a piece of code without structural change.
+
+When you are finished building up your results, 
+you can create a persistent data structure by calling persistent! on the transient. 
+This operation is also O(1). 
+当修改完成时，通过persistent! 重新得到不可变版本，它的效率也是O(1) 的。
+
+Subsequent to calling persistent!, the transient should not be used, and all operations will throw exceptions. 
+This will be true also for any aliases you might have created.
+当调用persistent! 之后，易变对象不再可用，不可再对它进行操作，否则抛出异常。
 
 ======
-Example
+Example，示例。
 
-Here's a very typical example, some code that builds up a vector for return, all 'changes' being local to the function. Note how the transient-using version has exactly the same structure, just:
+Here's a very typical example, 
+some code that builds up a vector for return, all 'changes' being local to the function. 
+Note how the transient-using version has exactly the same structure, just:
+
 Calling transient on the source vector
 Using conj! instead of conj
 Calling persistent! on return
+
 (defn vrange [n]
   (loop [i 0 v []]
     (if (< i n)
@@ -67,34 +137,72 @@ Calling persistent! on return
 Oh, yeah, transients are fast!
 
 ======
-Concurrent use
+Concurrent use，在并发中使用。
 
-That's all there is to using transients, but they have another important property: Transients enforce thread isolation. Because each result of a transient operation shares (mutable) structure with the previous, it would be very dangerous if more than one thread were to manipulate a transient at once. In order to prevent this, transients will detect any (read or write) use from a thread other than the one that created them and throw an exception.
+That's all there is to using transients, but they have another important property: 
+Transients enforce thread isolation.
+易变对象有个特性，强制线程隔离。
+ 
+Because each result of a transient operation shares (mutable) structure with the previous, 
+it would be very dangerous if more than one thread were to manipulate a transient at once.
+ 
+In order to prevent this, transients will detect any (read or write) use from a thread 
+other than the one that created them and throw an exception.
+如果易变对象在非创建它的线程中使用，会抛出异常。
 
-This may not sound like a concurrency story, but single-thread isolation is actually a very useful concurrency semantic. The whole point of using transients is that doing so is safe, because their use is an isolated implementation detail of otherwise functional code. Having that be enforced means that some things that would normally be very hard to make safe with ordinary mutable data structures become easy:
+This may not sound like a concurrency story, 
+but single-thread isolation is actually a very useful concurrency semantic. 
+The whole point of using transients is that doing so is safe, 
+because their use is an isolated implementation detail of otherwise functional code. 
+Having that be enforced means that 
+some things that would normally be very hard to make safe with ordinary mutable data structures become easy:
 
 Composite operations are ok, and require no locks
+能够组合操作，不需要锁。
+
 contrast with java.util.Vector, where each operation is synchronized, but that doesn't buy you much
+对比java的Vector，每个操作都要同步，而它不需要你付出很大代价。
+
 Multi-collection operations are ok, and require no locks
+能够多集合操作，不需要锁。
+
 contrast with any other j.u.Collection where locking is up to you
+对比java的集合类，总是需要锁。
+
 Aliasing or leakage will be caught
+泄露会被捕捉。
+
 Summary
+总结：
 
-Transients provide a high-performance optimization of functional data-structure-building code that works with Clojure's data structures and provides critical safety guarantees.
+Transients provide a high-performance optimization of functional data-structure-building code 
+that works with Clojure's data structures and provides critical safety guarantees.
+易变数据结构优化了性能，同时提供clojure数据结构线程安全的一致保证。
 
-Single-path use
-Thread isolation - enforced
-O(1) creation from persistent data structures
-Shares structure with persistent source
-O(1) creation of persistent data structure when editing session finished
+Single-path use，单路径使用（？）
+
+Thread isolation - enforced，强制线程隔离。
+
+O(1) creation from persistent data structures，创建易变对象效率是O(1)。
+
+Shares structure with persistent source，易变对象共享不可变对象的数据结构。
+
+O(1) creation of persistent data structure when editing session finished，转成不可变对象的效率是O(1)。
+
 Same code structure as functional version
-Capture return value, use for next call
-Don't bash in place
-Not persistent, so you can't hang onto interim values or alias
-Can't use after returning a persistent version
-Fast
 
-Transient persistent vectors, hash-maps, and hash-sets are available as of Clojure 1.1.0. Please try them out and give feedback on the Google Group.
+Capture return value, use for next call，总是使用返回值，而不是同一个对象。
+
+Don't bash in place
+
+Not persistent, so you can't hang onto interim values or alias，不是持久化的，
+
+Can't use after returning a persistent version，转成不可变对象后，原有易变对象不再可用。
+
+Fast，快速。
+
+Transient persistent vectors, hash-maps, and hash-sets are available as of Clojure 1.1.0. 
+Please try them out and give feedback on the Google Group.
 
 Thanks,
 

@@ -15,10 +15,18 @@ Regex Support
 Other Useful Functions and Macros
 
 Boolean and comparison functions: 
-= == identical? not= not true? false? nil? 
+布尔和比较函数
+= == identical? 
+not= 
+not 
+true? false? nil? 
 
 Miscellaneous: 
-identity dotimes time assert with-open 
+identity 
+dotimes 
+time 
+assert 
+with-open 
 
 ======
 Creating functions，创建方法。
@@ -32,6 +40,7 @@ fn，匿名函数。
 (3 4 5)
 
 #() reader macro，函数字面量。
+（省掉fn，省掉参数列表，%表示第1个参数，%2表示第2个参数，最大的%n表示参数总数。）
 (map #(+ 2 %) [1 2 3])
 (3 4 5)
 
@@ -53,6 +62,7 @@ constantly，固定返回值。
 
 =======
 Printing
+打印。
 
 Several functions are provided to print objects to the output stream that is the current value of *out*. 
 The -str versions bind *out* to a StringWriter, print to that, and return the resulting string. pr prints the object(s), 
@@ -67,26 +77,54 @@ When *print-readably* is non-nil, the printing of metadata is toggled by *print-
 --
 Related functions
 
-Print to *out*: pr prn print println newline
-Print to string: pr-str prn-str print-str println-str with-out-str
+Print to *out*:
+打印到标准输出。 
+pr 
+prn 
+print 
+println 
+newline
+
+Print to string: 
+打印到字符串。
+pr-str 
+prn-str 
+print-str 
+println-str 
+with-out-str
 
 ======
 Regex Support
+正则表达式。
 
-Regex patterns can be compiled at read-time via the #"pattern" reader macro, or at run time with re-pattern. Both forms produce java.util.regex.Pattern objects.
+Regex patterns can be compiled at read-time via the #"pattern" reader macro, 
+or at run time with re-pattern. 
+Both forms produce java.util.regex.Pattern objects.
+
+使用字面量（在编译期），或者re-pattern函数（在运行期）。
+
 user=> (re-seq #"[0-9]+" "abs123def345ghi567")
 ("123" "345" "567")
+
 user=> (re-find #"([-+]?[0-9]+)/([0-9]+)" "22/7")
 ["22/7" "22" "7"]
+
 user=> (let [[a b c] (re-matches #"([-+]?[0-9]+)/([0-9]+)" "22/7")]
          [a b c])
 ["22/7" "22" "7"]
+
 user=> (re-seq #"(?i)[fq].." "foo bar BAZ QUX quux")
 ("foo" "QUX" "quu")
 
 --
 Related functions
 
-re-matcher re-find re-matches re-groups re-seq
+re-matcher 
+re-find 
+re-matches 
+re-groups 
+re-seq
+
+
 
 

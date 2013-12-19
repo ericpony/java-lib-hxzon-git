@@ -1,0 +1,86 @@
+（hxzon翻译）clojure-命名空间及相关函数
+
+by hxzon
+http://clojure.org/namespaces
+======
+目录：
+
+Namespaces
+Related functions
+
+=====
+Namespaces
+命名空间。
+
+Namespaces are mappings from simple (unqualified) symbols to Vars and/or Classes.
+命名空间是一个映射，将无限定符号映射到Var或者java类。
+ 
+Vars can be interned in a namespace, using def or any of its variants, 
+in which case they have a simple symbol for a name and a reference to their containing namespace,
+and the namespace maps that symbol to the same var. 
+
+Var通过def及其变体，池化到一个命名空间。
+ 
+A namespace can also contain mappings from symbols to vars interned in other namespaces by using refer or use, 
+or from symbols to Class objects by using import. 
+
+可以使用refer或者user，从另一个命名空间导入符号到Var的映射。
+可以使用import，导入java类的简名。
+
+Note that namespaces are first-class, they can be enumerated etc.
+命名空间是一等公民，可以被枚举等。
+ 
+Namespaces are also dynamic, they can be created, removed and modified at runtime, at the Repl etc.
+命名空间是动态的，可以在运行时创建，移除或修改。
+
+
+The best way to set up a new namespace at the top of a Clojure source file is to use the ns macro. 
+By default this will create a new namespace contains mappings 
+for the classnames in java.lang and for the functions in clojure.core.
+
+通过ns宏可以创建一个新的命名空间，默认导入java.lang和clojure.core。
+
+At the Repl it's best to use in-ns, 
+in which case the new namespace will contain mappings only for the classnames in java.lang. 
+In order to access the names from the clojure.core namespace you must execute (clojure.core/refer 'clojure.core). 
+The user namespace at the Repl has already done this.
+
+在repl下，使用in-ns更佳，它创建一个新的命名空间，但只导入java.lang，不导入clojure.core。
+如果是user这个命名空间，则会导入clojure.core。
+
+The current namespace, *ns* can and should be set only with a call to in-ns or the ns macro, 
+both of which create the namespace if it doesn't exist.
+
+*ns*指向当前的命名空间，应当通过in-ns和ns宏来修改（内部）。
+
+======
+Related functions
+相关函数。
+
+Creating and switching to a namespace:
+创建和切换命名空间 
+in-ns ns create-ns
+
+Adding to a namespace: 
+向命名空间添加符号映射
+alias def import intern refer
+
+Finding what namespaces exist:
+查找命名空间
+all-ns find-ns
+
+Examining a namespace: 
+内省命名空间（查看命名空间中的符号）
+ns-name ns-aliases ns-imports ns-interns ns-map ns-publics ns-refers
+
+Getting a namespace from a symbol: 
+获得一个符号的命名空间
+resolve 
+ns-resolve 
+namespace
+
+Removing things:
+从命名空间取消符号映射 
+ns-unalias ，移除别名。
+ns-unmap ，移除映射。
+remove-ns，删除命名空间。

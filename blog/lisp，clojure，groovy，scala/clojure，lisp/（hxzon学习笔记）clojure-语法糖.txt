@@ -1,4 +1,4 @@
-（hxzon学习笔记）clojure语法糖
+（hxzon学习笔记）clojure-语法糖
 
 by hxzon
 

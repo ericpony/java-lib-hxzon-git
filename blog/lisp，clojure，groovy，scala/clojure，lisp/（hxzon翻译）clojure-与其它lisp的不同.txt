@@ -19,6 +19,7 @@ Clojure is a Lisp-1
 clojure是lisp-1的，变量和函数名在同一个空间。
 lisp-2的变量和函数名在2个空间，可以同时有一个变量f和一个函数f。
 Clojure和Scheme是Lisp-1，CLisp是Lisp-2。
+分属两个空间，会使得在某些地方，需要明确表明某个符号是变量还是函数，否则会歧义。
 
 () is not the same as nil
 
@@ -34,7 +35,7 @@ Keywords are not Symbols
 
 Symbols are not storage locations (see Var)
 
-符号不存储位置。（参见var。）
+符号不是存储位置。（参见var。）
 
 nil is not a Symbol
 
@@ -64,8 +65,8 @@ syntax-quote does symbol resolution, so `x is not the same as 'x.
 ` has auto-gensyms.
 ~ is unquote ',' is whitespace
 
-反引用对符号进行处理，所以`x不等同于'x。
-？反引用
+反引用对符号进行处理（会加上命名空间），所以`x不等同于'x。
+反引用会自动生成唯一名字。
 波浪号表示继续求值（在反引用表达式中），逗号等同于空白符。
 
 There is reader syntax for maps and vectors
@@ -82,7 +83,7 @@ Most data structures are immutable
 
 lambda is fn, and supports overloading by arity
 
-？lambda是函数，支持元数重载。
+lambda是函数，支持元数重载。
 
 = is the equality predicate
 
@@ -123,6 +124,7 @@ Thus there can be no sentinel empty collection value.
 
 集合不仅仅只有列表一种。
 可以使用字面量（[], {}, and ()）来创建各种空集合。
+（sentinel，哨兵。）
 ？没有其它方式表示空集合。
 
 Coming from Scheme, nil may map most closely to your notion of #f.
@@ -139,8 +141,8 @@ You can only tell if that sequence is empty by calling seq on it in turn.
 This enables sequences and the sequence protocol to be lazy.
 
 序列在clojure中是很特别的。
-序列不是一种特殊的集合。
-它们不需要具体的列表。
+序列不是一种具体的集合。
+它们不需要具体的列表结构。
 请求空集合的序列，将返回nil，意味着“我不能生成序列”。
 请求一个序列的最后一个元素的尾部，将返回另一个逻辑序列。
 你只能通过返回的序列是否为空来判断。
@@ -168,7 +170,7 @@ In both CL and Scheme they are conflated, in Clojure they are separate.
 
 （conflated，合并。）
 “集合/数据结构”和“序列/迭代”是不同的。
-在Scheme和CL中，它们是合并的。而在clojure中，它们是分离的。
+在Scheme和CL中，它们是同一的。而在clojure中，它们是分离的。
 
 ====
 表格：
