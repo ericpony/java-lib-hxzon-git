@@ -12,7 +12,8 @@ ISBN: 9787115285591, 7115285594
 ==========
 编辑推荐
 
-《Erlang/OTP并发编程实战》讲述了如果将Erlang语言看成才华横溢的钢琴家，那么OTP平台就是一架能让钢琴家把才能发挥得淋漓尽致的钢琴。
+《Erlang/OTP并发编程实战》讲述了如果将Erlang语言看成才华横溢的钢琴家，
+那么OTP平台就是一架能让钢琴家把才能发挥得淋漓尽致的钢琴。
 《Erlang/OTP并发编程实战》除了全面介绍Erlang语言和OTP平台的基础知识外，
 还通过一系列实用案例引领你深入了解OTP的高级特性，一步步构建一个大型生产系统，并加以优化和完善。
 三位作者在Erlang领域拥有极其丰富的实战经验，细致入微地剖析了OTP开发与部署的全过程。
@@ -26,7 +27,8 @@ ISBN: 9787115285591, 7115285594
 “多核处理器和并发编程是将来的重头戏。ErIang在下一代编程语言中可谓独领风骚！” 
 ——DZone书评 
 
-“Erlang开发者必备两本书，一本是ErIang之父Joe Arrrlstrong的《Erlang程序设计》，另一本就是本书——务实、高效又不失幽默风趣的好书啊！” 
+“Erlang开发者必备两本书，一本是ErIang之父Joe Arrrlstrong的《Erlang程序设计》，
+另一本就是本书——务实、高效又不失幽默风趣的好书啊！” 
 ——slashdot.org书评
 
 ----
@@ -34,13 +36,24 @@ ISBN: 9787115285591, 7115285594
 
 作者：（美国）洛根（Martin Logan）（美国）梅里特（Eric Merritt）（瑞典）卡尔森（Richard Carlsson） 译者：连城 
 
-洛根（Martin Logan），从1999年开始活跃于Erlang社区。后来全职从事Erlang研发。目前任职于全球最大的在线旅游公司OrbitzWorldwide，为基于大规模分布式服务的基础设施开发解决方案。Erlware联合创始人，核心开发人员。Erlang／OTP软件包管理系统Faxien的主要开发者。 
+洛根（Martin Logan），从1999年开始活跃于Erlang社区。
+后来全职从事Erlang研发。
+目前任职于全球最大的在线旅游公司OrbitzWorldwide，为基于大规模分布式服务的基础设施开发解决方案。
+Erlware联合创始人，核心开发人员。
+Erlang／OTP软件包管理系统Faxien的主要开发者。 
 
-梅里特（Eric Merritt），专注并发编程和分布式系统。曾任职于Amazon.com，现为eCD Market软件工程师。Erlware联合创始人，Erlang芝加哥用户组核心成员。Erlware团队开源产品核心开发人员，Erlang／OTP构建系统Sinan的主要开发者。 
+梅里特（Eric Merritt），专注并发编程和分布式系统。
+曾任职于Amazon.com，现为eCD Market软件工程师。
+Erlware联合创始人，Erlang芝加哥用户组核心成员。
+Erlware团队开源产品核心开发人员，Erlang／OTP构建系统Sinan的主要开发者。 
 
-卡尔森（Richard Carlsson），瑞典乌普萨拉大学高性能Erlang计划（HiPE）早期成员。研究Erlang技术达17年，曾为标准库、Erlang编译器、运行时系统和Erlang语言本身都作出过不少贡献。此外。他还是ErIang文档系统Edoc和单元测试框架Eunit的创建者。目前加入了Kreditor。致力于高可用性支付系统的Erlang开发。 
+卡尔森（Richard Carlsson），瑞典乌普萨拉大学高性能Erlang计划（HiPE）早期成员。
+研究Erlang技术达17年，曾为标准库、Erlang编译器、运行时系统和Erlang语言本身都作出过不少贡献。
+此外。他还是ErIang文档系统Edoc和单元测试框架Eunit的创建者。
+目前加入了Kreditor。致力于高可用性支付系统的Erlang开发。 
 
-连城，百度资深软件工程师，《Erlang并发编程（第一部分）》社区翻译项目组织者及主要译者。对分布式存储、分布式消息系统、程序语言设计实现抱有浓厚兴趣。
+连城，百度资深软件工程师，《Erlang并发编程（第一部分）》社区翻译项目组织者及主要译者。
+对分布式存储、分布式消息系统、程序语言设计实现抱有浓厚兴趣。
 
 ============
 目录

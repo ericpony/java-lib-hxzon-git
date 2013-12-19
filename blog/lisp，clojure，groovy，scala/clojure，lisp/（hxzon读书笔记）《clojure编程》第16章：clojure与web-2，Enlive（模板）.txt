@@ -6,10 +6,20 @@ Enlive：基于css选择器的html转换。
 
 http://github.com/cgrand/enlive
 
+1，大多数web框架使用模板系统，这些系统基本上就是通过字符串替换工作。
+模板存在以下问题：
+-1，模板里的html难以调试，在没有可用的web栈之前，不能确定模板html能否工作，也不能调整它的样式表。
+-2，代码也同样有问题，因为不模仿一个含有合适的域对象等的并不简单的环境，难以单独测试代码。
+简单说，模型和视图之间的耦合过于紧密。
+-3，模板的理想开发者得精通html又精通编程语言，由软件栈驱动模板。
+
+2，
 添加依赖项：[enlive/enlive "1.0.0"]
 
 (require '[net.cgrand.enlive-html :as h])
 ;= nil
+
+sniptest是一个工具，使repl里试验和转换html片段。
 
 (h/sniptest "<h1>Lorem Ipsum</h1>")
 ;= "<h1>Lorem Ipsum</h1>"
@@ -17,6 +27,13 @@ http://github.com/cgrand/enlive
 (h/sniptest "<h1>Lorem Ipsum</h1>"
 				[:h1] (h/content "Hello Reader!"))
 ;= "<h1>Hello Reader!</h1>"
+
+[:h1] 是一个选择器，与被转换的html里的所有h1元素匹配。
+Enlive的选择器是css选择器的超集。
+content是一个高阶函数，返回一个函数，把匹配的元素体设置成content的参数。
+
+----
+html-snippet解析任何html内容，返回映射的序列，每个映射代表一个元素及其属性和子内容。
 
 (h/html-snippet "<p>x, <a id=\"home\" href=\"/\">y</a>, <a href=\"..\">z</a></p>")
 ;= ({:tag :p,
@@ -28,24 +45,39 @@ http://github.com/cgrand/enlive
 ;= {:tag :a, :attrs {:href ".."}, :content ("z")})})
 
 
+一个不太简单的html转换。
+
 (h/sniptest "<p>x, <a id=\"home\" href=\"/\">y</a>, <a href=\"..\">z</a></p>"
   [:a#home] (h/set-attr :href "http://clojurebook.com")
   [[:a (h/attr= :href "..")]] (h/content "go up"))
 ;= "<p>x, <a href=\"http://clojurebook.com\" id=\"home\">y</a>, <a href=\"..\">go up</a>
 </p>"
 
-
+多数时候，在每一步前加上冒号，把所有东西包装到一个向量里。
+嵌套的向量，最外层向量表示链接，所有其他向量表示合取。
 [:div [:span :.phone]] 等价于 [:div :span.phone] 。
+
+合取的向量可以即兴嵌套。
 [:div [:span [:.phone :.mobile]]] 等价于 [:div :span.phone.mobile] 。
 
- :h1 不是有效的选择器， [:h1] 才是。
- 
+最外层的向量不是可选的。
+:h1 不是有效的选择器， [:h1] 才是。
+
+也支持析取。
 div#info span.phone, div#info span.email 表示为  #{[:div#info :span.phone] [:div#info :span.email]}
 
+析取不限于顶层，这点和css不同。
 [:div#info #{:span.phone :span.email}] 和  [:div#info [:span #{:.phone :.email}]] 相同。
 
 总结：
 sets denote disjunction, inner vectors denote conjunction, outermost vectors denote hierarchical chaining.
+集合表示析取，内部向量表示合取，最外层向量表示层次链接。
+
+----
+所有其他测试都是用谓词执行的，而且可任意扩展。
+这就是attr?的情况，css选择器a[class] 表示为 [[:a (attr? :class)]] 。
+注意嵌套向量，单个向量选择器，如[:a (attr? :class)] 与css中的 a *[class] 等价。
+差异是显著的。
 
 (h/sniptest "<p class=\"\"><a href=\"\" class=\"\"></a></p>"
   [[:p (h/attr? :class)]] (h/content "XXX"))
@@ -55,6 +87,13 @@ sets denote disjunction, inner vectors denote conjunction, outermost vectors den
   [[:p (h/attr? :class)]] (h/content "XXX"))
 ;= "<p class=\"\"><a class=\"\" href=\"\">XXX</a></p>"
 
+大多数css选择器已经提供。可以自定义选择器。
+可以用Enlive提供的pred或zip-pred高阶函数，它们分别接受对元素的谓词和对zipper的谓词为参数，
+产生一个Enlive可以用作选择器步骤的函数。
+
+attr=，匹配特定属性的值与给定值匹配的元素。
+
+定义一个新选择器步骤函数，它匹配任何属性的值与给定值匹配的元素。
 
 (defn some-attr=
   "Selector step, matches elements where at least one attribute
@@ -63,6 +102,7 @@ sets denote disjunction, inner vectors denote conjunction, outermost vectors den
   (h/pred (fn [node]
             (some #{value} (vals (:attrs node))))))
 
+使用。
 (h/sniptest "<ul><li id=\"foo\">A<li>B<li name=\"foo\">C</li></ul>"
   [(some-attr= "foo")] (h/set-attr :found "yes"))
 ;= "<ul>
@@ -71,7 +111,16 @@ sets denote disjunction, inner vectors denote conjunction, outermost vectors den
 ;= <li found=\"yes\" name=\"foo\">C</li>
 ;= </ul>"
 
+----
 迭代和分支
+
+Enlive里迭代和分支的关键，是理解转换可以是下列情况之一：
+-1，参数为一个元素，返回一个元素的函数。
+-2，参数为一个元素，返回一组元素的函数。
+-3，nil，与(fn [_] nil)等值。
+
+显示一个可选的信息就像使用when一样简单，它的条件在逻辑为假时求值得到nil。
+nil，占位内容会被移除。
 
 (defn display
   [msg]
@@ -85,6 +134,8 @@ sets denote disjunction, inner vectors denote conjunction, outermost vectors den
 (display nil)
 ;= "<div></div>"
 
+如果需要保留空的span（因为客户端需要它），就用if（或cond）。
+
 (defn display
   [msg]
   (h/sniptest "<div><span class=\"msg\"></span></div>"
@@ -95,6 +146,8 @@ sets denote disjunction, inner vectors denote conjunction, outermost vectors den
 
 (display nil)
 ;= "<div><span class=\"msg hidden\"></span></div>"
+
+clone-for来完成迭代。
 
 (defn countdown
   [n]
@@ -109,6 +162,10 @@ sets denote disjunction, inner vectors denote conjunction, outermost vectors den
 (countdown 3)
 ;= "<ul><li>3</li><li>2</li><li>1</li></ul>"
 
+关于迭代，一个常见需求是移除原先用于选择节点的某些属性，例如一个id。
+用do->函数，它会组合转换，按顺序应用这些转换。
+do->可用于一个转换可以出现的任何地方，因为它求值为其自身，因而可以自由组合转换函数。
+
 (defn countdown
   [n]
   (h/sniptest "<ul><li id=\"foo\"></li></ul>"
@@ -121,6 +178,14 @@ sets denote disjunction, inner vectors denote conjunction, outermost vectors den
 (countdown 3)
 ;= "<ul><li>3</li><li>2</li><li>1</li></ul>"
 
+----
+3，把所有的东西拼到一起
+
+defsnippet定义了一个函数，从classpath上的文件载入html。
+defsnippet的第三个参数是一个选择器，指定在载入html文件里要应用转换的根元素。
+defsnippet其余部分由一对对选择器和转换器组成。
+
+
 ;footer.html
 <div class="footer"/>
 
@@ -131,6 +196,10 @@ sets denote disjunction, inner vectors denote conjunction, outermost vectors den
 
 (footer "hello")
 ;= ({:tag :div, :attrs {:class "footer"}, :content ("hello")})
+
+deftemplate工作方式几乎一样，但不能为应用的转换定义一个根。
+deftemplate函数返回包含html片段的字符串的惰性序列，
+可以用作一个ring应答映射的:body，而不是返回表示html的映射序列。
 
 friends.html
 <h1>Hello, <span class="username"/></h1>
@@ -149,6 +218,8 @@ friends.html
 ;= "\n" "<ul class=\"friends\">" "<li>" "Christophe" "</li>" "<li>"
 ;= "Brian" "</li>" "</ul>" "\n" "</body>" "</html>")
 
+轻易组合。把一个新类加到例子中产生的每个列表元素里，用do->来组合两个转换器。
+
 (h/deftemplate friends-list "friends.html"
   [username friends friend-class]
   [:.username] (h/content username)
@@ -163,6 +234,10 @@ friends.html
 ;= ">" "Christophe" "</" "li" ">" "<" "li" " " "class" "=\"" "programmer"
 ;= "\"" ">" "Brian" "</" "li" ">" "</ul>" "\n" "</body>" "</html>")
 
+几乎没有增加代码密度，涉及的修改是明显的，在代码中可以分离出来。
+同时，模板文件没有变化。
+对比一下erb。
+
 <h1>Hello, <%= @user.name %></h1>
 <p>These are your friends:</p>
 <ul>
@@ -170,6 +245,8 @@ friends.html
 <li class="<%= @friendclass %>"><%= friend.name %></li>
 <% end %>
 </ul>
+
+把页脚加入页面。
 
 (h/deftemplate friends-list "friends.html"
   [username friends friend-class]

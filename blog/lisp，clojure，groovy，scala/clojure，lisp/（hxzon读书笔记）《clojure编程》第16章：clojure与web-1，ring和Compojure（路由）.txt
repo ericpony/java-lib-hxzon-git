@@ -20,10 +20,11 @@ https://github.com/fhd/clostache
 http://mustache.github.com
 https://github.com/mmcgrana/ring
 
+“装备齐全”的框架：
 Noir (http://www.webnoir.org) ，已停止开发。
 Ringfinger (https://github.com/myfreeweb/ringfinger)
 
-Immutant ，http://immutant.org ，基于JBoss的服务器。
+Immutant ，http://immutant.org ，基于JBoss的clojure应用服务器。
 
 添加依赖项：
 [ring "1.0.0"]
