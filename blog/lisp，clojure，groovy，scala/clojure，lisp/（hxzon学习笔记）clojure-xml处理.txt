@@ -1,11 +1,18 @@
-Clojure世界：XML处理
+（hxzon学习笔记）clojure-xml处理
 
+Clojure世界：XML处理
 http://www.blogjava.net/killme2008/archive/2012/02/18/370233.html
 
+hxzon学习笔记：
+1，clojure.xml 和 clojure.zip 。
+2，prxml 。
+3，clj-xpath，xpath支持。
+======
 XML处理也是个常见的编程工作，虽然说在Clojure里你很少使用XML做配置文件，
 但是跟遗留系统集成或者处理和其他系统通讯，可能都需要处理XML。
 
-    Clojure的标准库clojure.xml就是用来干这个事情的。
+Clojure的标准库clojure.xml就是用来干这个事情的。
+
 一个简单的例子如下，首先我们要解析的是下面这个简单的XML：
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -24,10 +31,11 @@ XML处理也是个常见的编程工作，虽然说在Clojure里你很少使用X
   </book>
 </books>
 
-    解析xml用clojure.xml/parse方法即可，该方法返回一个clojure.xml/element这个struct-map组成的一棵树：
+解析xml用clojure.xml/parse方法即可，该方法返回一个clojure.xml/element这个struct-map组成的一棵树：
 
 user=> (use '[clojure.xml])
 nil
+
 user=> (parse "test.xml")
 {:tag :books, :attrs nil, :content 
  [{:tag :book, :attrs nil, :content [{:tag :title, :attrs nil, :content ["The joy of clojure"]} {:tag :author, :attrs nil, :content ["Michael Fogus / Chris House"]}]} 
@@ -35,9 +43,13 @@ user=> (parse "test.xml")
  {:tag :book, :attrs nil, :content [{:tag :title, :attrs nil, :content ["Practical clojure"]} {:tag :author, :attrs nil, :content ["Luke Van der Hart"]}]}]}
 
 这是一个嵌套的数据结构，每个节点都是clojure.xml/element结构，element包括：
+
 (defstruct element :tag :attrs :content)
    
-tag、attrs和content属性，tag就是该节点的标签，attrs是一个属性的map，而content是它的内容或者子节点。
+tag、attrs和content属性，
+tag就是该节点的标签（以标签为名的关键字），attrs是一个属性的map，
+而content是它的内容或者子节点（一个映射的序列）。
+
 element是一个struct map，它也定义了三个方法来分别获取这三个属性：
 
 user=> (def x (parse "test.xml"))
@@ -54,7 +66,7 @@ user=> (content x)
 {:tag :book, :attrs nil, :content [{:tag :title, :attrs nil, :content ["Programming clojure"]} {:tag :author, :attrs nil, :content ["Stuart Halloway"]}]} 
 {:tag :book, :attrs nil, :content [{:tag :title, :attrs nil, :content ["Practical clojure"]} {:tag :author, :attrs nil, :content ["Luke Van der Hart"]}]}]
 
-   books节点是root node，它的content就是三个book子节点，子节点组织成一个vector，我们可以随意操作：
+books节点是root node，它的content就是三个book子节点，子节点组织成一个vector，我们可以随意操作：
 
 user=> (tag (first (content x)))
 :book
@@ -65,7 +77,8 @@ user=> (content (first (content x)))
 user=> (content (first (content (first (content x)))))
 ["The joy of clojure"]
 
-     额外提下，clojure.xml是利用SAX API做解析的。同样它还有个方法，可以将解析出来的结构还原成xml，通过emit：
+额外提下，clojure.xml是利用SAX API做解析的。
+同样它还有个方法，可以将解析出来的结构还原成xml，通过emit函数：
 
 user=> (emit x)
 
@@ -81,18 +94,21 @@ Michael Fogus / Chris House
 </book>
 <book>
 
-
-     如果你要按照深度优先的顺序遍历xml，可以利用xml-seq将解析出来的树构成一个按照深度优先顺序排列节点的LazySeq，
-接下来就可以按照seq的方式处理，比如利用for来过滤节点：
+----
+如果你要按照深度优先的顺序遍历xml，可以利用xml-seq将解析出来的树
+构成一个按照深度优先顺序排列节点的LazySeq，
+接下来就可以按照seq的方式处理，
+比如利用for来过滤节点：
 
 user=> (for [node (xml-seq x)
                   :when (= :author (:tag node))]
             (first (:content node)))
 ("Michael Fogus / Chris House" "Stuart Halloway" "Luke Van der Hart")
 
-    通过:when指定了条件，要求节点的tag是author，这样就可以查找出所有的author节点的content，是不是很方便？就像写英语描述一样。
+通过:when指定了条件，要求节点的tag是author，
+这样就可以查找出所有的author节点的content，是不是很方便？就像写英语描述一样。
 
-    更进一步，如果你想操作parse解析出来的这棵树，你还可以利用clojure.zip这个标准库，
+更进一步，如果你想操作parse解析出来的这棵树，你还可以利用clojure.zip这个标准库，
 它有xml-zip函数将xml转换成zipper结构，并提供一系列方法来操作这棵树：
 
 user=>(def xz (xml-zip x))
@@ -111,9 +127,10 @@ user=> (-> xz down right right lefts)
 ({:tag :book, :attrs nil, :content [{:tag :title, :attrs nil, :content ["The joy of clojure"]} {:tag :author, :attrs nil, :content ["Michael Fogus / Chris House"]}]} 
  {:tag :book, :attrs nil, :content [{:tag :title, :attrs nil, :content ["Programming clojure"]} {:tag :author, :attrs nil, :content ["Stuart Halloway"]}]})
 
-  是不是酷得一塌糊涂？
+是不是酷得一塌糊涂？
 可以通过up,down,left,right,lefts,rights,来查找节点的邻近节点，可以通过node来得到节点本身。
-一切显得那么自然。更进一步，你还可以“编辑“这棵树，比如删除The joy of clojure这本书：
+一切显得那么自然。
+更进一步，你还可以“编辑“这棵树，比如删除The joy of clojure这本书：
 
 user=>  (def loc-in-new-tree (remove (down xz)))
 #'user/loc-in-new-tree
@@ -123,18 +140,23 @@ user=> (root loc-in-new-tree)
 [{:tag :book, :attrs nil, :content [{:tag :title, :attrs nil, :content ["Programming clojure"]} {:tag :author, :attrs nil, :content ["Stuart Halloway"]}]} 
 {:tag :book, :attrs nil, :content [{:tag :title, :attrs nil, :content ["Practical clojure"]} {:tag :author, :attrs nil, :content ["Luke Van der Hart"]}]}]}
 
-   ok,只剩下两本书了，更多方法还包括replace做替换，edit更改节点等。
+只剩下两本书了，更多方法还包括replace做替换，edit更改节点等。
 因此编辑XML并重新生成，你一般可以利用clojure.zip来更改树，最后利用clojure.xml/emit将更改还原为xml。
 
-    生成xml除了emit方法，还有一个contrib库，也就是prxml，这个库的clojure 1.3版本有人维护了一个分支，在这里。
+======
+生成xml除了emit方法，还有一个contrib库，也就是prxml，
+这个库的clojure 1.3版本有人维护了一个分支，在这里。
 http://richhickey.github.com/clojure-contrib/prxml-api.html
 https://github.com/weissjeffm/clojure.prxml
+
 主要方法就是prxml，它可以将clojure的数据结构转换成xml：
 
 user=>(prxml [:p [:raw! "<i>here & gone</i>"]])
 <p><i>here & gone</i></p>
 
-    显然，它也可以用于生成HTML。
+显然，它也可以用于生成HTML。
 
-    xpath的支持可以使用clj-xpath这个开源库，遗憾的是它目前仅支持clojure 1.2。
+======
+xpath的支持可以使用clj-xpath这个开源库，遗憾的是它目前仅支持clojure 1.2。
 https://github.com/kyleburton/clj-xpath
+

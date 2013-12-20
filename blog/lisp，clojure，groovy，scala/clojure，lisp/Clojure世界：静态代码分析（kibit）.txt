@@ -1,4 +1,4 @@
-Clojure世界：静态代码分析
+Clojure世界：静态代码分析（kibit）
 
 http://www.blogjava.net/killme2008/archive/2012/03/23/372576.html
 
@@ -27,10 +27,11 @@ kibit会分析项目里所有clojure源码，每个namespace分别分析，例�
 [null] Consider Integer/parseInt instead of (fn* [p1__65254#] (Integer/parseInt p1__65254#))
 
     显然，kibit一个一个namespace分析过去，并且按照规则对它认为有问题的地方打印出来，并提出建议。
+
 例如这里它建议我用
 (zero? (:status (ssh host user cluster (str "test -e " file))))
     替换control.core里186行的：
- (= (:status (ssh host user cluster (str "test -e " file))) 0)
+(= (:status (ssh host user cluster (str "test -e " file))) 0)
 
     目前kibit大多数是这类代码风格上的检查，还没有做到类似findbugs那样更丰富的检查，例如NPE异常检查等。
 此外kibit还提供反射检查，任何有反射调用的地方都给出警告。
