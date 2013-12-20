@@ -1,0 +1,432 @@
+如何快速构建基于Spring4.0的Rest API（攻略）
+http://www.importnew.com/7903.html
+
+本文由 ImportNew - 邬柏 翻译自 javacodegeeks。
+如需转载本文，请先参见文章末尾处的转载要求。
+
+===========
+
+这是关于使用Spring MVC创建Web API的另一个教程。
+这并不是一个非常精细的教程，而仅仅是一个演习（攻略）。
+本教程旨在创建一个提供服务器端API的应用，并且使用Mongo作为它的数据库，使用Spring Security作为安全框架。
+
+准备开始——POM
+
+由于我是一个maven脑残粉，所以这个项目还是基于maven的。
+现在Spring 4.0 RC2已经发布了，所以我决定使用最新的依赖管理工具。
+本文使用的pom.xml如下：使用这个配置创建Spring MVC应用确实非常简单。
+这里面比较新鲜的东西就是dependencyManagement 元素。
+详解猛戳这儿：http://spring.io/blog/2013/12/03/spring-framework-4-0-rc2-available
+
+配置
+
+这个应用可以使用JavaConfig完成配置。
+我把它切分为下面几个部分：
+
+ServicesConfig（服务配置）
+
+无需扫描组件，配置真的非常简单：
+
+
+@Configuration
+public class ServicesConfig {
+    @Autowired
+    private AccountRepository accountRepository;
+ 
+    @Bean
+    public UserService userService() {
+        return new UserService(accountRepository);
+    }
+ 
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return NoOpPasswordEncoder.getInstance();
+    }
+}
+
+PersistenceConfig（持久层配置）
+
+我们想要一个配置了所有可用仓库的MONGODB配置。
+在这个简单的应用中我们只用了一个仓库，所以配置也非常的简单：
+
+@Configuration
+class PersistenceConfig {
+    @Bean
+    public AccountRepository accountRepository() throws UnknownHostException {
+        return new MongoAccountRepository(mongoTemplate());
+    }
+ 
+    @Bean
+    public MongoDbFactory mongoDbFactory() throws UnknownHostException {
+        return new SimpleMongoDbFactory(new Mongo(), "r");
+    }
+ 
+    @Bean
+    public MongoTemplate mongoTemplate() throws UnknownHostException {
+        MongoTemplate template = new MongoTemplate(mongoDbFactory(), mongoConverter());
+        return template;
+    }
+ 
+    @Bean
+    public MongoTypeMapper mongoTypeMapper() {
+        return new DefaultMongoTypeMapper(null);
+    }
+ 
+    @Bean
+    public MongoMappingContext mongoMappingContext() {
+        return new MongoMappingContext();
+    }
+ 
+    @Bean
+    public MappingMongoConverter mongoConverter() throws UnknownHostException {
+        MappingMongoConverter converter = new MappingMongoConverter(mongoDbFactory(), mongoMappingContext());
+        converter.setTypeMapper(mongoTypeMapper());
+        return converter;
+    }
+}
+
+SecurityConfig（安全配置）
+
+理论上，Spring Security 3.2完全可以使用JavaConfig。
+但对于我这也仅仅是一个理论，所以这里还是选择xml配置的方式：
+
+
+@Configuration
+@ImportResource("classpath:spring-security-context.xml")
+public class SecurityConfig {}
+
+使用这个xml就让API能使用基本的安全机制了。
+
+WebAppInitializer（初始化）
+
+我们不想使用web.xml，所以使用下面的代码配置整个应用：
+
+
+@Order(2)
+public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+ 
+    @Override
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+ 
+    @Override
+    protected Class[] getRootConfigClasses() {
+        return new Class[] {ServicesConfig.class, PersistenceConfig.class, SecurityConfig.class};
+    }
+ 
+    @Override
+    protected Class[] getServletConfigClasses() {
+        return new Class[] {WebMvcConfig.class};
+    }
+ 
+    @Override
+    protected Filter[] getServletFilters() {
+        CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
+        characterEncodingFilter.setEncoding("UTF-8");
+        characterEncodingFilter.setForceEncoding(true);
+        return new Filter[] {characterEncodingFilter};
+    }
+ 
+    @Override
+    protected void customizeRegistration(ServletRegistration.Dynamic registration) {        
+        registration.setInitParameter("spring.profiles.active", "default");
+    }
+}
+
+WebAppSecurityInitializer （安全配置初始化）
+
+相对于Spring3，可以使用下面这种更加新颖的特性来完成配置：
+
+
+@Order(1)
+public class WebAppSecurityInitializer extends AbstractSecurityWebApplicationInitializer {}
+WebMvcConfig （Mvc配置）
+
+调度控制器配置。这个也非常简单，仅仅包含了构建一个简单API的最重要配置：
+
+
+@Configuration
+@ComponentScan(basePackages = { "pl.codeleak.r" }, includeFilters = {@Filter(value = Controller.class)})
+public class WebMvcConfig extends WebMvcConfigurationSupport {
+ 
+    private static final String MESSAGE_SOURCE = "/WEB-INF/i18n/messages";
+ 
+    @Override
+    public RequestMappingHandlerMapping requestMappingHandlerMapping() {
+        RequestMappingHandlerMapping requestMappingHandlerMapping = super.requestMappingHandlerMapping();
+        requestMappingHandlerMapping.setUseSuffixPatternMatch(false);
+        requestMappingHandlerMapping.setUseTrailingSlashMatch(false);
+        return requestMappingHandlerMapping;
+    }
+ 
+    @Bean(name = "messageSource")
+    public MessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasename(MESSAGE_SOURCE);
+        messageSource.setCacheSeconds(5);
+        return messageSource;
+    }
+ 
+    @Override
+    public Validator getValidator() {
+        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+        validator.setValidationMessageSource(messageSource());
+        return validator;
+    }
+ 
+    @Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }
+}
+
+这就是需要的配置，非常简单吧！
+
+IndexController （INDEX控制器）
+
+为了验证这个配置是正确的，我创建了一个IndexController。
+功能非常简单，只是简单地返回“Hello World”，示例代码如下：
+
+@Controller
+@RequestMapping("/")
+public class IndexController {
+    @RequestMapping
+    @ResponseBody
+    public String index() {
+        return "This is an API endpoint.";
+    }
+}
+
+如果运行一下这个应用，就能够在浏览器中看到返回的“Hello World”文本。
+
+构建API
+
+UserService
+
+为了完成Spring安全框架配置，还需要完成另一个部分：实现之前创建的UserService。
+
+
+public class UserService implements UserDetailsService {
+    private AccountRepository accountRepository;
+ 
+    public UserService(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+ 
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Account account = accountRepository.findByEmail(username);
+        if(account == null) {
+            throw new UsernameNotFoundException("user not found");
+        }
+        return createUser(account);
+    }
+ 
+    public void signin(Account account) {
+        SecurityContextHolder.getContext().setAuthentication(authenticate(account));
+    }
+ 
+    private Authentication authenticate(Account account) {
+        return new UsernamePasswordAuthenticationToken(createUser(account), null, Collections.singleton(createAuthority(account)));  
+    }
+ 
+    private User createUser(Account account) {
+        return new User(account.getEmail(), account.getPassword(), Collections.singleton(createAuthority(account)));
+    }
+ 
+    private GrantedAuthority createAuthority(Account account) {
+        return new SimpleGrantedAuthority(account.getRole());
+    }
+}
+
+构建一个API节点需要处理三个方法：
+获取当前登陆用户、获取所有用户（可能不是太安全）、创建一个新账户。
+那么我们就按照这个步骤来进行吧。
+
+Account
+
+Account 将会是我们的第一个Mongo文档。同样也是非常简单：
+
+
+@SuppressWarnings("serial")
+@Document
+public class Account implements java.io.Serializable {
+ 
+    @Id
+    private String objectId;
+ 
+    @Email
+    @Indexed(unique = true)
+    private String email;
+ 
+    @JsonIgnore
+    @NotBlank
+    private String password;
+ 
+    private String role = "ROLE_USER";
+ 
+    private Account() {
+ 
+    }
+ 
+    public Account(String email, String password, String role) {
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+ 
+   // getters and setters
+}
+
+Repository
+
+先创建一个接口：
+
+
+public interface AccountRepository {
+    Account save(Account account);
+ 
+    List findAll();
+ 
+    Account findByEmail(String email);
+}
+
+接下来创建它的Mongo实现：
+
+
+public class MongoAccountRepository implements AccountRepository {
+ 
+    private MongoTemplate mongoTemplate;
+ 
+    public MongoAccountRepository(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
+ 
+    @Override
+    public Account save(Account account) {
+        mongoTemplate.save(account);
+        return account;
+    }
+ 
+    @Override
+    public List findAll() {
+        return mongoTemplate.findAll(Account.class);
+    }
+ 
+    @Override
+    public Account findByEmail(String email) {
+        return mongoTemplate.findOne(Query.query(Criteria.where("email").is(email)), Account.class);
+    }
+}
+
+API控制器
+
+功能快要完成了。
+我们需要将内容提供给用户，所以需要创建自己的节点：
+
+@Controller
+@RequestMapping("api/account")
+class AccountController {
+ 
+    private AccountRepository accountRepository;
+ 
+    @Autowired
+    public AccountController(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+ 
+    @RequestMapping(value = "current", method = RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    @PreAuthorize(value = "isAuthenticated()")
+    public Account current(Principal principal) {
+        Assert.notNull(principal);
+        return accountRepository.findByEmail(principal.getName());
+    }
+ 
+    @RequestMapping(method = RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    @PreAuthorize(value = "isAuthenticated()")
+    public Accounts list() {
+        List accounts = accountRepository.findAll();
+        return new Accounts(accounts);
+    }
+ 
+    @RequestMapping(method = RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.CREATED)
+    @ResponseBody
+    @PreAuthorize(value = "permitAll()")
+    public Account create(@Valid Account account) {
+        accountRepository.save(account);
+        return account;
+    }
+ 
+    private class Accounts extends ArrayList {
+        public Accounts(List accounts) {
+            super(accounts);
+        }
+    }
+}
+
+我希望你能明白：因为需要直接连接数据库，所以没有对密码进行编码。
+如果你比较在意这些小细节，那么可以稍后修改。目前这种方式是OK的。
+
+完成
+
+最后我考虑到还需要一个错误处理器，这样用户就可以看到JSON格式的错误信息而不是HTML。
+使用Spring Mvc以及@ControllerAdvice很容易实现这一点：
+
+
+@ControllerAdvice
+public class ErrorHandler {
+ 
+    @ExceptionHandler(value = Exception.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorResponse errorResponse(Exception exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+ 
+}
+ 
+public class ErrorResponse {
+    private String message;
+    public ErrorResponse(String message) {
+        this.message = message;
+    }
+    public String getMessage() {
+        return message;
+    }
+}
+
+如果你想了解关于Spring4 中@ControllerAdvice的用法，请点击以下链接。
+
+测试一下这个app
+
+作为一个单元测试极客，本来应该先创建一个单元测试。
+但是……这次哥想用用新的工具：Postman（Chrome 插件），所以请往下看我是怎么做的：
+
+获取所有account（非授权）（图）
+
+
+提交account（无需授权）（图）
+
+
+获取所有account（已授权）（图）
+
+
+获取当前account（已授权）（图）
+
+
+结束语
+
+以上就是所有内容，希望你能像我一样喜欢这种创建项目的方式。
+创建这个项目以及写这篇文章总共花了我大概三个钟头。
+其中绝大多数时间是配置安全框架（我希望它在Java中能够更加彻底），以及编写这篇攻略。
+
+
+
+原文链接： javacodegeeks 翻译： ImportNew.com - 邬柏
+译文链接： http://www.importnew.com/7903.html

@@ -1,0 +1,63 @@
+Paul Graham-为什么会有这么多的编程语言
+
+http://www.aqee.net/what-languages-fix/
+[英文原文：What Languages Fix ]
+http://www.paulgraham.com/fix.html
+相关文章：
+http://www.zhihu.com/question/20104312
+
+朋友Kevin Kelleher向我建议了一个比较各种编程语言的有趣方法：
+看看它们各自都是来解决什么问题的。
+可问题是，像这样去描述，你可以罗列出无数的语言，而且你可以使用各种的角度来描述。
+
+Algol: 汇编语言太低级了。
+
+Pascal: Algol语言缺少足够的数据类型。
+
+Modula: Pascal语言对于系统应用编程来说太弱了。
+
+Simula: Algol语言在仿真模拟方面不够好。
+
+Smalltalk:Simula语言里并不是所有的东西都是对象。
+
+Fortran:汇编语言太低级。
+
+Cobol: Fortran语言不好用。
+
+PL/1: Fortran语言缺少足够的数据类型。
+
+Ada:所有现存的编程语言都有缺失。
+
+Basic: Fortran语言不好用。
+
+APL: Fortran语言在数组操作上不好用。
+
+J: APL语言需要自己的字符集。
+
+C: 汇编语言太低级。
+
+C++: C语言太低级。
+
+Java: C++太笨重。微软在压迫我们。
+
+C#: Java是Sun公司控制的。
+
+Lisp: 用图灵机方式描述计算机计算太别扭。
+
+Scheme: MacLisp语言太笨拙。
+
+T: Scheme语言没有程序库。
+
+Common Lisp:Lisp语言的方言太多了。
+
+Dylan: Scheme语言没有程序库，Lisp语法太疯狂。
+
+Perl: Shell脚本/awk/sed都不像编程语言。
+
+Python: Perl语言太让人受不了。
+
+Ruby: Perl语言太笨拙，Lisp语法太疯狂。
+
+Prolog: 编程不够逻辑。
+
+

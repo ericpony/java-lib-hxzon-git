@@ -1,0 +1,55 @@
+为什么会有这么多种的数据库
+
+http://www.aqee.net/what-databases-fix/
+[英文原文：What Databases Fix ]
+http://cargocultcoder.blogspot.se/2012/12/what-databases-fix.html
+
+Paul Graham向我们展示了一个有趣的比较各种编程语言的方法：
+阐述各种编程语言都是用来解决什么问题的。
+我发现这种方法放在数据库上同样好用：
+
+Oracle: 我们需要企业级数据库。
+
+MySQL: Oracle不开源。
+
+PostgreSQL: MySQL的功能不够多。
+
+SQLite: 你可以把我嵌入到任何地方。
+
+这样，4种数据库够大家用了。
+
+MongoDB: 为什么我们要用join和模式(schema)?
+
+CouchDB: 为什么我们要有集合(collection)?
+
+Redis: 为什么我们要面向文档？
+
+Memcached: 为什么我们要用硬盘？
+
+Neo4j: SQL缺乏足够的关系。
+
+Bigtable: MongoDB的对web的扩展性不管好。
+
+Hbase: Bigtable不开源。
+
+Cassandra: Bigtable不是Facebook开发的。
+
+Riak: Cassandra不是用Erlang语言编写的。
+
+OrientDB: 让我们把所有东西都放到同一个数据库里！
+
+===========
+网友评论：
+
+db4o: 你们不是OO的。
+
+DB2：不能让oracle一个人垄断企业数据库。
+
+SQL Server：开源的数据库太多了。
+
+excel：为普通人打造的数据库。
+
+文本文档：别忘了我。
+
+firebird：。
+
