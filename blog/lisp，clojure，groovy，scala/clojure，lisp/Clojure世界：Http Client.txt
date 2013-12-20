@@ -2,19 +2,31 @@ Clojure世界：Http Client
 
 http://www.blogjava.net/killme2008/archive/2012/02/13/369890.html
 
-    使用http client提交表单或者下载网页也是非常常见的任务，比如使用Java的时候可以用标准库的HttpURLConnection，
-也可以选择Apache Http Client。在clojure里也有这样的类库，这里我将介绍三个各有特色的http client实现。
+hxzon学习笔记：
 
-    首先，我最先推荐使用clj-http这个类库，它是Apache HttpClient的clojure wrapper，是一个提供同步API的简单易用的Http Client。
+1，clj-http，对Apache HttpClient的简单封装。
+2，http.async.client，异步的http客户端。
+3，aleph，异步通讯。
+
+======
+使用http client提交表单或者下载网页也是非常常见的任务，
+比如使用Java的时候可以用标准库的HttpURLConnection，
+也可以选择Apache Http Client。
+在clojure里也有这样的类库，这里我将介绍三个各有特色的http client实现。
+
+========
+1，clj-http，对Apache HttpClient的简单封装。
+
+首先，我最先推荐使用clj-http这个类库，它是Apache HttpClient的clojure wrapper，是一个提供同步API的简单易用的Http Client。
 
 名称: clj-http
 主页：https://github.com/dakrone/clj-http
-依赖：
-[clj-http "0.3.1"]
+依赖：[clj-http "0.3.1"]
 
 例子：
 
 (require '[clj-http.client :as client])
+
 (client/get "http://google.com")
 
 结果：
@@ -62,29 +74,35 @@ http://www.blogjava.net/killme2008/archive/2012/02/13/369890.html
 (client/post "http//example.org" {:multipart [["title" "My Awesome Picture"]
                                               ["Content/type" "image/jpeg"]
                                               ["file" (clojure.java.io/file "pic.jpg")]]})
+
 ;; Multipart values can be one of the following:
 ;; String, InputStream, File, or a byte-array
 
 ;; Basic authentication
 (client/get "http://site.com/protected" {:basic-auth ["user" "pass"]})
+
 (client/get "http://site.com/protected" {:basic-auth "user:pass"})
 
 ;; Query parameters
 (client/get "http://site.com/search" {:query-params {"q" "foo, bar"}})
 
-    clj-http的API相当的简洁漂亮，使用起来非常便利，强烈推荐。
+clj-http的API相当的简洁漂亮，使用起来非常便利，强烈推荐。
 题外，学习clojure的一个好方法就是为现有的java类库实现一些方便的clojure wrapper。
 
-    如果你需要异步的http client，我会推荐http.async.client这个类库，
-它的API是异步形式的类似 Java的Future模式，对于clojure程序员来说应该更像是agent。
+======
+2，http.async.client，异步的http客户端。
+
+如果你需要异步的http client，我会推荐http.async.client这个类库，
+它的api是异步形式的，类似 Java的Future模式，对于clojure程序员来说应该更像是agent。
 
 名称：http.async.client
 主页：https://github.com/neotyk/http.async.client
-依赖：
-[http.async.client "0.4.1"]
+依赖：[http.async.client "0.4.1"]
 
 例子：
+
 (require '[http.async.client :as c])
+
 (with-open [client (c/create-client)]
   (let [response (c/GET client "http://neotyk.github.com/http.async.client/")]
     (prn (c/done? response))
@@ -102,10 +120,13 @@ true
 更多例子：
 
 (c/POST client "http://example.com" :body "hello world" :timeout 3000)
+
 (c/DELETE client "http://example.com")
+
 (c/POST client "http://example.com" :body "hello world" :auth {:type :basic :user "admin" :password "admin"})
 
 请注意，这些方法都是异步调用的，你需要通过await来等待调用完成，或者通过done?来判断调用是否完成。
+
 http.async.client有个比较重要的特性就是对Http Chunked编码的支持，分别通过LazySeq和callback的方式支持，
 
 首先看将Http chunked变成一个lazy seq:
@@ -131,9 +152,16 @@ http.async.client有个比较重要的特性就是对Http Chunked编码的支持
 
 自己传入一个callback函数接收chunk，比如这里用一个ref累积。
 
-http.async.client的详细文档看这里：http://neotyk.github.com/http.async.client/docs.html
+http.async.client的详细文档看这里：
+http://neotyk.github.com/http.async.client/docs.html
+
+======
+3，aleph，异步通讯。
 
 最后，有兴趣还可以看下aleph这个异步通讯的框架，它支持Http协议，也提供了http server和client的实现。
-不过它的API就没有那么简单明了，它的模型是类似go语言里利用channel做异步通讯的模型，http只是它的一个模块罢了，这是另一个话题了。
+
+不过它的api就没有那么简单明了，
+它的模型是类似go语言里利用channel做异步通讯的模型，
+http只是它的一个模块罢了，这是另一个话题了。
 https://github.com/ztellman/aleph
 

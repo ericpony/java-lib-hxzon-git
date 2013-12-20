@@ -3,6 +3,7 @@
 http://wiki.fnil.net/index.php?title=Leiningen_tutorial%E4%B8%AD%E6%96%87%E7%89%88
 
 目录：
+
 1 Leiningen教程
 1.1 声明
 
@@ -88,7 +89,8 @@ lein help可以获得一个任务列表，同时lein help task可以获取任务
 Leiningen项目
 
 Leiningen是跟项目打交道。
-一个项目就是一个包含了一组Clojure（可能也有Java）源码文件的目录，同时附带一些元信息。 元信息存在根目录的一个称为project.clj（默认名称）的文件。
+一个项目就是一个包含了一组Clojure（可能也有Java）源码文件的目录，同时附带一些元信息。
+元信息存在根目录的一个称为project.clj（默认名称）的文件。
 project.clj就是你用来告诉Leiningen项目是什么样的，它包括：
 
 项目名称
@@ -107,9 +109,11 @@ App的主namespace是什么（译注：就跟Java App里会有一个main的publi
 创建一个项目
 
 我们假设你已经按照README安装了Leiningen。 创建一个项目很简单：
+
    $ lein new my-stuff
 
 基于'default'模板，生成了一个名为my-stuff的项目：
+
    $ cd my-stuff
    $ tree
    .
@@ -125,7 +129,8 @@ App的主namespace是什么（译注：就跟Java App里会有一个main的publi
 ----
 目录布局
 
-到这一步，我们得到了项目的README，一个包含了代码的src/目录，一个 test/目录，以及一个向Leiningen描述项目的project.clj文件。 
+到这一步，我们得到了项目的README，一个包含了代码的src/目录，一个 test/目录，
+以及一个向Leiningen描述项目的project.clj文件。 
 
 src/my_stuff/core.clj文件对应my-stuff.core命名空间。
 
@@ -135,7 +140,8 @@ src/my_stuff/core.clj文件对应my-stuff.core命名空间。
 
 注意到我们使用my-stuff.core作为命名空间，而不只是my-sutff， 
 这是因为Clojure不鼓励使用只有一段（single-segment，译者注：意思是没有"."连接的的单一名称）的命名空间。 
-另外我们也注意到含有波折号（也就是减号）的命名空间，会被映射到波折号被下划线替换的文件，这是因为JVM加载含有波折号的文件会遇到问题。
+另外我们也注意到含有波折号（也就是减号）的命名空间，会被映射到波折号被下划线替换的文件，
+这是因为JVM加载含有波折号的文件会遇到问题。
 
 命名空间的错综复杂是新手感到困扰的一个常见来源，虽然我们已经偏离本教程的范围，但是你可以在别处阅读到它们。
 
@@ -147,8 +153,8 @@ project.clj
    (defproject my-stuff "0.1.0-SNAPSHOT"
      :description "FIXME: write description"
      :url "http://example.com/FIXME"
-     :license {:name "Eclipse Public License"
-               :url "http://www.eclipse.org/legal/epl-v10.html"}
+     :license { :name "Eclipse Public License"
+                   :url "http://www.eclipse.org/legal/epl-v10.html"}
      :dependencies org.clojure/clojure "1.4.0")
 
 如果你没有为description填写一个简短的（描述）句子，你的项目会很难在搜索结果里找到，所以请填写一下。
@@ -173,8 +179,9 @@ Artifact IDs, Groups和Versions
 你可以使用web接口搜索Clojars，搜索clj-http的结果页显示为：
    [clj-http "0.5.5"]
 
-有两种不同的途径来设置依赖clj-http类库的最新版本，一种是类似于上面所展示的Leiningen格式，另一种是Maven格式。
-我们现在略过Maven的方式，但是你需要为使用)来自Maven central的Java类库学习一下（maven方式）。
+有两种不同的途径来设置依赖clj-http类库的最新版本，
+一种是类似于上面所展示的Leiningen格式，另一种是Maven格式。
+我们现在略过Maven的方式，但是你需要为使用来自Maven central的Java类库学习一下maven方式。
 你可以直接拷贝Leiningen版本到project.clj里的:dependencies vector。
 
 在vector里，"clj-http"被称为"artifact id"（译者注：有maven经验的童鞋会很熟悉）。
@@ -186,7 +193,8 @@ group-id就是斜杠之前的部分。
 特别是对于Java类库来说，它通常是倒序的域名。
 而Clojure类库通常使用相同的group-id和artifact-id（例如clj-http），这种情况下你可以忽略group-id。 
 
-如果某个类库从属于一个很大的分组（例如ring-jetty-adapter是ring项目的一部分），那么通常所有子项目的group-id保持一样。
+如果某个类库从属于一个很大的分组（例如ring-jetty-adapter是ring项目的一部分），
+那么通常所有子项目的group-id保持一样。
 
 ----
 Snapshot版本
@@ -209,11 +217,13 @@ Snapshot版本
 如果你熟悉Perl的CPAN，Python的Cheeseshop(也就是PyPi)，Ruby的rubygems.org或者Node.js的NPM，它们其实是一类东西。 
 
 Leiningen重用已有的JVM仓库设施。已经有一些很流行的开源仓库。
+
 Leiningen默认使用它们中的两个： clojars.org和Maven Central。
 
 Clojars是Clojure社区的中心Maven仓库，而Central是更广泛的JVM社区的中心Maven仓库。
 
 你可以添加第三方仓库，通过设置project.clj里的:repositories关键字。
+
 查看sample.project.clj示范。
 
 ----
@@ -251,7 +261,7 @@ Leiningen提供了一种称为checkout依赖（简称checkouts）的解决办法
 
 checkouts目录里的类库比从仓库拉取的类库优先级更高，
 但是这不是用来替代罗列在项目project.clj里的:dependencies，而只是为了方便使用的一种补充手段。
-checkouts特性是非传递性的（译注：A依赖B,B依赖C，那么A将依赖C，这称为依赖传递）：
+checkouts特性是非传递性的（译注：A依赖B，B依赖C，那么A将依赖C，这称为依赖传递）：
 换句话说，Leiningen不会查找一个checkout依赖库的checkout依赖。
 
 ==========
@@ -348,6 +358,7 @@ REPL是一种你可以输入任意代码运行在项目上下文里的交互式�
 对于长时间运行的lein run进程，可能你希望利用高阶的trampoline任务来节省内存，
 它允许Leiningen的JVM进程在启动项目的JVM之前退出。
 （译注，可以通过lein help trampoline来查看任务的详细说明）：
+
    $ lein trampoline run -m my-stuff.server 5000
 
 =========
@@ -397,6 +408,7 @@ Uberjar
 
 最简单的事情是分发一个uberjar。
 这是一个单一的独立的可执行jar文件，特别适合给非技术用户。
+
 为了让它工作，你必须设置命名空间，作为project.clj里的:main。
 此时，我们的project.clj看起来像这样：
 
@@ -441,7 +453,8 @@ Uberjar
    $ java -jar my-stuff-0.1.0-standalone.jar Hello world.
    Welcome to my project! These are your args: (Hello world.)
 
-你可以利用java命令行运行一个普通的（非uber）jar，但是这需要你自己构建classpath，对于终端用户来说这不是一个好办法。
+你可以利用java命令行运行一个普通的（非uber）jar，
+但是这需要你自己构建classpath，对于终端用户来说这不是一个好办法。
 
 当然，如果你的用户已经安装了Leiningen，你可以教导他们使用上文介绍的lein run。
 
@@ -483,7 +496,7 @@ Uberjar
 
 有很多种方式可以让你的项目作为服务端应用来部署。
 除了明显的uberjar方式之外，简单的程序可以使用lein-tar插件伴随着shell脚本打包成tarball，
-然后使用pallet,chef或者其他机制部署。
+然后使用pallet，chef或者其他机制部署。
 
 Web应用可以作为uberjar部署，利用ring-jetty-adapter使用内嵌的Jetty，
 或者是使用lein-ring插件创建的.war文件。
@@ -498,7 +511,7 @@ Web应用可以作为uberjar部署，利用ring-jetty-adapter使用内嵌的Jett
 如果测试通过，上传tarball到S3（译者注：amazon的Simple Storage Service）。
 那么部署就变成只是在你的生产服务器下载并解压一个已知是良好的tarball的事情。
 
-另外，请记住run任务默认会包括user,dev和default配置项，这些并不适合生产环境。
+另外，请记住run任务默认会包括user，dev和default配置项，这些并不适合生产环境。
 使用lein trampoline with-profile production run -m myapp.main是更推荐做法的。
 默认情况下，生产配置是空的，
 但是如果你的部署包含了~/.m2/repository，这个部署是从产生tarball的CI运行得来的，
@@ -513,6 +526,7 @@ Web应用可以作为uberjar部署，利用ring-jetty-adapter使用内嵌的Jett
 如果你的项目是一个类库，并且你想让别人可以在他们的项目里将它作为依赖类库来使用，你就需要把它放到一个公开的仓库里。
 虽然你可以维护一个你自己的私有仓库，或者放到Central仓库，
 但是最简单的办法还是发布到Clojars。
+
 当你创建一个帐号后，发布变得很简单：
 
    $ lein deploy clojars

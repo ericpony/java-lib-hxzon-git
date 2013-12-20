@@ -1,4 +1,4 @@
-（hxzon学习笔记）clojure-IO
+（hxzon学习笔记）clojure-io处理
 
 Clojure世界：文件IO
 http://www.blogjava.net/killme2008/archive/2012/02/16/370144.html
