@@ -61,7 +61,7 @@ Ruby可以写的非常性感，Rails就是一个证明，不过因为我写的�
 --
 编程语言学习计划
 
-Factor语言: 所谓Concatenative language的理念很吸引我
+Factor语言: 所谓Concatenative language的理念很吸引我 （http://factorcode.org/）
 
 Smalltalk：OO语言的鼻祖
 
