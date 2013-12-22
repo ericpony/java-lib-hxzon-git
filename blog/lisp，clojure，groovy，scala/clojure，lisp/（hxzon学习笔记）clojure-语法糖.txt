@@ -3,12 +3,37 @@
 by hxzon
 
 ==========
+能被求值的S表达式称为“形式”。
+
 2.2  读者宏(Reader  Macros)
 
 语法糖即读者宏（Reader  Macros）。
 Clojure允许你定义自己的读者宏。
 读者宏是被前缀macro触发的特殊读者行为。
 读者宏是长列表形式的缩写，被用来减少复杂度，使代码看起来更简洁。
+
+==========
+clojure Reader （《clojure编程》第1章：进入clojure仙境）
+
+reader的所有操作是由一个叫做read的函数定义的，
+这个函数从一个字符流（需要一个类型为java.io.PushbackReader的参数，这是一个实现细节）里
+读入代码的文本形式，产生这个文本形式所对应的数据结构。
+
+clojure repl就是使用reader来读入文本代码的。
+reader函数读出的每个完整数据结构都会传给clojure的运行时来求值。
+
+read-string，这个函数与read函数做相同的事，但是接受一个字符串作为参数。
+
+(read-string "42")
+;= 42
+
+(read-string "(+ 1 2)")
+;= (+ 1 2)
+
+read的作用其实可以看做一种反序列化机制。
+
+pr和pr-str，它们把clojure里面的值打印到*out*，并且把这个值返回。
+
 ==========
 ----
 1，串行宏（《clojure编程》第5章《宏》）
