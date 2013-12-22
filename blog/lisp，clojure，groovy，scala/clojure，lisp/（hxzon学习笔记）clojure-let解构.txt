@@ -1,0 +1,208 @@
+（hxzon学习笔记）clojure-let解构
+
+by hxzon
+《clojure编程》第1章：进入clojure仙境-解构（let，第2部分）
+
+=======
+使用抽象集合的一个挑战是如何简洁的去访问一个集合中的多个数值。
+
+clojure的解构特性提供了一种简洁的语法来声明地从一个集合里面选取某些元素，
+并且把这些元素绑定到一个本地let绑定上。
+
+因为解构这个特性是由let提供的，所以任何间接使用了let的地方，
+如fn，defn，loop都可以使用。
+
+let支持两种类型的解构：对于顺序集合及对于map的解构。
+
+=======
+1，顺序解构
+
+1.1，可以对任何顺序集合进行解构，包括：
+-1，clojure原生的list，vector和seq。
+-2，任何实现了java.util.List的集合。
+-3，java数组。
+-4，字符串（对它解构的结果是一个个字符）。
+
+(def v [42 "foo" 99.2 [5 12]])
+;= #'user/v
+
+(let [[x y z] v]
+     (+ x z))
+;= 141.2
+
+顺序解构需要我们从集合的第一个元素开始解构。
+不关心的元素，可以用下划线表示忽略。
+
+----
+1.2，解构还支持嵌套解构。
+
+(let [[x _ _ [y z]] v]
+     (+ x y z))
+;= 59
+
+解构机制对于内嵌的层数是没有限制的，但是为了保持代码的可读性，最好不要内嵌太多层次。
+
+----
+1.3，保持“剩下的”元素
+
+用&来保持剩下的元素。
+
+(let [[x & rest] v]
+    rest)
+;= ("foo" 99.2 [5 12])
+
+注意，虽然v是一个向量，但rest是一个序列。
+
+这个是函数“不定参数”的基础。
+
+----
+1.4，保持被解构的值
+
+用:as选项来把整体绑定到一个本地绑定。
+
+(let [[x _ z :as original-vector] v]
+    (conj original-vector (+ x z)))
+;= [42 "foo" 99.2 [5 12] 141.2]
+
+
+========
+2，map解构
+
+2.1，可以对以下数据结构进行map解构：
+-1，clojure原生的hash-map，array-map以及记录类型。
+-2，任何实现java.util.Map的对象。
+-3，get方法所支持的任何对象，包括clojure原生向量，字符串，数组。
+
+(def m {:a 5 :b 6
+        :c [7 8 9]
+        :d {:e 10 :f 11}
+        "foo" 88
+        42 false})
+;= #'user/m
+
+(let [{a :a b :b} m]
+    (+ a b))
+;= 11
+
+注意，可以在map解构中用作key的不只是关键字，任何类型的值都可以。
+
+(let [{f "foo"} m]
+    (+ f 12))
+;= 100
+
+(let [{v 42} m]
+    (if v 1 0))
+;= 0
+
+如果要进行map解构的是向量，字符串或者数组，那么key则是数字类型的数组下标。
+
+(let [{x 3 y 8} [12 0 0 -18 44 6 0 0 1]]
+     (+ x y))
+;= -17
+
+这在操作一个用向量表示的矩阵时很方便，因为你可能只需要矩阵中间的某个值，这时用顺序解构会很麻烦。
+
+map解构也可以内嵌。
+
+(let [{{e :e} :d} m]
+    (* 2 e))
+;= 20
+
+----
+2.2，可以把顺序解构和map解构结合起来。
+
+(let [{[x _ y] :c} m]
+    (+ x y))
+;= 16
+
+(def map-in-vector ["James" {:birthday (java.util.Date. 73 1 6)}])
+;= #'user/map-in-vector
+
+(let [[name {bd :birthday}] map-in-vector]
+    (str name " was born on " bd))
+;= "James was born on Thu Feb 06 00:00:00 EST 1973"
+
+----
+2.3，保持被解构的集合。
+
+用:as选项。
+
+(let [  {r1 :x r2 :y :as randoms}
+        (zipmap [:x :y :z] (repeatedly (partial rand-int 10)))]
+     (assoc randoms :sum (+ r1 r2)))
+;= {:sum 17, :z 3, :y 8, :x 9}
+
+----
+2.4，默认值。
+
+用:or选项提供一个默认值的map。
+
+(let [  {k :unknown x :a
+        :or {k 50}} m]
+     (+ k x))
+;= 55
+
+:or选项还能用来区分是没有赋值，还是赋给的值本身就是false，nil。
+
+(let [  {opt1 :option} {:option false}
+        opt1 (or opt1 true)
+        {opt2 :option :or {opt2 true}} 
+        {:option false}]
+     {:opt1 opt1 :opt2 opt2})
+;= {:opt1 true, :opt2 false}
+
+----
+2.5，绑定符号到map中同名关键字所对应的元素。
+
+clojure提供了:keys :strs :syms来指定map中的key类型，分别是关键字，字符串，符号。
+一般用关键字会远多于字符串和符号。
+
+(def chas {:name "Chas" :age 31 :location "Massachusetts"})
+;= #'user/chas
+
+(let [{:keys [name age location]} chas]
+     (format "%s is %s years old and lives in %s." name age location))
+;= "Chas is 31 years old and lives in Massachusetts."
+
+这相当于：
+
+(let [{name :name age :age location :location} chas]
+     (format "%s is %s years old and lives in %s." name age location))
+;= "Chas is 31 years old and lives in Massachusetts."
+
+--
+(def brian {"name" "Brian" "age" 31 "location" "British Columbia"})
+;= #'user/brian
+
+(let [{:strs [name age location]} brian]
+     (format "%s is %s years old and lives in %s." name age location))
+;= "Brian is 31 years old and lives in British Columbia."
+
+--
+(def christophe {'name "Christophe" 'age 33 'location "Rhône-Alpes"})
+;= #'user/christophe
+
+(let [{:syms [name age location]} christophe]
+     (format "%s is %s years old and lives in %s." name age location))
+;= "Christophe is 31 years old and lives in Rhône-Alpes."
+
+2.6，对顺序集合的“剩余部分”使用map解构。
+
+剩余部分的元素个数需要是偶数。
+
+(def user-info ["robert8990" 2011 :name "Bob" :city "Boston"])
+;= #'user/user-info
+
+(let [[username account-year & {:keys [name city]}] user-info]
+     (format "%s is in %s" name city))
+;= "Bob is in Boston"
+
+相当于：
+
+(let [ [username account-year & extra-info] user-info 
+       {:keys [name city]} (apply hash-map extra-info)] 
+     (format "%s is in %s" name city))
+;= "Bob is in Boston"
+
+这个是函数“关键字参数”的基础。
+

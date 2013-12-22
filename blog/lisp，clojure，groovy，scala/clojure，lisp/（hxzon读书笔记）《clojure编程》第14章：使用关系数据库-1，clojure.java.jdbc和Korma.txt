@@ -2,7 +2,7 @@
 
 by hxzon
 =========
-clojure.java.jdbc
+1，clojure.java.jdbc
 
 [org.clojure/java.jdbc "0.1.1"]
 
@@ -13,13 +13,19 @@ clojure.java.jdbc
 http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC
 http://sqlite.org
 
+
 (require '[clojure.java.jdbc :as jdbc])
 ;= nil
+
+1.1，
+所有的clojure.java.jdbc操作都要求一个“描述”才能操作。
 
 (def db-spec {:classname "org.sqlite.JDBC"
               :subprotocol "sqlite"
               :subname "test.db"})
 ;= #'user/db
+
+每个jdbc驱动程序都要求略有不同的“描述”。
 
 {:classname "com.mysql.jdbc.Driver"
  :subprotocol "mysql"
@@ -27,17 +33,28 @@ http://sqlite.org
  :username "login"
  :password "password"}
 
+或者使用javax.sql.DataSource：
+
 {:datasource datasource-instance
  :username "login"
  :password "password"}
 
+或者使用jndi：
+
 {:name "java:/comp/env/jdbc/postgres"
  :environment {}} ; optional JNDI parameters for initializing javax.naming.InitialContext
 
+或者对于许多常用数据库，只需要一个uri风格的连接字符串：
+
 "mysql://login:password@localhost:3306/databasename"
+
+1.2，
+打开数据库连接（执行完会自动关闭连接）。
 
 (jdbc/with-connection db-spec)
 ;= nil
+
+创建表：
 
 (jdbc/with-connection db-spec
   (jdbc/create-table :authors
@@ -45,6 +62,8 @@ http://sqlite.org
     [:first_name "varchar"]
     [:last_name "varchar"]))
 ;= (0)
+
+插入数据：
 
 (jdbc/with-connection db-spec
   (jdbc/insert-records :authors
@@ -54,6 +73,9 @@ http://sqlite.org
 ;= ({:last_insert_rowid() 1}
 ;= {:last_insert_rowid() 2}
 ;= {:last_insert_rowid() 3})
+
+查询（结果集是映射的序列，每个映射是一行数据）：
+这里需要doall来“处理惰性”。
 
 (jdbc/with-connection db-spec
   (jdbc/with-query-results res ["SELECT * FROM authors"]
@@ -67,17 +89,27 @@ http://sqlite.org
     (doall (map #(str (:first_name %) " " (:last_name %)) res))))
 ;= ("Chas Emerick" "Christophe Grand" "Brian Carper")
 
+1.3，查询。
+
 (withquery-results res query & body)
+
+结果集自身是clojure映射的一个惰性序列。
+
+支持参数化查询。
 
 (jdbc/with-connection db-spec
   (jdbc/with-query-results res ["SELECT * FROM authors WHERE id = ?" 2]
     (doall res)))
 ;= ({:id 2, :first_name "Christophe", :last_name "Grand"})
 
+处理惰性。数据库连接已经关闭。
+
 (jdbc/with-connection db-spec
   (jdbc/with-query-results res ["SELECT * FROM authors"]
     res))
 ;= ({:id 1, :first_name "Chas", :last_name "Emerick"})
+
+设置一个工具函数来查询并完整的获取结果。
 
 (defn fetch-results [db-spec query]
   (jdbc/with-connection db-spec
@@ -90,7 +122,7 @@ http://sqlite.org
 ;= {:id 2, :first_name "Christophe", :last_name "Grand"}
 ;= {:id 3, :first_name "Brian", :last_name "Carper"})
 
-事务
+1.4，事务
 
 (jdbc/with-connection db-spec
   (jdbc/transaction
@@ -101,13 +133,15 @@ http://sqlite.org
 (fetch-results ["SELECT * FROM authors where id = ?" 1])
 ;= ({:id 1, :first_name "Chas", :last_name "Emerick"}) 
 
+设置事务分隔水平。
+
 (jdbc/with-connection db-spec
   (.setTransactionIsolation (jdbc/connection)
     java.sql.Connection/TRANSACTION_SERIALIZABLE)
   (jdbc/transaction
     (jdbc/delete-rows :authors ["id = ?" 2])))
 
-连接池
+1.5，连接池
 
 [c3p0/c3p0 "0.9.1.2"]
 
@@ -124,6 +158,8 @@ http://sqlite.org
                (.setUser username)
                (.setPassword password))]
     {:datasource cpds}))
+
+连接在首次使用时初始化，然后会保留下来供后续调用使用。
 
 (def pooled-db (pooled-spec db-spec))
 ; Dec 27, 2011 8:49:28 AM com.mchange.v2.c3p0.C3P0Registry banner
@@ -146,11 +182,11 @@ getPoolManager
 ;= {:id 3, :first_name "Brian", :last_name "Carper"})
 
 ======
-Korma
+2，Korma，使用关系数据库的一门领域专用语言。
 
 http://sqlkorma.com
 
-[korma "0.3.0"
+添加依赖：[korma "0.3.0"
 
 (require '[clojure.java.jdbc :as jdbc])
 
@@ -186,9 +222,21 @@ references country (id)"]
 ;= {:id 3, :country_id 2, :first_name "Brian", :last_name "Carper"}
 ;= {:id 4, :country_id 1, :first_name "Mark", :last_name "Twain"})
 
+----
+2.1，
+
 (use '[korma db core])
 
+defdb定义一个Korma能用的连接。
+最近被求值的defdb形式被设为“默认”连接。
+
 (defdb korma-db db-spec)
+
+可以使用Korma的get-connection函数来获得它所设立的连接池里的一个 连接。
+(get-connection korma-db)
+
+----
+2.2，定义实体，即告诉Korma数据库表的各种属性的规则说明，包括表之间的关系。
 
 (declare author)
 
@@ -201,12 +249,15 @@ references country (id)"]
   (table :author)
   (belongs-to country))
 
-查询
+----
+2.3，查询
 
 (select author
   (with country)
   (where {:first_name "Chas"}))
 ;= [{:id 1, :country_id 1, :first_name "Chas",:last_name "Emerick", :id_2 1, :country "USA"}]
+
+这里with表示包含一个关系，所以结果包含country键值对。
 
 (select author
   (with country)
@@ -223,6 +274,8 @@ references country (id)"]
 ;= [{:first_name "Brian", :last_name "Carper"}
 ;= {:first_name "Mark", :last_name "Twain"}]
 
+可以用sql-only函数查看Korma所生成的原始sql语句。
+
 (println (sql-only (select author
                      (with country)
                      (where (like :first_name "Ch%"))
@@ -234,10 +287,18 @@ references country (id)"]
 ;= ; WHERE "author"."first_name" LIKE ?
 ;= ; ORDER BY "author"."last_name" ASC LIMIT 1 OFFSET 1
 
+----
+2.4，为何不厌其烦的使用dsl？
+因为sql是字符串，没有结构。
+Korma把查询表示为简单的clojure映射，你可以对映射做操作，可以增量的构建查询。
+
+
 (def query (-> (select* author)
              (fields :last_name :first_name)
              (limit 5)))
 ;= #'user/query
+
+查看query映射：
 
 {:group [],
  :from
@@ -287,6 +348,9 @@ references country (id)"]
  :db nil,
  :aliases #{}}
 
+ruby on rails的ActiveRecord最新版本，也已经转而使用一个相似的方法，
+对查询对象用方法调用来形成sql查询。
+
 employees = Person.where(:type => "employee")
 # ... later ...
 managers = employees.where(:role => "manager").order(:last_name)
@@ -295,14 +359,20 @@ managers.all.each do |e|
 end
 
 (def employees (where (select* employees) {:type "employee"}))
-;; ... later ...
 
+;; ... later ...
 (let [managers (-> employees
                  (where {:role "manager"})
                  (order :last_name))]
   (doseq [e (exec managers)]
     ; ... process results ...
     ))
+
+----
+2.5，伪惰性（按需查询）。
+
+上面创建的查询都是“按需查询”的。
+直到korma的select函数显示的执行查询，数据才会从数据库里获取。
 
 (def humans (-> (select* humans)
               (order :date_of_birth)))
@@ -315,6 +385,5 @@ end
               (limit 10))]
     ;...
     ))
-
 
 

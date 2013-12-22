@@ -2,9 +2,12 @@
 
 by hxzon
 ========
-Hibernate
+3，Hibernate
 
+添加依赖：
 [org.hibernate/hibernate-core "4.0.0.Final"]
+
+3.1，
 
 package com.clojurebook.hibernate;
 import javax.persistence.GeneratedValue;
@@ -67,6 +70,12 @@ rsrc/hibernate.cfg.xml
     </session-factory>
 </hibernate-configuration>
 
+使用leiningen。
+在project.clj添加以下键值：
+:java-source-path "java"
+:resources-path "rsrc"
+
+
 |-- project.clj
 |-- rsrc
 | `-- hibernate.cfg.xml
@@ -79,6 +88,9 @@ rsrc/hibernate.cfg.xml
 % lein javac
 ...
 % lein repl
+
+--
+引入java类。
 
 (import 'org.hibernate.SessionFactory
 			'org.hibernate.cfg.Configuration
@@ -102,12 +114,17 @@ public class HibernateUtil {
     }
 }
 
+用clojure更简洁：
+
 (defonce session-factory
   (delay (-> (Configuration.)
            .configure
            .buildSessionFactory)))
 
-保存数据。
+delay确保->表达式在实际创造和配置这个会话工厂时没有被求值，直到它被解引用。
+
+----
+3.2，保存数据。
 
 public static void saveAuthors (Author... authors) {
     Session session = sessionFactory.openSession();
@@ -152,6 +169,11 @@ try {
   (str lastName ", " firstName))
 ;= ("Carper, Brian" "Emerick, Chas" "Grand, Christophe")
 
+----
+3.3，去掉样板。
+
+使用with-open宏自动打开和关闭数据库连接。
+
 (defmacro with-session
   [session-factory & body]
   `(with-open [~'session (.openSession ~(vary-meta session-factory assoc
@@ -170,6 +192,8 @@ try {
   `(let [~'tx (.beginTransaction ~'session)]
      ~@body
      (.commit ~'tx)))
+
+with-transaction是一个“前指的宏”。
 
 (defn add-authors
   [& authors]
