@@ -1,5 +1,6 @@
-Programming Clojure学习笔记——前言-为什么选择Clojure
+（读书笔记）《clojure程序设计》-前言-为什么选择Clojure
 
+Programming Clojure学习笔记——前言-为什么选择Clojure
 http://blog.csdn.net/zh2qiang/article/details/7080411
 
 =======
@@ -19,7 +20,7 @@ Clojure提供了多种可选的锁：软件事务性存贮，代理，原子和�
 5. 拥抱Java
 Clojure中可以快速直接的调用Java类，没有转换层。
 
-6. Clojure很快，在现代JVM的性能达到最优
+6. Clojure很快，在现代JVM的性能达到最优。
 
 ========
 1.1 为什么选择Clojure？

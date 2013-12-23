@@ -63,8 +63,65 @@ hxzon补充：
 (meta b)
 ;= {:modified 1322065229972, :created 1322065198169}
 
-meta，获得对象的元数据（是一个映射）。
+1，meta，获得对象的元数据（是一个映射）。
 
-with-meta是把一个值的元数据完全替换成给定的元数据。
+2，with-meta是把一个值的元数据完全替换成给定的元数据。
 
-vary-meta则通过给定的函数（它的参数是当前的元数据）进行更新。
+3，vary-meta则通过给定的函数（它的参数是当前的元数据）进行更新。
+
+4，尖波号读取一个映射字面量，然后将它作为元数据添加到下一个形式。
+
+^{:a 1 :b 2} [1 2 3] 返回一个向量，添加了元数据。
+
+尖波号也可以获得一个对象的元数据。（hxzon：这是老版本，现在已不支持？）
+
+----
+元数据可以被继承，在已有对象的基础上创建新对象，则新对象拥有已有对象的元数据。
+
+(def stu {:name "Stu" :email "stu@thinkrelevance.com"})
+
+(def serializable-stu (with-meta stu {:serializable true}))
+
+user=> (def stu-with-address (assoc serializable-stu :state "NC"))
+#'user/stu-with-address
+
+user=> (meta stu-with-address)
+{:serializable true}
+
+=======
+（http://clojure.org/reader）
+
+Metadata is a map associated with some kinds of objects: Symbols, Lists, Vector, Sets, Maps, 
+tagged literals returning an IMeta, and record, type, and constructor calls. 
+The metadata reader macro first reads the metadata and attaches it to the next form read
+(see with-meta to attach meta to an object):
+
+^{:a 1 :b 2} [1 2 3] yields the vector [1 2 3] with a metadata map of {:a 1 :b 2}.
+
+元数据是一个映射，添加到如下对象：符号，列表，向量，集合，映射，
+标记字面量返回IMeta（？），记录，类型，和构造器。
+尖波号读取一个映射字面量，然后将它作为元数据添加到下一个形式。
+
+A shorthand version allows the metadata to be a simple symbol or string, 
+in which case it is treated as a single entry map with a key of :tag and a value of the (resolved) symbol or string, e.g.:
+
+^String x is the same as ^{:tag java.lang.String} x
+
+Such tags can be used to convey type information to the compiler.
+
+如果元数据是一个简单的符号或字符串，可以缩写。
+例如 ^{:tag java.lang.String} x ，可缩写成 ^String x 。
+这种标记可以用来向编译器提供类型信息。
+
+Another shorthand version allows the metadata to be a keyword, 
+in which case it is treated as a single entry map with a key of the keyword and a value of true, e.g.:
+
+^:dynamic x is the same as ^{:dynamic true} x
+
+如果元数据是一个单项的映射，且值为true，可以缩写。
+^{:dynamic true} x ，可以缩写成 ^:dynamic x 。
+
+Metadata can be chained in which case they are merged from right to left.
+
+如果元数据是从右到左合并起来的，可以串联起来。
+

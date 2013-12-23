@@ -1,9 +1,15 @@
+（读书笔记）《clojure程序设计》-第2章：探索Clojure-3，函数，5，流控制，6，元数据
+
 Programming Clojure学习笔记——探索Clojure-2.3函数，2.5流控制，2.6元数据
-
-
 http://blog.csdn.net/zh2qiang/article/details/7080457
 http://blog.csdn.net/zh2qiang/article/details/7080472
 http://blog.csdn.net/zh2qiang/article/details/7080479
+
+-------
+hxzon学习笔记：
+
+1，元数据可以被继承，在已有对象的基础上创建新对象，则新对象拥有已有对象的元数据。
+2，hxzon：新版本，^不再用于获取元数据。^代替#^ 用来设置类型提示。（？）
 
 ==========
 2.3  函数
@@ -87,6 +93,7 @@ Romeo  and  Juliet  went  out  with  2  chaperones.
 匿名函数
 
 defn用来定义一级函数，如果想在函数中定义函数，则需要使用匿名函数。
+
 匿名函数用fn形式定义：
 (fn  [params*]  body)
 
@@ -117,7 +124,7 @@ user=>  (indexable-words  "a  fine  day  it  is")
 ("fine"  "day")
 
 --
-可以动态创建匿名函数
+可以动态创建匿名函数（将匿名函数作为返回值。）
 
 user=>  (defn  make-greeter  [greeting-prefix]
                     (fn  [username]  (str  greeting-prefix  ",  "  username)))
@@ -186,7 +193,7 @@ loop语法：
 loop形式像let一样，建立绑定(bindings)，然后计算表达式(exprs)值，但是它可以使用recur形式设置循环点：
 (recur exprs*)
 
-recur给loop的绑定赋予新值，然后返回loop开头。如：
+recur给loop的绑定赋予新值，然后返回loop开头：
 
 user=> (loop [result [] x 5]
               (if (zero? x)
@@ -195,6 +202,7 @@ user=> (loop [result [] x 5]
 [5 4 3 2 1]
 
 recur也可以返回到函数开头，实现函数体循环：
+
 user=> (defn countdown [result x]
                (if (zero? x)
                  result
@@ -235,12 +243,13 @@ user=> (index-filter #{\a \b} "abcdbbb")
 
 如：
 (def stu {:name "Stu" :email "stu@thinkrelevance.com"})
+
 (def serializable-stu (with-meta stu {:serializable true}))
 
 说明：
-(with-meta stu {:serializable true})给stu添加元数据，说明stu可序列化。
+(with-meta stu {:serializable true})  给stu添加元数据，说明stu可序列化。
 
-metadata不会对改变原对象依赖对象值的操作结果，即添加元数据前和后的对象是相等的：
+添加元数据不会改变对象的相等性，即添加元数据前和后的对象是相等的：
 user=> (= stu serializable-stu)
 true
 
@@ -262,7 +271,7 @@ nil
 user=> (meta serializable-stu)
 {:serializable true}
 
-meta宏对应的读者宏为^:
+meta宏对应的读者宏为^: （hxzon：新版本^不再用于获取元数据。）
 
 user=> ^stu
 nil
@@ -271,7 +280,7 @@ user=> ^serializable-stu
 {:serializable true}
 
 --
-元数据可以被继承，在已有对象的基础上创建新对象，则新对象拥有已有对象的元数据。
+元数据可以被继承，在已有对象的基础上创建新对象，则新对象拥有已有对象的元数据。（hxzon：需要注意这点。）
 
 user=> (def stu-with-address (assoc serializable-stu :state "NC"))
 #'user/stu-with-address
@@ -282,7 +291,7 @@ user=> ^stu-with-address
 说明：assoc函数给map添加key/value对象，然后返回新map。
 
 ----
-读者元数据
+读者元数据（hxzon：#^已经过时，新版本直接使用^ ？）
 
 给变量var添加key/value对，使用元数据读者宏：
 #^metadata form

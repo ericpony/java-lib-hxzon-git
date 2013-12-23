@@ -256,38 +256,7 @@ Deref (@)
 Metadata (^)
 元数据。
 
-Metadata is a map associated with some kinds of objects: Symbols, Lists, Vector, Sets, Maps, 
-tagged literals returning an IMeta, and record, type, and constructor calls. 
-The metadata reader macro first reads the metadata and attaches it to the next form read
-(see with-meta to attach meta to an object):
-
-^{:a 1 :b 2} [1 2 3] yields the vector [1 2 3] with a metadata map of {:a 1 :b 2}.
-
-元数据是一个映射，添加到如下对象：符号，列表，向量，集合，映射，标记字面量返回IMeta，记录，类型，和构造器。
-尖波号读取元数据，然后将它添加到下一个形式。
-
-A shorthand version allows the metadata to be a simple symbol or string, 
-in which case it is treated as a single entry map with a key of :tag and a value of the (resolved) symbol or string, e.g.:
-
-^String x is the same as ^{:tag java.lang.String} x
-
-Such tags can be used to convey type information to the compiler.
-
-如果元数据是一个简单的符号或字符串，可以缩写。
-例如 ^{:tag java.lang.String} x ，可缩写成 ^String x 。
-这种标记可以用来向编译器提供类型信息。
-
-Another shorthand version allows the metadata to be a keyword, 
-in which case it is treated as a single entry map with a key of the keyword and a value of true, e.g.:
-
-^:dynamic x is the same as ^{:dynamic true} x
-
-如果元数据是一个单项的映射，且值为true，可以缩写。
-^{:dynamic true} x ，可以缩写成 ^:dynamic x 。
-
-Metadata can be chained in which case they are merged from right to left.
-
-如果元数据是从右到左合并起来的，可以串联起来。
+见《（hxzon翻译）clojure-元数据》。
 
 ----
 Dispatch (#)

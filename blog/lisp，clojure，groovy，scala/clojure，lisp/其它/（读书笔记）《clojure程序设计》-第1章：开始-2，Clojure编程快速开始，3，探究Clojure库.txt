@@ -1,5 +1,6 @@
-Programming Clojure学习笔记——开始-1.2 Clojure编程快速开始，1.3 探究Clojure库
+（读书笔记）《clojure程序设计》-第1章：开始-2，Clojure编程快速开始，3，探究Clojure库
 
+Programming Clojure学习笔记——开始-1.2 Clojure编程快速开始，1.3 探究Clojure库
 http://blog.csdn.net/zh2qiang/article/details/7080420
 
 ======
@@ -128,8 +129,10 @@ user=> (hello "Rich")
 1.3 探究Clojure库
 
 Colujure代码都打包进库，每个库属于一个命名空间namespace，命名空间类似Java包。
+
 可以使用require来加载Clojure库：
 (require quoted-namespace-symbol):
+
 user=> (require 'examples.introduction)
 nil
 

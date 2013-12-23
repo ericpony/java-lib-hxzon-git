@@ -1,3 +1,5 @@
+（读书笔记）《clojure程序设计》-第2章：探索Clojure-4，var，let绑定，解构，命名空间
+
 Programming Clojure学习笔记——探索Clojure-2.4 变量（var）
 http://blog.csdn.net/zh2qiang/article/details/7080461
 
@@ -36,6 +38,7 @@ user=> #'foo
 函数调用时，传入参数值绑定到参数名称，函数参数绑定有一个词法作用域：仅在函数体范围内可见。
 
 特殊形式let可以创建一组词法绑定：
+
 (let [bingdings*] exprs*)
 
 其中bingdings在exprs中有效，let返回exprs最后一个表达式的值。如：
@@ -173,7 +176,7 @@ myapp=> (round 1.2)
 myapp=> (use :reload '[clojure.contrib.math :only (round)])
 
 --
-习惯使用us宏在源文件头，一次性导入Java类和Clojure命名空间：
+习惯使用ns宏在源文件头，一次性导入Java类和Clojure命名空间：
 (ns name & references)
 
 ns 宏将当前命名空间切换至name命名空间（如果需要则创建），

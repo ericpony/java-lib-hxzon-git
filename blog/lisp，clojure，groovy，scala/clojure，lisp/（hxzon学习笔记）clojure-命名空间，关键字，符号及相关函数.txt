@@ -113,6 +113,8 @@ use会把所有的参数传给refer。
 避免无节制地使用use，这样可以表明你的代码使用了其他命名空间的什么部分，
 也避免函数库修改，产生名字冲突。
 
+使用use时，可以加上:reload 或 :reload-all 选项实时加载最新的库代码。
+
 (require '[clojure.set :as set]) 
 ;= nil
 

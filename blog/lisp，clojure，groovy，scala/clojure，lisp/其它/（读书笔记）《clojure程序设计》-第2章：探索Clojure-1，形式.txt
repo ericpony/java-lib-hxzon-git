@@ -1,12 +1,13 @@
-Programming Clojure学习笔记——探索Clojure-2.1  形式
+（读书笔记）《clojure程序设计》-第2章：探索Clojure-1，形式
 
+Programming Clojure学习笔记——探索Clojure-2.1  形式
 http://blog.csdn.net/zh2qiang/article/details/7080433
 
 ========
 2.1  形式
 
 ----
-形式
+形式（即能求值的表达式）。
 
 Clojure代码即数据。
 Clojure程序由读者（readers）和形式（forms)组成。
@@ -238,6 +239,8 @@ user=>  (inventors  :Clojure)
 结果相同。
 
 --
+（hxzon：defstruct等已过时。）
+
 如果几个Map有共同的Key，你可以使用defstruct创建一个结构来记录这个：
 (defstruct  name  &  keys)
 
