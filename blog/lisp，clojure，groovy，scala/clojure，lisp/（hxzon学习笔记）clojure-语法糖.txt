@@ -151,13 +151,17 @@ user=> `(1 2 ~@(list 3 4))
 
 
 -3.2，与号&，用来将函数参数打包成列表 （相当于java中的...）。
+
 示例1：
 (defn count-args [& args]
   (str "You passed " (count args) " args: " args))
+
 (count-args 1 2 3) ; => "You passed 3 args: (1 2 3)"
+
 示例2（普通参数和列表参数混合使用）：
 (defn hello-count [name & args]
   (str "Hello " name ", you passed " (count args) " extra args"))
+
 (hello-count "Finn" 1 2 3)
 ; => "Hello Finn, you passed 3 extra args"
 

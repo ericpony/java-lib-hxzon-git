@@ -51,7 +51,7 @@ hxzon补充：
 《clojure编程》第3章：集合和数据结构-元数据，p135。
 
 (def b (with-meta a (assoc (meta a)
-	:modified (System/currentTimeMillis))))
+									:modified (System/currentTimeMillis))))
 ;= #'user/b
 
 (meta b)

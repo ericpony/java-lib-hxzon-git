@@ -1,7 +1,6 @@
 （hxzon读书笔记）《clojure编程》第5章：宏
 
 by hxzon
-
 《clojure编程》第5章：宏
 
 ----
@@ -22,13 +21,7 @@ postwalk函数。
 
 6，定义宏时最好遵循一些约定。
 
-7，隐藏的参数：&env 和 &form 。
-7.1，利用&env，可以在编译期安全地对表达式进行优化。
-7.2，利用&form，在宏里面打印有用的错误信息。
-7.3，利用&form，保持用户提供的类型提示。
-7.4，编写出我们自己的macroexpand-1，从而可以轻易的mock出&env，以便于测试和调试：macroexpand1-env。
-
-8，自己实现串行宏。
+7，自己实现串行宏。
 其它串行宏：.. ，->> 。
 
 =========
@@ -149,6 +142,13 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 ;=         (clojure.core/list (quote clojure.core/map))
 ;=         (clojure.core/list (quote clojure.core/println))
 ;=         (clojure.core/list [foo])))
+
+----
+(defmacro while
+  [test & body]
+  (list 'loop []
+    (concat (list 'when test) body
+      '((recur)))))
 
 ======
 7，什么时候使用宏
@@ -277,6 +277,9 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 [`x# `x#]
 ;= [x__1450__auto__ x__1451__auto__]
 
+--
+实现我们自己的doto。
+
 (defmacro our-doto [expr & forms]
           `(let [obj# ~expr] 
                 ~@(map (fn [[f & args]]
@@ -394,301 +397,8 @@ x不会被初始化成(range 10)，在for里面，它的意思是x将作为遍�
 宏应该把大多数逻辑都代理给下层函数来做，它应该专注于那些函数没办法实现的功能：对求值进行控制。
 
 
-==========
-10，隐藏的参数：&env 和 &form 。
-
-defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
-
-----
-10.1，&env
-
-&env 是一个map，map的key是当前上下文下所有本地绑定的名字，但对应的值是未定义的。
-注意，不要依赖&env 这个map里面的key的元数据，特别是当这些key可能有本地别名的时候。
-
-(defmacro spy-env []
-    (let [ks (keys &env)]
-         `(prn (zipmap '~ks [~@ks]))))
-
-(let [x 1 y 2]
-     (spy-env)
-     (+ x y))
-; {x 1, y 2}
-;= 3
-
-这里通过解引用获得绑定的值。
-
---
-&env的另外一个用途是利用它，可以在编译期安全地对表达式进行优化。
-
-(defmacro simplify
-    [expr]
-    (let [locals (set (keys &env))]
-         (if (some locals (flatten expr)) 
-             expr 
-             (do
-                (println "Precomputing: " expr)
-                (list `quote (eval expr)))))) 
-
-这个宏在编译期对于那些没有引用本地绑定的表达式提前进行求值，从而使得在运行期不用进行求值。
-
-(defn f
-    [a b c]
-    (+ a b c (simplify (apply + (range 5e7)))))
-; Precomputing: (apply + (range 5e7))
-;= #'user/f
-
-(f 1 2 3) ;; returns instantly
-;= 1249999975000006
-
-(defn f'
-    [a b c]
-    (simplify (apply + a b c (range 5e7))))
-;= #'user/f'
-
-(f' 1 2 3) ;; takes ~2.5s to calculate
-;= 1249999975000006
-
-----
-如何测试使用了&env的宏？
-
-可以通过直接使用实现宏的那个函数（其实就是模仿编译器的行为），但它依赖clojure当前特定的实现。
-
-(@#'simplify nil {} '(inc 1)) 
-; Precomputing: (inc 1)
-;= (quote 2)
-
-(@#'simplify nil {'x nil} '(inc x))
-;= (inc x)
-
-这里没法使用macroexpand来测试，因为它没有提供任何方法来模拟&env这个map。
-
-----
-10.2，&form
-
-&form 里面的元素是当前被宏扩展的整个形式，也就是说，
-它是一个包含了宏的名字（用户代码里面引用的宏的名字，它可能被重命名了），
-以及传给宏的所有参数的一个列表。
-这个形式也就是reader在读入宏的时候所读入的形式，或者是由前一个宏扩展所返回的。
-这意味着，&form保存了用户指定的所有元数据，比如类型提示，以及reader加入的元数据，
-例如调用宏的那行代码的行号。
-
---
-在宏里面打印有用的错误信息。
-
-(defmacro ontology
-    [& triples]
-    (every? #(or (== 3 (count %))
-                 (throw (IllegalArgumentException.
-                    "All triples provided as arguments must have 3 elements")))
-            triples)
-;; build and emit pre-processed ontology here...
-)
-
-(ontology ["Boston" :capital-of]) 
-;= #<IllegalArgumentException java.lang.IllegalArgumentException:
-;= All triples provided as arguments must have 3 elements>
-
-(pst)
-;= IllegalArgumentException All triples provided as arguments must have 3 elements
-;= user/ontology (NO_SOURCE_FILE:3) 
-
-这里确实抛出了一个异常，但这里的行号是不对的，这里的3是抛出异常位置相对宏的源码定义开始的行号，
-而不是调用这个宏的代码的行号。
-我们可以利用&form来提供更准确的行号信息。
-
-(defmacro ontology
-    [& triples]
-    (every? #(or (== 3 (count %))
-                 (throw (IllegalArgumentException.
-                            (format "`%s` provided to `%s` on line %s has < 3 elements"
-                                    %  ;整个有问题的数组参数
-                                    (first &form)  ;宏的名字，有可能被重命名
-                                    (-> &form meta :line)))))  ;用户代码使用宏的行号
-            triples)
-    ;; ...
-)
-
-(ontology ["Boston" :capital-of])
-;= #<IllegalArgumentException java.lang.IllegalArgumentException:
-;= `["Boston" :capital-of]` provided to `ontology` on line 1 has < 3 elements>
-
-(ns com.clojurebook.macros)
-;= nil
-
-(refer 'user :rename '{ontology triples})
-;= nil
-
-(triples ["Boston" :capital-of])
-;= #<IllegalArgumentException java.lang.IllegalArgumentException:
-;= `["Boston" :capital-of]` provided to `triples` on line 1 has < 3 elements>
-
---
-保持用户提供的类型提示。
-
-大多数宏把用户在形式上指定的元数据给丢弃掉了，包括类型提示信息。
-例如，or这个宏就没有在生成的代码里面把类型提示带上，从而导致一个反射警告。
-
-(set! *warn-on-reflection* true)
-;= true
-
-(defn first-char-of-either
-    [a b]
-    (.substring ^String (or a b) 0 1))
-; Reflection warning, NO_SOURCE_PATH:2 - call to substring can't be resolved.
-;= #'user/first-char-of-either
-
-不过，这样的情况其实很少发生，因为通常不会这么指定类型提示信息。
-我们通常会把类型提示信息加在宏的参数上面，
-因此下面使用到参数的地方就可以通过类型推断来获取类型信息。
-
-(defn first-char-of-either
-    [^String a ^String b]
-    (.substring (or a b) 0 1))
-;= #'user/first-char-of-either
-
-可以通过检查它的元数据信息来看看用户在or表达式上面指定的类型提示信息。
-
-(binding [*print-meta* true]
-         (prn '^String (or a b)))
-; ^{:tag String, :line 1} (or a b)
-
-确实有。但是当检查macroexpand之后的代码的元数据信息的时候，这个元数据不见了。
-
-(binding [*print-meta* true]
-         (prn (macroexpand '^String (or a b))))
-; (let* [or__3548__auto__ a]
-; (if or__3548__auto__ or__3548__auto__ (clojure.core/or b)))
-
-首先来看or在clojure.core中是怎么实现的：
-
-(defmacro or
-    ([] nil)
-    ([x] x)
-    ([x & next]
-        `(let [or# ~x]
-              (if or# or# (or ~@next)))))
-只需要把加在&form上面的元数据，包含了用户指定的类型提示信息，加到宏产生的代码上。
-在很多情况下，只需要先从&form上获取元数据信息，再在宏的代码体的最外层利用with-meta把元数据加上去。
-但是，这里没办法这么做。
-这个限制是由于一个不幸的实现细节：特殊形式是不能指定类型提示的。
-所以必须先引入一个本地绑定，再把这个类型提示加到这个本地绑定上去。
-
-
-(defmacro OR
-    ([] nil)
-    (   [x]
-        (let [result (with-meta (gensym "res") (meta &form))]   ;生成一个res的唯一符号，带上&form的元数据，绑定到result。
-             `(let [~result ~x]   ;将x的值绑定到result，返回result。有何意义？
-                   ~result)))
-    (   [x & next]
-        (let [result (with-meta (gensym "res") (meta &form))]
-             `(let [    or# ~x
-                        ~result (if or# or# (OR ~@next))]
-                    ~result))))
-
-(binding [*print-meta* true]
-         (prn (macroexpand '^String (OR a b))))
-; (let* [or__1176__auto__ a
-;     ^{:tag String, :line 2}		;将a绑定到 or__1176__auto__ ，带上元数据。
-;     res1186 (if or__1176__auto__ or__1176__auto__ (user/OR b))]		;将 or__1176__auto__ 或者 (user/OR b) 绑定到 res1186。
-;     ^{:tag String, :line 2} res1186)	;返回 res1186，带上元数据。
-
-(prn (macroexpand-1 '^String (OR a b)))
-; (clojure.core/let [or__1547__auto__ a res1628 (if or__1547__auto__ or__1547__auto__ (user/OR b))] res1628)
-
-(binding [*print-meta* true]
-               (prn (macroexpand '^String (OR a))))
-;(let* [^{:tag String, :line 2, :column 32} res1604 a] ^{:tag String, :line 2, :column 32} res1604)
-
-现在，用户指定的元数据被保留下来了。
-
-(defn first-char-of-any
-    [a b]
-    (.substring ^String (OR a b) 0 1))
-;= #'user/first-char-of-any
-
---
-上面OR使用的模式可以抽取出来作为一个可重用的函数，从而可以用在任何宏上面。
-
-(defn preserve-metadata
-    "Ensures that the body containing `expr` will carry the metadata
-    from `&form`."
-    [&form expr]
-    (let [res (with-meta (gensym "res") (meta &form))]
-         `(let [~res ~expr]
-               ~res)))
-
-(defmacro OR
-    "Same as `clojure.core/or`, but preserves user-supplied metadata
-    (e.g. type hints)."
-    ([] nil)
-    ([x] (preserve-metadata &form x))
-    (   [x & next]
-        (preserve-metadata  &form 
-                            `(let [or# ~x]
-                                  (if or# or# (or ~@next))))))
-
-----
-10.3，测试上下文相关的宏
-
-使用了&env 和 &from的宏是不好测试的。
-但我们可以编写出我们自己的macroexpand-1，从而可以轻易的mock出&env，以便于测试和调试。
-
-(defn macroexpand1-env [env form]
-    (if-let [[x & xs] (and (seq? form) (seq form))]
-;如果form可序列，将form转成序列，form的第一个元素（宏的名字）绑定到x，其余元素（宏的参数）绑定到xs。
-            (if-let [v (and (symbol? x) (resolve x))]
-;如果x是符号，获得宏的实现函数，绑定到v。
-                    (if (-> v meta :macro)
-                        (apply @v form env xs)
-                        form)
-;如果v是一个宏，获得宏的实现函数，以env和宏的参数xs作为参数，调用这个实现函数。
-                    form)
-            form))
-
-(macroexpand1-env '{} '(simplify (range 10)))
-; Precomputing: (range 10)
-;= (quote (0 1 2 3 4 5 6 7 8 9))
-
-(macroexpand1-env '{range nil} '(simplify (range 10)))
-;= (range 10)
-
-(defmacro spy [expr]
-    `(let [value# ~expr]
-          (println (str "line #" ~(-> &form meta :line) ",")
-                   '~expr value#)
-          value#))
-;= #'user/spy
-
-(let [  a 1
-        a (spy (inc a))
-        a (spy (inc a))]
-     a)
-; line #2, (inc a) 2
-; line #3, (inc a) 3
-;= 3
-
-(macroexpand1-env {} (with-meta '(spy (+ 1 1)) {:line 42})) 
-;= (clojure.core/let [value__602__auto__ (+ 1 1)]
-;=     (clojure.core/println
-;=         (clojure.core/str "line #" 42 ",") 
-;=         (quote (+ 1 1)) value__602__auto__)
-;=     value__602__auto__)
-
-(defn macroexpand1-env [env form]
-    (if-all-let [   [x & xs] (and (seq? form) (seq form))
-                    v (and (symbol? x) (resolve x))
-                    _ (-> v meta :macro)]
-                (apply @v form env xs)
-                form))
-
-(defmacro if-all-let [bindings then else]
-    (reduce (fn [subform binding]
-                `(if-let [~@binding] ~subform ~else))
-            then (reverse (partition 2 bindings))))
-
 =========
-11，自己实现串行宏。
+10，自己实现串行宏。
 
 首先，验证一个形式是不是序列，如果不是，构造一个只包含这个形式的序列。
 
