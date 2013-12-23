@@ -57,6 +57,38 @@ http://clojure.org/special_forms#quote
 
 -2.1，单引号（Quote）'，阻止求值，例如'(+ 1 2)，等价于(list + 1 2)。'form 等价于 (quote form)
 
+~'，波浪号和单引号是一种常见的搭配，如下。
+~'session，外层已经阻止求值，为什么不直接使用 session ？
+因为直接使用session，会加上当前的命名空间，见下。
+let绑定是不允许有名字空间的。
+
+(defmacro with-session
+  [session-factory & body]
+  `(with-open [~'session (.openSession ~(vary-meta session-factory assoc
+                                          :tag 'SessionFactory))]
+     ~@body))
+
+ (macroexpand-1 '(with-session @session-factory
+       (-> session
+         (.createQuery "from Author")
+         .list)))
+;= (clojure.core/with-open [session (.openSession (clojure.core/deref session-factory))] 
+;	                                   (-> session (.createQuery "from Author") .list))
+
+ (defmacro with-session2
+        [session-factory & body]
+        `(with-open [session (.openSession ~(vary-meta session-factory assoc
+                                                :tag 'SessionFactory))]
+           ~@body))
+
+ (macroexpand-1 '(with-session2 @session-factory
+          (-> session
+            (.createQuery "from Author")
+            .list)))
+;= (clojure.core/with-open [user/session (.openSession (clojure.core/deref session-factory))] 
+;                                      (-> session (.createQuery "from Author") .list))
+
+
 -2.2，反引号（Syntax-quote）·，阻止求值。
 除了符号，列表，向量，集合，映射外的所有形式，`x 和 'x 相同。
 

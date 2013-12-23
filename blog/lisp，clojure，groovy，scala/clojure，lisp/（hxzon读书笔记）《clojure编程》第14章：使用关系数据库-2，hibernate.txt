@@ -187,13 +187,44 @@ try {
       (.createQuery "from Author")
       .list)))
 
+--
+对session-factory添加类型提示，避免反射调用。
+类型提示是加在session-factory对象身上，而不是在生成的代码中。
+
+~'session，外层已经阻止求值，为什么不直接使用 session ？
+因为直接使用session，会加上当前的命名空间，见下。
+
+ (macroexpand-1 '(with-session @session-factory
+       (-> session
+         (.createQuery "from Author")
+         .list)))
+;= (clojure.core/with-open [session (.openSession (clojure.core/deref session-factory))] 
+;	                                   (-> session (.createQuery "from Author") .list))
+
+ (defmacro with-session2
+        [session-factory & body]
+        `(with-open [session (.openSession ~(vary-meta session-factory assoc
+                                                :tag 'SessionFactory))]
+           ~@body))
+
+ (macroexpand-1 '(with-session2 @session-factory
+          (-> session
+            (.createQuery "from Author")
+            .list)))
+;= (clojure.core/with-open [user/session (.openSession (clojure.core/deref session-factory))] 
+;                                      (-> session (.createQuery "from Author") .list))
+
+----
 (defmacro with-transaction
   [& body]
   `(let [~'tx (.beginTransaction ~'session)]
      ~@body
      (.commit ~'tx)))
 
-with-transaction是一个“前指的宏”。
+with-session和with-transaction都是一个“前指的宏”，
+一般也称为“不稳定的宏”“不健康的宏”，
+因为它们和用户代码约定了一个名字，
+前者是session，后者是tx和session。
 
 (defn add-authors
   [& authors]
