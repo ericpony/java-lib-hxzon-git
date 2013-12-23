@@ -578,7 +578,7 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
     ([] nil)
     (   [x]
         (let [result (with-meta (gensym "res") (meta &form))]   ;生成一个res的唯一符号，带上&form的元数据，绑定到result。
-             `(let [~result ~x]   ;？
+             `(let [~result ~x]   ;将x的值绑定到result，返回result。有何意义？
                    ~result)))
     (   [x & next]
         (let [result (with-meta (gensym "res") (meta &form))]
@@ -589,9 +589,16 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
 (binding [*print-meta* true]
          (prn (macroexpand '^String (OR a b))))
 ; (let* [or__1176__auto__ a
-;     ^{:tag String, :line 2}
-;     res1186 (if or__1176__auto__ or__1176__auto__ (user/or b))]
-;     ^{:tag String, :line 2} res1186)
+;     ^{:tag String, :line 2}		;将a绑定到 or__1176__auto__ ，带上元数据。
+;     res1186 (if or__1176__auto__ or__1176__auto__ (user/OR b))]		;将 or__1176__auto__ 或者 (user/OR b) 绑定到 res1186。
+;     ^{:tag String, :line 2} res1186)	;返回 res1186，带上元数据。
+
+(prn (macroexpand-1 '^String (OR a b)))
+; (clojure.core/let [or__1547__auto__ a res1628 (if or__1547__auto__ or__1547__auto__ (user/OR b))] res1628)
+
+(binding [*print-meta* true]
+               (prn (macroexpand '^String (OR a))))
+;(let* [^{:tag String, :line 2, :column 32} res1604 a] ^{:tag String, :line 2, :column 32} res1604)
 
 现在，用户指定的元数据被保留下来了。
 
