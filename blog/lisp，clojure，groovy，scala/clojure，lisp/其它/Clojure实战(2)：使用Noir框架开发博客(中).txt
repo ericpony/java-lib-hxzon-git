@@ -1,0 +1,195 @@
+Clojure实战(2)：使用Noir框架开发博客(中)
+http://arch.corp.anjuke.com/blog/2012/12/08/cia-noir-2/
+
+Dec 8th, 2012
+
+======
+在Eclipse中编写Clojure代码
+
+从这章起我们就要开始真正的编码了。
+Vim可能是很多程序员的选择，但如果你像我一样更喜欢GUI界面，那就来看看如何在Eclipse中编写Clojure代码吧。
+
+安装Eclipse插件
+
+Eclipse提供了一个Clojure插件：CounterClockwise，
+可以用来编写Clojure代码，进行语法高亮、调试等操作。
+打开Eclipse的Market Place，搜索counterclockwise关键字，点击Install即可。
+
+将Leiningen项目导入Eclipse
+
+由于CounterClockwise插件并没有默认使用Leiningen来管理项目，因此需要做一些额外的工作。
+
+在使用lein new命令创建项目后，在project.clj文件中增加如下一行：
+
+然后依次执行lein deps和lein eclipse，会看到项目根目录下生成了.project和.classpath文件。
+然后就可以进入Eclipse导入这个项目了。
+如果使用Git进行版本控制，lein已经为你生成好了.gitignore文件。
+执行了git init后，就能在Eclilpse中选择Share Project菜单项，进行可视化的版本控制。
+
+======
+使用表单
+
+我们现在需要编写一个新建文章的功能，它是一个简单的页面，
+页面上有“标题”和“内容”两个文本框，并有一个“提交”按钮。
+
+在src/blog/views目录下新建一个文件article.clj，输入以下内容：
+
+defpage和common/layout我们之前已经见到过，
+前者定义了URL/blog/add指向的页面，后者则是套用了一个模板。
+[:h1 ...]和[:br]也应该熟悉，它们是Hiccup的语法，分别生成<h1>...</h1>和<br>标签。
+
+form-to是一个新的语法，不过从名字上也可以猜到，
+它用来生成一个<form>标签，
+结合[:post "/blog/add"]一起来看就是<form action="/blog/add" method="post">...</form>。
+至于label、text-field、text-area、以及submit-button都是用来生成相应的表单标签的，
+它们包含在hiccup.form-helpers命名空间中，
+具体用法可以到REPL中查看它们的文档，如：（在项目目录中执行lein repl）
+
+{:size 50}是个很特别的地方，虽然从字面上就能猜出它是<input>标签的size属性，用来设置文本框的长度的，
+但为什么会是这样的语法呢？这是Clojure定义的吗？当然不是。
+还记得我们之前提过的宏吗？
+开发者可以用宏来定义新的语法，Hiccup就定义了这样的语法，可以用map的形式传入额外的HTML属性。
+尝试在REPL中执行(html [:font {:color "red"} "hi"])，看看结果是什么吧。
+
+接收表单信息
+
+接下来我们再创建一个页面来接收表单信息。
+Noir可以按照HTTP方式的不同（GET、POST、DELETE等）来进行路由，
+比如同样是/blog/add这个URL，我们可以为它创建一个独立的页面，响应POST请求：
+
+尝试提交刚才的页面，会发现得到了预期结果：添加成功。
+
+那如何接收表单信息呢？
+
+似乎又多了几个新奇的语法，我们一一来解释：
+
+{:as forms}是一种解构（destructuring）语法，解构的对象是list或map，将它们包含的元素拆解出来。
+Noir在调用页面函数时（defpage实质上是创建了一个函数）会将接收到的参数以map的形式传递给该函数，
+如title=greeting&content=helloworld
+会以`{:title “greeting”, :content “helloworld”}的形式传递过来，
+函数可以通过以下几种方式对map类型进行解构：
+
+不接收参数，使用[]来表示。
+
+接收指定名称的参数，如{title :title, content :content}，
+它会将map中键名为:title的值赋给title变量，:content的内容赋给content变量，
+其他的键名会丢弃。
+如果键名很多，可以用这种缩写形式：{:keys [title content]}。
+
+接收整个map，使用{:as forms}，其中forms是自定义的，这样就能从forms变量中获取某个键的值。
+
+将以上两者结合，即{title :title, content :content, :as forms}，
+需要注意的是forms中还是包含:title和:content的，不会因为它们已经被赋值给其他变量了而从map中剔除掉。
+
+你可以将上面这段代码中的{:as forms}替换成其他形式来进行实验，看看是否真的掌握了解构的用法。
+至于对list对象的解构，我们以后会遇到。
+
+如何获取map中某个键的值？
+之前我们在与Java交互时提过有两种方法：(get forms :title)和(.get forms :title)，
+这里展示的是第三种：(:title forms)，即用关键字作为一个函数，获取map中的值。
+如果键不存在则返回nil，可以提供默认值：(:title forms "Default Title")。
+
+str则是一个函数，会将它所接收到的所有参数转换成字符串并拼接起来（中间不会添加空格）。
+
+表单验证
+
+“永远不要相信用户输入的信息”，我们必须对表单内容进行验证，
+比如标题为空时我们应该显示错误信息，并让用户重新填写。
+Noir提供了表单验证的相关函数，位于noir.validation命名空间下。
+下面我们就来添加简单的验证功能：
+
+这段代码的运行效果是：
+如果提交的表单中标题和内容都有值，则显示“添加成功”，否则提示“标题不为空”、“内容不为空”等。
+我们来分析一下这段代码。
+
+defn定义一个函数，它的参数使用了前面提到的解构，函数体则是由三条语句构成。
+valid?是合法的函数名吗？
+前面提过Clojure的变量可以包含特殊字符，所以函数名中是可以存在?、!等字符的。
+当然我们也有一些习惯，比如以?结尾的函数名一般会返回布尔型。
+
+vali/rule函数用来描述一个验证规则，
+它的第一个参数是一个能够返回布尔型的表达式，
+第二个参数是一个向量（vector），包含两个元素，分别是字段名和错误提示信息，
+用于生成一个包含所有错误信息的map。
+以上面这段代码为例，如果三条验证都不通过，
+那生成的错误信息会是{:title ["标题不能为空。" "标题不能少于10个字符。"], :content ["内容不能为空。"]}。
+不过，这个map是由noir.validation维护的，我们不能直接获取到。
+
+vali/errors?接收一个字段列表，如果有一个字段验证不通过（产生了错误信息）则返回真，
+not函数自然就是将这个“真”转换为“假”，从而和valid?的语义一致，即不合法（验证不通过）。
+
+最后，vali/get-errors函数可以将验证过程中生成的错误信息按照字段名提取出来。
+
+这里我们还第一次遇到了流程控制语句：if，它和let一样是一种“特殊形式(Special Form)”。
+它的一般格式是(if 布尔型 语句1 语句2)，如(if (> 1 2) (println true) (println false))。
+如果语句包含多行怎么办？可以使用do函数。
+如果条件分支只有一个，则可以使用when和when-not，这时可以直接包含多行语句，不需要使用do。
+
+错误提示
+
+那如何实现这样的需求：如果表单验证不通过，则重新显示表单，加入用户之前提交的内容，并显示出错信息。
+要做到这一点，就需要使用两个新的函数，vali/on-error和noir.core/render，并对/blog/add页面做一些修改。
+
+先看render，它是Noir提供的一个函数，能够在页面中渲染另一个页面的内容，就像调用一个函数一样。
+这里我们则是在表单提交的页面里渲染了“新建文章”页面的内容，并将表单参数传递了过去。
+
+对“新建文章”页面我们做了以下修改：
+
+接收参数，并作为forms变量保存这个map。
+
+为text-field和text-area两个表单控件添加了默认值。
+
+调用了vali/on-error函数，当某个字段包含错误信息时，它会调用第二个参数所指向的函数（这里是error-item），
+并将该字段的错误信息作为参数传递给这个函数。
+error-item函数的功能很简单，将接受到的错误信息渲染成一个<span>标签展示出来。
+这里的[:span.error ...]会被解析成<span class="error">...</span>。
+至于[[first-error]]，它是一种对list对象的解构操作。
+前面我们看到在错误信息中，某个字段即使只有一条错误信息，也会以向量的形式保存。
+我们这里只需要每个字段的第一条错误信息，所以使用了这种形式。
+你可以这样重写error-item，效果是一样的：
+
+操作数据库
+
+Clojure程序连接数据库可以使用clojure.java.jdbc这个类库，它能够操作MySQL、PostgreSQL、SQLite、MSSQL等。
+这里我们将演示如何连接MySQL数据库，因此除了clojure.java.jdbc外，还需要添加MySQL Connector依赖项：
+
+为了保存博客文章，我们在本地MySQL服务中新建一个blog_db数据库，并赋予用户blog_db（密码相同）该库的所有权限。
+然后我们会建立一张article表，用于保存文章：
+
+我们新建一个src/blog/database.clj文件，用来存放数据库连接信息：
+
+接着新建src/blog/models/blog.clj文件，编写插入记录的函数：
+
+最后，我们只需要在src/blog/views/article.clj中调用这个函数即可：
+
+这里我们见到了clojure.java.jdbc命名空间下的两个函数：with-connection和insert-records。
+前者用来打开一个数据库连接，它的第一个参数可以是一个map，表示数据库的连接信息，
+也可以是字符串，还可以直接传递一个DataSource对象，这点我们会在如何使用连接池时讲解。
+当with-connection执行完毕时，数据库连接也会随之关闭。
+insert-record则用于插入一条或多条数据，第一个参数是数据表名，第二个参数开始则是将要插入的记录。
+这个函数的返回值你应该可以从(:generated_key ...)这段代码中猜出来。
+
+注意，我们的数据表中有一个DATETIME类型的字段，它需要使用java.sql.Timestamp类型来赋值。
+Clojure中引入一个类可以使用import函数，ns宏提供了便捷的方式:import。
+当需要一次导入多个类时，可以使用(:import (java.sql Timestamp Date Time))。
+
+使用C3P0连接池
+
+在高性能网站中，频繁开关数据库连接不是个好主意，通常的方式是使用连接池。
+这里我们演示如何使用C3P0连接池。
+
+添加依赖项：[c3p0 "0.9.1.2"]
+修改src/blog/database.clj，添加以下代码：
+更换src/blog/models/blog.clj中with-connection的参数：
+with-connection接收到的参数形式是{:datasource DataSource接口的实例}，(ComboPooledDataSource.)就是这样的一个实例，
+这种语法和(new ComboPooledDataSource)等价。
+doto函数表示连续调用第一个参数所指向的对象的方法，最后返回这个对象。
+这段代码可以有不同的写法，如(def pool {:datasource (doto (Combo...))})。
+
+小结
+
+这一章我们学习了如何配置Eclipse以编写Leiningen项目；
+如何使用表单和接受参数，特别是表单验证和错误信息的提示；
+最后我们演示了如何将数据保存到MySQL中，并使用连接池来优化项目。
+下一节我们将为博客增加用户登录的功能，以讲解Cookie和Session的使用。
+我们还会学习如何对Leiningen项目进行打包和发布，并尝试将我们的博客发布到PaaS平台Heroku上去。

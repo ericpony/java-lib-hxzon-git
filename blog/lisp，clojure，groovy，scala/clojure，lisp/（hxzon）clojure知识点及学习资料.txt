@@ -140,7 +140,9 @@ http://blog.fnil.net/
 http://www.blogjava.net/killme2008
 
 5，
-
+https://github.com/clojure-cookbook/clojure-cookbook
+http://clojure-cookbook.com/
+http://shop.oreilly.com/product/0636920029786.do
 
 =======================
 web
