@@ -358,6 +358,9 @@ managers.all.each do |e|
 ...
 end
 
+上面例子中，employees，managers都是查询对象。
+
+--
 (def employees (where (select* employees) {:type "employee"}))
 
 ;; ... later ...
@@ -369,7 +372,7 @@ end
     ))
 
 ----
-2.5，伪惰性（按需查询）。
+2.5，伪惰性（这里的“伪”指和clojure的惰性序列含义不同。其实是“按需查询”）。
 
 上面创建的查询都是“按需查询”的。
 直到korma的select函数显示的执行查询，数据才会从数据库里获取。

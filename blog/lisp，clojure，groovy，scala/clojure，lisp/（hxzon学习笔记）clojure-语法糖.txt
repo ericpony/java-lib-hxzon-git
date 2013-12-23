@@ -94,6 +94,11 @@ let绑定是不允许有名字空间的。
 
 （hxzon：' 和 ` 区别在于Syntax-quote (`)会进行symbol的解析。）
 
+语法引述：跟引述很像，但语法引述把无命名空间限定的符号求值成当前命名空间的符号。
+符号的默认空间化对于产生正确的代码非常关键。
+它使我们不会因为疏忽而重定义一个已经定义过的值。这被称为“宏卫生”。
+另，语法引述里面允许“反引述”。
+
 For Symbols, syntax-quote resolves the symbol in the current context, yielding a fully-qualified symbol 
 (i.e. namespace/name or fully.qualified.Classname). 
 If a symbol is non-namespace-qualified and ends with '#', 
@@ -179,3 +184,4 @@ user=> `(1 2 ~@(list 3 4))
 ^{:a 1 :b 2} [1 2 3] ，给向量添加元数据。
 
 -3.6，;，分号，单行注释。
+
