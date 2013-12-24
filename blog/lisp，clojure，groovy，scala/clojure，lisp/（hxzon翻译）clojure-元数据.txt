@@ -50,6 +50,13 @@ hxzon补充：
 
 《clojure编程》第3章：集合和数据结构-元数据，p135。
 
+(def a ^{:created (System/currentTimeMillis)}
+	[1 2 3])
+;= #'user/a
+
+(meta a)
+;= {:created 1322065198169}
+
 (def b (with-meta a (assoc (meta a)
 									:modified (System/currentTimeMillis))))
 ;= #'user/b
@@ -62,6 +69,9 @@ hxzon补充：
 
 (meta b)
 ;= {:modified 1322065229972, :created 1322065198169}
+
+(meta (conj a 500))
+;= {:created 1319481540825}
 
 1，meta，获得对象的元数据（是一个映射）。
 
@@ -76,7 +86,7 @@ hxzon补充：
 尖波号也可以获得一个对象的元数据。（hxzon：这是老版本，现在已不支持？）
 
 ----
-元数据可以被继承，在已有对象的基础上创建新对象，则新对象拥有已有对象的元数据。
+在已有对象的基础上创建新对象，新对象拥有已有对象的元数据。
 
 (def stu {:name "Stu" :email "stu@thinkrelevance.com"})
 
@@ -125,3 +135,8 @@ Metadata can be chained in which case they are merged from right to left.
 
 如果元数据是从右到左合并起来的，可以串联起来。
 
+(meta ^:private [1 2 3])
+;= {:private true}
+
+(meta ^:private ^:dynamic [1 2 3])
+;= {:dynamic true, :private true}

@@ -300,6 +300,12 @@ user=> ^stu-with-address
 user=> (defn #^{:tag String} shout [#^{:tag String} s] (.toUpperCase s))
 #'user/shout
 
+hxzon：上面参考的应该是第1版，本书第2版为：
+
+(defn ^{:tag String} shout [^{:tag String} s ] (.toUpperCase s))
+->#'user/shout
+
+--
 如果试图传入非字符串参数，则抛出异常：
 user=> (shout 1)
 java.lang.ClassCastException: java.lang.Integer cannot be cast to java.lang.String (NO_SOURCE_FILE:0)
@@ -311,6 +317,11 @@ shout函数可以重写为：
 user=> (defn #^String shout [#^String s] (.toUpperCase s))
 #'user/shout
 
+hxzon：本书第2版为：
+(defn ^String shout [^String s] (.toUpperCase s))
+->#'user/shout
+
+--
 为了便于阅读函数定义，还可以将元数据放到函数定义最后：
 user=> (defn shout
               ([s] (.toUpperCase s))

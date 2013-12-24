@@ -12,17 +12,15 @@ postwalk函数。
 3，展开宏：macroexpand-1 ，macroexpand ，macroexpand-all 。
 4，什么时候使用宏。
 
-5，宏卫生（符号冲突问题，重复求值问题）。
-用gensym函数来生成一个保证唯一的符号。
-“自动gensym”：在语法引述形式里面，任何以#结尾的符号都会被自动扩展。
-让宏的用户来选择名字。
+5，定义宏时最好遵循一些约定。
 
-前指宏（不稳定宏，不健康宏）：故意暴露一个名字。
-
-6，定义宏时最好遵循一些约定。
-
-7，自己实现串行宏。
+6，自己实现串行宏。
 其它串行宏：.. ，->> 。
+
+hxzon：
+可以把宏看成特殊处理的函数，参数被处理成字符串。
+宏体即是函数体（即不是模板），但是返回值必须为一个S表达式（不一定可执行）。
+语法引述，反引述，编接反引述都是靠函数（seq，concat，list）实现的。
 
 =========
 1，
@@ -136,12 +134,54 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 ----
 看一下语法引述的实现。
 
+(use 'clojure.pprint)
+
 '`(map println ~[foo])
 ;= (clojure.core/seq
 ;=     (clojure.core/concat
 ;=         (clojure.core/list (quote clojure.core/map))
 ;=         (clojure.core/list (quote clojure.core/println))
 ;=         (clojure.core/list [foo])))
+
+'`(map println ~[foo] ~@(+ 2 3))
+;= (clojure.core/seq 
+;        (clojure.core/concat 
+;           (clojure.core/list (quote clojure.core/map)) 
+;           (clojure.core/list (quote clojure.core/println)) 
+;           (clojure.core/list [foo]) 
+;           (+ 2 3)))
+
+'`(map println ~[foo] ~@(+ 2 3) (a b c))
+;=(clojure.core/seq 
+;		(clojure.core/concat 
+;			(clojure.core/list (quote clojure.core/map)) 
+;			(clojure.core/list (quote clojure.core/println)) 
+;			(clojure.core/list [foo]) 
+;			(+ 2 3) 
+;			(clojure.core/list 
+;               (clojure.core/seq 
+;                   (clojure.core/concat 
+;                       (clojure.core/list (quote clojure-demo.core/+)) 
+;                       (clojure.core/list (quote clojure-demo.core/b)) 
+;                       (clojure.core/list (quote clojure-demo.core/c)))))))
+
+'`(map println ~[foo] ~@(+ 2 3) (+ b 'c))
+;=(clojure.core/seq 
+;       (clojure.core/concat 
+;           (clojure.core/list (quote clojure.core/map)) 
+;           (clojure.core/list (quote clojure.core/println)) 
+;           (clojure.core/list [foo]) 
+;           (+ 2 3) 
+;           (clojure.core/list 
+;               (clojure.core/seq 
+;                   (clojure.core/concat 
+;                       (clojure.core/list (quote clojure.core/+)) 
+;                       (clojure.core/list (quote clojure-demo.core/b)) 
+;                       (clojure.core/list 
+;                           (clojure.core/seq 
+;                               (clojure.core/concat 
+;                                   (clojure.core/list (quote quote)) 
+;                                   (clojure.core/list (quote clojure-demo.core/c))))))))))
 
 ----
 (defmacro while
@@ -190,184 +230,9 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 宏应该作为我们的终极武器，用它来简化控制流，添加一些语法糖，
 以消除重复代码，以及一些难看的代码。
 
-==========
-8，宏卫生（符号冲突问题，重复求值问题）
-
-----
-8.1，符号冲突问题
-
-在宏里面使用的某个符号名，跟外部代码，或者传入的用户自定义代码里的某个符号名字，可能会发生冲突。
-
-(defmacro   unhygienic
-            [& body]
-            `(let [x :oops]
-                  ~@body))
-;= #'user/unhygenic
-
-(unhygienic (println "x:" x))
-;= #<CompilerException java.lang.RuntimeException:
-;= Can't let qualified name: user/x, compiling:(NO_SOURCE_PATH:1)>
-
-(macroexpand-1 `(unhygienic (println "x:" x)))
-;= (clojure.core/let [user/x :oops]
-;= (clojure.core/println "x:" user/x))
-
-所有对x的引用都被扩展成user/x，但是let需要的名字是没有命名空间限定的。
-可以通过引述、反引述来“聪明”的避免这个错误，
-
-(defmacro   still-unhygienic
-            [& body]
-            `(let [~'x :oops] 
-                  ~@body))
-;= #'user/still-unhygenic
-
-(still-unhygienic (println "x:" x))
-; x: :oops
-;= nil
-
-(macroexpand-1 '(still-unhygienic
-                    (println "x:" x)))
-;= (clojure.core/let [x :oops]
-;= (println "x:" x))
-
-但这是给代码引入一个重大的bug。
-
-(let [x :this-is-important]
-     (still-unhygienic
-        (println "x:" x)))
-; x: :oops
-
-这里已经把x绑定到一个本地值了，但是由宏产生的let会悄悄把x绑定到另外一个值。
-
-----
-用gensym函数来生成一个保证唯一的符号。
-
-(gensym)
-;= G__2386
-
-(gensym)
-;= G__2391
-
-(gensym "sym")
-;= sym2396
-
-(gensym "sym")
-;= sym2402
-
-在语法引述形式里面，任何以#结尾的符号都会被自动扩展，
-并且对于前缀相同的符号，它们会被扩展成同一个符号的名字，这成为“自动gensym”。
-但是，只在同一个语法引述形式里所产生的符号名字是一样的。
-
-`(x# x#)
-;= (x__1447__auto__ x__1447__auto__)
-
-(defmacro   auto-gensyms
-            [& numbers]
-            `(let [x# (rand-int 10)] 
-                  (+ x# ~@numbers))) 
-;= #'user/auto-gensyms
-
-(auto-gensyms 1 2 3 4 5)
-;= 22
-
-(macroexpand-1 '(auto-gensyms 1 2 3 4 5)) 
-;= (clojure.core/let [x__570__auto__ (clojure.core/rand-int 10)]
-;= (clojure.core/+ x__570__auto__ 1 2 3 4 5))
-
-[`x# `x#]
-;= [x__1450__auto__ x__1451__auto__]
-
---
-实现我们自己的doto。
-
-(defmacro our-doto [expr & forms]
-          `(let [obj# ~expr] 
-                ~@(map (fn [[f & args]]
-                           `(~f obj# ~@args)) 
-                       forms) 
-                obj#))
-
-(our-doto   "It works"
-            (println "I can't believe it"))
-;= #<CompilerException java.lang.RuntimeException:
-;= Unable to resolve symbol: obj__1456__auto__ in this context,
-;= compiling:(NO_SOURCE_PATH:1)>
-
-在这种情况下，只能手工调用gensym。
-
-(defmacro   our-doto [expr & forms]
-            (let [obj (gensym "obj")]
-                 `(let  [~obj ~expr]
-                        ~@(map (fn [[f & args]]
-                                   `(~f ~obj ~@args)) 
-                               forms) 
-                        ~obj)))
-
-当前，这里这个语法引述其实没什么意义，使用(list* f obj args)更好。
-
-----
-让宏的用户来选择名字
-
-一个宏如果故意向外部代码暴露出一个名字，则这个宏称为“不稳定的”。
-更好的方式是，让用户来选择这个绑定的名字。
-
-(defmacro with
-    [name & body]
-    `(let [~name 5]
-          ~@body))
-;= #'user/with
-
-(with bar (+ 10 bar))
-;= 15
-
-(with foo (+ 40 foo))
-;= 45
-
---------
-8.2，重复求值问题
-
-如果传给宏的参数，在宏的扩展形式里面出现多次，就可能会被重复求值。
-
-(defmacro spy [x]
-    `(do
-        (println "spied" '~x ~x)
-        ~x))
-
-(spy 2)
-; spied 2 2
-;= 2
-
-(spy (rand-int 10))
-; spied (rand-int 10)
-;= 7
-
-(macroexpand-1 '(spy (rand-int 10)))
-;= (do (println (rand-int 10))
-;=     (rand-int 10))
-
-可以引入一个本地绑定来解决这个问题。
-
-(defmacro spy [x]
-    `(let [x# ~x]
-          (println "spied" '~x x#)
-          x#))
-
-(macroexpand-1 '(spy (rand-int 10)))
-;= (let [x__725__auto__ (rand-int 10)]
-;=      (println x__725__auto__ '(rand-int 10))
-;=      x__725__auto__)
-
-但这更是代码有问题的一个信号，通常意味着你把有些本该函数来实现的逻辑放到了宏里面了。
-
-(defn spy-helper [expr value]
-    (println expr value)
-    value)
-
-(defmacro spy [x]
-    `(spy-helper '~x ~x))
 
 ===========
-9，定义宏时最好遵循一些约定
+8，定义宏时最好遵循一些约定
 
 -1，如果宏需要指定本地绑定，那么把绑定指定在一个vector里面。
 clojure内置的一些宏，都是这种风格，如let、if-let、for和with-open等。
@@ -398,7 +263,7 @@ x不会被初始化成(range 10)，在for里面，它的意思是x将作为遍�
 
 
 =========
-10，自己实现串行宏。
+9，自己实现串行宏。
 
 首先，验证一个形式是不是序列，如果不是，构造一个只包含这个形式的序列。
 

@@ -1,0 +1,190 @@
+（hxzon读书笔记）《clojure编程》第5章：宏-宏卫生
+
+by hxzon
+《clojure编程》第5章：宏
+
+hxzon摘要：
+
+1，宏卫生（符号冲突问题，重复求值问题）。
+2，用gensym函数来生成一个保证唯一的符号。
+3，“自动gensym”：在语法引述形式里面，任何以#结尾的符号都会被自动扩展。
+4，让宏的用户来选择名字。
+
+5，前指宏（不稳定宏，不健康宏）：故意暴露一个名字。
+
+==========
+宏卫生（符号冲突问题，重复求值问题）
+
+----
+1，符号冲突问题
+
+在宏里面使用的某个符号名，跟外部代码，或者传入的用户自定义代码里的某个符号名字，可能会发生冲突。
+
+(defmacro   unhygienic
+            [& body]
+            `(let [x :oops]
+                  ~@body))
+;= #'user/unhygenic
+
+(unhygienic (println "x:" x))
+;= #<CompilerException java.lang.RuntimeException:
+;= Can't let qualified name: user/x, compiling:(NO_SOURCE_PATH:1)>
+
+(macroexpand-1 `(unhygienic (println "x:" x)))
+;= (clojure.core/let [user/x :oops]
+;= (clojure.core/println "x:" user/x))
+
+所有对x的引用都被扩展成user/x，但是let需要的名字是没有命名空间限定的。
+可以通过引述、反引述来“聪明”的避免这个错误，
+
+(defmacro   still-unhygienic
+            [& body]
+            `(let [~'x :oops] 
+                  ~@body))
+;= #'user/still-unhygenic
+
+(still-unhygienic (println "x:" x))
+; x: :oops
+;= nil
+
+(macroexpand-1 '(still-unhygienic
+                    (println "x:" x)))
+;= (clojure.core/let [x :oops]
+;= (println "x:" x))
+
+但这是给代码引入一个重大的bug。
+
+(let [x :this-is-important]
+     (still-unhygienic
+        (println "x:" x)))
+; x: :oops
+
+这里已经把x绑定到一个本地值了，但是由宏产生的let会悄悄把x绑定到另外一个值。
+
+----
+用gensym函数来生成一个保证唯一的符号。
+
+(gensym)
+;= G__2386
+
+(gensym)
+;= G__2391
+
+(gensym "sym")
+;= sym2396
+
+(gensym "sym")
+;= sym2402
+
+在语法引述形式里面，任何以#结尾的符号都会被自动扩展，
+并且对于前缀相同的符号，它们会被扩展成同一个符号的名字，这成为“自动gensym”。
+但是，只在同一个语法引述形式里所产生的符号名字是一样的。
+
+`(x# x#)
+;= (x__1447__auto__ x__1447__auto__)
+
+(defmacro   auto-gensyms
+            [& numbers]
+            `(let [x# (rand-int 10)] 
+                  (+ x# ~@numbers))) 
+;= #'user/auto-gensyms
+
+(auto-gensyms 1 2 3 4 5)
+;= 22
+
+(macroexpand-1 '(auto-gensyms 1 2 3 4 5)) 
+;= (clojure.core/let [x__570__auto__ (clojure.core/rand-int 10)]
+;= (clojure.core/+ x__570__auto__ 1 2 3 4 5))
+
+[`x# `x#]
+;= [x__1450__auto__ x__1451__auto__]
+
+--
+实现我们自己的doto。
+
+(defmacro our-doto [expr & forms]
+          `(let [obj# ~expr] 
+                ~@(map (fn [[f & args]]
+                           `(~f obj# ~@args)) 
+                       forms) 
+                obj#))
+
+(our-doto   "It works"
+            (println "I can't believe it"))
+;= #<CompilerException java.lang.RuntimeException:
+;= Unable to resolve symbol: obj__1456__auto__ in this context,
+;= compiling:(NO_SOURCE_PATH:1)>
+
+在这种情况下，只能手工调用gensym。
+
+(defmacro   our-doto [expr & forms]
+            (let [obj (gensym "obj")]
+                 `(let  [~obj ~expr]
+                        ~@(map (fn [[f & args]]
+                                   `(~f ~obj ~@args)) 
+                               forms) 
+                        ~obj)))
+
+当前，这里这个语法引述其实没什么意义，使用(list* f obj args)更好。
+
+----
+让宏的用户来选择名字
+
+一个宏如果故意向外部代码暴露出一个名字，则这个宏称为“不稳定的”。
+更好的方式是，让用户来选择这个绑定的名字。
+
+(defmacro with
+    [name & body]
+    `(let [~name 5]
+          ~@body))
+;= #'user/with
+
+(with bar (+ 10 bar))
+;= 15
+
+(with foo (+ 40 foo))
+;= 45
+
+--------
+2，重复求值问题
+
+如果传给宏的参数，在宏的扩展形式里面出现多次，就可能会被重复求值。
+
+(defmacro spy [x]
+    `(do
+        (println "spied" '~x ~x)
+        ~x))
+
+(spy 2)
+; spied 2 2
+;= 2
+
+(spy (rand-int 10))
+; spied (rand-int 10)
+;= 7
+
+(macroexpand-1 '(spy (rand-int 10)))
+;= (do (println (rand-int 10))
+;=     (rand-int 10))
+
+可以引入一个本地绑定来解决这个问题。
+
+(defmacro spy [x]
+    `(let [x# ~x]
+          (println "spied" '~x x#)
+          x#))
+
+(macroexpand-1 '(spy (rand-int 10)))
+;= (let [x__725__auto__ (rand-int 10)]
+;=      (println x__725__auto__ '(rand-int 10))
+;=      x__725__auto__)
+
+但这更是代码有问题的一个信号，通常意味着你把有些本该函数来实现的逻辑放到了宏里面了。
+
+(defn spy-helper [expr value]
+    (println expr value)
+    value)
+
+(defmacro spy [x]
+    `(spy-helper '~x ~x))
+
