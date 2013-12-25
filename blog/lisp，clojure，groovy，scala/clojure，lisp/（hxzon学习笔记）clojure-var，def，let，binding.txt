@@ -9,6 +9,7 @@ var，def，let，binding
 hxzon摘要：
 
 1，定义var（def），私有var（^:private），私有函数（defn-），常量（^:const）。
+（hxzon：var是一个存储位置，不同的存储位置可以同名，它们会相互遮蔽。）
 
 2，动态作用域（^:dynamic）。
 binding，在每个线程上覆盖这个根绑定的值（不影响其它线程）。

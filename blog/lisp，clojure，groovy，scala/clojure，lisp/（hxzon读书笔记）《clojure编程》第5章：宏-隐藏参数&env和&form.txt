@@ -217,6 +217,8 @@ defmacro宏引入两个隐藏的本地绑定：&env 和 &form 。
                         ~result (if or# or# (OR ~@next))]
                     ~result))))
 
+;hxzon理解：本地绑定是一个存储位置，let将值写入这个存储位置，不影响这个存储位置的元数据。
+
 (binding [*print-meta* true]
          (prn (macroexpand '^String (OR a b))))
 ; (let* [or__1176__auto__ a

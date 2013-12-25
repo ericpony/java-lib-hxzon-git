@@ -5,11 +5,11 @@
 //=======
 //表达式：fn*
 static public class FnExpr extends ObjExpr{
-	final static Type aFnType = Type.getType(AFunction.class);
-	final static Type restFnType = Type.getType(RestFn.class);
+	final static Type aFnType = Type.getType(AFunction.class);//函数类型：固定参数
+	final static Type restFnType = Type.getType(RestFn.class);//函数类型：不定参数
 	//if there is a variadic overload (there can only be one) it is stored here
-	FnMethod variadicMethod = null;
-	IPersistentCollection methods;
+	FnMethod variadicMethod = null;//不定参数实现体（只能有一个）
+	IPersistentCollection methods;//实现体（重载）列表
 	private boolean hasPrimSigs;
 	private boolean hasMeta;
 	//	String superName = null;
@@ -57,7 +57,7 @@ static public class FnExpr extends ObjExpr{
 		FnExpr fn = new FnExpr(tagOf(form));
 		fn.src = form;
 		ObjMethod enclosingMethod = (ObjMethod) METHOD.deref();
-		if(((IMeta) form.first()).meta() != null)
+		if(((IMeta) form.first()).meta() != null)//form的第1个元素的元数据
 			{
 			fn.onceOnly = RT.booleanCast(RT.get(RT.meta(form.first()), Keyword.intern(null, "once")));
 //			fn.superName = (String) RT.get(RT.meta(form.first()), Keyword.intern(null, "super-name"));
@@ -67,7 +67,7 @@ static public class FnExpr extends ObjExpr{
 		                  (enclosingMethod.objx.name + "$")
 		                                          : //"clojure.fns." +
 		                  (munge(currentNS().name.name) + "$");
-		if(RT.second(form) instanceof Symbol)
+		if(RT.second(form) instanceof Symbol)//如果form的第2个元素是符号（方法名）
 			name = ((Symbol) RT.second(form)).name;
 		String simpleName = name != null ?
 		                    (munge(name).replace(".", "_DOT_")
@@ -102,12 +102,12 @@ static public class FnExpr extends ObjExpr{
 
 			//now (fn [args] body...) or (fn ([args] body...) ([args2] body2...) ...)
 			//turn former into latter
-			if(RT.second(form) instanceof IPersistentVector)
+			if(RT.second(form) instanceof IPersistentVector)//如果form的第2个元素是向量（参数列表）
 				form = RT.list(FN, RT.next(form));
 			fn.line = lineDeref();
 			fn.column = columnDeref();
 			FnMethod[] methodArray = new FnMethod[MAX_POSITIONAL_ARITY + 1];
-			FnMethod variadicMethod = null;
+			FnMethod variadicMethod = null;//不定参数函数（实现体）
 			for(ISeq s = RT.next(form); s != null; s = RT.next(s))
 				{
 				FnMethod f = FnMethod.parse(fn, (ISeq) RT.first(s), fn.isStatic);
@@ -119,14 +119,14 @@ static public class FnExpr extends ObjExpr{
 						throw Util.runtimeException("Can't have more than 1 variadic overload");
 					}
 				else if(methodArray[f.reqParms.count()] == null)
-					methodArray[f.reqParms.count()] = f;
+					methodArray[f.reqParms.count()] = f;//不同的参数个数对应不同的函数（实现体）
 				else
 					throw Util.runtimeException("Can't have 2 overloads with same arity");
 				if(f.prim != null)
 					prims.add(f.prim);
 				}
 			if(variadicMethod != null)
-				{
+				{//固定参数的个数不能超过不定参数的参数个数。
 				for(int i = variadicMethod.reqParms.count() + 1; i <= MAX_POSITIONAL_ARITY; i++)
 					if(methodArray[i] != null)
 						throw Util.runtimeException(

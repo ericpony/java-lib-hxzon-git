@@ -84,6 +84,7 @@
  fn (fn* fn [&form &env & decl] 
          (.withMeta ^clojure.lang.IObj (cons 'fn* decl) 
                     (.meta ^clojure.lang.IMeta &form))))
+;将 &form 上的元数据加到 (fn* decl) 上。
 
 ;========
 ;除掉集合的尾部元素。
@@ -130,10 +131,10 @@
               m (if (map? (first fdecl))    ;如果fdecl第一个元素是map（元数据），加入到m。
                   (conj m (first fdecl))
                   m)
-              fdecl (if (map? (first fdecl))    ;除掉fdecl开头的map，如果有。
+              fdecl (if (map? (first fdecl))    ;除掉fdecl开头的map（元数据），如果有。
                       (next fdecl)
                       fdecl)
-              fdecl (if (vector? (first fdecl)) ;如果fdecl第一个元素是向量（参数列表），转成列表，绑定到fdecl。
+              fdecl (if (vector? (first fdecl)) ;如果fdecl第一个元素是向量（参数列表），将fdecl转成列表。
                       (list fdecl)
                       fdecl)
               m (if (map? (last fdecl))     ;如果fdecl最后一个元素是map（元数据），加入到m。
