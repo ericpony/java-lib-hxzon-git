@@ -1,15 +1,21 @@
-（hxzon学习笔记）clojure源码
+;（hxzon学习笔记）clojure源码-clojure.core.clj
 
-by hxzon
+;by hxzon
 
-https://github.com/clojure/clojure/blob/c6756a8bab137128c8119add29a25b0a88509900/src/clj/clojure/core.clj
+;https://github.com/clojure/clojure/blob/c6756a8bab137128c8119add29a25b0a88509900/src/clj/clojure/core.clj
 
-fn*
-let*
+;fn* 见 clojure/lang/Compiler.java 。
+;let*
 
-=====
+;=====
+;反引述和编接反引述，只是声明，没有实现。
+
+(def unquote)
+(def unquote-splicing)
+
+
 ;;;;;;;;;;;;;;;;; metadata ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-获取元数据：
+;获取元数据：
 
 (def
  ^{:arglists '([obj])
@@ -20,7 +26,7 @@ let*
         (if (instance? clojure.lang.IMeta x)
           (. ^clojure.lang.IMeta x (meta)))))   ;调用IMeta.meta方法。
 
-添加元数据：
+;添加元数据：
 
 (def
  ^{:arglists '([^clojure.lang.IObj obj m])
@@ -31,8 +37,8 @@ let*
  with-meta (fn ^:static with-meta [^clojure.lang.IObj x m]
              (. x (withMeta m))))   ;调用IObj.withMeta方法。
 
-======
-创建列表：
+;======
+;创建列表：
 
 (def
  ^{:arglists '([& items])
@@ -40,7 +46,7 @@ let*
    :added "1.0"}
   list (. clojure.lang.PersistentList creator))
 
-构建序列：
+;构建序列：
 
 (def
  ^{:arglists '([x seq])
@@ -51,9 +57,9 @@ let*
 
  cons (fn* ^:static cons [x seq] (. clojure.lang.RT (cons x seq))))
 
-======
-----
-let：
+;======
+;----
+;let：
 
 ;during bootstrap we don't have destructuring let, loop or fn, will redefine later
 (def
@@ -61,16 +67,16 @@ let：
     :added "1.0"}
   let (fn* let [&form &env & decl] (cons 'let* decl)))
 
-----
-loop：
+;----
+;loop：
 
 (def
  ^{:macro true
    :added "1.0"}
  loop (fn* loop [&form &env & decl] (cons 'loop* decl)))
 
-----
-fn：
+;----
+;fn：
 
 (def
  ^{:macro true
@@ -79,14 +85,14 @@ fn：
          (.withMeta ^clojure.lang.IObj (cons 'fn* decl) 
                     (.meta ^clojure.lang.IMeta &form))))
 
-========
-除掉集合的尾部元素。
-=> (butlast [1 2 3])
-(1 2)
-=> (next [1 2])
-(2)
-=> (next [1])
-nil
+;========
+;除掉集合的尾部元素。
+;=> (butlast [1 2 3])
+;(1 2)
+;=> (next [1 2])
+;(2)
+;=> (next [1])
+;nil
 
 (def 
  ^{:arglists '([coll])
@@ -99,7 +105,7 @@ nil
                (recur (conj ret (first s)) (next s))
                (seq ret)))))
 
-定义函数（defn）：
+;定义函数（defn）：
 
 (def 
 ^{:doc "Same as (def name (fn [params* ] exprs*)) or (def
@@ -155,12 +161,12 @@ nil
 
 (. (var defn) (setMacro))   ;将defn标记为宏。（宏的底层实现其实也是函数。）
 
-inline信息示例：
-{  :inline (fn [x] `(. clojure.lang.Numbers (incP ~x)))
-   :added "1.0"}
+;inline信息示例：
+;{  :inline (fn [x] `(. clojure.lang.Numbers (incP ~x)))
+;   :added "1.0"}
 
-======
-定义宏（defmacro）：
+;======
+;定义宏（defmacro）：
 
 (def
  ^{:doc "Like defn, but the resulting function name is declared as a
@@ -211,8 +217,8 @@ inline信息示例：
 
 (. (var defmacro) (setMacro))
 
-=====
-定义符号：
+;=====
+;定义符号：
 
 (defn symbol
   "Returns a Symbol with the given namespace and name."
@@ -222,8 +228,8 @@ inline信息示例：
   ([name] (if (symbol? name) name (clojure.lang.Symbol/intern name)))   ;如果不是符号，池化。
   ([ns name] (clojure.lang.Symbol/intern ns name)))
 
-=====
-定义关键字：
+;=====
+;定义关键字：
 
 (defn keyword
   "Returns a Keyword with the given namespace and name.  Do not use :
@@ -236,8 +242,8 @@ inline信息示例：
                 (string? name) (clojure.lang.Keyword/intern ^String name)))
   ([ns name] (clojure.lang.Keyword/intern ns name)))
 
-=====
-条件分支：
+;=====
+;条件分支：
 
 (defmacro cond
   "Takes a set of test/expr pairs. It evaluates each test one at a
@@ -255,8 +261,8 @@ inline信息示例：
             (cons 'clojure.core/cond (next (next clauses))))))
 
 
-======
-(defn spread
+;======
+;(defn spread
   {:private true
    :static true}
   [arglist]
@@ -265,7 +271,7 @@ inline信息示例：
    (nil? (next arglist)) (seq (first arglist))
    :else (cons (first arglist) (spread (next arglist)))))
 
-创建列表：
+;创建列表：
 
 (defn list*
   "Creates a new list containing the items prepended to the rest, the
@@ -279,8 +285,8 @@ inline信息示例：
   ([a b c d & more]
      (cons a (cons b (cons c (cons d (spread more)))))))
 
-=====
-函数应用：
+;=====
+;函数应用：
 
 (defn apply
   "Applies fn f to the argument list formed by prepending intervening arguments to args."
@@ -297,8 +303,8 @@ inline信息示例：
   ([^clojure.lang.IFn f a b c d & args]
      (. f (applyTo (cons a (cons b (cons c (cons d (spread args)))))))))
 
-====
-创建延迟序列：
+;====
+;创建延迟序列：
 
 (defmacro lazy-seq
   "Takes a body of expressions that returns an ISeq or nil, and yields
@@ -309,8 +315,8 @@ inline信息示例：
   [& body]
   (list 'new 'clojure.lang.LazySeq (list* '^{:once true} fn* [] body)))    
 
-====
-序列拼接：
+;====
+;序列拼接：
 
 (defn concat
   "Returns a lazy seq representing the concatenation of the elements in the supplied colls."
@@ -339,8 +345,8 @@ inline信息示例：
                          (cat (first zs) (next zs)))))))]
        (cat (concat x y) zs))))
 
-=====
-与：
+;=====
+;与：
 
 (defmacro and
   "Evaluates exprs one at a time, from left to right. If a form
@@ -354,7 +360,7 @@ inline信息示例：
    `(let [and# ~x]
       (if and# (and ~@next) and#))))
 
-或：
+;或：
 
 (defmacro or
   "Evaluates exprs one at a time, from left to right. If a form
@@ -368,8 +374,8 @@ inline信息示例：
       `(let [or# ~x]
          (if or# or# (or ~@next)))))
 
-====
-数字增一，自动类型提升：
+;====
+;数字增一，自动类型提升：
 
 (defn inc'
   "Returns a number one greater than num. Supports arbitrary precision.
@@ -378,7 +384,7 @@ inline信息示例：
    :added "1.0"}
   [x] (. clojure.lang.Numbers (incP x)))
 
-数字增一，可能抛出溢出异常：
+;数字增一，可能抛出溢出异常：
 
 (defn inc
   "Returns a number one greater than num. Does not auto-promote
@@ -387,7 +393,7 @@ inline信息示例：
    :added "1.2"}
   [x] (. clojure.lang.Numbers (inc x)))
 
-加法，自动类型提升：
+;加法，自动类型提升：
 
 (defn +'
   "Returns the sum of nums. (+) returns 0. Supports arbitrary precision.
@@ -401,7 +407,7 @@ inline信息示例：
   ([x y & more]
    (reduce1 +' (+' x y) more)))
 
-加法，可能抛出溢出异常：
+;加法，可能抛出溢出异常：
 
 (defn +
   "Returns the sum of nums. (+) returns 0. Does not auto-promote
@@ -415,8 +421,8 @@ inline信息示例：
   ([x y & more]
      (reduce1 + (+ x y) more)))
 
-====
-查找键值对：
+;====
+;查找键值对：
 
 (defn find
   "Returns the map entry for key, or nil if key not present."
@@ -424,8 +430,8 @@ inline信息示例：
    :static true}
   [map key] (. clojure.lang.RT (find map key)))     ;clojure.lang.RT.find(map,key)
 
-====
-串行宏，前一表达式的值作为点表达式的第2个元素：
+;====
+;串行宏，前一表达式的值作为点表达式的第2个元素：
 
 (defmacro ..
   "form => fieldName-symbol or (instanceMethodName-symbol args*)
@@ -446,7 +452,7 @@ inline信息示例：
   ([x form] `(. ~x ~form))
   ([x form & more] `(.. (. ~x ~form) ~@more)))
 
-串行宏，前一表达式的值作为后一个表达式的第2个元素：
+;串行宏，前一表达式的值作为后一个表达式的第2个元素：
 
 (defmacro ->
   "Threads the expr through the forms. Inserts x as the
@@ -460,7 +466,7 @@ inline信息示例：
               (list form x)))
   ([x form & more] `(-> (-> ~x ~form) ~@more)))
 
-串行宏，前一表达式的值作为后一个表达式的最后一个元素：
+;串行宏，前一表达式的值作为后一个表达式的最后一个元素：
 
 (defmacro ->>
   "Threads the expr through the forms. Inserts x as the
@@ -473,14 +479,14 @@ inline信息示例：
               (list form x)))
   ([x form & more] `(->> (->> ~x ~form) ~@more)))
 
-====
+;====
 ;;multimethods
-多重方法部分：
+;多重方法部分：
 
-全局层级：
+;全局层级：
 (def global-hierarchy)
 
-定义多重方法：
+;定义多重方法：
 (defmacro defmulti
   "Creates a new multimethod with the associated dispatch function.
   The docstring and attribute-map are optional.
@@ -523,15 +529,15 @@ inline信息示例：
            (def ~(with-meta mm-name m)
                 (new clojure.lang.MultiFn ~(name mm-name) ~dispatch-fn ~default ~hierarchy)))))))
 
-注册多重方法的实现：
+;注册多重方法的实现：
 (defmacro defmethod
   "Creates and installs a new method of multimethod associated with dispatch-value. "
   {:added "1.0"}
   [multifn dispatch-val & fn-tail]
   `(. ~(with-meta multifn {:tag 'clojure.lang.MultiFn}) addMethod ~dispatch-val (fn ~@fn-tail)))
 
-====
-动态绑定：
+;====
+;动态绑定：
 
 (defmacro binding
   "binding => var-symbol init-expr
@@ -559,8 +565,8 @@ inline信息示例：
          (finally
            (pop-thread-bindings))))))
 
-===
-创建循环无限序列：
+;====
+;创建循环无限序列：
 
 (defn cycle
   "Returns a lazy (infinite!) sequence of repetitions of the items in coll."
@@ -570,16 +576,16 @@ inline信息示例：
           (when-let [s (seq coll)] 
               (concat s (cycle s)))))
 
-====
-声明：
+;====
+;声明：
 
 (defmacro declare
   "defs the supplied var names with no bindings, useful for making forward declarations."
   {:added "1.0"}
   [& names] `(do ~@(map #(list 'def (vary-meta % assoc :declared true)) names)))
 
-====
-强制求值：
+;====
+;强制求值：
 
 (defn dorun
   "When lazy sequences are produced via functions that have side
@@ -596,7 +602,7 @@ inline信息示例：
    (when (and (seq coll) (pos? n))
      (recur (dec n) (next coll)))))
 
-强制求值：
+;强制求值：
 
 (defn doall
   "When lazy sequences are produced via functions that have side
@@ -614,8 +620,8 @@ inline信息示例：
    (dorun n coll)
    coll))
 
-====
-导入java类的简名：
+;====
+;导入java类的简名：
 
 (defmacro import 
   "import-list => (package-symbol class-name-symbols*)
@@ -635,7 +641,7 @@ inline信息示例：
                               (into1 v (map #(str p "." %) cs)))))
                         [] specs)))))
 
-====
+;====
 (defn read
   "Reads the next object from stream, which must be an instance of
   java.io.PushbackReader or some derivee.  stream defaults to the
@@ -667,8 +673,8 @@ inline信息示例：
    :static true}
   [s] (clojure.lang.RT/readString s))
 
-====
-宏展开：
+;====
+;宏展开：
 
 (defn macroexpand-1
   "If form represents a macro form, returns its expansion,
@@ -690,10 +696,10 @@ inline信息示例：
         form
         (macroexpand ex))))
 
-=====
+;=====
 ;redefine let and loop  with destructuring
 
-解构：
+;解构：
 (defn destructure [bindings]
   (let [bents (partition 2 bindings)    ;将绑定表达式两两切分
         pb (fn pb [bvec b v]
@@ -758,7 +764,7 @@ inline信息示例：
       (reduce1 process-entry [] bents))))
 
 
-重新定义let宏：
+;重新定义let宏：
 
 (defmacro let
   "binding => binding-form init-expr
@@ -792,7 +798,7 @@ inline信息示例：
           (let ~lets
             ~@body))))))
 
-重新定义fn宏：
+;重新定义fn宏：
 
 ;redefine fn with destructuring and pre/post conditions
 (defmacro fn
@@ -858,7 +864,7 @@ inline信息示例：
         (meta &form))))
 
 
-重新定义loop：
+;重新定义loop：
 
 (defmacro loop
   "Evaluates the exprs in a lexical context in which the symbols in
@@ -885,8 +891,8 @@ inline信息示例：
                (let ~(vec (interleave bs gs))
                  ~@body)))))))
 
-====
-定义私有函数：
+;====
+;定义私有函数：
 
 (defmacro defn-
   "same as defn, yielding non-public def"
@@ -894,8 +900,8 @@ inline信息示例：
   [name & decls]
     (list* `defn (with-meta name (assoc (meta name) :private true)) decls))
 
-====
-检查是否是特殊形式：
+;====
+;检查是否是特殊形式：
 
 (defn special-symbol?
   "Returns true if s names a special form"
@@ -904,8 +910,8 @@ inline信息示例：
   [s]
     (contains? (. clojure.lang.Compiler specials) s))
 
-====
-定义内联：
+;====
+;定义内联：
 
 (defmacro definline
   "Experimental - like defmacro, except defines a named function whose
@@ -919,15 +925,15 @@ inline信息示例：
        (alter-meta! (var ~name) assoc :inline (fn ~name ~args ~expr))
        (var ~name))))
 
-类型转型：
+;类型转型：
 
 (definline chars
   "Casts to chars[]"
   {:added "1.1"}
   [xs] `(. clojure.lang.Numbers chars ~xs))     ;clojure.lang.Numbers.chars(xs)
 
-====
-一次性定义：
+;====
+;一次性定义：
 
 (defmacro defonce
   "defs name to have the root value of the expr iff the named var has no root value,
@@ -938,9 +944,9 @@ inline信息示例：
      (when-not (.hasRoot v#)    ;如果v没有根值，求值expr，并绑定到name。
        (def ~name ~expr))))
 
-====
+;====
 ;;;;;;;;;;;;; nested associative ops ;;;;;;;;;;;
-内嵌结构操作：
+;内嵌结构操作：
 
 (defn get-in
   "Returns the value in a nested associative structure,
@@ -985,8 +991,8 @@ inline信息示例：
      (assoc m k (apply update-in (get m k) ks f args))
      (assoc m k (apply f (get m k) args)))))
 
-====
-池化：
+;====
+;池化：
 
 (defn intern
   "Finds or creates a var named by the symbol name in the namespace
@@ -1004,7 +1010,7 @@ inline信息示例：
        (when (meta name) (.setMeta v (meta name)))
        v)))
 
-====
+;====
 (defmacro letfn 
   "fnspec ==> (fname [params*] exprs) or (fname ([params*] exprs)+)
 
@@ -1018,8 +1024,8 @@ inline信息示例：
                              (map #(cons `fn %) fnspecs)))
            ~@body))
 
-====
-插入：
+;====
+;插入：
 
 (defn into
   "Returns a new coll consisting of to-coll with all of the items of
@@ -1031,7 +1037,9 @@ inline信息示例：
     (with-meta (persistent! (reduce conj! (transient to) from)) (meta to))
     (reduce conj to from)))
 
-====
+;====
+;并发处理
+
 (defn pmap
   "Like map, except f is applied in parallel. Semi-lazy in that the
   parallel computation stays ahead of the consumption, but doesn't

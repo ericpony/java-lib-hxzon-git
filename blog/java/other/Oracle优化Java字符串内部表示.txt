@@ -1,0 +1,31 @@
+Oracle优化Java字符串内部表示
+作者 Kaushik Pal ，译者 马德奎 发布于 十二月 24, 2013
+http://www.infoq.com/cn/news/2013/12/Oracle-Tunes-Java-String
+
+======
+为了不断改善Java性能，Oracle已经宣布自Java 1.7.0_06开始更改String类中的字符串内部表示。
+此次更改删除了String底层实现中的两个非静态字段，这样做有助于防止内存泄漏。
+
+原来的String实现基于四个非静态字段。
+第一个是char[]值，它包含组成String的字符。
+第二个是int offset，它保存值数组中第一个字符的索引。
+第三个是int count，它保存用到的字符数。
+第四个是int hash，它保存String哈希码的缓存值。
+
+Oracle报告称，当调用String.substring（）创建String时，原来的实现会产生性能问题。
+许多其它API，如Pattern.split（），都会在内部调用substring（）。
+当String.substring（）被调用时，它会引用原来的包含组成String的字符的内部char[]。
+
+原先的实现之所以采用这种设计方式是为了节省内存，因为子串仍然会引用原来的字符数据。
+除此之外，String.substring（）的运行时间是一个常量（O（1）），
+而不像新的实现那样，有一个线性（O（n））运行时间。
+
+不过，如果应用程序从原来的长字符串中抽取一个短字符串，并随后丢弃原来的字符串，那么在这种情况下可能会产生内存泄漏。
+在这个场景中，仍然存在一个活引用，指向原来字符串底层那个原来较大的char[]值，
+这可能会占据许多不再使用的数据字节。
+
+在早期版本中，Oracle建议在短字符串上调用new String（String）构造函数来避免这种情况。
+那个API只复制所需的底层char[]的一部分，从而解除新的较短的字符串与原来的较长的父字符串的关联。
+新规范删除了String的offset和count字段，因此子串不再共享底层的char[]值。
+
+查看英文原文：Oracle Tunes Java's Internal String Representation
