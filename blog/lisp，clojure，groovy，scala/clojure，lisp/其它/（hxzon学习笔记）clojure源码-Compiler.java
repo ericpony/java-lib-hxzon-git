@@ -4,6 +4,7 @@
 //static public class FnExpr extends ObjExpr
 //LetExpr
 //LetFnExpr
+//private static Expr analyzeSeq(C context, ISeq form, String name)
 
 //=============
 /**
