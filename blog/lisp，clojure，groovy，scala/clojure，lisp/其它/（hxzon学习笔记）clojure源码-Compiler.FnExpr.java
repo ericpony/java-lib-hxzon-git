@@ -52,13 +52,33 @@ static public class FnExpr extends ObjExpr{
 			}
 	}
 
+//	(def
+//	        ^{:arglists '([x seq])
+//	           :doc "Returns a new seq where x is the first element and seq is
+//	           the rest."
+//	          :added "1.0"
+//	          :static true}
+//
+//	        cons (fn* ^:static cons [x seq] (. clojure.lang.RT (cons x seq))))	
+	
+//	(def
+//	        ^{:macro true
+//	          :added "1.0"}
+//	        let (fn* let [&form &env & decl] (cons 'let* decl)))
+
+//	(def
+//	        ^{:macro true
+//	          :added "1.0"}
+//	        fn (fn* fn [&form &env & decl] 
+//	                (.withMeta ^clojure.lang.IObj (cons 'fn* decl) 
+//	                           (.meta ^clojure.lang.IMeta &form))))
 	static Expr parse(C context, ISeq form, String name) {
 		ISeq origForm = form;
 		FnExpr fn = new FnExpr(tagOf(form));
-		fn.src = form;
+		fn.src = form;//源代码
 		ObjMethod enclosingMethod = (ObjMethod) METHOD.deref();
-		if(((IMeta) form.first()).meta() != null)//form的第1个元素的元数据
-			{
+		if(((IMeta) form.first()).meta() != null)//获取form的第1个元素（方法名）的元数据，如果有。
+			{//元数据是否含有once
 			fn.onceOnly = RT.booleanCast(RT.get(RT.meta(form.first()), Keyword.intern(null, "once")));
 //			fn.superName = (String) RT.get(RT.meta(form.first()), Keyword.intern(null, "super-name"));
 			}
@@ -92,7 +112,7 @@ static public class FnExpr extends ObjExpr{
 					));
 
 			//arglist might be preceded by symbol naming this fn
-			if(RT.second(form) instanceof Symbol)
+			if(RT.second(form) instanceof Symbol)//如果form的第2个元素是符号（方法名）
 				{
 				Symbol nm = (Symbol) RT.second(form);
 				fn.thisName = nm.name;

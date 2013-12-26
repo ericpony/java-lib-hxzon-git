@@ -79,6 +79,13 @@ user=> (reductions + 10 (range 1 10))   ; 它还作为每个中间值的初始�
 map的结果跟它最短的参数一样长。
 
 ----
+5.1，zipmap
+function
+Usage: (zipmap keys vals)
+
+Returns a map with the keys mapped to the corresponding vals.
+
+----
 6，mapcat
 (mapcat f & colls)
 
