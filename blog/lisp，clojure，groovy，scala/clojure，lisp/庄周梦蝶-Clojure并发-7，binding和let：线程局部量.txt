@@ -40,7 +40,7 @@ set!可以修改binding的变量：
 5 Atom：原子操作和缓存
 6 Agent和Actor：异步更新
 
-7 binding和let：线程局部量 （另见）
+7 binding和let：线程局部量
 8 并发函数pmap、pvalues和pcalls
 9 future、promise和线程
 
