@@ -1,0 +1,125 @@
+Mark Engelberg-Clojure vs Scala
+
+http://programming-puzzler.blogspot.com/2013/12/clojure-vs-scala.html
+http://programming-puzzler.blogspot.com/2010/08/racket-vs-clojure.html
+
+作者：Mark Engelberg | 来自：Planet Clojure
+
+Last week, someone posted a question on the Clojure group asking for a comparison between Clojure and Scala. 
+Since my most popular blog post, by far, is my Racket vs Clojure post from three years ago, 
+I thought it would be good to post my response here.
+
+Ten years ago, I would have said that my ideal dream language is one that provides the flexibility to program in any style. 
+I want to be able to choose object-oriented or functional, immutable or mutable, 
+high-level abstractions or low-level speed. 
+With respect to this ideal, Scala clearly wins, supporting more programming styles than Clojure.
+
+I've definitely changed my tune, though, and now I actually prefer the way that Clojure constrains and shapes my thinking. 
+I argue that even though Scala may provide me with more options on how to tackle a given programming problem, 
+Clojure guides me towards a simpler solution. 
+If this intrigues you, read on...
+
+scala提供了很多选项，而clojure指出一种简单的解决方案。
+
+The following text is only slightly paraphrased from what I posted to the group:
+
+All or nearly all of the functional aspects of Clojure have counterparts in Scala. 
+On top of that, Scala provides mutable flavors of everything, 
+so you can pick and choose your approach. 
+So that makes Scala better, right?
+
+But the difference between Clojure and Scala is bigger than a feature-to-feature comparison 
+-- they have very different philosophies, 
+and programs developed in Clojure consequently have a very different feel to them than those developed in Scala. 
+I find Clojure programs to be dramatically simpler.
+
+Just as one example, consider modeling a deck of cards. 
+In Clojure, you'd be more likely to come up with a simple representation for a card, perhaps: [10 :spades]. 
+Depending on the card game, you might choose to represent a face card as [:king :clubs] or [13 :clubs]. 
+A deck would likely be modeled as just a sequence of cards, 
+and all the built-in sequence functions would apply, 
+for example, shuffle, take, drop, etc. 
+Serializing the data (for example, 
+if you want to keep a database tracking all the shuffled decks you've ever used in a given game) comes for free.
+
+On the other hand, in Scala, you'd be more likely to create a card Class with a rank and suit field. 
+The Suit class would be comprised of four case classes, 
+because the philosophy is to enumerate all the possible suits as separate entities 
+-- there's nothing in Scala like Clojure's convenient keywords. 
+
+For the rank, you'd be steered towards representing all the ranks as integers. 
+The possibility of representing face cards with a name would likely never occur to you, 
+because it would be too complicated to go through the effort of defining the type of a rank 
+to be a "integer or a class comprised of four case classes -- jack,queen,king,ace". 
+
+For modeling the deck, you probably wouldn't say a Deck is-a sequence, 
+because composition is favored over inheritance. 
+So you'd probably have a Deck class which would contain a sequence of cards. 
+This means that you'd have to reimplement methods like shuffle, take, and drop on your Deck class 
+to turn around and dispatch those methods to the underlying sequence of cards. 
+If you're not careful, years of object-oriented training might kick in and before you know it, 
+you're representing the deck as a class where methods like shuffle, take, and drop destructively update the underlying sequence 
+-- it feels so natural to do that once you've encapsulated the underlying sequence of cards in a class. 
+If you want to serialize a deck, that's more code to write 
+(although general "pickling" of a Scala object is an active area of research).
+
+
+This example pretty much sums up what I prefer about Clojure. 
+I like to tell people that a big part of what makes Clojure special is its philosophy of lightweight data modeling. 
+It leads to delightfully simple systems. 
+Scala remains deeply rooted in the OO philosophy, which all too often leads to an over-engineered muddle.
+
+clojure轻量级的建模。
+
+Further thoughts
+
+After posting the above message, a couple people pointed out that Scala doesn't force you to build the more complicated model. 
+That's absolutely true. 
+But due to its highly detailed static type system, 
+Scala attracts the kind of programmers that like to carefully categorize 
+and enumerate all the possible data structures that will occur in their programs. 
+Sure, you could eschew objects in Scala and mimic Clojure by using generic maps/vectors/lists/sets for all your structured data needs, 
+but that's clearly not how Scala is meant to be used, 
+and numerous little details of the language psychologically steer you 
+towards developing a more rigorous type taxonomy.
+
+In my post, I mentioned lightweight data modeling. 
+I can't stress this term enough. 
+I'd like to see it become the new catchphrase for Clojure. 
+When I used to give my "elevator pitch" for Clojure, 
+I'd talk about how it was a functional programming language, 
+a dialect of Lisp on the JVM, with some interesting concurrency constructs. 
+I'd get a lot of blank stares. 
+Most people don't know what it means to be functional, 
+and many don't know about Lisp. 
+But once I started talking about lightweight data modeling, people's interest perked up. 
+People get it, or think they get it, or at least get it enough to be curious to ask for more details.
+
+At that point, I often say something like, "Do you know JSON?" 
+After getting acknowledgment, I continue with, 
+"Well, imagine if you could represent all your data as JSON, 
+rather than a complex hierarchy of objects and methods, 
+and the language was designed around making that kind of data super-easy to work with." 
+I find I get a much more positive response from this kind of explanation. 
+It gives a hint of what it feels like to work in Clojure and think in Clojure.
+
+I find it interesting that in Scala's early days, Scala had a similar orientation. 
+They proudly boasted that XML manipulation was going to be Scala's killer feature. 
+You could drop XML in your code as a data literal; 
+the language was oriented around making XML easy to work with. 
+Now, this has fallen by the wayside. 
+Martin Odersky (the designer of Scala) has been quoted as saying, 
+"Seemed a great idea at the time, now it sticks out like a sore thumb."
+
+I admit, there are times where I'm envious of Scala's versatility versus Clojure: 
+
+the ease of using a mutable variable, the ease of working with Java primitives and arrays, 
+the speed that comes from static typing, the richness of classes versus Clojure's namespaces. 
+(Actually, this last point is probably worthy of its own blog post 
+-- Clojure's namespaces are quite limited in ways that frequently cause me pain). 
+
+Whenever I run up against one of these rough spots in Clojure, 
+I feel like an ascetic monk, suffering because I've chosen to deny myself the additional tools that Scala brings to the table. 
+But overall, I feel happier programming in Clojure 
+because the additional constraints imposed by Clojure guide me more quickly towards a simple design.
+

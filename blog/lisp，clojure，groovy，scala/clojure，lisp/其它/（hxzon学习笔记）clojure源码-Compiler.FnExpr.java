@@ -117,13 +117,13 @@ static public class FnExpr extends ObjExpr{
 				Symbol nm = (Symbol) RT.second(form);
 				fn.thisName = nm.name;
 				fn.isStatic = false; //RT.booleanCast(RT.get(nm.meta(), staticKey));
-				form = RT.cons(FN, RT.next(RT.next(form)));
+				form = RT.cons(FN, RT.next(RT.next(form)));//去掉form开头的两个元素，再在开头加上“fn”。
 				}
 
 			//now (fn [args] body...) or (fn ([args] body...) ([args2] body2...) ...)
 			//turn former into latter
 			if(RT.second(form) instanceof IPersistentVector)//如果form的第2个元素是向量（参数列表）
-				form = RT.list(FN, RT.next(form));
+				form = RT.list(FN, RT.next(form));//去掉form的参数列表，在开头加上“fn”。
 			fn.line = lineDeref();
 			fn.column = columnDeref();
 			FnMethod[] methodArray = new FnMethod[MAX_POSITIONAL_ARITY + 1];
@@ -154,7 +154,7 @@ static public class FnExpr extends ObjExpr{
 				}
 
 			if(fn.isStatic && fn.closes.count() > 0)
-				throw new IllegalArgumentException("static fns can't be closures");
+				throw new IllegalArgumentException("static fns can't be closures");//静态函数不能含有闭包。
 			IPersistentCollection methods = null;
 			for(int i = 0; i < methodArray.length; i++)
 				if(methodArray[i] != null)

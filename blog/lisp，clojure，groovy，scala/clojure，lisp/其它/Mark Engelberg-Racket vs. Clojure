@@ -1,0 +1,184 @@
+Mark Engelberg-Racket vs. Clojure
+
+http://programming-puzzler.blogspot.com/2013/12/clojure-vs-scala.html
+http://programming-puzzler.blogspot.com/2010/08/racket-vs-clojure.html
+
+By Mark Engelberg, 
+programming-puzzler.blogspot.com
+August 10th, 2010
+
+======
+I've been asked by several people to explain why I use Clojure for my professional work rather than Racket.
+
+
+ABOUT RACKET
+
+I have been using Racket (a dialect of Scheme) for several years to teach kids how to program. 
+Although Racket is a great first language, it's definitely not a "toy language". 
+In fact, Racket offers a number of interesting features not found in other languages, 
+making it an attractive option for real-world work. 
+Racket puts into practice state-of-the-art research on macros, continuations, contracts, 
+and interoperation between static and dynamically typed code. 
+The integrated Scribble system makes it easy to provide high-quality documentation 
+and/or write literate programs. 
+It comes with a pleasant, lightweight IDE complete with an integrated debugger and profiler 
+(as well as innovative features such as a specialized macro debugger).
+
+I'm a fan of functional programming and dynamic typing. 
+I know how to write and think in Racket from my many years teaching it, 
+so with all these features, it should be a slam dunk for me to use it professionally, right?
+
+Well, no....
+
+IT'S ALL ABOUT THE DATA STRUCTURES
+原因是数据结构。
+
+I have discovered that for me, the #1 factor that determines my programming productivity 
+is the set of data structures that are built-in to the language and are easy to work with. 
+For many years, Python set the standard for me, 
+offering easy syntax to manipulate extensible arrays (called lists in Python), 
+hash tables (called dictionaries in Python), 
+tuples (an immutable collection that can serve as keys in a hash table), 
+and in recent versions of Python, sets (mutable and immutable), heaps, and queues.
+
+Racket, as a dialect of Scheme, places the greatest importance on singly-linked lists. 
+OK, that's a reasonable starting point -- you can do a lot with linked lists. 
+It also offers a vector, which is an old-fashioned non-extensible array that is fixed in length. 
+(Who wants fixed-length arrays as a primary data structure any more? 
+Even C++ STL offers an extensible vector...)
+
+Vectors are mutable, which is both a plus and a minus. 
+On the plus side, it allows you to efficiently write certain classes of algorithms 
+that are hard to write with linked lists. 
+It serves a purpose that is different from linked lists, 
+so there is value to having both in the language. 
+The huge minus is that Racket simply isn't oriented towards working conveniently with mutable vectors. 
+Working with mutable data structures conveniently demands certain kinds of control structures, 
+and certain kinds of syntaxes. 
+You can write vector-based algorithms in Racket, 
+but they look verbose and ugly. 
+Which would you rather read:
+
+a[i]+=3 or (vector-set! a i (+ (vector-ref a i) 3)) ?
+
+But if you can get past the more verbose syntax, 
+there's still the fundamental issue that all the patterns change when you move from using a list to a vector. 
+The way of working with them is so fundamentally different 
+that there is no easy way to change code from using one to another.
+
+Racket goes further than most Scheme implementations in providing built-in data structures. 
+It also offers, for example, hash tables (and recently sets were added). 
+But the interface for interacting with hash tables is a total mess. 
+The literals for expressing hash tables use dotted pairs. 
+If you want to construct hash tables using the for/hash syntax, you need to use "values". 
+If you want to iterate through all the key/value pairs of a hash table, 
+it would be nice if there were an easy way to recursively process the sequence of key/value pairs the way you would process a list. 
+
+Unfortunately, Racket provides no built-in lazy list/stream, so you'd need to realize the entire list. 
+But even if that's what you'd want to do, 
+Racket doesn't provide a built-in function to give you back the list of keys, values or pairs in a hash table. 
+Instead, you're encouraged to iterate through the pairs using an idiosyncratic version of its for construct, 
+using a specific deconstructing pattern match style to capture the sequence of key/value pairs 
+that is used nowhere else in Racket. 
+(Speaking of for loops, why on earth did they decide to make the parallel for loop the common behavior, 
+and require a longer name (for*) for the more useful nested loop version?) 
+Put simply, using hash tables in Racket is frequently awkward and filled with idiosyncracies that are hard to remember.
+
+There are downloadable libraries that offer an assortment of other data structures, 
+but since these libraries are made by a variety of individuals, 
+and ported from a variety of other Scheme implementations, 
+the interfaces for interacting with those data structures 
+are even more inconsistent than the built-ins, which are already far from ideal.
+
+I'm sure many programmers can live with the awkwardness of the built-in data structures to get the other cool features that Racket offers, 
+but for me, it's a deal breaker.
+
+ENTER CLOJURE
+
+
+Clojure gets data structures right. 
+There's a good assortment of collection types built in: 
+lists, lazy lists, vectors, hash tables, sets, sorted hash tables, sorted sets, and queues. 
+ALL the built-in data structures are persistent/immutable. 
+That's right, even the *vectors* are persistent. 
+For my work, persistent vectors are a huge asset, and now that I've experienced them in Clojure, 
+I'm frustrated with any language that doesn't offer a similar data structure (and very few do). 
+The consistency of working only with persistent structures is a big deal 
+-- it means you use the exact same patterns and idioms to work with all the structures. 
+Vectors are just as easy to work with as lists. 
+Equality is simplified. 
+Everything can be used as a key in a hash table.
+
+Data structures in Clojure get a little bit of syntactic support. 
+Not a tremendous amount, but every little bit helps. 
+Code is a little easier to read when [1 2 3] stands out as a vector, 
+or {:a 1, :b 2, :c 3} stands out as a hash table. 
+Lookups are a bit more terse than in Racket -- (v 0) instead of (vector-ref v 0). 
+Hash tables are sufficiently lightweight in Clojure 
+that you can use them where you'd use Racket's structs defined with define-struct, 
+and then use one consistent lookup syntax rather than type-specific accessors 
+(e.g., (:age person) rather than (person-age person)). 
+
+This gets to be more important as you deal with structures within structures, 
+which can quickly get unwieldy in Racket, 
+but is easy enough in Clojure using -> or get-in. 
+Also, by representing structured data in Clojure as a hash table, 
+you can easily create non-destructive updates of your "objects" with certain fields changed. 
+Again, this works just as well with nested data. 
+(Racket structs may offer immutable updates in future versions, 
+but none of the proposals I've seen address the issue of updating nested structured data.) 
+Furthermore, Clojure's associative update function (assoc) can handle multiple updates in one function call 
+-- contrast (assoc h :a 1 :b 2) with (hash-set (hash-set h 'a 1) 'b 2).
+
+Even better, the process for iterating through any of these collections is consistent. 
+All of Clojure's collections can be treated as if they were a list, 
+and you can write algorithms to traverse them using the same pattern of empty?/first/rest that you'd use on a list. 
+This means that all the powerful higher-order functions like map/filter/reduce work just as well on a vector as a list. 
+You can also create a new collection type, 
+and hook into the built-in sequence interface, 
+and all the built-in sequencing functions will automatically work just as well for your collection.
+
+Although the sequencing functions work on any collection, 
+they generally produce lazy lists, 
+which means you can use good old recursion to solve many of the same problems you'd tackle with for/break or while/break in other languages. 
+For example, (first (filter even? coll)) will give you the first even number in your collection 
+(whether a list, vector, set, etc.) 
+and it will do so in a space-efficient manner 
+-- it doesn't need to generate an intermediate list of *all* the even numbers in your collection. 
+Some garbage is generated along the way, but it can be garbage collected immediately and with relatively little overhead. 
+Clojure also makes it easy to "pour" these lazy sequences into the collection of your choice via into. 
+Racket's lack of a built-in lazy list makes it difficult to use map/filter/etc. 
+for general processing of collections. 
+If you use map/filter/etc., you potentially generate a lot of intermediate lists. 
+You can use a stream library, but it was probably designed for other Scheme dialects with a naming scheme for the API that doesn't match Racket's built-in list functions or integrate well with Racket's other sequencing constructs. So often you end up writing the function you need from scratch (e.g., find-first-even-number) rather than composing existing building blocks. In some special cases, you can use one of the new for constructs, like in this case, for/first.
+
+A polymorphic approach is applied through most of Clojure's design. assoc works on vectors, hash tables, sorted hash tables, and any other "associative" collection. And again, you can hook into this with custom collections. This is far easier to remember (and more concise to write) than the proliferation of vector-set, hash-set, etc. you'd find in Racket. It also makes the various collections more interchangeable in Clojure, making it easier to test different alternatives for performance implications with fewer, more localized changes to one's code.
+
+Summary:
+
+
+Clojure provides a full complement of (immutable!) data structures you need for everyday programming and a bit of syntactic support for making those manipulations more concise and pleasant.
+All of the collections are manipulated by a small number of polymorphic functions that are easy to remember and use.
+Traversals over all collections are uniformly accomplished by a sequence abstraction that works like a lazy list, which means that Clojure's higher order sequence functions also apply to all collections.
+CLOJURE'S NOT PERFECT
+
+
+The IDEs available for Clojure all have significant drawbacks. You can get work done in them, but any of the IDEs will probably be a disappointment relative to what you're used to from other languages (including Racket).
+Debugging is difficult -- every error generates a ridiculously long stack trace that lists 500 Java functions along with (maybe, if you're lucky) the actual Clojure function where things went awry. Many of Clojure's core functions are written with a philosophy that they make no guarantees what they do with bad input. They might error, or they might just return some spurious answer that causes something to blow up far far away from the true origin of the problem.
+
+Clojure inherits numerous limitations and idiosyncracies from Java. No tail-call optimization, no continuations. Methods are not true closures, and can't be passed directly to higher-order functions. Proliferation of nil and null pointer exceptions. Slow numeric performance. Compromises with the way hashing and equality works for certain things to achieve Java compatibility. Slow startup time.
+
+Some people love Clojure specifically because it sits on top of Java and gives them access to their favorite Java libraries. Frankly, I have yet to find a Java library I'd actually want to use. Something about Java seems to turn every library into an insanely complex explosion of classes, and Java programmers mistakenly seem to think that JavaDoc-produced lists of every single class and method constitutes "good documentation". So for me, the Java interop is more of a nuisance than a help.
+
+Clojure has a number of cool new ideas, but many of them are unproven, and only time will tell whether they are truly valuable. Some people get excited about these features, but I feel fairly neutral about them until they are more road-tested. For example:
+
+
+Clojure's STM implementation - seems promising, but some reports suggest that under certain contention scenarios, longer transactions never complete because they keep getting preempted by shorter transactions.
+agents - if the agent can't keep up with the requests demanded of it, the agent's "mailbox" will eventually exhaust all resources. Perhaps this approach is too brittle for real-world development?
+vars - provides thread isolation, but interacts poorly with the whole lazy sequence paradigm that Clojure is built around.
+multimethods - Clojure provides a multimethod system that is far simpler than, say CLOS, but it requires you to explicitly choose preferences when there are inheritance conflicts, and early reports suggest that this limits extensibility.
+protocols - This is an interesting variation on "interfaces", but it's not clear how easy it will be to compose implementations out of partial, default implementations.
+transients - Nice idea for speeding up single-threaded use of persistent data structures. Transients don't respond to all the same interfaces as their persistent counterparts, though, limiting their usefulness. Transients are already being rethought and are likely to be reworked into something new.
+So it's hard for me to get excited about these aspects of Clojure when it remains to be seen how well these features will hold up under real-world use.
+
+I'm sure that for many programmers, Clojure's drawbacks or unproven ideas would be a deal breaker. We all care about different things. But for me, Clojure's clean coherent design of the API for working with the built-in data structures is so good, that overall, I prefer working in Clojure to working in Racket.

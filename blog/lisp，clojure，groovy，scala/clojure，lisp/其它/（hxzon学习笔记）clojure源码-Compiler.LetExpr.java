@@ -17,7 +17,7 @@ public static class LetExpr implements Expr, MaybePrimitiveExpr{
 		public Expr parse(C context, Object frm) {
 			ISeq form = (ISeq) frm;
 			//(let [var val var2 val2 ...] body...)
-			boolean isLoop = RT.first(form).equals(LOOP);
+			boolean isLoop = RT.first(form).equals(LOOP);//检查form的第1个元素是否为“loop*”。
 			if(!(RT.second(form) instanceof IPersistentVector))//form的第2个元素必须是向量（绑定列表）。
 				throw new IllegalArgumentException("Bad binding form, expected vector");
 
@@ -25,11 +25,11 @@ public static class LetExpr implements Expr, MaybePrimitiveExpr{
 			if((bindings.count() % 2) != 0)//form绑定向量的元素个数必须为偶数。
 				throw new IllegalArgumentException("Bad binding form, expected matched symbol expression pairs");
 
-			ISeq body = RT.next(RT.next(form));//let的函数体
+			ISeq body = RT.next(RT.next(form));//去掉form开头两个元素，得到let的函数体。
 
 			if(context == C.EVAL
 			   || (context == C.EXPRESSION && isLoop))
-				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));
+				return analyze(context, RT.list(RT.list(FNONCE, PersistentVector.EMPTY, form)));//FNONCE为符号“fn*”，带上once元数据。
 
 			ObjMethod method = (ObjMethod) METHOD.deref();
 			IPersistentMap backupMethodLocals = method.locals;

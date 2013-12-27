@@ -2,8 +2,10 @@
 //https://github.com/clojure/clojure/blob/master/src/jvm/clojure/lang/Compiler.java
 
 //static public class FnExpr extends ObjExpr
-//LetExpr
-//LetFnExpr
+//LetExpr let*
+//LetFnExpr letfn*
+//fn*
+//loop* import* case* reify*
 //private static Expr analyzeSeq(C context, ISeq form, String name)
 
 //=============
