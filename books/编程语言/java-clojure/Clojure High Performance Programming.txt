@@ -1,0 +1,274 @@
+Clojure High Performance Programming
+
+http://www.packtpub.com/clojure-high-performance-programming/book
+
+Language : English
+Paperback : 152 pages [ 235mm x 191mm ]
+Release Date : November 2013
+ISBN : 1782165606
+ISBN 13 : 9781782165606
+Author(s) : Shantanu Kumar
+
+作者：
+Shantanu Kumar
+
+Shantanu Kumar is a software developer living in Bangalore, India, with his wife. 
+He started learning programing in 1991, using BASIC on MS DOS when he was at school. 
+There, he developed a keen interest in the x86 hardware and assembly language, 
+and he dabbled in it for a good while. 
+Later, he programmed professionally in various business domains and technologies 
+while working with the Indian Air Force and several IT companies. 
+
+In recent years, Shantanu has worked on high performance and distributed systems. 
+Having used Java for a long time, he discovered Clojure in early 2009 and has been a fan ever since. 
+Clojure's pragmatism and fine-grained orthogonality continues to amaze him, 
+and he believes he is a better developer because of this. 
+When not busy with programming or reading up on technical subjects, 
+he enjoys reading non-fiction, riding his bike, 
+and occasionally just lazing in his free time. 
+Shantanu is an active participant in the Bangalore Clojure users group 
+and develops several open source Clojure projects on GitHub.
+
+======
+Table of Contents
+
+Preface
+Chapter 1: Performance by Design
+Chapter 2: Clojure Abstractions
+Chapter 3: Leaning on Java
+Chapter 4: Host Performance
+Chapter 5: Concurrency
+Chapter 6: Optimizing Performance
+Chapter 7: Application Performance
+Index
+
+========
+Preface
+
+
+Chapter 1: Performance by Design
+
+Usecase classification
+User-facing software
+Computational and data-processing tasks
+CPU bound
+Memory bound
+Cache bound
+Input/Output (I/O) bound
+Online transaction processing (OLTP)
+Online analytical processing (OLAP)
+Batch processing
+Structured approach for performance
+Performance vocabulary
+Latency
+Throughput
+Bandwidth
+Baseline and benchmark
+Profiling
+Performance optimization
+Concurrency and parallelism
+Resource utilization
+Workload
+Latency numbers every programmer should know
+Summary
+
+
+Chapter 2: Clojure Abstractions
+
+Non-numeric scalars and interning
+Identity, value, and epochal time model
+Variables and mutation
+Collection types
+Persistent data structures
+Constructing less-used data structures
+Complexity guarantee
+Concatenation of persistent data structures
+Sequences and laziness
+Laziness
+Laziness in data structure operations
+Constructing lazy sequences
+Transients
+Fast repetition
+Performance miscellanea
+Disabling assertions in production
+Destructuring
+Recursion and tail-call optimization (TCO)
+Premature end in reduce
+Multimethods versus protocols
+Inlining
+Summary
+
+
+Chapter 3: Leaning on Java
+
+Inspect the equivalent Java source for Clojure code
+Create a new project
+Compile Clojure sources into Java bytecode
+Decompile the .class files into Java source
+Numerics, boxing, and primitives
+Arrays
+Reflection and type hints
+Array of primitives
+Primitives
+Macros and metadata
+Miscellaneous
+Using array/numeric libraries for efficiency
+HipHip
+primitive-math
+Resorting to Java and native code
+Proteus – mutable locals in Clojure
+Summary
+
+
+Chapter 4: Host Performance
+
+The hardware
+Processors
+Branch prediction
+Instruction scheduling
+Threads and cores
+Memory systems
+Cache
+Interconnect
+Storage and networking
+The Java Virtual Machine
+The just-in-time (JIT) compiler
+Memory organization
+HotSpot heap and garbage collection
+Measuring memory (heap/stack) usage
+Measuring latency with Criterium
+Criterium and Leiningen
+Summary
+
+
+Chapter 5: Concurrency
+
+Low-level concurrency
+Hardware memory barrier instructions
+Java support and its Clojure equivalent
+Atomic updates and state
+Atomic updates in Java
+Clojure's support for atomic updates
+Asynchronous agents and state
+Asynchrony, queuing, and error handling
+Advantages of agents
+Nesting
+Coordinated transactional ref and state
+Ref characteristics
+Ref history and intransaction deref operations
+Transaction retries and barging
+Upping transaction consistency with ensure
+Fewer transaction retries with commutative operations
+Agents can participate in transactions
+Nested transactions
+Performance considerations
+Dynamic var binding and state
+Validating and watching the reference types
+Java concurrent data structures
+Concurrent maps
+Concurrent queues
+Clojure support for concurrent queues
+Concurrency with threads
+JVM support for threads
+Thread pools in the JVM
+Clojure concurrency support
+Asynchronous execution with Futures
+Anticipated asynchronous execution result with promises
+Clojure parallelization and the JVM
+Moore's law
+Amdahl's law
+Clojure support for parallelization
+pmap
+pcalls
+pvalues
+Java 7's fork/join framework
+Parallelism with reducers
+Reducible, reducer function, reduction transformation
+Realizing reducible collections
+Foldable collections and parallelism
+Summary
+
+
+Chapter 6: Optimizing Performance
+
+A tiny statistics terminology primer
+Median, first quartile, and third quartile
+Percentile
+Variance and standard deviation
+Understanding criterium output
+Guided performance objectives
+Performance testing
+Test environment
+What to test
+Measuring latency
+Measuring throughput
+Load, stress, and endurance tests
+Performance monitoring
+Introspection
+JVM instrumentation via JMX
+Profiling
+OS and CPU-cache-level profiling
+I/O profiling
+Performance tuning
+JVM tuning
+I/O tuning and backpressure
+Summary
+
+
+Chapter 7: Application Performance
+
+Data sizing
+Reduced serialization
+Chunking to reduce memory pressure
+Sizing for file/network operations
+Sizing for JDBC query results
+Resource pooling
+JDBC resource pooling
+I/O batching and throttling
+JDBC batch operations
+Batch support at API level
+Throttling requests to services
+Precomputing and caching
+Concurrent pipelines
+Distributed pipelines
+Applying back pressure
+Thread pool queues
+Servlet containers like Tomcat and Jetty
+HTTP Kit
+Performance and queuing theory
+Little's Law
+Summary
+
+
+Index
+
+=======
+What you will learn from this book
+
+Learn techniques for achieving numerical performance in Clojure
+Use Java features in Clojure code for performance
+Avoid reflection and boxing with type hints
+Analyze latency using the Criterium library
+Understand Clojure's concurrency and state-management primitives in depth
+Explore how to design Clojure applications for better performance
+
+--------
+In Detail
+
+Clojure is a young, dynamic, functional programming language that runs on the Java Virtual Machine. It is built with performance, pragmatism, and simplicity in mind. Like most general purpose languages, Clojure’s features have different performance characteristics that one should know in order to write high performance code.
+
+Clojure High Performance Programming is a practical, to-the-point guide that shows you how to evaluate the performance implications of different Clojure abstractions, learn about their underpinnings, and apply the right approach for optimum performance in real-world programs.
+
+This book discusses the Clojure language in the light of performance factors that you can exploit in your own code.
+
+You will also learn about hardware and JVM internals that also impact Clojure’s performance. Key features include performance vocabulary, performance analysis, optimization techniques, and how to apply these to your programs. You will also find detailed information on Clojure's concurrency, state-management, and parallelization primitives.
+
+This book is your key to writing high performance Clojure code using the right abstraction, in the right place, using the right technique.
+
+Approach
+
+This is a short, practical guide that will teach you everything you need to know to start writing high performance Clojure code.
+
+Who this book is for
+
+This book is ideal for intermediate Clojure developers who are looking to get a good grip on how to achieve optimum performance. You should already have some experience with Clojure and it would help if you already know a little bit of Java. Knowledge of performance analysis and engineering is not required. For hands-on practice, you should have access to Clojure REPL with Leiningen.

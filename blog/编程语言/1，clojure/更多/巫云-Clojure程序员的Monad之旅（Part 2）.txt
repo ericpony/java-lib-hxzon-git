@@ -1,0 +1,252 @@
+巫云-Clojure程序员的Monad之旅（Part 2）
+
+http://www.cnblogs.com/darkluck99/archive/2012/03/17/2403082.html
+翻译自 A Monad Tutorial For Clojure Programmers (Part 2)
+http://onclojure.com/2009/03/06/a-monad-tutorial-for-clojure-programmers-part-2/
+
+=======
+在Part1中，我们已经学习了最基础的2个monad：identity monad和maybe monad。
+在本节中，我们继续介绍sequence monad，并联系m-result函数进行讲解。
+最后，我会演示示2个有用的monad泛操作符。
+
+sequence monad（Haskell中与之对应的是list monad）是使用频率最高的monad之一。
+Clojure中也内建了这个monad，比如for。
+让我们看下面的例子：
+
+(for [a (range 5)
+      b (range a)]
+   (* a b))
+
+for和let在语法上很像，它们有相同的结构：
+一个由绑定表达式组成的list，每个绑定表达式可以使用前面表达式的符号；
+一个结果表达式，此表达式通常需使用前面的绑定。
+不同的是：let给每个符号绑定一个单值，for绑定的是一个序列。
+for必须绑定序列，返回结果也是序列。
+for可以配合条件表达式:when和:while使用。
+从monad的复合运算的观点来看，
+sequence的运算结果可以看作非单一性的，比如，运算结果不只一个的情况。
+
+使用monad库，上面的循环可以写成：
+
+(domonad sequence-m
+   [a (range 5)
+    b (range a)]
+   (* a b))
+ 
+我们已经知道，domonad宏展开为一个m-bind的操作链，并结尾调用m-result函数。
+下面我们要讲解如何定义m-bind和m-result，来获得循环效果。
+
+前面我们看到，m-bind调用一个代表剩余计算步骤的函数，参数是绑定值。
+为了达到循环效果，我们要重复调用这个函数。
+第一步我们构造一个这样的函数：
+
+
+(defn m-bind-first-try [sequence function]
+   (map function sequence))
+
+(m-bind-first-try (range 5)
+  (fn [a]
+    (m-bind-first-try (range a)
+        (fn [b] (* a b)))))
+
+结果为：(() (0) (0 2) (0 3 6) (0 4 8 12))， 而for表达式的到的结果是 (0 0 2 0 3 6 0 4 8 12)。
+我们想要一个无嵌套的sequence，因为嵌套的层数跟调用m-bind的次数是相同的。
+既然m-bind引入一次嵌套，我们就要想办法去掉这次嵌套。
+这似乎可以用concat解决，那么我们再来试一下：
+
+(defn m-bind-second-try [sequence function]
+   (apply concat (map function sequence)))
+  
+(m-bind-second-try (range 5)
+  (fn [a]
+    (m-bind-second-try (range a)
+        (fn [b] (* a b)))))
+
+这次更糟，我们得到了一个异常。
+java.lang.IllegalArgumentException: Don't know how to create ISeq from: Integer
+
+我们来思考一下! 
+每次m-bind引入一层嵌套，同时消除一次嵌套。
+调用函数的嵌套层数决定了结果的嵌套层数。
+我们最终结果的嵌套层数跟（* a b）相同，即没有嵌套。
+那么如果我们想在结果中实现1层嵌套，跟调用多少次m-bind无关，正确的办法是在最后一次计算引入嵌套：
+
+(m-bind-second-try (range 5)
+  (fn [a]
+    (m-bind-second-try (range a)
+        (fn [b] (list (* a b))))))
+
+一切正常。
+我们的(fn [b]...)始终返回一个单元素的list。
+内层的m-bind创建一个单元素的sequence，每个元素是b的一个值，由这些值组成一个无嵌套的list。
+外层的m-bind，创建的是a的值组成的list。
+每个m-bind的结果同样是一个无嵌套的list。
+这很好的表现了m-result在monad中的作用。
+
+Sequence monad的最终定义如下：
+
+(defn m-bind [sequence function]
+   (apply concat (map function sequence)))
+ 
+(defn m-result [value]
+   (list value))
+ 
+m-result的作用是，当出现在monad绑定的右侧时返回一个值，把符号绑定到这个值。
+在定义monad时，m-bind和m-result必须满足这个条件。
+
+在Clojure代码中表现为：
+
+(= (m-bind (m-result value) function)
+   (function value))
+
+还有其它两个monad规则，其中一个是：
+
+(= (m-bind monadic-expression m-result)
+   monadic-expression)
+
+monadic-expression代表任何有效的monad表达式，
+例如一个sequence monad表达式。
+使用domonad宏可以更清楚的理解这个规则。
+
+(= (domonad
+     [x monadic-expression]
+      x)
+   monadic-expression)
+
+最后一个规则是：
+
+(= (m-bind (m-bind monadic-expression
+                   function1)
+           function2)
+   (m-bind monadic-expression
+           (fn [x] (m-bind (function1 x)
+                           function2))))
+
+使用domonad表示：
+
+(= (domonad
+     [y (domonad
+          [x monadic-expression]
+          (function1 x))]
+     (function2 y))
+   (domonad
+     [x monadic-expression
+      y (m-result (function1 x))]
+     (function2 y)))
+
+使用monad时不需要记住这些法则，除非你要创建自己的monad。
+你需要记住的是(m-result x)代表值为x的monad运算。
+我们前面讲过的identity monad和maybe monad，没有特别的monad表达式，此时m-result只是identity函数。
+
+现在放松一下。
+关于monad的理论我们下一节再讨论，那时我还会告诉你一些关于for中使用:when的事情。
+本节剩余部分主要是编程实践。
+
+我们也许要问，既然Clojure已经有个let和for，
+为什么还要制造identity monad和sequence monad呢？
+答案就是在各种monad中有可共用的泛操作。
+使用monad库，你可以写一个函数，把monad作为参数，并在给定的monad中组合多个运算。
+我待会用一个抽象示例来演示。
+Monad库还包括许多可在任何monad中使用的操作，它们的名字都以“m-”开头。
+
+使用最频繁的monad泛函数是m-lift，
+它把一个参数为n个值参数的函数，转换成一个参数为n个monad表达式，
+并且返回值也是monad表达式的函数。
+这个新函数隐式调用了m-bind和m-result。
+举个简单的例子：
+
+(def nil-respecting-addition
+   (with-monad maybe-m
+     (m-lift 2 +)))
+
+这个函数返回两个参数的和，类似+，区别是它在任何参数为nil的情况下都返回nil。
+记住，m-lift必须指定函数需要的参数个数，这个信息是无法从函数中获得的。
+
+我们用domonad写出等效的表达式，以便看清m-lift的工作原理。
+
+(defn nil-respecting-addition
+   [x y]
+   (domonad maybe-m
+     [a x
+      b y]
+     (+ a b)))
+
+看得出，m-lift对每个参数调用了一次m-result和m-bind。
+同样的定义，如果使用sequence monad，将会返回一个函数，
+这个函数返回一个求和的sequence，它的值是从两个输入的sequence中计算得来。
+
+----
+练习：下面的函数跟Clojure的哪个著名的内建函数等效呢？
+
+(with-monad sequence-m
+  (defn mystery
+    [f xs]
+      ((m-lift 1 f) xs )))
+
+巫云@：从函数结构巫云认为这个好像是map嘛，我们来试一下：
+(mystery #(* 2 %) [1 2 3 4 5])
+
+返回结果：(2 4 6 8 10)，果然跟map一样哦。
+
+----
+另一个常用的monad泛函数是m-seq，他接受一个monad 表达式组成的sequence，
+返回一个结果值的sequence。
+根据domonad的规则，（m-seq [a b c]）相当于
+
+(domonad
+  [x a
+   y b
+   z c]
+  '(x y z))
+
+使用m-seq的例子，请自己来试一下。
+
+(with-monad sequence-m
+    (defn ntuples [n xs]
+       (m-seq (replicate n xs))))
+
+巫云@：我们来测试一下。
+
+(ntuples 1 [1 2 3]) 
+=> ((1) (2) (3))
+
+(ntuples 2 [1 2 3]) 
+=> ((1 1) (1 2) (1 3) (2 1) (2 2) (2 3) (3 1) (3 2) (3 3))
+
+因为使用了sequence-m，我们可以想象成这是n层的循环。
+
+----
+最后介绍m-chain，它接受一个单参数操作组成的list。
+然后把这些操作组成一个链，并使每个参数从操作链上流过。
+比如：（m-chain [a b c]）等价于
+
+(fn [arg]
+   (domonad
+     [x (a arg)
+      y (b x)
+      z (c y)]
+     z))
+
+一个常用的例子是层级结构的遍历。
+Clojure的parents函数通过使用multimethod，返回一个类的的所有基类和接口。
+下面的函数以parents为基础，寻找一个类的第n代祖先。
+
+(with-monad sequence-m
+   (defn n-th-generation
+     [n cls]
+     ((m-chain (replicate n parents)) cls )))
+  
+(n-th-generation 0 (class []))
+
+(n-th-generation 1 (class []))
+
+(n-th-generation 2 (class []))
+
+巫云@：这个例子相当于把n次parents操作组成了一个操作链。
+
+你可能发现了，有些类在结果中出现了不只一次，因为他们是很多类的基类。
+事实上，我们应该使用sets代替sequence来表现结果，这并不难，把sequence-m，替换成set-m即可。
+
+在Part3，我会讲:when条件表达式在循环中的使用，
+并且看看他们在monad中是如何实现的，并且还会介绍其它几个monad。
+

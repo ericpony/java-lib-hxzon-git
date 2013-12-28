@@ -1,0 +1,384 @@
+巫云-Clojure程序员的Monad之旅（Part 4）
+
+http://www.cnblogs.com/darkluck99/archive/2012/03/20/2407456.html
+翻译自 A Monad Tutorial For Clojure Programmers (Part 4)
+http://onclojure.com/2009/04/24/a-monad-tutorial-for-clojure-programmers-part-4/
+
+
+在本次旅程的最后一节，我将会介绍monad transformer。我只介绍其中的一种，然后我会介绍probability monad 以及 如何使用monad transformer来扩展它。
+
+ 
+
+简单来说，monad transformer是一个函数，参数是一个monad，返回值也是一个monad。返回的monad是通过给传入的monad增加一些功能而产生的变形。这些增加的功能，是由monad transformer定义的。许多我前面提到的普通的monad，都有monad transformer 模拟，可以增加功能，使他们成为其它的monad。
+
+
+
+考虑一下我们前面讨论过的maybe monad和sequence monad。maybe monad用来对可能失败的运行返回有效的值nil。sequence monad 用来对运算返回多值的结果，monad值组成的序列。把这个两个monad组合成一个新的monad，可以有2种形式：1）返回多值结果，值nil表示运算失败；2）或者返回多值结果，或者在失败的情况下返回nil。形式1）是比较有用的，对于形式2）来说实用价值不大，运算失败只要返回空序列的方式更简便。
+
+
+
+那么，我们用什么办法把maybe monad和sequence monad组合起来，以便用现有的功能来实现我们所需的功能呢？很遗憾，这是做不到的。但是，我们可以保持一个monad不变，而把另一个改写成一个monad transformer。使用这个monad transformer来处理sequence monad（或其他的monad）来获得我们想要的结果。为了实现需要组合，我们就可以把maybe monad转换成一个 monad transformer，然后把他应用到sequence monad。
+
+
+
+首先，看一下这两个monad的定义：
+
+复制代码
+ 1 (defmonad maybe-m
+ 2    [m-zero   nil
+ 3     m-result (fn [v] v)
+ 4     m-bind   (fn [mv f]
+ 5                (if (nil? mv) nil (f mv)))
+ 6     m-plus   (fn [& mvs]
+ 7                (first (drop-while nil? mvs)))
+ 8     ])
+ 9  
+10 (defmonad sequence-m
+11    [m-result (fn [v]
+12                (list v))
+13     m-bind   (fn [mv f]
+14                (apply concat (map f mv)))
+15     m-zero   (list)
+16     m-plus   (fn [& mvs]
+17                (apply concat mvs))
+18     ])
+复制代码
+ 
+
+
+
+然后看一下maybe monad transformer的定义：
+
+复制代码
+ 1 (defn maybe-t
+ 2   [m]
+ 3   (monad [m-result (with-monad m m-result)
+ 4           m-bind   (with-monad m
+ 5                      (fn [mv f]
+ 6                        (m-bind mv
+ 7                                (fn [x]
+ 8                                  (if (nil? x)
+ 9                                    (m-result nil)
+10                                    (f x))))))
+11           m-zero   (with-monad m m-zero)
+12           m-plus   (with-monad m m-plus)
+13           ]))
+复制代码
+ 
+
+
+
+在clojure.contrib.monads库中真正的定义，比这个要复杂一些，我稍后会解释，但我们现在的版本，已经够不错了。组合后的monad这样定义
+
+1 (def maybe-in-sequence-m (maybe-t sequence-m))
+ 
+
+
+
+直接调用这个函数，返回一个monad。让我们看看m-result的作用，maybe-m的m-result函数是identity，因此sequence-m的m-result函数，就是我们需要的m-result。事实正是如此，（with-monad  m m-result）返回m的m-result函数。同样的结构，我们在m-zero和m-plus中也看到了，这说明，我们要修改的仅仅是m-bind部分。
+
+
+
+组合后的m-bind抵用了sequence-m的m-bind函数，但是修改了参数，使用一个函数来表示其余的运算。在调用之前，首先检查参数是否为nil。如果为nil，就调用原先的函数，这样组合后的monad同基础monad一样，不需要计算，返回nil。尽管如此，我们不能只是返回nil，我们必须返回一个有效的monad值（在我们的例子中是返回序列中的nil元素）。因此，我们把nil传回给基础monad的m-result，由它来把nil包装到最终所需的结果中。
+
+
+
+让我们看看实际的情况：
+
+(domonad maybe-in-sequence-m
+  [x [1 2 nil 4]
+   y [10 nil 30 40]]
+  (+ x y))
+ 
+
+
+
+输出结果是：
+
+(11 nil 31 41 12 nil 32 42 nil 14 nil 34 44)
+
+
+正如我们期望的，所有的非nil值计算后都正常，但是第一眼看到这个结果我们有些惊讶，为什么是4个nil而不是8个呢（每个输入序列中的nil和分别另外一个序列的4个元素相加）？
+
+
+
+为了理解这个原因，我们来看一下maybe-t中的m-bind函数，在顶层，使用[1 2 nil 4]作为monad值来运算。他把这个结构传给sequence-m的的m-bind函数，这个匿名函数总共调用了maybe-t的m-bind函数4次（每个元素1次）。对于其中3个非nil的值只是普通的+运算；对于nil值，结果直接返回nil，不进行运算。这样，第一个输入vector中的nil元素，在结果中产生了一个nil值，剩余的运算部分只执行了3次。这3次运算，每次又产生了3个有效的值和1个nil，这样从第二个输入vector，我们就得到了3 x 3 = 9个有效值，和3 x 1 = 3个nil，加上从第一个输入vector得到的一个ni，一共是9个值和4个nil。
+
+
+
+用什么办法可以获得全部的 4 x 4共计16个运算值吗？当然，但是不能使用maybe-t。你只能分别使用maybe-m和sequence-m来计算：
+
+复制代码
+1 (with-monad maybe-m
+2   (def maybe-+ (m-lift 2 +)))
+3  
+4 (domonad sequence-m
+5   [x [1 2 nil 4]
+6    y [10 nil 30 40]]
+7   (maybe-+ x y))
+复制代码
+ 
+
+
+
+如果你使用maybe-t，你总是会被短路逻辑影响：一旦有一个nil，就返回nil，并不继续进行剩余的计算。大多数情况下，这符合我们的需要。
+
+
+
+maybe-t和sequence-m的组合并没有多少实用价值，因为一个更简单有效的方法是在计算前把非有效的参数从输入序列中移出。但是这个例子很简单，又能很好的解释原理。现在我们准备挑战一个更有实际意义的例子：使用maybe-t和probability distribution monad。
+
+
+
+probability distribution monad用来处理有限概率分布，比如，在一个有限元素组成的集合里有非0值的概率。这个概率用一个map来表示，分别是值和它们出现的记录。有限分布相关的函数和monad在clojure.contrib.probabilities.finite-distributions库中。
+
+巫云@： 
+由于目前clojure.contrib.probabilities.finite-distributions的代码跟clojure 1.3.0以上版本不兼容，这里我是使用clojure 1.2.0进行测试的。
+使用leiningen的同学可以参考我的文章《64位window7下配置Clojure+Emacs开发环境》进行配置。关于出现这个问题的原因可参照这篇文章。
+
+
+
+有限分布的一个简单例子：
+
+(use 'clojure.contrib.probabilities.finite-distributions)
+(def die (uniform #{1 2 3 4 5 6}))
+(prob odd? die)
+ 
+
+
+
+输出1/2，这是扔骰子点数出现偶数的概率。die的值，是扔骰子使出现的点数及其概率的分布情况：
+
+{6 1/6, 5 1/6, 4 1/6, 3 1/6, 2 1/6, 1 1/6}
+
+
+假设我们扔2次骰子，然后观察两次点数的和。他们的概率分布是怎样的呢？
+
+(domonad dist-m
+  [d1 die
+   d2 die]
+  (+ d1 d2))
+ 
+
+
+
+结果是：
+
+{2 1/36, 3 1/18, 4 1/12, 5 1/9, 6 5/36, 7 1/6, 8 5/36, 9 1/9, 10 1/12, 11 1/18, 12 1/36}
+
+
+我们来看一下domonad块的内容：第一次的分布die绑定到d1，第二次的分布die绑定到d2，然后计算d1+d2的分布。这个例子很简单，概括来说，每次分布情况取决于上一次分布情况，这样就创建了变量的联合分布。这个方法被称为“原始取样”。
+
+
+
+dist-m这个monad使用组合概率的基本原则：如果事件A发生的概率是p，事件B发生的概率是q，并且二者是相互独立的（至少互不影响），那么A和B同事发生的概率为p x q。看dist-m的定义：
+
+复制代码
+1 (defmonad dist-m
+2   [m-result (fn [v] {v 1})
+3    m-bind   (fn [mv f]
+4               (letfn [(add-prob [dist [x p]]
+5                         (assoc dist x (+ (get dist x 0) p)))]
+6                 (reduce add-prob {}
+7                        (for [[x p] mv  [y q] (f x)]
+8                          [y (* q p)]))))
+9    ])
+复制代码
+ 
+
+像往常一样，m-bind中发生了有趣的事情。第一个参数mv是一个map，里面存放概率分布情况；第二个参数f是一个函数，代表剩余的运算，对于每个for里面的概率值，调用这个函数。for表达式同时遍历输入分布里的概率和（f x）返回的概率分布里的概率，通过乘法操作计算联合概率，并把结果输出到输出分布。通过对辅助函数add-prob上使用reduce来完成运算。add-prob的检查当前的map的值是否存在，如果存在，更新概率为add后的新值。这是必须的，因为在（f x）的取样过程中，同一个值如果对应不同的x，则可能被包含多次。（巫云@：比如 1+ 2 = 3， 2 + 1 = 3，3可能出现多次）
+
+ （巫云@：比如 1+ 2 = 3，2 + 1 = 3<，3可能出现多次）
+
+ 
+
+再看一个更有趣的例子，著名的Monty Hall问题。在一个电视现场游戏中，玩家面对3扇门，其中只有一个门后面有奖品。如果玩家选择了正确的门就能得到奖品。 说到这里，这个问题就可以简化为，获奖概率是1/3。
+
+（巫云@：这个游戏也是来自一款电视节目，貌似跟砸蛋很像啊~）
+
+ 
+
+但是这里有个小插曲，在玩家做出选择之后，主持人打开剩余2扇门中的1扇，这扇门后面是没有奖品的。然后主持人问玩家是否变更原先的选择。这真是个不错策略，是吧。
+
+
+
+为了更好的定义这个问题，我们假设主持人是知道奖品位置的，因此他不会开打有奖品的门。然后我们开始编程：
+
+复制代码
+1 (def doors #{:A :B :C})
+2  
+3 (domonad dist-m
+4   [prize  (uniform doors)
+5    choice (uniform doors)]
+6   (if (= choice prize) :win :loose))
+复制代码
+ 
+
+
+
+一步步的看，首先，我们从A，B，C三个门中选择一个作为作为放奖品的门，这代表玩家开始游戏前的前奏。然后玩家开始选择。最后我们公布结果，输出:win或者:loose。很明显概率情况毫无异议，{:win 1/3, :loose 2/3}。
+
+
+
+这覆盖了玩家不听取主持人建议的情况，如果他接受了主持人的建议，情况变得更加复杂：
+
+复制代码
+(domonad dist-m
+  [prize  (uniform doors)
+   choice (uniform doors)
+   opened (uniform (disj doors prize choice))
+   choice (uniform (disj doors opened choice))]
+  (if (= choice prize) :win :loose))
+复制代码
+ 
+
+
+
+第3步变得最为有趣：主持人打开一扇未被选择的，并且没有奖品的门。我们的模型用移除奖品门和被选择门来体现这一步骤，从结果集合中我们可以看到，结果中包含1个或2个元素，取决于被选择门和奖品门。然后玩家改变他的选择，转而选择留下的那个门。在标准的3个门游戏中，这个可选集合里只有1个门，但是上面的代码适合更多门的情况。大家可以自己尝试一下。
+
+
+
+执行的结果是{:loose 1/3, :win 2/3}，说明改变自己的选择是一个更佳的策略。
+
+
+
+回到maybe-t，在有限分布库中定义了一个monad：
+
+(def cond-dist-m (maybe-t dist-m))
+ 
+
+
+
+这使nil成为一个特殊值，表达那些我们不想考虑的可能情况。使用maybe-t和dist-m，你能猜到在分布联合时nil是如何传递的：对于任何的nil值，任何对它有潜在依赖的分布都不被计算，并且nil值的概率被整个传递给输出结果中ni的概括。但是nil是如何进入到分布中的呢？并且这样做有什么好处呢？l
+
+
+
+考虑最后这个问题，分布中引入nil的作用，是为了消除特定的值。一旦得到最终的分布情况，nil值会被移除，并且剩余的分布不会产生异常，他们的概率只和为1。移除nil以及消除异常的操作通过函数normalize-cond来完成。cond-dist-m是一个计算条件概率的经典方法，并常常用于辅助贝叶斯推理（各种数据分析中使用的重要技术）。
+
+
+
+第一个练习，我们根据输入的分布和断言，来计算一个简单的条件概率。输出的分布只包含符合断言的值，但是概率分布的结果会被正常化：
+
+1 (defn cond-prob [pred dist]
+2   (normalize-cond (domonad cond-dist-m
+3                     [v dist
+4                      :when (pred v)]
+5                     v)))
+ 
+
+
+
+关键的代码是:when语句，正如我在第一和第二节提到的那样。domonad表达式展开为：
+
+1 (m-bind dist
+2         (fn [v]
+3           (if (pred v)
+4             (m-result v)
+5              m-zero)))
+ 
+
+
+
+如果你前面仔细留心，你可能要抱怨：使用dist-m和maybe-t，cond-dist-m应该不需要m-zero。但是，我前面说过，这里使用的maybe-t是一个简化版，真正的maybe-t要检查参数monad是否有m-zero，如果没有，用自己的m-zero函数(with-monad m (m-result nil))来代替它。因此cond-dist-m的m-zero是{nil 1},这个分布的唯一值就是nil
+
+
+
+domonad在这里起的唯一作用就是保持所有符合断言的值的概率保持不变。调用normalize-cond去除nil，并用有效值的概率重建分布结果：
+
+(cond-prob odd? die)
+-> {5 1/3, 3 1/3, 1 1/3}
+
+
+cond-dist-m在解决贝叶斯推理时变得太有趣了。贝叶斯推理是一项描绘不完全观察推论的技术。有广阔的应用领域，从垃圾邮件过滤到天气预报。关于这个推论的数学基础可以查看wiki。
+
+
+
+这里我们要讨论一个很简单的推理问题和它在Clojure中的解决方案。假设你有2个骰子，第一个6个面，第二个8个面，第三个12个面。一个人拿起一个骰子，投几次，然后告诉点数，但并不告诉我们用的是哪个骰子。根据现象，我们来计算每个骰子被选中的可能性。我们定义一个函数，返回拥有n个面的骰子的点数分布概率：
+
+1 (defn die-n [n] (uniform (range 1 (inc n))))
+ 
+
+
+
+接下来，我们参考贝叶斯推理的核心知识。中心要素是考虑使用过的骰子扔出的点数的分布情况。我们需要每个骰子的概率分布：
+
+1 (def dice {:six     (die-n 6)
+2            :eight   (die-n 8 )
+3            :twelve  (die-n 12)})
+ 
+
+另外一个中心要素是体现选择骰子选取优先顺序的分布概率。我们对此没有定义，每个骰子被使用的概率是完全一样的：
+
+1 (def prior (uniform (keys dice)))
+ 
+
+
+
+现在我们开始写推理函数。参数是选取的优先分布和观察的点数，返回一个综合了优先顺序和点数信息的归纳分布。
+
+复制代码
+1 (defn add-observation [prior observation]
+2   (normalize-cond
+3     (domonad cond-dist-m
+4       [die    prior
+5        number (get dice die)
+6        :when  (= number observation)]
+7       die)))
+复制代码
+ 
+
+
+
+看一下domonad，第一步根据优先级选取骰子；第二步，扔骰子获得一个点数；第三步，去除不在观察范围内的点数；最后返回die的分布。
+
+
+
+建议把这个函数和贝叶斯定理进行比较。贝叶斯定理P(H|E) = P(E|H) P(H) / P(E), 其中H表示假设（hypothesis，假设选择了X骰子），E表示事实（evidence，观察的现象是扔出的点数N）。P(H)是优先序列。这个公式必须在确定的值E上使用。
+
+
+
+domonad第一行实现了P(H)，第二行实现了P(E|H)。这两行合在一起就是一个我们前面提到的P(E, H)原始取样。:when代表了观察现象；我们希望把贝叶斯定理使用到确定的值E。一旦E确定了，P(E)就是一个数字。最后normalize-cond对它进行正常化。
+
+
+
+让我们看一下在观察到1的情况下是什么结果：
+
+1 (add-observation prior 1)
+ 
+
+-> {:twelve 2/9, :eight 1/3, :six 4/9}
+
+
+我们看到概率最高的的:six，其次是:eight，最小的是:twelve。这是因为，1在3个骰子上都存在，但是它在6个面的骰子上，出现概率是1/6，在8面和12面上的概率自然是1/8和1/12。这次观察的结果倾向于面较少的骰子。
+
+
+
+如果我们观察3次，我们可以重复调用add-observation函数：
+
+1 (-> prior (add-observation 1)
+2           (add-observation 3)
+3           (add-observation 7))
+ 
+
+-> {:twelve 8/35, :eight 27/35}
+
+
+现在我们看到:six消失了，因为观察到了7；接下来，:eight比:twelve得到了更多的青睐，也进一步验证了面较少的骰子，被选中的可能性较大。
+
+
+
+这个定理在解决垃圾邮件过滤问题时的情况类似。在这个情况下，3个骰子被替换成选项:spam和:no-spam。对每一个选项，我们通过分析邮件正文得到一个词的分布概率。add-observation除了变量名函数完全相同。当我们对每一个想要分析的词进行评估的时候，可以根据数据库存储的对它的:spam和:no-spam的选择次数，算出一个优先顺序分布。
+
+
+
+在介绍monad transformers内容的最后，我来解释一下maybe-t的m-zero问题。正如你知道的，mabye-m有一个m-zero函数(nil)和一个m-plus的定义，它们在被maybe-t使用时是可以被移除的。这就是为什么看到cond-dist-m要那么做的原因。尽管如此，就像sequence-m一样，基础的monad可以拥有自己的m-zero和m-plus。那么组合的monad应该定义那些内容呢？只有maybe-t的作者才能做出决定，所以maybe-t在这里有一个可选参数（看相关文档）。我们唯一可以明确的一点是，当一个基础的monad不包含m-zero和m-plus的时候，maybe-t肯定不会对它造成影响。
+
+巫云@： 
+最后，偶再扼要总结一下这个系列讲到的monad的基本知识点：
+1. monad是一种函数式编程常用的方法，把依赖前一步运算结果的多步运算组成一个运算。
+2. monad定义中包括m-result，m-bind，m-zero和m-plus。其中m-result和m-bind是必须定义的：
+m-result把每一个运算的结果包装后传递给m-bind剩余的执行步骤；m-bind根据绑定表达式把多步操作组成一个链。
+3. domonad宏可以简化代码，它展开后成为一个(with monad ...)的block，包含m-bind，m-result等组成的运算结构。
+4. 通过monad transformer可以把一个monad进行功能修改，变成另一个monad。
+5. 一些常用的monad：identity-m, maybe-m, sequence-m, state-m, dist-m等。
+
+好了，这个系列的4篇文章翻译完了。虽然内容包含许多函数编程和数学知识，不是很容易理解，但是如果大家仔细读过，也一定会有所收获的，感谢大家的支持！
