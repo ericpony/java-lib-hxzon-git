@@ -131,6 +131,8 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 
 编接反引述。
 
+hxzon：这些引述和反引述都是在clojure.lang.Compiler中实现。
+
 ----
 看一下语法引述的实现。
 
@@ -184,6 +186,7 @@ macroexpand ：扩展宏，知道最顶级形式不再是一个宏。
 ;                                   (clojure.core/list (quote clojure-demo.core/c))))))))))
 
 ----
+注，原书此处有误，应为：
 (defmacro while
   [test & body]
   (list 'loop []
@@ -290,7 +293,8 @@ x不会被初始化成(range 10)，在for里面，它的意思是x将作为遍�
     [x ys]
     (let [ys (ensure-seq ys)]
          `(~(first ys) ~x ~@(rest ys))))
-语法引述可以在函数中使用。
+语法引述不只可以在宏里面使用，在函数中也可以使用。
+不过这里，用list*更简洁：
 
 (defn insert-second
     "Insert x as the second item in seq y."
@@ -323,10 +327,10 @@ x不会被初始化成(range 10)，在for里面，它的意思是x将作为遍�
 (thread-fns [1 2 3] reverse #(conj % 4) prn)
 ;= (4 3 2 1)
 这里需要用匿名函数。
-而且这个函数版本不支持java的方法调用。
+对比一下宏版本：
+(thread [1 2 3] reverse (conj 4) prn)
 
-(thread [1 2 3] .toString (.split " ") seq)
-;= ("[1" "2" "3]")
+而且这个函数版本不支持java的方法调用。
 
 (thread-fns [1 2 3] .toString #(.split % " ") seq)
 ;= #<CompilerException java.lang.RuntimeException:
@@ -335,6 +339,10 @@ compiling:(NO_SOURCE_PATH:1)>
 ;; This is starting to look a bit hairy...
 
 (thread-fns [1 2 3] #(.toString %) #(.split % " ") seq)
+;= ("[1" "2" "3]")
+
+对比一下宏版本：
+(thread [1 2 3] .toString (.split " ") seq)
 ;= ("[1" "2" "3]")
 
 ----
