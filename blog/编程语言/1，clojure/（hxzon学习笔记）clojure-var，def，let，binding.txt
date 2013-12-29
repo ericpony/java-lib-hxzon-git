@@ -68,6 +68,10 @@ Interning：命名空间维护了每个Var对象的全局符号映射。
 2，var跟其它引用类型的不同在于，var的状态不是在时间尺度上维护的，
 它们提供的是一个命名空间内全局的实体，可以在每个线程上把这个实体绑定到不同的值。
 
+clojure中，用var来表示稳定的标识。
+(def sarah {:name "Sarah" :age 25 :wears-glasses? false})
+我们可以说，Sarah是由var sarah来标识的。
+
 clojure对一个符号进行求值，其实就是在当前命名空间寻找名字是这个符号的那个var，
 并对它解引用获取它的值。
 
