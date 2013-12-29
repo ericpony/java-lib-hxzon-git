@@ -1,0 +1,239 @@
+JavaOne 2013综述：Java 8是革命性的，Java回来了
+
+http://www.infoq.com/cn/articles/javaone2013-roundup
+作者 Matt Raible ，译者 马德奎 发布于 十二月 27, 2013
+
+======
+JavaOne 2013已于近日在旧金山举行。
+9月22日，来自Oracle员工Peter Utzschneider、Nandini Ramani和Cameron Purdy
+的战略主题演讲拉开了此次庆典的序幕，活动持续到9月26日。
+
+这是第十八次JavaOne大会，Java社区并没有显出放缓的迹象。
+Utzschneider告诉观众，Java仍然是世界第一的开发平台，并且Java用户组的数量以每年10%的速度增长。
+
+----
+Java的未来
+
+Ramani探讨了Java的现状以及Java如何有若干不同的SDK，这里仅举几例，
+如Java SE 7、CDC 1.1（基于SE 1.4.2）、CLDC（基于SE 1.3）和Java ME。
+过去，这些实现能很好地服务于特定的垂直市场，
+但多年来，每种实现都各自演变而变得越来越孤立。
+在Java 8中，Compact Profile将取代CDC。
+
+Java ME和Java SE之间的API会很类似，Java语言会支持两者的所有特性。
+Java 8会带来统一的平台：代码可移植、通用的API和工具
+——从SE嵌入式开发到服务器端Java EE开发。
+Java开发人员的类型将来会只有一种。
+
+
+Java平台战略的其它要素还包括：
+同步发布（Java 8预览版现在已经可以下载）
+以及与合作伙伴（ARM、Freescale和Qualcomm）一起使Java成为芯片上的一等公民。
+为了能够简单地移植和扩展Java Embedded，Oracle在8月份启动了Java平台集成器项目。
+
+Java EE 7在刚刚过去的夏天发布，上两届JavaOne大会都针对它进行了讨论，可见这是一个重要的里程碑。
+Purdy提到，Java EE 7重点关注三个方面：
+开发人员的生产力、满足企业需求和HTML5。
+
+两年前，在Java EE 7宣布的时候，主题是云。
+现在，Java EE 7有许多用于云部署的简单易用的特性，
+包括安全增强、默认资源、数据库结构生成、RESTful服务客户端API
+以及用于多租户应用程序的JSF皮肤。
+
+最后，Cameron宣布Avatar项目从现在起开源。
+Avatar跟Node.js类似，但运行在JVM上。
+
+----
+Java 8是革命性的，Java回来了
+
+Java 8是此次大会一个很重要的演讲主题，
+这点从Mark Reinhold的技术主题演讲中可见一斑。
+Java 8包含了许多新特性，
+包括新的Date和Time API（JSR 310）、Nashorn JavaScript引擎、
+类型注解（JSR 308）、Compact Profile和Lambda项目（JSR 335）。
+
+Lambda是编程模型最大的单一升级，比以往任何升级都要大，甚至比泛型还大。
+我们精心协调，同时对虚拟机、语言和库进行了改良，
+自从有Java以来，这是第一次。
+但结果感觉仍然像Java。
+——Mark Reinhold
+
+Oracle Java语言架构师Brian Goetz继续展示Lambda表达式如何去掉大量只用于表达简单思想的样板文件。
+在Lambda表达式出现之前，
+开发人员经常使用蹩脚的“牛肉面包比（beef to bun ratio）”来表达思想，
+通常是用内部类。
+Goetz展示了下面的例子：
+
+Collection<Person> people = …;
+
+    Iterator<Person> ip = people.iterator();
+    while (ip.hasNext()) {
+        Person p = ip.next();
+        if (p.getAge() > 18) {
+            ip.remove();
+        }
+    }
+
+为了抽象上述思想，开发人员可以用Predicate重写上述测试代码，写法如下：
+
+Collections.removeAll(people,
+                          new Predicate<Person>() {
+                              public boolean test(Person p) {
+                                  return p.getAge() > 18;
+                              }
+                          });
+
+使用Lambda表达式，写法要简单许多：
+
+Collections.removeAll(people, p -> p.getAge() > 18);
+
+Lambda表达式不仅仅是一种更好的语法，
+它还使用invokedynamic生成一种更简洁高效的字节码。
+作为Java语言及其API已经变得更好的证明，
+Goetz谈论了新的流API以及如何用它在集合上进行批量操作。例如：
+
+int highestWeight = people.stream()
+    	                      .filter(p -> p.getGender() == MALE)
+    	                      .mapToInt(p -> p.getWeight())
+    	                      .max();
+
+这提供了语法、性能和抽象，而开发人员还获得了并行。
+Java 7新增了用于任务分解的Fork/Join框架，但其API使它很难使用。
+在Java 8中，开发人员只需修改一行代码，
+将stream（）改成parallelStream（）即可：
+
+int highestWeight = people.parallelStream()
+    	                      .filter(p -> p.getGender() == MALE)
+    	                      .mapToInt(p -> p.getWeight())
+    	                      .max();
+
+要了解更多关于Lambda项目的信息，查看这里或者下载Java 8。
+
+----
+NetBeans 7.4
+
+NetBeans工程总监John Ceccarelli用象棋游戏演示了HTML5应用程序（用Knockout.js编写）的编辑。
+他示范了如何在NetBeans中调整属性（与在Firebug或者Chrome开发人员工具中的操作类似）
+并使调整结果即时反映在浏览器中，而且无需重新加载。
+这看起来非常像IntelliJ IDEA的LiveEdit插件。
+
+去年，NetBeans引入了Easel项目，其目的是在NetBeans中增加高级HTML5支持。
+Ceccarelli提到，社区对此的反应是“嘿，那太棒了，不过我们希望在EE项目里完成这一工作。”
+好消息是，就在JavaOne大会前夕，NetBeans 7.4 RC1发布了，
+支持HTML5、Java EE、Java Web和Maven Web项目。
+
+除了HTML和CSS的实时编辑功能外，NetBeans 7.4还支持Angular、jQuery和Knockout.js等JavaScript框架。
+这意味着代码编辑器可以识别JavaScript中所有的DOM id以及Model名称。
+NetBeans 7.4全是关于移动Web应用程序和移动混合应用程序的开发（通过支持Cordova 3.0）。
+有趣的是，如何在桌面浏览器之外的移动设备上使用实时编辑功能。
+最新的候选版本可以从netbeans.org上下载。
+
+上文提到的演示程序，其象棋服务器用Java EE 7编写，并部署在GlassFish 4服务器上。
+该应用程序有五个不同的模块：象棋端点、玩家注册、象棋引擎、象棋游戏管理器和持久性管理器。
+
+象棋服务器使用了许多Java EE新技术，
+包括：WebSockets、Batch、EJB、JPA和JAX-RS 2.0。
+客户端与服务器的所有通信都是通过JSON完成。
+GlassFish团队的一名成员Santiago Pericas-Geertsen展示了一些代码，
+用于说明在Java EE 7中建立WebSocket端点非常容易：
+
+@ServerEndpoint(value = "/chessserver",
+                    encoders = MessageEncoder.class,
+                    decoders = MessageDecoder.class);
+    public class ChessServerEndpoint {
+
+        @Inject private GameCatalog catalog;
+
+        @OnMessage
+        public Message onMessage(String message, Session session) {
+            return message.processMe(this);
+        }
+        ...
+    }
+
+跟该端点交互的客户端API与此非常类似，而且看上去很容易实现。
+
+--
+Oracle技术主题演讲中展示的最后一项技术创新是DukePad。
+这是一款可以在家DIY的平板电脑，基于Raspberry Pi和JavaSE 8 Embedded。
+他们发现CPU性能欠佳：Raspberry Pi CPU的速度几乎和Pentium Ⅱ一样，
+比Samsung Galaxy S4慢14倍，比Intel Core i7处理器慢94到100倍。
+不过，它的GPU非常好，比Pentium Ⅱ在1996年的速度快400倍。
+
+--
+OpenJFX开源了大部分组件，包括iOS和Android原型。
+演讲者提到，OpenJFX论坛很健康，他们已经从用户那里收到了大量的Bug报告。
+他们也收到了相当数量的社区贡献。
+JavaFX包含在JavaSE 8中。
+
+--
+对于Java 9及其未来，Oracle有若干方案，
+主要包括Java On GPUs、Reification（处理泛型的类型擦除问题）、
+JNI 2.0、Memory-Efficient数据结构以及用Jigsaw构建模块化平台。
+
+----
+Java社区
+
+Oracle产品管理高级主管Donald Smith拉开了Java社区主题演讲的序幕。
+他带来了许多不同的人，在台上谈论Java技术令终端用户欢欣鼓舞的案例。
+
+Tori Wieldt谈了“Raspberry Pi挑战”活动，25名开发人员参与其中，完成了六个项目。
+“心脏眼镜（Heart of Glass）”（用谷歌眼镜实时监控心率）
+和MTAAS（怪兽卡车服务）是此次活动中出现的两个成功的项目。
+Donald Smith还宣布，Oracle已经与Raspberry Pi基金会签订了一项OEM协议。
+后者将开始在他们的一部分镜像中包含Java SE，因此Java会以开箱即用的方式包含其中。
+
+在社区主题演讲中，还有其它值得注意的公告，
+包括Square成为OpenJDK的一员以及Devoxx4Kids正在寻找JUG负责人和家长，
+以便在他们所在的城市主办讲习班。
+当然，Aditya Gupta如何成为Minecraft编程高手的演示，也是亮点之一。
+同时，这也是主题演讲中的第一个Eclipse演示程序。
+他让猪飞起来，并使爆炸创造更多的爆炸。
+他是从他的爸爸Arun Gupta那里和Minecraft Forge上学到了其中大部分知识。
+
+Alison Derbenwick Miller提到了Oracle学院。
+后者为从幼儿园到12年级的学生以及大学生提供课程。
+该学院去年培训了250万名学生，并提供了学生讲习班、教师发展和认证折扣。
+
+在社区主题演讲的教育部分之后，进行了许多机器人演示。
+James Gosling甚至还作为嘉宾谈了他目前的工作。
+
+----
+Java回来了的证据
+
+为什么说Java回来了？
+战略和技术主题演讲都帮助解释了这个问题。
+Java 8希望再次使Java编程变得有趣（通过减少样板代码），
+而Java EE 7中大量的API将会使构建现代应用程序变得简单。
+在最近的一些文章中，还有进一步的证据：
+
+Wired的“Java迎来第二个春天：遗物归来，统治Web”
+http://www.wired.com/wiredenterprise/2013/09/the-second-coming-of-java/
+
+
+Dr. Dobb的“Java频临死亡？它看起来确实非常健康”
+http://www.drdobbs.com/jvm/if-java-is-dying-it-sure-looks-awfully-h/240162390
+
+如果读者没有机会参加今年的JavaOne大会，可以在日历上记下明年的会议日期。
+如果不是为了技术内容，那么可以来参与交流。
+Oracle答谢晚会上有免费的食物、啤酒以及Mroon 5和Black Keys的音乐表演。
+之后还有派对，展厅里到处都是人。
+
+最重要的是，开发人员社区的热情似乎一如既往的强烈。
+
+关于作者
+
+Matt Raible成年以后大部分时间都在构建Web应用程序。
+他甚至在Netscape 1.0发布之前就开始摆弄Web。
+在超过15年的时间里，Matt帮助企业采用开源技术（Spring、Hiberate、Apache、Struts、Grails、Bootstrap和jQuery），
+并有效地使用这些技术。
+
+Matt著有Spring Live和Pro JSP。
+他还是AppFuse的创建者，这是一个可以使开发人员快速上手Java框架的项目。
+同时，他还是Apache Roller和Apache Struts项目的提交者。
+他了解并喜爱：HTML5、CSS、JavaScript、CoffeeScript、jQuery、AngularJS、
+Java、Spring、Scala、Play!Framework、Groovy、Grails、
+Tomcat、Jetty以及PhoneGap。
+
+查看英文原文：JavaOne 2013 Roundup: Java 8 is Revolutionary, Java is back
+

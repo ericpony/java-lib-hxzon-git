@@ -1,0 +1,143 @@
+维基百科-prolog
+
+http://zh.wikipedia.org/wiki/Prolog
+
+Prolog（Programming in Logic的缩写）是一种逻辑编程语言。
+它创建在逻辑学的理论基础之上， 最初被运用于自然语言等研究领域。
+现在它已广泛的应用在人工智能的研究中，
+它可以用来建造专家系统、自然语言理解、智能知识库等。
+
+编程范型：逻辑编程语言
+发行时间：1972年
+设计者：Alain Colmerauer
+主要实现产品：
+BProlog，GNU Prolog, Quintus, SICStus, Strawberry、SWI-Prolog、YAP-Prolog
+派生副语言：
+ISO Prolog, Edinburgh Prolog
+影响语言：
+Visual Prolog、Mercury、Oz、Erlang、Strand
+
+目录
+1 历史
+2 特点
+3 语法示例
+4 Prolog示例
+4.1 Quicksort
+4.2 sort
+4.3 Russell's paradox
+5 外部链接
+6 实现
+
+========
+历史
+
+Prolog语言最早由Aix-Marseille大学的Alain Colmerauer与Phillipe Roussel等人于60年代末研究开发。
+1972年被公认为是Prolog语言正式诞生的年份，自1972年以后，分支出多种Prolog的方言。
+最主要的两种方言为Edinburgh和Aix-Marseille。
+最早的Prolog解释器由Roussel建造，
+而第一个Prolog编译器则是David Warren编写的。
+Prolog一直在北美和欧洲被广泛使用。
+日本政府曾经为了建造智能计算机而用Prolog来开发ICOT第五代计算机系统。
+在早期的机器智能研究领域，Prolog曾经是主要的开发工具。
+80年代Borland开发的Turbo Prolog，进一步普及了Prolog的使用。
+1995年确定了ISO Prolog标准。
+
+======
+特点
+
+有别于一般的函数式语言，prolog的程序是基于谓词逻辑的理论。
+最基本的写法是定立对象与对象之间的关系，
+之后可以用询问目目标方式来查询各种对象之间的关系。
+系统会自动进行匹配及回溯，找出所询问的答案。
+
+----
+语法示例
+
+表示事实：
+human(kate).
+human(bill).
+likes(kate,bill).
+
+表示kate和bill是人（human），kate喜欢bill，
+
+而表示规则：
+friend(X,Y):-likes(X,Y),likes(Y,X).
+表示对于两个对象XY，如果X喜欢Y，且Y喜欢X，那么他们是朋友。
+
+=====
+Prolog示例
+
+----
+Quicksort
+快速排序示例（对list作排序）：
+
+/* quicksort2.pl    原始來源：http://en.wikipedia.org/wiki/Prolog   */
+/* quicksort()中的第二個引數帶有排序好的結果　*/
+/* 僅為示範，若為gprolog使用者則用內建sort等較佳 */
+/* 在gprolog下之編譯例：gplc --min-size quicksort2.pl　*/
+/*   執行 quicksort2 後會出現排序結果 [2,9,18,18,25,33,66,77] */
+ 
+q:- L=[33,18,2,77,66,18,9,25], last(P,_), (quicksort(L,P,_), write(P), nl).    /* 加入last/2會在印P時沒複合項 */
+ 
+partition([], _, [], []).			/* 此行表空集亦視為分割（分割成空集與空集）*/
+partition([X|Xs], Pivot, Smalls, Bigs) :-	/* 原list分成Smalls與Bigs; 此rule保證Smalls集<Pivot且Bigs集>=Pivot */
+    (   X @< Pivot ->
+        Smalls = [X|Rest],
+        partition(Xs, Pivot, Rest, Bigs)
+    ;   Bigs = [X|Rest],
+        partition(Xs, Pivot, Smalls, Rest)
+    ).
+ 
+quicksort([])     --> [].			/* 表empty list視為排序好的list */
+quicksort([X|Xs]) -->			/* 此行相當於quicksort([X|Xs],Start,End) :-  此rule讓Start為sorted list */
+    { partition(Xs, X, Smaller, Bigger) },	/* 由上行最左端元素為 Pivot */
+    quicksort(Smaller), [X], quicksort(Bigger).	/* 此行相當於	quicksort(Smaller,Start,A),
+    								A=[X|B],  注意首字母大寫者皆視為變數(list)
+								quicksort(Bigger,B,End).  */
+:- initialization(q).		/* 啟動q處goals */
+
+----
+sort
+下面简洁的排序示例可以体会到为什么AI领域喜用Prolog：
+
+/* sortcsj.pl    原始參考：Computer Science  J. Glenn Brookshear   */
+/* sortcsj()中的第二個引數帶有排序好的結果　*/
+/* 僅為示範，若為gprolog使用者則用內建sort等較佳 */
+/* 在gprolog下之編譯例：gplc --min-size sortcsj.pl　*/
+/*   執行 sortcsj 後會出現排序結果 [2,9,18,18,25,33,66,77] */
+ 
+q:- L=[33,18,2,77,18,66,9,25], (sortcsj(L,P), write(P), nl). 
+ 
+sortcsj(L,S) :-  permutation(L,S), ordered(S).	/* L為原list, S為排序好的list, 此為permutation關係(built-in) */
+ 
+ordered([]).			/* 表empty list視為排序好的list */
+ordered([_|[]]).			/* 只有一元素之list視為排序好的list */
+ordered([A|[B|T]]) :- A =< B, ordered([B|T]).	/* 此rule約束所謂的排序好是指前項元素小於或等於後一項元素 */
+ 
+:- initialization(q).		/* 啟動q處goals */
+
+----
+Russell's paradox
+
+示范罗素悖论在Prolog下会导致Stack Overflow：
+
+/* tstpx.pl */
+/* 羅素佯謬(羅素悖論)（皇帝新腦 羅杰.彭羅斯 p.120）會導致不停機(使得gprolog產生 stack overflow) */
+/* 在gprolog下之編譯例：gplc --min-size tstpx.pl　*/
+ 
+q:- px(_).              /* 找尋任何可使 px() rule 成立的方式 */
+ 
+px(1) :- \+ px(1).      /* 規定此rule不成立。 i.e. 此rule為假時此rule才為真 (佯謬）*/
+ 
+:- initialization(q).           /* 啟動q處goal */
+
+======
+外部链接
+
+Prolog 人工智能语言中文论坛
+http://prolog.longluntan.net/
+
+实现
+
+SWI-Prolog
+http://www.swi-prolog.org/

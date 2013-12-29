@@ -1,0 +1,207 @@
+Java8学习：Lambda表达式、Stream API和功能性接口 — 教程、资源、书籍和实例
+
+http://www.importnew.com/8118.html
+
+本文由 ImportNew - 韩远青 翻译自 javarevisited。如需转载本文，请先参见文章末尾处的转载要求。
+ImportNew注：如果你也对Java技术翻译分享感兴趣，欢迎加入我们的 Java开发 小组。参与方式请查看小组简介。
+
+====
+尽管离Java 8的正式发布还有几个月，有计划说是在明年年初，
+但是Java开发团队还是共享了一些非常好的Lambda表达式的学习教程。
+
+lambda语句的使用，可能会在Java世界中一石激起千层浪。
+Lambda表达式，乍听起来可能很抽象学术，但其会在你日后的编程中产生重大影响。
+此外，伴随Java 8 出现的除了Lambda表达式，还有Stream API、功能接口和默认方法。
+
+不出意外，我也在开始学习Java 8的新特征，
+同时也感谢那些乐意分享Lambda表达式学习资源的人，
+正是他们的拓荒工作为我们的学习开了方便之门。
+在这里，我也将追随他们，分享这些学习资源。
+如果你是一名专业的Java开发者，不久之后你也会加入学习Java 8的大军。
+
+这也必将会对使用Java集合框架编程产生重大影响，特别是高性能应用方面。
+
+之前，我在分享一些《Java和Scala》
+（http://javarevisited.blogspot.sg/2013/11/scala-vs-java-differences-similarities-books.html）
+的区别时提到：
+Scala的一些非常酷的特征会让代码更加简洁、简明、可读性更好。
+今天，Java 8也能达到这些效果。
+因此，我们要持续关注Java 8的Lambda表达式、Stream API、功能接口等新特征，
+也是因为他们是第一次出现在Java中，其带来的改变可能会比Java 1.5引入泛型带来的改变更大。
+
+----
+在Java中什么是Lambda表达式？
+
+简单来说，Lambda表达式就是个函数——一段代码——能当作参数传给方法，
+因此能用Lambda表示的行为参数来处理各种变化情况。
+如果有JS的编程经验，你会发现能将匿名函数当参数给传给另一个函数。
+但直到Java 1.7，你还是只能将基本类型或者对象传给方法。
+Java的这些即将发生实质性改变的部分API将会名声遐迩，
+并更有可能用在被Stream API回炉再造的集合框架中。
+Java 8的Lambda和Stream API这些功能编程特征使得在遍历集合变得更为简洁。
+他们同样也能帮助在多核处理器下写出更为简洁、易管理和可扩展的代码。
+
+Java 8 Lambda表达式、Stream API、功能接口学习教程
+
+我说过，为尽快上手Java 8我也在学习其新特征。
+直觉告诉我，一旦Java 8正式发布，业界将很难看到用Java 1.6或1.7建一个项目，
+就像在泛型出现之后，你很难看到一个不含泛型的集合框架一样。
+现在网上已经有很多好的学习教程可供利用。
+我已经选择一些最适合教程开始学习。
+下面这张列表是不完整的，
+如果今后学习中还能发现一些有趣和进度的地方，我也会将他们增加进表中。
+
+1、Maurice Naftalin’s Lambda FAQ
+http://www.lambdafaq.org/
+
+不管何时谈到Java 8的Lambda表达式学习资源，脑海中第一个想起的总是它。
+我虽曾多次访问这个站点，但每次都惊奇依旧。
+如果你对Maurice Naftalin，《Java集合和泛型》的作者之一没有印象，没关系，
+在看其它资料之前，强烈建议你先访问这个网站，
+作者他对Lambda表达式的FAQ做了很多如“宝石”般有价值的工作。
+为了让你先睹为快，这里先列举一些其Lambda FAQ中的一些问题。
+
+什么是Lambda表达式？
+为什么是lambda表达式加进Java中？
+什么是功能接口？
+Lambda表达式是对象吗？
+Lambda表达式能用在哪些场合？
+Lambda表达式的域规则是什么？
+Lambda表达式的类型
+Lambda表达式能用来定义递归函数吗？
+Lambda语境中能使用变量吗？
+什么是方法引用？
+实例方法引用的语法是怎样？
+什么是构造方法引用？
+
+我猜想，Maurice Naftalin也正在将Java 8中的变化更新到新版的《Java集合和泛型》一书中，
+届时这本书也是一个非常好的入门学习资源。期待他的新书！
+
+----
+2、Oracle官方Lambda语句学习教程
+http://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html
+
+这是另一个非常棒的学习资源，正如Java的其它的官方教程一样，值得大家的mark！
+它采用对比的方式，以传统编程风格用本地和匿名类实现，
+最后再用lambda表达式得到一个更高效简洁的实现。
+
+它也解释了什么是方法引用及怎样使用它们。
+
+由于能用Lambda表达式创建匿名方法，
+但是，如果只是用lambda表达式调用一个已存在的方法，
+则直接用方法名来的更为简洁，用lambda表达式反而麻烦。
+这时，方法引用就有用武之地了，
+它用更为紧凑易读的lambda 表达式来处理那些已经有名字的方法。
+
+对于所有的初学者来说，一旦你阅读完Maurice的lambda表达式的FAQ，
+你就可以着手阅读这里的内容了，在对比分析这些例子中学习和提高。
+
+----
+3、Java 8 Lambda 语句介绍和视频教程
+
+这里有很多Java 8新特征的介绍，
+包括lambda表达式、Stream API、功能接口、默认方法和lambda表达式使用
+等8个主题。
+我已经收集了最好的一些权威作者的作品，
+比如Brian Goetz，甲骨文的语言架构师和Java并发编程著作《Java并发实践》的主要作者。
+他的介绍：A Peek Under the Hood详细介绍了lambda表达式实现的技术细节；
+
+The Road to Lambda也是他的另一个介绍，其中综合深入展开了一个lambda项目。
+
+另一个好的介绍来自于2012年9月的JavaZone：Angelika Langer写的Lambdas in Java 8，
+这篇介绍中讨论了lambda表达式，功能类型，扩展方法和方法应用。
+
+Lambda: A Peek Under the Hood by Brian Goetz
+http://www.youtube.com/watch?v=C_QbkGU_lqY
+
+Jump Starting Lambda Programming (Stuart Marks)
+https://oracleus.activeevents.com/connect/sessionDetail.ww?SESSION_ID=5089
+
+The Road to Lambda (Brian Goetz)
+https://oracleus.activeevents.com/connect/sessionDetail.ww?SESSION_ID=4862
+
+JavaZone, Lambdas in Java 8 By Angelika Langer
+http://vimeo.com/49385450
+
+----
+4、学习OpenJDK的lambda教程
+
+这里有一系列教你如何使用Java 8 lamdba语法、新Streams API的练习。
+它包含了为在Github做这练习的合适指令，
+为在Ubuntu、Mac OS、Windows上使用Java 8 lambda语句安装Eclipse、IntelliJ等IDE入门教程。
+
+它同样包含了一些好的有关内部和外部循环、过滤和集合、映射和方法引用的练习。
+现在你要做的是用Java 8的测试版去运行这些教程和实例。
+你也可以从官方项目的lambda页面得到更多的信息。
+http://openjdk.java.net/projects/lambda/
+
+----
+5、来自Dreamsys  Software的Java 8 lambda教程
+http://www.dreamsyssoft.com/java-8-lambda-tutorial/index.php
+
+这里是一些简单的Java 8 Lambda表达式的教程集合。
+我喜欢那些主题上的简单易学的例子。
+Java 8教程被划分为以下几个主题：
+
+介绍：基础为主。
+比较：使用比较器。
+集合过滤：筛选集合。
+函数参数：将函数当对象传递。
+监听器：用lambdas当监听器。
+Map/Reduce：用Java 8 实现Map/Reduce。
+DRY：DRY （Don’t Repeat Yourself）。
+
+我想说，对于那些忙碌的Java开发者来说这些教程非常便利。
+
+----
+6、Java 8 Lambda表达式的IDE支持
+
+所有这三个主要的IDE，如Eclipse、IntelliJ和Netbeans都在某种程度上支持lambda表达式，
+但他们大多数还只是不稳定的测试版本，只能用来将进一步研发和学习。
+我相信到目前为止它们中还没有哪个开放了Java 8的稳定版本。
+Eclipse在这里公布了支持JDK 8的测试版，你可以按照甲骨文的教程：
+在Eclipsee中尝试使用lambda表达式。http://www.oracle.com/technetwork/articles/java/lambda-1984522.html
+
+Netbeans测试版也支持JDK 8，你可以从http://wiki.netbeans.org/JDK8得到更多的相关信息。
+
+----
+7、Java 8 Lambdas 实战
+
+《Java 8 Lambdas实战》估计是第一本关于Java 8 lambda表示式的书。
+这本书还没完本，但已经完成了前面的几章。
+它是Java 8 lambda表达式和功能编程的深入浅出的指南之一。
+它以实践出发，汲取了现实的Java编程的经验。
+这本书其后介绍了Stream API，
+并展示了它们如何将与容器相关的代码变得更易懂更好管理。
+随后，你会看到许多新的面向对象设计中关于代码复用，代码可读性，异常处理，数据处理和并发的函数式编程。
+由于有开发人员在JVM探索上其他的功能语言，
+这本书也调查总结了Scala和Clojure的实用特征。
+好事多磨啊，《Java 8 Lambdas实战》第一章是免费的，你可以下来先睹为快。
+
+就是这些了，学习Lambda表达式，Stream API和功能接口的资源远远不止这些。
+对了，别忘了还有我们的老朋友Google，当你有疑惑时，它总能找到适合你的答案。
+
+好运并享受学习Java 8的过程吧。
+
+----
+一些关于Java 8编程的书
+
+所有Java 8的书离出版还有段时间，都要等到Java 8的正式发布之后，
+但还是很高兴频频看到一些学习资源，这也是Java 8的影响力和知名度在不断提升。
+
+下面是一些即将出版的书单：
+
+
+Java SE 8 for the Really Impatient 
+by Cay Horstmann (Jan 27, 2014)
+
+Java 8 Lambdas: Pragmatic Functional Programming 
+by Richard Warburton (Apr 22, 2014)
+
+Functional Programming in Java: Harnessing the Power Of Java 8 Lambda Expressions 
+by Venkat Subramaniam (Feb 22, 2014)
+ 
+  
+原文链接： javarevisited 翻译： ImportNew.com - 韩远青
+译文链接： http://www.importnew.com/8118.html
+
