@@ -156,6 +156,8 @@ http://shop.oreilly.com/product/0636920029786.do
 
 http://java.ociweb.com/mark/clojure/article.html
 
+https://github.com/cnlojure/cn-clojure-meetup
+
 =======================
 web
 
