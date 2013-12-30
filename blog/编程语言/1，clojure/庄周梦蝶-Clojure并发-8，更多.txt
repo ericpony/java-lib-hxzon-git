@@ -1,0 +1,252 @@
+庄周梦蝶-Clojure并发-8，更多
+
+http://wiki.fnil.net/index.php?title=Clojure%E5%B9%B6%E5%8F%91
+我的联系方式 killme2008@gmail.com
+
+hxzon修订部分字眼和语句。（2013.12.3）
+
+========
+1 声明
+2 简介
+
+3 Ref和STM
+4 Write Skew(写偏序)分析
+5 Atom：原子操作和缓存
+6 Agent和Actor：异步更新
+
+7 binding和let：线程局部量
+
+8 并发函数pmap、pvalues和pcalls
+9 future、promise和线程
+
+
+========
+8，并发函数pmap、pvalues和pcalls
+
+pmap是map的进化版本，map将function依次作用于集合的每个元素，
+pmap也是这样，
+但是它对于每个集合中的元素都是提交给一个线程去执行function，也就是并行地对集合里的元素执行指定的函数。
+
+通过一个例子来解释下。我们先定义一个make-heavy函数用于延时执行某个函数：
+
+(defn make-heavy [f]
+        (fn [& args]
+            (Thread/sleep 1000)
+            (apply f args)))
+
+make-heavy接受一个函数f作为参数，返回一个新的函数，它延时一秒才实际执行f。
+
+我们利用make-heavy包装inc，然后执行下map：
+
+user=> (time (doall (map (make-heavy inc) [1 2 3 4 5])))
+"Elapsed time: 5005.115601 msecs"
+(2 3 4 5 6)
+
+可以看到总共执行了5秒，这是因为map依次将包装后的inc作用在每个元素上，每次调用都延时一秒，总共5个元素，因此延时了5秒左右。
+这里使用doall，是为了强制map返回的lazy-seq马上执行。
+
+如果我们使用pmap替代map的话：
+
+user=> (time (doall (pmap (make-heavy inc) [1 2 3 4 5])))
+"Elapsed time: 1001.146444 msecs"
+(2 3 4 5 6)
+
+果然快了很多，只用了1秒多，
+显然pmap并行地将make-heavy包装后的inc作用在集合的5个元素上，总耗时就接近于于单个调用的耗时，也就是一秒。
+
+--
+pvalues和pcalls是在pmap之上的封装，
+pvalues是并行地执行多个表达式并返回执行结果组成的LazySeq，
+pcalls则是并行地调用多个无参数的函数并返回调用结果组成的LazySeq。
+
+  user=> (pvalues (+ 1 2) (- 1 2) (* 1 2) (/ 1 2))
+  (3 -1 2 1/2)
+
+  user=> (pcalls #(println "hello") #(println "world"))
+  hello
+  world
+  (nil nil)
+
+pmap的并行，从实现上来说，是集合有多少个元素就使用多少个线程：
+
+ (defn pmap
+   {:added "1.0"}
+   ([f coll]
+    (let [n (+ 2 (.. Runtime getRuntime availableProcessors))
+          rets (map #(future (f %)) coll)
+          step (fn step [[x & xs :as vs] fs]
+                 (lazy-seq
+                  (if-let [s (seq fs)]
+                    (cons (deref x) (step xs (rest s)))
+                    (map deref vs))))]
+      (step rets (drop n rets))))
+   ([f coll & colls]
+    (let [step (fn step [cs]
+                 (lazy-seq
+                  (let [ss (map seq cs)]
+                    (when (every? identity ss)
+                      (cons (map first ss) (step (map rest ss)))))))]
+      (pmap #(apply f %) (step (cons coll colls))))))
+
+在第5行，利用map和future将函数f作用在集合的每个元素上，
+future是将函数f（实现callable接口）提交给Agent的CachedThreadPool处理，跟agent的send-off共用线程池。
+
+但是由于有chunked-sequence的存在，实际上调用的线程数不会超过chunked的大小，也就是32。
+事实上，pmap启动多少个线程取决于集合的类型，
+对于chunked-sequence，是以32个元素为单位来批量执行，
+通过下面的测试可以看出来，range返回的是一个chunked-sequence，
+clojure 1.1引入了chunked-sequence，目前那些返回LazySeq的函数如map、filter、keep等都是返回chunked-sequence:
+
+user=> (time (doall (pmap (make-heavy inc) (range 0 32))))
+"Elapsed time: 1003.372366 msecs"
+(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32)
+
+user=> (time (doall (pmap (make-heavy inc) (range 0 64))))
+"Elapsed time: 2008.153617 msecs"
+(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64)
+
+可以看到，对于32个元素，执行(make-heavy inc)耗费了一秒左右；
+对于64个元素，总耗时是2秒，
+这可以证明64个元素是分为两个批次并行执行，一批32个元素，启动32个线程（可以通过jstack查看）。
+
+并且pmap的执行是半延时的（semi-lazy)，
+前面的总数-(cpus+2)个元素是一个一个deref（future通过deref来阻塞获取结果），
+后cpus+2个元素则是一次性调用map执行deref。
+
+pmap的适用场景取决于将集合分解并提交给线程池并行执行的代价是否低于函数f执行的代价，
+如果函数f的执行代价很低，那么将集合分解并提交线程的代价可能超过了带来的好处，pmap就不一定能带来性能的提升。
+pmap只适合那些计算密集型的函数f，计算的耗时超过了协调的代价。
+
+关于chunked-sequence可以看看这篇报道（http://www.infoq.com/cn/news/2009/12/clojure-11-rc1-transients），
+也可以参考Rich Hickey的PPT
+（http://clojure.googlegroups.com/web/chunks.pdf?gda=WIF8ADwAAAC-wnUK1KQ919yJcmM1ACuZUsYXlXWR5Y8qvjzEXQCX1uwyCdwt79_BXi8-B36MGsn9Wm-ajmzVoAFUlE7c_fAt）。
+
+chunk sequence的思路类似批量处理来提高系统的吞吐量。
+
+
+======
+9，future、promise和线程
+
+----
+Clojure中使用future是启动一个线程，并执行一系列的表达式，当执行完成的时候，线程会被回收：
+
+   user=> (def myfuture (future (+ 1 2)))
+   #'user/myfuture
+   user=> @myfuture
+   3
+
+future接受一个或者多个表达式，并将这些表达式交给一个线程去处理，
+上面的(+ 1 2)是在另一个线程计算的，
+返回的future对象可以通过deref或者@宏来阻塞获取计算的结果。
+
+future函数返回的结果可以认为是一个类似java.util.concurrent.Future的对象，因此可以取消：
+
+   user=> (future-cancelled? myfuture)
+   false
+   user=> (future-cancel myfuture)
+   false
+
+也可以通过谓词future?来判断一个变量是否是future对象：
+
+   user=> (future? myfuture)
+   true
+
+--
+Future的实现
+
+future其实是一个宏，它内部是调用future-call函数来执行的：
+
+   (defmacro future
+     [& body] `(future-call (fn [] ~@body)))
+
+可以看到，是将body包装成一个匿名函数交给future-call执行，future-call接受一个Callable对象:
+
+(defn future-call 
+  [^Callable f]
+  (let [fut (.submit clojure.lang.Agent/soloExecutor f)]
+    (reify 
+     clojure.lang.IDeref 
+      (deref [_] (.get fut))
+     java.util.concurrent.Future
+      (get [_] (.get fut))
+      (get [_ timeout unit] (.get fut timeout unit))
+      (isCancelled [_] (.isCancelled fut))
+      (isDone [_] (.isDone fut))
+      (cancel [_ interrupt?] (.cancel fut interrupt?)))))i
+
+将传入的Callable对象f提交给Agent的soloExecuture：
+
+   final public static ExecutorService soloExecutor = Executors.newCachedThreadPool();
+
+执行，返回的future对象赋予fut，
+接下来是利用clojure 1.2引入的reify定义了一个匿名的数据类型，它有两种protocol:clojure.lang.IDeref和java.utill.concurrent.Future。
+其中IDeref定义了deref方法，而Future则简单地将一些方法委托给fut对象。
+protocol你可以理解成java中的接口，这里就是类似多态调用的作用。
+
+这里有个地方值的学习的是，clojure定义了一个future宏，而不是直接让用户使用future-call，这符合使用宏的规则：避免匿名函数。
+因为如果让用户使用future-call，用户需要将表达式包装成匿名对象传入，而提供一个宏就方便许多。
+
+----
+启动线程的其他方法，在clojure中完全可以采用java的方式去启动一个线程：
+
+   user=> (.start (Thread. #(println "hello")))
+   nil
+   hello
+
+----
+promise用于线程之间的协调通信，当一个promise的值还没有设置的时候，你调用deref或者@想去解引用的时候将被阻塞：
+
+   user=> (def mypromise (promise))
+   #'user/mypromise
+
+   user=> @mypromise
+
+在REPL执行上述代码将导致REPL被挂起，这是因为mypromise还没有值，你直接调用了@mypromise去解引用导致主线程阻塞。
+
+如果在调用@宏之前先给promise设置一个值的话就不会阻塞：
+
+user=> (def mypromise (promise))
+#'user/mypromise
+
+user=> (deliver mypromise 5)
+#<AFn$IDeref$db53459f@c0f1ec: 5>
+
+user=> @mypromise               
+5
+
+通过调用deliver函数给mypromise传递了一个值，这使得后续的@mypromise直接返回传递的值5。
+显然promise可以用于不同线程之间的通信和协调。
+
+--
+promise的实现：
+promise的实现非常简单，是基于CountDownLatch做的实现，内部除了关联一个CountDownLatch还关联一个atom用于存储值：
+
+(defn promise
+  []
+  (let [d (java.util.concurrent.CountDownLatch. 1)
+        v (atom nil)]
+    (reify 
+     clojure.lang.IDeref
+      (deref [_] (.await d) @v)
+     clojure.lang.IFn
+      (invoke [this x]
+        (locking d
+          (if (pos? (.getCount d))
+            (do (reset! v x)
+                (.countDown d)
+                this)
+            (throw (IllegalStateException. "Multiple deliver calls to a promise"))))))))
+
+d是一个CountDownLatch，v是一个atom，一开始值是nil。
+返回的promise对象也是通过reify定义的匿名数据类型，他也是有两个protocol，
+一个是用于deref的IDeref，简单地调用d.await()阻塞等待；
+另一个是匿名函数，接受两个参数，第一个是promise对象自身，第二个参数是传入的值x，
+当d的count还大于0时，设置v的值为x，否则抛出异常“多次deliver了”。
+
+查看下deliver函数，其实就是调用promise对象的匿名函数protocol:
+
+(defn deliver
+  {:added "1.1"}
+  [promise val] (promise val))
+
+

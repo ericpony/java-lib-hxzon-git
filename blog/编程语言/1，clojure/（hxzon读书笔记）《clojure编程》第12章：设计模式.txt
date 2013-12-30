@@ -31,5 +31,46 @@ by hxzon
 
 =======
 Robert Hooke 函数库
+https://github.com/technomancy/robert-hooke
 
+(defn time-it [f & args]
+  (let [start (System/currentTimeMillis)]
+    (try
+      (apply f args)
+      (finally
+        (println "Run time: " (- (System/currentTimeMillis) start) "ms")))))
+
+(require 'robert.hooke)
+
+(defn foo [x y]
+  (Thread/sleep (rand-int 1000))
+  (+ x y))
+
+(robert.hooke/add-hook #'foo time-it)
+
+(foo 1 2)
+; Run time: 772 ms
+;= 3
+
+(robert.hooke/with-hooks-disabled foo (foo 1 2))
+;= 3
+
+(robert.hooke/remove-hook #'foo time-it)
+;= #<user$foo user$foo@4f13f501>
+
+(foo 1 2)
+;= 3
+
+(require 'clojure.set)
+;= nil
+
+(doseq [var (->> (ns-publics 'clojure.set)
+              (map val))]
+  (robert.hooke/add-hook var time-it))
+;= nil
+
+(clojure.set/intersection (set (range 100000))
+                          (set (range -100000 10)))
+; Run time: 97 ms
+;= #{0 1 2 3 4 5 6 7 8 9}
 

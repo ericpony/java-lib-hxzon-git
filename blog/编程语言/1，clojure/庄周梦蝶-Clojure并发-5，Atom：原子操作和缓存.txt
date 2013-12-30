@@ -1,0 +1,181 @@
+庄周梦蝶-Clojure并发-5，Atom：原子操作和缓存
+
+http://wiki.fnil.net/index.php?title=Clojure%E5%B9%B6%E5%8F%91
+我的联系方式 killme2008@gmail.com
+
+hxzon修订部分字眼和语句。（2013.12.3）
+
+========
+1 声明
+2 简介
+
+3 Ref和STM
+4 Write Skew(写偏序)分析
+5 Atom：原子操作和缓存
+6 Agent和Actor：异步更新
+
+7 binding和let：线程局部量
+8 并发函数pmap、pvalues和pcalls
+9 future、promise和线程
+
+========
+5，Atom：原子操作和缓存
+
+Ref适用的场景是系统中存在多个相互关联的状态，他们需要一起更新，因此需要通过dosync做事务包装。
+但是如果你有一个状态变量，不需要跟其他状态变量协作，这时候应该使用Atom了。
+
+可以将一个Atom和一个Ref一起在一个事务里更新吗？这没办法做到，如果你需要相互协作，你只能使用Ref。
+Atom适用的场景是状态是独立，没有依赖，它避免了与其他Ref交互的开销，因此性能会更好，特别是对于读来说。
+
+--
+定义Atom，采用atom函数，赋予一个初始状态:
+   (def mem (atom {}))
+这里将mem的初始状态定义为一个map。
+
+--
+deref和@：
+可以用deref函数，也可以简单地用宏@ ，这跟Ref一样，取atom的值：
+   @mem         => {}
+   (deref mem)  => {}
+
+--
+reset!：
+重新设置atom的值，不关心当前值是什么：
+   (reset! mem {:a 1})
+
+查看mem：
+   user=> @mem
+   {:a 1}
+已经更新到新的map了。
+
+--
+swap!：
+如果你的更新需要依赖当前的状态值，或者只想更新状态的某个部分，那么就需要使用swap!（类似alter)：
+   (swap! an-atom f & args)
+
+swap! 将函数f作用于当前状态值和额外的参数args之上，形成新的状态值，例如我们给mem加上一个keyword:
+   user=> (swap! mem assoc :b 2)
+   {:b 2, :a 1}
+:b 2被加入了当前的map。
+
+--
+compare and set:
+类似原子变量AtomicInteger之类，atom也可以做compare and set的操作：
+   (compare-and-set! atom oldValue newValue)
+
+当且仅当atom的当前状态值等于oldValue的时候，将状态值更新为newValue，并返回一个布尔值表示成功或者失败:
+
+   user=> (def c (atom 1))
+   #'user/c
+   user=> (compare-and-set! c 2 3)
+   false
+   user=> (compare-and-set! c 1 3)
+   true
+   user=> @c
+   3
+
+--
+缓存和atom:
+atom非常适合实现缓存，缓存通常不会跟其他系统状态形成依赖，并且缓存对读的速度要求更高。
+上面例子中用到的mem其实就是个简单的缓存例子，我们来实现一个putm和getm函数：
+
+   ;;创建缓存
+   (defn make-cache [] (atom {}))
+   ;;放入缓存
+   (defn putm [cache key value] (swap! cache assoc key value))
+   ;;取出
+   (defn getm [cache key] (key @cache))
+
+这里key要求是keyword，keyword是类似:a这样的字符序列，你熟悉ruby的话，可以暂时理解成symbol。
+使用这些API：
+
+   user=> (def cache (make-cache))
+   #'user/cache
+   user=> (putm cache :a 1)
+   {:a 1}
+   user=> (getm cache :a)
+   1
+   user=> (putm cache :b 2)
+   {:b 2, :a 1}
+   user=> (getm cache :b)
+   2
+
+memoize函数作用于函数f，产生一个新函数，新函数内部保存了一个缓存，缓存从参数到结果的映射。
+第一次调用的时候，发现缓存没有，就会调用f去计算实际的结果，并放入内部的缓存；
+下次调用同样的参数的时候，就直接从缓存中取，而不用再次调用f，从而达到提升计算效率的目的。
+
+memoize的实现就是基于atom，查看源码：
+   (defn memoize
+     [f]
+     (let [mem (atom {})]
+       (fn [& args]
+         (if-let [e (find @mem args)]
+           (val e)
+           (let [ret (apply f args)]
+             (swap! mem assoc args ret)
+             ret)))))
+
+内部的缓存名为mem，memoize返回的是一个匿名函数，它接收原有的f函数的参数，
+if-let判断绑定的变量e是否存在，变量e是通过find从缓存中查询args得到的项，
+如果存在的话，调用val得到真正的结果并返回；
+如果不存在，那么使用apply函数将f作用于参数列表之上，计算出结果，并利用swap!将结果加入mem缓存，返回计算结果。
+
+性能测试：
+使用atom实现一个计数器，和使用java.util.concurrent.AtomicInteger做计数器，做一个性能比较，
+各启动100个线程，每个线程执行100万次原子递增，计算各自的耗时，测试程序如下，代码有注释,不再罗嗦：
+
+(ns atom-perf)
+(import 'java.util.concurrent.atomic.AtomicInteger)
+(import 'java.util.concurrent.CountDownLatch)
+
+(def a (AtomicInteger. 0))
+(def b (atom 0))
+
+;;为了性能，给java加入type hint
+(defn java-inc [#^AtomicInteger counter] (.incrementAndGet counter))
+(defn countdown-latch [#^CountDownLatch latch] (.countDown latch))
+
+;;单线程执行缓存次数
+(def max_count 1000000)
+;;线程数 
+(def thread_count 100)
+
+(defn benchmark [fun]
+  (let [ latch (CountDownLatch. thread_count)  ;;关卡锁
+         start (System/currentTimeMillis) ]     ;;启动时间
+       (dotimes [_ thread_count] (.start (Thread. #(do (dotimes [_ max_count] (fun)) (countdown-latch latch))))) 
+       (.await latch)
+       (- (System/currentTimeMillis) start)))
+         
+
+(println "atom:" (benchmark #(swap! b inc)))
+(println "AtomicInteger:" (benchmark #(java-inc a)))
+
+(println (.get a))
+(println @b)
+
+默认clojure调用java都是通过反射，加入type hint之后编译的字节码就跟java编译器的一致，
+为了比较公平，定义了java-inc用于调用AtomicInteger.incrementAndGet方法，
+定义countdown-latch用于调用CountDownLatch.countDown方法，两者都为参数添加了type hint。
+如果不采用type hint，AtomicInteger反射调用的效率是非常低的。
+
+测试下来，在我的ubuntu上，AtomicInteger还是占优，基本上比atom的实现快上一倍：
+   atom: 9002
+   AtomicInteger: 4185
+   100000000
+   100000000
+
+按照我的理解，这是由于AtomicInteger调用的是native的方法，基于硬件原语做cas，
+而atom则是用户空间内的clojure自己做的CAS，两者的性能有差距不出意料之外。
+
+看了源码，Atom是基于java.util.concurrent.atomic.AtomicReference实现的，调用的方法是
+   public final boolean compareAndSet(V expect, V update) {
+       return unsafe.compareAndSwapObject(this, valueOffset, expect, update);
+   }
+
+而AtomicInteger调用的方法是：
+   public final boolean compareAndSet(int expect, int update) {
+   return unsafe.compareAndSwapInt(this, valueOffset, expect, update);
+   }
+
+两者的效率差距有这么大吗？暂时存疑。

@@ -14,6 +14,8 @@ hxzon摘要：
 2，动态作用域（^:dynamic）。
 binding，在每个线程上覆盖这个根绑定的值（不影响其它线程）。
 
+(set! *response-code* response-code)
+
 3，前置声明declare（定义var时先不给它赋值）。
 
 4，defonce（只赋值一次）。
@@ -196,6 +198,19 @@ user=> (meta #'v)
 
 注：对于那些你期望通过binding来对根绑定进行覆盖的动态var，一般在命名时以星号开头和结尾。
 
+--
+(def ^:dynamic *var* :root)
+;= #'user/*var*
+
+(defn get-*var* [] *var*)
+;= #'user/get-*var*
+
+(binding [*var* :a]
+    (binding [*var* :b]
+        (binding [*var* :c]
+            (get-*var*))))
+;= :c
+
 ----
 动态作用域被广泛使用在各种类库及clojure本身的实现里，
 用来提供一种修改api默认配置的方法，本质上其实是给函数提供了一个隐式的参数。
@@ -203,6 +218,32 @@ user=> (meta #'v)
 反过来，也可以通过动态作用域，让下层函数给上层函数返回一些东西。
 
 （hxzon：动态作用域相当于其它语言的全局变量。）
+
+示例：下层给上层返回一些值：
+
+(def ^:dynamic *response-code* nil)
+
+(defn http-get
+  [url-string]
+  (let [conn (-> url-string java.net.URL. .openConnection)
+        response-code (.getResponseCode conn)]
+    (when (thread-bound? #'*response-code*)
+      (set! *response-code* response-code)) //注意！
+    (when (not= 404 response-code) (-> conn .getInputStream slurp))))
+
+(http-get "http://google.com")
+;= "<!doctype html><html><head>..."
+
+*response-code*
+;= nil
+
+(binding [*response-code* nil]
+  (let [content (http-get "http://google.com/bad-url")]
+    (println "Response code was:" *response-code*)
+    ; ... do something with `content` if it is not nil ...
+    ))
+;= Response code was: 404
+;= nil
 
 ----
 动态作用域会通过clojure原生的并发形式进行传播。
@@ -256,7 +297,7 @@ var从本质上来说，是被设计用来保存一些值，然后直到程序�
 
 
 ========
-10，前置声明
+10，提前声明
 
 如果定义一个var时不给它赋值，则称这个var是“未绑定”的，
 如果你对它进行解引用，它会返回一个“占位符”对象。
