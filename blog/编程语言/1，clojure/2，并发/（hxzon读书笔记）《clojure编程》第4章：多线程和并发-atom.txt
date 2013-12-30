@@ -32,6 +32,187 @@ clojure的兴趣是解决进城内的并发和并行问题，
 这种类型在分布式系统里面更常见，
 例如最终一致性数据库，只保证一段时间后，所有对于状态的修改会合并到最终状态中。
 
+----
+两个用来帮助测试的宏。
+
+(defmacro futures
+  [n & exprs]
+  (vec (for [_ (range n)
+             expr exprs]
+         `(future ~expr))))
+
+(defmacro wait-futures
+  [& args]
+  `(doseq [f# (futures ~@args)]
+     @f#))
+
 ========
 3，atom
 
+(def sarah (atom {:name "Sarah" :age 25 :wears-glasses? false}))
+;= #'user/sarah
+
+(swap! sarah update-in [:age] + 3) 
+;= {:age 28, :wears-glasses? false, :name "Sarah"}
+
+(swap! sarah (comp #(update-in % [:age] inc)
+               #(assoc % :wears-glasses? true)))
+;= {:age 29, :wears-glasses? true, :name "Sarah"}
+
+(def xs (atom #{1 2 3}))
+;= #'user/xs
+
+(wait-futures 1 (swap! xs (fn [v]
+                            (Thread/sleep 250)
+                            (println "trying 4")
+                            (conj v 4)))
+  (swap! xs (fn [v]
+              (Thread/sleep 500)
+              (println "trying 5")
+              (conj v 5))))
+;= nil
+; trying 4
+; trying 5 
+; trying 5
+
+@xs
+;= #{1 2 3 4 5}
+
+(def x (atom 2000))
+;= #'user/x
+
+(swap! x #(Thread/sleep %))
+;= nil
+
+(compare-and-set! xs :wrong "new value")
+;= false
+
+(compare-and-set! xs @xs "new value")
+;= true
+
+@xs
+;= "new value"
+
+(def xs (atom #{1 2}))
+;= #'user/xs
+
+(compare-and-set! xs #{1 2} "new value")
+;= false
+
+(reset! xs :y)
+;= :y
+
+@xs
+;= :y
+
+
+=======
+通知器
+
+(defn echo-watch
+  [key identity old new]
+  (println key old "=>" new))
+;= #'user/echo-watch
+
+(def sarah (atom {:name "Sarah" :age 25}))
+;= #'user/sarah
+
+(add-watch sarah :echo echo-watch)
+;= #<Atom@418bbf55: {:name "Sarah", :age 25}>
+
+(swap! sarah update-in [:age] inc)
+; :echo {:name Sarah, :age 25} => {:name Sarah, :age 26}
+;= {:name "Sarah", :age 26}
+
+(add-watch sarah :echo2 echo-watch)
+;= #<Atom@418bbf55: {:name "Sarah", :age 26}>
+
+(swap! sarah update-in [:age] inc)
+; :echo {:name Sarah, :age 26} => {:name Sarah, :age 27}
+; :echo2 {:name Sarah, :age 26} => {:name Sarah, :age 27}
+;= {:name "Sarah", :age 27}
+
+(remove-watch sarah :echo2)
+;= #<Atom@418bbf55: {:name "Sarah", :age 27}>
+
+(swap! sarah update-in [:age] inc)
+; :echo {:name Sarah, :age 27} => {:name Sarah, :age 28}
+;= {:name "Sarah", :age 28}
+
+(reset! sarah @sarah)
+; :echo {:name Sarah, :age 28} => {:name Sarah, :age 28}
+;= {:name "Sarah", :age 28}
+
+(def history (atom ()))
+
+(defn log->list
+  [dest-atom key source old new]
+  (when (not= old new)
+    (swap! dest-atom conj new)))
+
+(def sarah (atom {:name "Sarah", :age 25}))
+;= #'user/sarah
+
+(add-watch sarah :record (partial log->list history))
+;= #<Atom@5143f787: {:age 25, :name "Sarah"}>
+
+(swap! sarah update-in [:age] inc)
+;= {:age 26, :name "Sarah"}
+
+(swap! sarah update-in [:age] inc)
+;= {:age 27, :name "Sarah"}
+
+(swap! sarah identity)
+;= {:age 27, :name "Sarah"}
+
+(swap! sarah assoc :wears-glasses? true)
+;= {:age 27, :wears-glasses? true, :name "Sarah"}
+
+(swap! sarah update-in [:age] inc)
+;= {:age 28, :wears-glasses? true, :name "Sarah"}
+
+(pprint @history)
+;= ;= nil
+;= ; ({:age 28, :wears-glasses? true, :name "Sarah"}
+;= ; {:age 27, :wears-glasses? true, :name "Sarah"}
+;= ; {:age 27, :name "Sarah"}
+;= ; {:age 26, :name "Sarah"})
+
+(defn log->db
+  [db-id identity old new]
+  (when (not= old new)
+    (let [db-connection (get-connection db-id)]
+      ...)))
+
+(add-watch sarah "jdbc:postgresql://hostname/some_database" log->db)
+
+
+=====
+校验器
+
+(def n (atom 1 :validator pos?))
+;= #'user/n
+
+(swap! n + 500)
+;= 501
+
+(swap! n - 1000)
+;= #<IllegalStateException java.lang.IllegalStateException: Invalid reference state>
+
+(def sarah (atom {:name "Sarah" :age 25}))
+;= #'user/sarah
+
+(set-validator! sarah :age)
+;= nil
+
+(swap! sarah dissoc :age)
+;= #<IllegalStateException java.lang.IllegalStateException: Invalid reference state>
+
+(set-validator! sarah #(or (:age %)
+                         (throw (IllegalStateException. "People must have `:age`s!"))))
+;= nil
+
+(swap! sarah dissoc :age)
+;= #<IllegalStateException java.lang.IllegalStateException: People must have `:age`s!>
+
+https://github.com/scgilardi/slingshot

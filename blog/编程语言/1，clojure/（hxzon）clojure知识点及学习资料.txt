@@ -154,6 +154,8 @@ https://github.com/clojure-cookbook/clojure-cookbook
 http://clojure-cookbook.com/
 http://shop.oreilly.com/product/0636920029786.do
 
+http://java.ociweb.com/mark/clojure/article.html
+
 =======================
 web
 

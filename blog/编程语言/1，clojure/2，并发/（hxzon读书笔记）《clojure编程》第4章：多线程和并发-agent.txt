@@ -1,0 +1,328 @@
+（hxzon读书笔记）《clojure编程》第4章：多线程和并发-agent
+
+by hxzon
+======
+(def a (agent 500))
+;= #'user/a
+
+(send a range 1000)
+;= #<Agent@53d2f8be: 500>
+
+@a
+;= (500 501 502 503 504 ... 999)
+
+(def a (agent 0))
+;= #'user/a
+
+(send a inc)
+;= #<Agent@65f7bb1f: 1>
+
+(def a (agent 5000))
+(def b (agent 10000))
+
+(send-off a #(Thread/sleep %))
+;= #<Agent@da7d7b5: 5000>
+
+(send-off b #(Thread/sleep %))
+;= #<Agent@c0cd75b: 10000>
+
+@a
+;= 5000
+
+(await a b)
+;= nil
+
+@a
+;= nil
+
+(def a (agent nil))
+;= #'user/a
+
+(send a (fn [_] (throw (Exception. "something is wrong"))))
+;= #<Agent@3cf71b00: nil>
+
+a
+;= #<Agent@3cf71b00 FAILED: nil>
+
+(send a identity)
+;= #<Exception java.lang.Exception: something is wrong>
+
+(restart-agent a 42)
+;= 42
+
+(send a inc)
+;= #<Agent@5f2308c9: 43>
+
+(reduce send a (for [x (range 3)]
+                 (fn [_] (throw (Exception. (str "error #" x))))))
+;= #<Agent@5f2308c9: 43>
+
+(agent-error a)
+;= #<Exception java.lang.Exception: error #0>
+
+(restart-agent a 42)
+;= 42
+
+(agent-error a)
+;= #<Exception java.lang.Exception: error #1>
+
+(restart-agent a 42 :clear-actions true)
+;= 42
+
+(agent-error a)
+;= nil
+
+(def a (agent nil :error-mode :continue))
+;= #'user/a
+
+(send a (fn [_] (throw (Exception. "something is wrong"))))
+;= #<Agent@44a5b703: nil>
+
+(send a identity)
+;= #<Agent@44a5b703: nil>
+
+(def a (agent nil
+         :error-mode :continue
+         :error-handler (fn [the-agent exception]
+                          (.println System/out (.getMessage exception)))))
+;= #'user/a
+
+(send a (fn [_] (throw (Exception. "something is wrong"))))
+;= #<Agent@bb07c59: nil>
+; something is wrong
+
+(send a identity)
+:= #<Agent@bb07c59: nil>
+
+(set-error-handler! a (fn [the-agent exception]
+                        (when (= "FATAL" (.getMessage exception))
+                          (set-error-mode! the-agent :fail))))
+;= nil
+
+(send a (fn [_] (throw (Exception. "FATAL"))))
+;= #<Agent@6fe546fd: nil>
+
+(send a identity)
+;= #<Exception java.lang.Exception: FATAL>
+
+----
+(require '[clojure.java.io :as io])
+
+(def console (agent *out*))
+
+(def character-log (agent (io/writer "character-states.log" :append true)))
+
+(defn write
+  [^java.io.Writer w & content]
+  (doseq [x (interpose " " content)]
+    (.write w (str x)))
+  (doto w
+    (.write "\n")
+    .flush))
+
+(defn log-reference
+  [reference & writer-agents]
+  (add-watch reference :log
+    (fn [_ reference old new]
+      (doseq [writer-agent writer-agents]
+        (send-off writer-agent write new)))))
+
+(def smaug (character "Smaug" :health 500 :strength 400))
+(def bilbo (character "Bilbo" :health 100 :strength 100))
+(def gandalf (character "Gandalf" :health 75 :mana 1000))
+
+(log-reference bilbo console character-log)
+
+(log-reference smaug console character-log)
+
+(wait-futures 1
+  (play bilbo attack smaug)
+  (play smaug attack bilbo)
+  (play gandalf heal bilbo))
+; {:max-health 500, :strength 400, :name "Smaug", :items #{}, :health 490.052618}
+; {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 61.5012391}
+; {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 100.0}
+; {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 67.3425151}
+; {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 100.0}
+; {:max-health 500, :strength 400, :name "Smaug", :items #{}, :health 480.990141}
+; ...
+
+(defn attack
+  [aggressor target]
+  (dosync
+    (let [damage (* (rand 0.1) (:strength @aggressor) (ensure daylight))]
+      (send-off console write
+        (:name @aggressor) "hits" (:name @target) "for" damage)
+      (commute target update-in [:health] #(max 0 (- % damage))))))
+
+(defn heal
+  [healer target]
+  (dosync
+    (let [aid (min (* (rand 0.1) (:mana @healer))
+                (- (:max-health @target) (:health @target)))]
+      (when (pos? aid)
+        (send-off console write
+          (:name @healer) "heals" (:name @target) "for" aid)
+        (commute healer update-in [:mana] - (max 5 (/ aid 5)))
+        (alter target update-in [:health] + aid)))))
+
+(dosync
+  (alter smaug assoc :health 500)
+  (alter bilbo assoc :health 100))
+; {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 100}
+; {:max-health 500, :strength 400, :name "Smaug", :items #{}, :health 500}
+
+(wait-futures 1
+  (play bilbo attack smaug)
+  (play smaug attack bilbo)
+  (play gandalf heal bilbo))
+; {:max-health 500, :strength 400, :name "Smaug", :items #{}, :health 497.414581}
+; Bilbo hits Smaug for 2.585418463393845
+; {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 66.6262521}
+; Smaug hits Bilbo for 33.373747881474934
+; {:max-health 500, :strength 400, :name "Smaug", :items #{}, :health 494.667477}
+; Bilbo hits Smaug for 2.747103668676348
+; {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 100.0}
+; Gandalf heals Bilbo for 33.37374788147494
+; ...
+
+(require '[net.cgrand.enlive-html :as enlive])
+
+(use '[clojure.string :only (lower-case)])
+
+(import '(java.net URL MalformedURLException))
+
+(defn- links-from
+  [base-url html]
+  (remove nil? (for [link (enlive/select html [:a])]
+                 (when-let [href (-> link :attrs :href)]
+                   (try
+                     (URL. base-url href)
+                     ; ignore bad URLs
+                     (catch MalformedURLException e))))))
+
+(defn- words-from
+  [html]
+  (let [chunks (-> html
+                 (enlive/at [:script] nil)
+                 (enlive/select [:body enlive/text-node]))]
+    (->> chunks
+      (mapcat (partial re-seq #"\w+"))
+      (remove (partial re-matches #"\d+"))
+      (map lower-case))))
+
+(def url-queue (LinkedBlockingQueue.))
+
+(def crawled-urls (atom #{}))
+
+(def word-freqs (atom {}))
+
+(declare get-url)
+
+(def agents (set (repeatedly 25 #(agent {::t #'get-url :queue url-queue}))))
+
+(declare run process handle-results)
+
+(defn ^::blocking get-url
+  [{:keys [^BlockingQueue queue] :as state}]
+  (let [url (as-url (.take queue))]
+    (try
+      (if (@crawled-urls url)
+        state
+        {:url url
+         :content (slurp url)
+         ::t #'process})
+      (catch Exception e
+        ;; skip any URL we failed to load
+        state)
+      (finally (run *agent*)))))
+
+(defn process
+  [{:keys [url content]}]
+  (try
+    (let [html (enlive/html-resource (java.io.StringReader. content))]
+      {::t #'handle-results
+       :url url
+       :links (links-from url html)
+       :words (reduce (fn [m word]
+                        (update-in m [word] (fnil inc 0)))
+                {}
+                (words-from html))})
+    (finally (run *agent*))))
+
+(defn ^::blocking handle-results
+  [{:keys [url links words]}]
+  (try
+    (swap! crawled-urls conj url)
+    (doseq [url links]
+      (.put url-queue url))
+    (swap! word-freqs (partial merge-with +) words)
+    {::t #'get-url :queue url-queue}
+    (finally (run *agent*))))
+
+(defn paused? [agent] (::paused (meta agent)))
+
+(defn run
+  ([] (doseq [a agents] (run a)))
+  ([a]
+    (when (agents a)
+      (send a (fn [{transition ::t :as state}]
+                (when-not (paused? *agent*)
+                  (let [dispatch-fn (if (-> transition meta ::blocking)
+                                      send-off
+                                      send)]
+                    (dispatch-fn *agent* transition)))
+                state)))))
+
+(defn pause
+  ([] (doseq [a agents] (pause a)))
+  ([a] (alter-meta! a assoc ::paused true)))
+
+(defn restart
+  ([] (doseq [a agents] (restart a)))
+  ([a]
+    (alter-meta! a dissoc ::paused)
+    (run a)))
+
+(defn test-crawler
+  "Resets all state associated with the crawler, adds the given URL to the
+  url-queue, and runs the crawler for 60 seconds, returning a vector
+  containing the number of URLs crawled, and the number of URLs
+  accumulated through crawling that have yet to be visited."
+  [agent-count starting-url]
+  (def agents (set (repeatedly agent-count
+                     #(agent {::t #'get-url :queue url-queue}))))
+  (.clear url-queue)
+  (swap! crawled-urls empty)
+  (swap! word-freqs empty)
+  (.add url-queue starting-url)
+  (run)
+  (Thread/sleep 60000)
+  (pause)
+  [(count @crawled-urls) (count url-queue)])
+
+(test-crawler 1 "http://www.bbc.co.uk/news/")
+;= [86 14598]
+
+(test-crawler 25 "http://www.bbc.co.uk/news/")
+;= [670 81775]
+
+(->> (sort-by val @word-freqs)
+  reverse
+  (take 10))
+;= (["the" 23083] ["to" 14308] ["of" 11243] ["bbc" 10969] ["in" 9473]
+;= ["a" 9214] ["and" 8595] ["for" 5203] ["is" 4844] ["on" 4364])
+
+(->> (sort-by val @word-freqs)
+  (take 10))
+;= (["relieved" 1] ["karim" 1] ["gnome" 1] ["brummell" 1] ["mccredie" 1]
+;= ["ensinar" 1] ["estrictas" 1] ["arap" 1] ["forcibly" 1] ["kitchin" 1])
+
+(alter-meta! #'process assoc ::blocking true)
+;= {:arglists ([{:keys [url content]}]), :ns #<Namespace user>,
+;= :name process, :user/blocking true}
+
+(test-crawler 25 "http://www.bbc.co.uk/news/")
+;= [573 80576]
+
+

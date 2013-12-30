@@ -1,0 +1,301 @@
+（hxzon读书笔记）《clojure编程》第4章：多线程和并发-ref，STM
+
+by hxzon
+=====
+https://en.wikipedia.org/wiki/Multiversion_concurrency_control
+
+https://en.wikipedia.org/wiki/ACID
+
+https://en.wikipedia.org/wiki/Serializability
+
+(defn character
+  [name & {:as opts}]
+  (ref (merge {:name name :items #{} :health 500}
+         opts)))
+
+(def smaug (character "Smaug" :health 500 :strength 400 :items (set (range 50))))
+(def bilbo (character "Bilbo" :health 100 :strength 100))
+(def gandalf (character "Gandalf" :health 75 :mana 750))
+
+(defn loot
+  [from to]
+  (dosync
+    (when-let [item (first (:items @from))]
+      (alter to update-in [:items] conj item)
+      (alter from update-in [:items] disj item))))
+
+(wait-futures 1
+  (while (loot smaug bilbo))
+  (while (loot smaug gandalf)))
+;= nil
+
+@smaug
+;= {:name "Smaug", :items #{}, :health 500}
+
+@bilbo
+;= {:name "Bilbo", :items #{0 44 36 13 ... 16}, :health 500}
+
+@gandalf
+;= {:name "Gandalf", :items #{32 4 26 ... 15}, :health 500}
+
+(map (comp count :items deref) [bilbo gandalf])
+;= (21 29)
+
+(filter (:items @bilbo) (:items @gandalf))
+;= ()
+
+https://en.wikipedia.org/wiki/Commutative_property
+
+(= (/ (/ 120 3) 4) (/ (/ 120 4) 3))
+;= true
+
+(= ((comp #(/ % 3) #(/ % 4)) 120) ((comp #(/ % 4) #(/ % 3)) 120))
+;= true
+
+(def x (ref 0))
+;= #'user/x
+
+(time (wait-futures 5
+        (dotimes [_ 1000]
+          (dosync (alter x + (apply + (range 1000)))))
+        (dotimes [_ 1000]
+          (dosync (alter x - (apply + (range 1000)))))))
+; "Elapsed time: 1466.621 msecs"
+
+(time (wait-futures 5
+        (dotimes [_ 1000]
+          (dosync (commute x + (apply + (range 1000)))))
+        (dotimes [_ 1000]
+          (dosync (commute x - (apply + (range 1000)))))))
+; "Elapsed time: 818.41 msecs"
+
+(defn flawed-loot
+  [from to]
+  (dosync
+    (when-let [item (first (:items @from))]
+      (commute to update-in [:items] conj item)
+      (commute from update-in [:items] disj item))))
+
+(def smaug (character "Smaug" :health 500 :strength 400 :items (set (range 50))))
+(def bilbo (character "Bilbo" :health 100 :strength 100))
+(def gandalf (character "Gandalf" :health 75 :mana 750))
+
+(wait-futures 1
+  (while (flawed-loot smaug bilbo))
+  (while (flawed-loot smaug gandalf)))
+;= nil
+
+(map (comp count :items deref) [bilbo gandalf])
+;= (5 48)
+
+(filter (:items @bilbo) (:items @gandalf))
+;= (18 32 1)
+
+(defn fixed-loot
+  [from to]
+  (dosync
+    (when-let [item (first (:items @from))]
+      (commute to update-in [:items] conj item)
+      (alter from update-in [:items] disj item))))
+
+(def smaug (character "Smaug" :health 500 :strength 400 :items (set (range 50))))
+(def bilbo (character "Bilbo" :health 100 :strength 100))
+(def gandalf (character "Gandalf" :health 75 :mana 750))
+
+(wait-futures 1
+  (while (fixed-loot smaug bilbo))
+  (while (fixed-loot smaug gandalf)))
+;= nil
+
+(map (comp count :items deref) [bilbo gandalf])
+;= (24 26)
+
+(filter (:items @bilbo) (:items @gandalf))
+;= ()
+
+(defn attack
+  [aggressor target]
+  (dosync
+    (let [damage (* (rand 0.1) (:strength @aggressor))]
+      (commute target update-in [:health] #(max 0 (- % damage))))))
+
+(defn heal
+  [healer target]
+  (dosync
+    (let [aid (* (rand 0.1) (:mana @healer))]
+      (when (pos? aid)
+        (commute healer update-in [:mana] - (max 5 (/ aid 5)))
+        (commute target update-in [:health] + aid)))))
+
+(def alive? (comp pos? :health))
+
+(defn play
+  [character action other]
+  (while (and (alive? @character)
+           (alive? @other)
+           (action character other))
+    (Thread/sleep (rand-int 50))))
+
+(wait-futures 1
+  (play bilbo attack smaug)
+  (play smaug attack bilbo))
+;= nil
+
+(map (comp :health deref) [smaug bilbo])
+;= (488.80755445030337 -12.0394908759935)
+
+(dosync
+  (alter smaug assoc :health 500)
+  (alter bilbo assoc :health 100))
+
+(wait-futures 1
+  (play bilbo attack smaug)
+  (play smaug attack bilbo)
+  (play gandalf heal bilbo))
+;= nil
+
+(map (comp #(select-keys % [:name :health :mana]) deref) [smaug bilbo gandalf])
+;= ({:health 0, :name "Smaug"}
+;= {:health 853.6622368542827, :name "Bilbo"}
+;= {:mana -2.575955687302212, :health 75, :name "Gandalf"})
+
+(dosync (ref-set bilbo {:name "Bilbo"}))
+;= {:name "Bilbo"}
+
+(dosync (alter bilbo (constantly {:name "Bilbo"})))
+; {:name "Bilbo"}
+
+(defn- enforce-max-health
+  [{:keys [name health]}]
+  (fn [character-data]
+    (or (<= (:health character-data) health)
+      (throw (IllegalStateException. (str name " is already at max health!"))))))
+
+(defn character
+  [name & {:as opts}]
+  (let [cdata (merge {:name name :items #{} :health 500}
+                opts)
+        cdata (assoc cdata :max-health (:health cdata))
+        validators (list* (enforce-max-health name (:health cdata))
+                     (:validators cdata))]
+    (ref (dissoc cdata :validators)
+      :validator #(every? (fn [v] (v %)) validators))))
+
+(def bilbo (character "Bilbo" :health 100 :strength 100))
+;= #'user/bilbo
+
+(heal gandalf bilbo)
+;= #<IllegalStateException java.lang.IllegalStateException: Bilbo is already at max health!>
+
+(dosync (alter bilbo assoc-in [:health] 95))
+;= {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 95, :xp 0}
+
+(heal gandalf bilbo)
+;= #<IllegalStateException java.lang.IllegalStateException: Bilbo is already at max health!>
+
+(defn heal
+  [healer target]
+  (dosync
+    (let [aid (min (* (rand 0.1) (:mana @healer))
+                (- (:max-health @target) (:health @target)))]
+      (when (pos? aid)
+        (commute healer update-in [:mana] - (max 5 (/ aid 5)))
+        (alter target update-in [:health] + aid)))))
+
+(dosync (alter bilbo assoc-in [:health] 95))
+;= {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 95}
+
+(heal gandalf bilbo)
+;= {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 100}
+
+(heal gandalf bilbo)
+;= nil
+
+http://clj-me.cgrand.net/2011/10/06/a-world-in-a-ref/
+
+(defn unsafe
+  []
+  (io! (println "writing to database...")))
+;= #'user/unsafe
+
+(dosync (unsafe))
+;= #<IllegalStateException java.lang.IllegalStateException: I/O in transaction>
+
+(def x (ref (java.util.ArrayList.)))
+;= #'user/x
+
+(wait-futures 2 (dosync (dotimes [v 5]
+                          (Thread/sleep (rand-int 50))
+                          (alter x #(doto % (.add v))))))
+;= nil
+
+@x
+;= #<ArrayList [0, 0, 1, 0, 2, 3, 4, 0, 1, 2, 3, 4]>
+
+(def x (ref 0))
+;= #'user/x
+
+(dosync
+  @(future (dosync (ref-set x 0)))
+  (ref-set x 1))
+;= #<RuntimeException java.lang.RuntimeException:
+;= Transaction failed after reaching retry limit>
+
+@x
+;= 0
+
+(ref-max-history (ref "abc" :min-history 3 :max-history 30))
+;= 30
+
+(def a (ref 0))
+
+(future (dotimes [_ 500] (dosync (Thread/sleep 200) (alter a inc))))
+;= #<core$future_call$reify__5684@10957096: :pending>
+
+@(future (dosync (Thread/sleep 1000) @a))
+;= 28
+
+(ref-history-count a)
+;= 5
+
+(def a (ref 0))
+
+(future (dotimes [_ 500] (dosync (Thread/sleep 20) (alter a inc))))
+;= #<core$future_call$reify__5684@10957096: :pending>
+
+@(future (dosync (Thread/sleep 1000) @a))
+;= 500
+
+(ref-history-count a)
+;= 10
+
+(def a (ref 0 :max-history 100))
+
+(future (dotimes [_ 500] (dosync (Thread/sleep 20) (alter a inc))))
+;= #<core$future_call$reify__5684@10957096: :pending>
+
+@(future (dosync (Thread/sleep 1000) @a))
+;= 500
+
+(ref-history-count a)
+;= 10
+
+(def a (ref 0 :min-history 50 :max-history 100))
+
+(future (dotimes [_ 500] (dosync (Thread/sleep 20) (alter a inc))))
+
+@(future (dosync (Thread/sleep 1000) @a))
+;= 33
+
+(def daylight (ref 1))
+
+(defn attack
+  [aggressor target]
+  (dosync
+    (let [damage (* (rand 0.1) (:strength @aggressor) @daylight)]
+      (commute target update-in [:health] #(max 0 (- % damage))))))
+
+(ensure a)
+(alter a identity)
+(ref-set a @a)
+

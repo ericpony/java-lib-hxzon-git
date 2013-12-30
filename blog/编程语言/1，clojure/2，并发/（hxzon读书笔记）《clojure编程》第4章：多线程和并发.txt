@@ -19,6 +19,52 @@ delay提供让代码延迟执行的机制，代码只会在显示调用deref时�
 --
 可以使用realized? 来检测delay、future、promise以及惰性序列，是否已经求值。
 
+--
+(def d (delay (println "Running...")
+         :done!))
+;= #'user/d
+
+(deref d)
+; Running...
+;= :done!
+
+(def a-fn (fn []
+            (println "Running...")
+            :done!))
+;= #'user/a-fn
+
+(a-fn)
+; Running...
+;= :done!
+
+(defn get-document
+  [id]
+  ; ... do some work to retrieve the identified document's metadata ...
+  {:url "http://www.mozilla.org/about/manifesto.en.html"
+   :title "The Mozilla Manifesto"
+   :mime "text/html"
+   :content (delay (slurp "http://www.mozilla.org/about/manifesto.en.html"))})
+;= #'user/get-document
+
+(def d (get-document "some-id"))
+;= #'user/d
+
+d
+;= {:url "http://www.mozilla.org/about/manifesto.en.html",
+;= :title "The Mozilla Manifesto",
+;= :mime "text/html",
+;= :content #<Delay@2efb541d: :pending>} 
+
+(realized? (:content d))
+;= false
+
+@(:content d)
+;= "<!DOCTYPE html><html>..."
+
+(realized? (:content d))
+;= true
+
+
 ----
 3，future
 
@@ -35,6 +81,29 @@ future-all可以用来在另外一个线程中调用一个无参函数。
 future跟agent共享一个线程池里面的线程。
 future是java.util.concurrent.Future的对象。
 
+--
+(def long-calculation (future (apply + (range 1e8))))
+;= #'user/long-calculation
+
+@long-calculation
+;= 4999999950000000
+
+@(future (Thread/sleep 5000) :done!)
+;= :done!
+
+(deref (future (Thread/sleep 5000) :done!)
+  1000
+  :impatient!)
+;= :impatient!
+
+(defn get-document
+  [id]
+  ; ... do some work to retrieve the identified document's metadata ...
+  {:url "http://www.mozilla.org/about/manifesto.en.html"
+   :title "The Mozilla Manifesto"
+   :mime "text/html"
+   :content (future (slurp "http://www.mozilla.org/about/manifesto.en.html"))})
+
 ----
 4，promise
 
@@ -50,6 +119,83 @@ promise跟一个一次性的，单值的管道类似。
 promise不会检测循环依赖。
 
 对promise的一个最直接的应用是让基于回调的api，以同步的方式执行（即等待这个回调函数执行完毕）。
+
+--
+(def p (promise))
+;= #'user/p
+
+(realized? p)
+;= false
+
+(deliver p 42)
+;= #<core$promise$reify__1707@3f0ba812: 42>
+
+(realized? p)
+;= true
+
+@p
+;= 42
+
+--
+(def a (promise))
+(def b (promise))
+(def c (promise))
+
+(future
+  (deliver c (+ @a @b))
+  (println "Delivery complete!"))
+
+(deliver a 15)
+;= #<core$promise$reify__5727@56278e83: 15>
+
+(deliver b 16)
+; Delivery complete!
+;= #<core$promise$reify__5727@47ef7de4: 16>
+
+@c
+;= 31
+
+--
+示例：不会检测循环依赖。
+
+(def a (promise))
+
+(def b (promise))
+
+(future (deliver a @b)) 
+
+(future (deliver b @a))
+
+(realized? a) 
+;= false
+
+(realized? b)
+;= false
+
+(deliver a 42) 
+;= #<core$promise$reify__5727@6156f1b0: 42>
+
+@a
+;= 42
+
+@b
+;= 42
+
+--
+(defn call-service
+  [arg1 arg2 callback-fn]
+  ; ...perform service call, eventually invoking callback-fn with results...
+  (future (callback-fn (+ arg1 arg2) (- arg1 arg2))))
+
+(defn sync-fn
+  [async-fn]
+  (fn [& args]
+    (let [result (promise)]
+      (apply async-fn (conj (vec args) #(deliver result %&)))
+      @result)))
+
+((sync-fn call-service) 8 7)
+;= (15 1)
 
 ----
 5，pmap，简单的并行化。
@@ -70,19 +216,58 @@ pcalls，接受任意数量无参函数，返回一个包含它们的返回值�
 --
 pvalues，宏，接受任意数量的表达式，返回一个包含它们的返回值的惰性序列。
 
+--
+(defn phone-numbers
+  [string]
+  (re-seq #"(\d{3})[\.-]?(\d{3})[\.-]?(\d{4})" string))
+;= #'user/phone-numbers
+
+(phone-numbers " Sunil: 617.555.2937, Betty: 508.555.2218")
+;= (["617.555.2937" "617" "555" "2937"] ["508.555.2218" "508" "555" "2218"])
+
+(def files (repeat 100
+             (apply str
+               (concat (repeat 1000000 \space)
+                 "Sunil: 617.555.2937, Betty: 508.555.2218"))))
+
+(time (dorun (map phone-numbers files)))
+; "Elapsed time: 2460.848 msecs"
+
+(time (dorun (pmap phone-numbers files)))
+; "Elapsed time: 1277.973 msecs"
+
+(def files (repeat 100000
+             (apply str
+               (concat (repeat 1000 \space)
+                 "Sunil: 617.555.2937, Betty: 508.555.2218"))))
+
+(time (dorun (map phone-numbers files)))
+; "Elapsed time: 2649.807 msecs"
+
+(time (dorun (pmap phone-numbers files)))
+; "Elapsed time: 2772.794 msecs"
+
+(time (->> files
+        (partition-all 250)
+        (pmap (fn [chunk] (doall (map phone-numbers chunk))))
+        (apply concat)
+        dorun))
+; "Elapsed time: 1465.138 msecs"
+
 ----
 6，clojure中所有的无参函数，都实现了Runnable和Callable接口，所以可以使用java的并发库。
+
+(.start (Thread. #(println "Running...")))
+;= Running...
+;= nil
 
 ----
 7，locking宏
 
 用locking宏来获取一个给定对象上的锁，然后在程序控制流离开locking的时候，这个锁会自动释放。
 
-
-
-
-
-
-
-
+(defn add
+  [some-list value]
+  (locking some-list
+    (.add some-list value)))
 

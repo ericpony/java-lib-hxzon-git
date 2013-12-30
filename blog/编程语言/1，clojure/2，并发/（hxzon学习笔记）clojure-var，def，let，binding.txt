@@ -102,6 +102,8 @@ user/x
 -1，在其它命名空间里面只能通过全限定名称对其进行访问。
 -2，要访问它的值只能通过解引用。
 
+（hxzon理解：即只能 @#'xx/yy ？不能 xx/yy ？）
+
 (def ^:private everything 42)
 ;= #'user/everything
 
