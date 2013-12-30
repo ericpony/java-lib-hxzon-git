@@ -99,12 +99,22 @@ vary-meta则通过给定的函数（它的参数是当前的元数据）进行�
 
 12，读者形式。
 
-13，agent，ref，atom（其它三种引用类型）。
+========
+13，并发。
+
+13.1，agent，ref，atom（其它三种引用类型）。
 
 atom，独立，没有依赖，不必和其它引用类型一起协作，同步。
 ref，和其它引用类型一起协作，需要事务，同步。
 agent，异步，可以加入事务。
 
+13.2，简单的并发：pmap，pcalls，pvalues 。
+
+13.3，future，delay，promise 。
+
+13.4，locking宏 。
+
+========
 14，数据类型和协议：defprotocol， defrecord， deftype。
 
 记录字面量。
