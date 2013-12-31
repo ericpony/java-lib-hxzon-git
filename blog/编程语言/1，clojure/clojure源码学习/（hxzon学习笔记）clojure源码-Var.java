@@ -1,6 +1,12 @@
 //（hxzon学习笔记）clojure源码-Var.java
 //https://github.com/clojure/clojure/blob/master/src/jvm/clojure/lang/Var.java
 
+//static class TBox
+//static class Frame
+//static final ThreadLocal<Frame> dvals
+//transient final AtomicBoolean threadBound
+
+//==========
 /**
  *   Copyright (c) Rich Hickey. All rights reserved.
  *   The use and distribution terms for this software are covered by the
@@ -18,7 +24,7 @@ package clojure.lang;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Var extends ARef implements IFn, IRef, Settable {
-
+    //线程和它的值
     static class TBox {
 
         volatile Object val;
@@ -30,6 +36,7 @@ public final class Var extends ARef implements IFn, IRef, Settable {
         }
     }
 
+    //未绑定的Var的行为
     static public class Unbound extends AFn {
         final public Var v;
 
@@ -79,7 +86,7 @@ public final class Var extends ARef implements IFn, IRef, Settable {
             return new Frame();
         }
     };
-
+    //绑定的版本号
     static public volatile int rev = 0;
 
     static Keyword privateKey = Keyword.intern(null, "private");
@@ -100,15 +107,17 @@ public final class Var extends ARef implements IFn, IRef, Settable {
 
     public static Object getThreadBindingFrame() {
         Frame f = dvals.get();
-        if (f != null)
+        if (f != null) {
             return f;
+        }
         return new Frame();
     }
 
     public static Object cloneThreadBindingFrame() {
         Frame f = dvals.get();
-        if (f != null)
+        if (f != null) {
             return f.clone();
+        }
         return new Frame();
     }
 
@@ -134,11 +143,12 @@ public final class Var extends ARef implements IFn, IRef, Settable {
         return intern(ns, sym, root, true);
     }
 
-    //将符号池化到命名空间，返回一个Var。
+    //将符号池化到命名空间，返回一个Var。设置或重新设置根值。
     public static Var intern(Namespace ns, Symbol sym, Object root, boolean replaceRoot) {
         Var dvout = ns.intern(sym);
-        if (!dvout.hasRoot() || replaceRoot)
+        if (!dvout.hasRoot() || replaceRoot) {
             dvout.bindRoot(root);
+        }
         return dvout;
     }
 
@@ -150,11 +160,13 @@ public final class Var extends ARef implements IFn, IRef, Settable {
 
     //根据符号名，在命名空间里查找Var。
     public static Var find(Symbol nsQualifiedSym) {
-        if (nsQualifiedSym.ns == null)
+        if (nsQualifiedSym.ns == null) {
             throw new IllegalArgumentException("Symbol must be namespace-qualified");
+        }
         Namespace ns = Namespace.find(Symbol.intern(nsQualifiedSym.ns));
-        if (ns == null)
+        if (ns == null) {
             throw new IllegalArgumentException("No such namespace: " + nsQualifiedSym.ns);
+        }
         return ns.findInternedVar(Symbol.intern(nsQualifiedSym.name));
     }
 
@@ -166,7 +178,7 @@ public final class Var extends ARef implements IFn, IRef, Settable {
     public static Var internPrivate(String nsName, String sym) {
         Namespace ns = Namespace.findOrCreate(Symbol.intern(nsName));
         Var ret = intern(ns, Symbol.intern(sym));
-        ret.setMeta(privateMeta);
+        ret.setMeta(privateMeta);//设置为私有
         return ret;
     }
 
@@ -202,7 +214,7 @@ public final class Var extends ARef implements IFn, IRef, Settable {
 
     //获得Var的值，即解引用。
     final public Object get() {
-        if (!threadBound.get()) {
+        if (!threadBound.get()) {//是否有线程绑定
             return root;
         }
         return deref();
@@ -211,14 +223,16 @@ public final class Var extends ARef implements IFn, IRef, Settable {
     //解引用。
     final public Object deref() {
         TBox b = getThreadBinding();
-        if (b != null)
+        if (b != null) {
             return b.val;
+        }
         return root;
     }
 
     public void setValidator(IFn vf) {
-        if (hasRoot())
+        if (hasRoot()) {
             validate(vf, root);
+        }
         validator = vf;
     }
 
@@ -227,12 +241,14 @@ public final class Var extends ARef implements IFn, IRef, Settable {
         return this;
     }
 
+    //修改线程绑定值
     public Object set(Object val) {
         validate(getValidator(), val);
         TBox b = getThreadBinding();
         if (b != null) {
-            if (Thread.currentThread() != b.thread)
+            if (Thread.currentThread() != b.thread) {//只能由相同线程修改
                 throw new IllegalStateException(String.format("Can't set!: %s from non-binding thread", sym));
+            }
             return (b.val = val);
         }
         throw new IllegalStateException(String.format("Can't change/establish root binding of: %s with set", sym));
@@ -284,16 +300,18 @@ public final class Var extends ARef implements IFn, IRef, Settable {
         return !(root instanceof Unbound);
     }
 
-//binding root always clears macro flag
+    //binding root always clears macro flag
+    //总是移除宏标记，为何？
     synchronized public void bindRoot(Object root) {
         validate(getValidator(), root);
         Object oldroot = this.root;
         this.root = root;
         ++rev;
         alterMeta(dissoc, RT.list(macroKey));
-        notifyWatches(oldroot, this.root);
+        notifyWatches(oldroot, this.root);//通知观察器
     }
 
+    //对比bindRoot，此方法不移除宏标记。
     synchronized void swapRoot(Object root) {
         validate(getValidator(), root);
         Object oldroot = this.root;
@@ -326,28 +344,33 @@ public final class Var extends ARef implements IFn, IRef, Settable {
         return newRoot;
     }
 
+    //添加新的动态绑定
     public static void pushThreadBindings(Associative bindings) {
         Frame f = dvals.get();
         Associative bmap = f.bindings;
         for (ISeq bs = bindings.seq(); bs != null; bs = bs.next()) {
             IMapEntry e = (IMapEntry) bs.first();
             Var v = (Var) e.key();
-            if (!v.dynamic)
+            if (!v.dynamic) {//非动态变量，不能动态绑定
                 throw new IllegalStateException(String.format("Can't dynamically bind non-dynamic var: %s/%s", v.ns, v.sym));
+            }
             v.validate(v.getValidator(), e.val());
             v.threadBound.set(true);
             bmap = bmap.assoc(v, new TBox(Thread.currentThread(), e.val()));
         }
-        dvals.set(new Frame(bmap, f));
+        dvals.set(new Frame(bmap, f));//添加新的一帧
     }
 
+    //弹出一帧
     public static void popThreadBindings() {
         Frame f = dvals.get();
-        if (f.prev == null)
+        if (f.prev == null) {
             throw new IllegalStateException("Pop without matching push");
+        }
         dvals.set(f.prev);
     }
 
+    //获取当前帧的动态绑定
     public static Associative getThreadBindings() {
         Frame f = dvals.get();
         IPersistentMap ret = PersistentHashMap.EMPTY;
@@ -359,12 +382,13 @@ public final class Var extends ARef implements IFn, IRef, Settable {
         }
         return ret;
     }
-
+    //获得本Var的线程绑定值
     public final TBox getThreadBinding() {
         if (threadBound.get()) {
             IMapEntry e = dvals.get().bindings.entryAt(this);
-            if (e != null)
+            if (e != null) {
                 return (TBox) e.val();
+            }
         }
         return null;
     }

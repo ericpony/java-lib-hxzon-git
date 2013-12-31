@@ -1,0 +1,175 @@
+Clojure &env and &form
+
+http://blog.jayfields.com/2011/02/clojure-and.html
+
+hxzon：没有提供什么新内容。
+========
+Inside the body of defmacro you can call &env and &form 
+to get a bit of interesting information that may or may not be helpful.
+
+Here's a few examples that demonstrate how &env and &form can be used.
+(note: I'm using Clojure 1.2)
+
+----
+&env
+By default &env is nil.
+
+user=> (defmacro show-env [] (println &env))
+#'user/show-env
+
+user=> (show-env)
+nil
+
+However, if any bindings exist, &env gives you the names of the bindings as the keys of a map.
+可以通过&env获得绑定的名字。
+
+user=> (let [band "zeppelin" city "london"] (show-env))
+{city #<LocalBinding clojure.lang.Compiler$LocalBinding@78ff9053>, band #<LocalBinding clojure.lang.Compiler$LocalBinding@525c7734>}
+
+Okay, now we're getting somewhere. 
+What's a Compiler$LocalBinding? 
+I'm not exactly sure, and I've never bothered to look into it. 
+I've been told that the 'values' from &env may change in the future, 
+so I wouldn't rely on them anyway. 
+Since I can't rely on them, I haven't found the need to look into what they are.
+
+Back to the keys. They sure look like symbols.
+
+user=> (defmacro show-env [] (println (keys &env)) (println (map class (keys &env))))
+#'user/show-env
+
+user=> (let [band "zeppelin" city "london"] (show-env))                              
+(city band)
+(clojure.lang.Symbol clojure.lang.Symbol)
+
+As the example shows, they are definitely symbols. 
+However, these symbols don't have a namespace.
+
+user=> (defmacro show-env [] (println (keys &env)) (println (map namespace (keys &env))))
+#'user/show-env
+
+user=> (let [band "zeppelin" city "london"] (show-env))                                  
+(city band)
+(nil nil)
+
+Since the symbols don't have a namespace there didn't seem to be much fun I could do with them; 
+however, you can use the symbols in your macro to print the values, as the following example shows.
+通过对绑定的名字解引用，可以得到它们的值。
+
+user=> (defmacro show-env [] (println (keys &env)) `(println ~@(keys &env)))                      
+#'user/show-env
+
+user=> (let [band "zeppelin" city "london"] (show-env))                     
+(city band)
+london zeppelin
+
+Printing the values of bindings can be a helpful trick while you are debugging.
+
+----
+&form
+&form can be used to get the original macro invocation.
+
+user=> (defmacro show-form [] (println &form))                               
+#'user/show-form
+
+user=> (show-form)
+(show-form)
+
+Okay, not very interesting so far. 
+It gets a bit more interesting when your macro takes a few arguments.
+
+user=> (defmacro show-form [a b] (println &form))       
+#'user/show-form
+
+user=> (show-form 50 100)                        
+(show-form 50 100)
+
+user=> (show-form a 100) 
+(show-form a 100)
+
+So, you can get the arguments. Notice you can grab both 50 and 100.
+
+user=> (defmacro show-form [a b] (println (next &form)))
+#'user/show-form
+
+user=> (show-form 50 100)                               
+(50 100)
+
+user=> (defmacro show-form [a b] (println (map class (next &form))))
+#'user/show-form
+
+user=> (show-form 50 100)                                           
+(java.lang.Integer java.lang.Integer)
+
+Interesting. 
+So I have a few integers I can work with, if I wish. What about 'show-form'?
+获得形式里，每个元素的类型。
+
+user=> (defmacro show-form [a b] (println (map class &form)))       
+#'user/show-form
+
+user=> (show-form 50 100)                                    
+(clojure.lang.Symbol java.lang.Integer java.lang.Integer)
+
+'show-form' is a symbol, as expected. 
+Which brings us back to a previous example, shown again below.
+
+user=> (defmacro show-form [a b] (println (map class &form)))
+#'user/show-form
+
+user=> (show-form a 100)                                     
+(clojure.lang.Symbol clojure.lang.Symbol java.lang.Integer)
+
+Okay, 'a' is also a symbol, unsurprising, 
+but perhaps it's interesting since 'a' doesn't exist anywhere except in our invocation. 
+You can probably do some interesting things here, 
+like allow people to specify enum values and append the enum yourself.
+
+user=> (ns user (:import [java.util.concurrent TimeUnit]))                                                     
+java.util.concurrent.TimeUnit
+
+user=> (defmacro time-units [& l] (->> (next &form) (map (partial str "TimeUnit/")) (map symbol) (cons 'list)))
+#'user/time-units
+
+user=> (time-units SECONDS MILLISECONDS)                                                                       
+(#< SECONDS> #< MILLISECONDS>)
+
+Would you want to use &form instead of just using the arguments (stored in l)? 
+Probably not. 
+This isn't an exercise in what you should do, but it does demonstrate what you could do.
+
+So &form must be returning a list, right?
+
+user=> (defmacro show-form [a b] (println (map class &form)) (println (class &form))) 
+#'user/show-form
+
+user=> (show-form 50 100)                                                            
+(clojure.lang.Symbol java.lang.Integer java.lang.Integer)
+clojure.lang.PersistentList
+
+A list. Correct. 
+
+And, I'm in a macro, so I can do anything I want with this list. 
+Maybe I just want to print the arguments. Easy enough.
+
+user=> (defmacro show-form [a b] `(println ~@(next &form)))
+#'user/show-form
+
+user=> (show-form 50 100)                                  
+50 100
+
+Of course, there are a million things I could do. 
+You get the idea.
+
+One other interesting thing to note is that &form has metadata.
+可以获得元数据。
+
+user=> (show-form 50 100)                                 
+{:line 132}
+
+Perhaps you don't care about line numbers, 
+but they definitely can come in handy when you are writing a testing framework. 
+
+I use &form in expectations and I believe LazyTest uses &env. 
+I guess you never know what you're going to need...
+

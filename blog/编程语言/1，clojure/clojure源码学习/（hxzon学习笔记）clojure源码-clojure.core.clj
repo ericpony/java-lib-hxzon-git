@@ -780,6 +780,7 @@
      (even? (count bindings)) "an even number of forms in binding vector")
   `(let* ~(destructure bindings) ~@body))
 
+; 生成代码 (let* destruBindings body1 body2)
 
 (defn ^{:private true}
   maybe-destructured
@@ -812,14 +813,14 @@
   {:added "1.0", :special-form true,
    :forms '[(fn name? [params* ] exprs*) (fn name? ([params* ] exprs*)+)]}
   [& sigs]
-    (let [name (if (symbol? (first sigs)) (first sigs) nil)
-          sigs (if name (next sigs) sigs)
-          sigs (if (vector? (first sigs)) 
-                 (list sigs) 
-                 (if (seq? (first sigs))
-                   sigs
-                   ;; Assume single arity syntax
-                   (throw (IllegalArgumentException. 
+    (let [name (if (symbol? (first sigs)) (first sigs) nil)  ;第一个元素是否是符号（可选的内部函数名）
+          sigs (if name (next sigs) sigs)  ;移除内部函数名，如果有
+          sigs (if (vector? (first sigs))  ;第一个元素是否是向量（参数列表） ，如果是，sigs转成列表，如果不是，是否为序列，不是，抛出异常
+                     (list sigs) 
+                     (if (seq? (first sigs))
+                          sigs
+                          ;; Assume single arity syntax
+                         (throw (IllegalArgumentException. 
                             (if (seq sigs)
                               (str "Parameter declaration " 
                                    (first sigs)
@@ -831,15 +832,15 @@
                    (throw (IllegalArgumentException.
                             (str "Invalid signature " sig
                                  " should be a list"))))
-                 (let [[params & body] sig
-                       _ (when (not (vector? params))
+                 (let [[params & body] sig  ;sig解构成参数列表和方法体
+                       _ (when (not (vector? params))  ;如果不是向量，抛出异常
                            (throw (IllegalArgumentException. 
                                     (if (seq? (first sigs))
                                       (str "Parameter declaration " params
                                            " should be a vector")
                                       (str "Invalid signature " sig
                                            " should be a list")))))
-                       conds (when (and (next body) (map? (first body))) 
+                       conds (when (and (next body) (map? (first body)))  ;body的第1个元素是否为map（元数据） 
                                            (first body))
                        body (if conds (next body) body)
                        conds (or conds (meta params))
@@ -857,8 +858,10 @@
                                       body)
                               body)]
                    (maybe-destructured params body)))
-          new-sigs (map psig sigs)]
-      (with-meta
+
+          new-sigs (map psig sigs)]  ;通过psig函数，转换sigs的每个元素
+
+      (with-meta  ;给整体加上&form的元数据
         (if name
           (list* 'fn* name new-sigs)
           (cons 'fn* new-sigs))
