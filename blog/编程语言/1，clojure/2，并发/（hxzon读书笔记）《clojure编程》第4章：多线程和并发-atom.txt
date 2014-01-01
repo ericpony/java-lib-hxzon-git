@@ -149,11 +149,12 @@ compare-and-set! 不适用值语义，它要求你的第2个参数，跟atom的�
 
 4，观察器
 
-add-watch 添加观察器，第1个参数是观察器的名字。
-remove-watch 移除观察器，第1个参数是观察器的名字。
+add-watch 添加观察器，参数：atom，观察器的名字，观察器。
+remove-watch 移除观察器，第2个参数是观察器的名字。
 
 观察器在引用类型的每次修改时都会被调用，但它不保证调用时，引用的值确实发生了变化。
 所以需要在观察器里，比较新旧值，看是否真的发生了变化。
+观察器的参数：观察器的名字，atom，旧值，新值。
 
 (defn echo-watch
   [key identity old new]
@@ -211,7 +212,7 @@ remove-watch 移除观察器，第1个参数是观察器的名字。
 (swap! sarah update-in [:age] inc)
 ;= {:age 27, :name "Sarah"}
 
-(swap! sarah identity)
+(swap! sarah identity)  ;identity函数总是返回传入的参数。
 ;= {:age 27, :name "Sarah"}
 
 (swap! sarah assoc :wears-glasses? true)
@@ -265,6 +266,7 @@ atom、ref、agent可以在创建时，通过:validator关键字来指定校验�
 ;= #<IllegalStateException java.lang.IllegalStateException: Invalid reference state>
 
 --
+;如果新值不含有:age关键字，则抛出异常。
 (set-validator! sarah #(or (:age %)
                          (throw (IllegalStateException. "People must have `:age`s!"))))
 ;= nil

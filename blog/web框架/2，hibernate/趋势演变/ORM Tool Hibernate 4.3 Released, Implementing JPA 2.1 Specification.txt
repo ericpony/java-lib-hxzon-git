@@ -1,0 +1,57 @@
+ORM Tool Hibernate 4.3 Released, Implementing JPA 2.1 Specification
+
+by Jan Stenberg on Dec 31, 2013
+http://www.infoq.com/news/2013/12/hibernate-4-3-released
+
+The final version of Hibernate ORM 4.3, a Java-based Object-Relational Mapping, ORM, framework, was recently released, 
+bringing support for stored procedures and entity graphs. 
+支持存储过程和实体图。
+
+Hibernate 4.3 is a certified implementation of the JPA 2.1 Specification, JSR 338, released in May 2013.
+实现了jpa2.1规范。
+
+Main focus for this release has been on support for the JPA 2.1 specification and the new features defined which include:
+主要重点是支持jpa2.1规范和以下新特性：
+
+Standardized support for working with stored procedure and function calls, across both providers and database vendors.
+存储过程和函数调用的标准化，跨数据库平台。
+
+Definition and execution of UPDATE and DELETE queries can now be made in a type-safe way.
+定义和执行update和delete语句，现在是类型安全的。
+
+Entity listeners, for implementing lifecycle events in separate classes, 
+may now use the CDI standard, (JSR-299), for injection of dependencies.
+实体监听器，在单独的类中实现，可以使用CDI标准。
+
+AttributeConverters, 
+which enable conversions of basic values between the representation in the database and in the corresponding objects.
+属性转换，将基本值转成数据库的表示，或者相反。
+
+Entity Graphs for defining how an entity and its sub-elements are loaded. 
+How a graph is loaded may also be changed dynamically.
+实体图，用来定义一个实体和它的子元素如何加载，可以动态改变加载方式。
+
+A standardized way of how schema generation is performed across providers together 
+with a baseline of configuration settings all providers understand.
+如何创建数据库表，标准化。
+
+Synchronization of persistence context with the current transaction can now be controlled via SynchronizationType.
+当前事务的持久上下文的同步，可以使用SynchronizationType控制。
+
+An object can now be constructed using argument values 
+returned from a SQL query by using the @ConstructorResult annotation.
+可以使用@ConstructorResult注解，从一个sql原生查询返回的参数值，来构建对象。
+
+Other significant changes, not related to the new JPA specification, include:
+和jpa规范无关的改变，如下：
+
+Increased support for OSGi environments. 
+The plan is to further improve the support in Hibernate 5.
+支持osgi环境。
+
+Support for inline dirty checking, finding which entities state has changed, 
+based on new bytecode enhancement support within Hibernate.
+支持内联肮脏检查，基于字节码增强。
+
+Documentation has been updated to correspond with the new version.
+文档已经更新。
