@@ -1,0 +1,192 @@
+（读书笔记）《clojure程序设计》第9章：与Java一起工作
+
+Programming Clojure学习笔记——与Java一起工作
+http://blog.csdn.net/zh2qiang/article/details/7080485
+
+节选，另见《（hxzon学习笔记）clojure-与java一起工作》。
+
+========
+内容摘要：
+
+类型提示。
+创建和编译java类。
+
+=========
+3.2  性能优化
+
+----
+使用原始类型
+
+示例：
+
+第一种计算方法：
+user=> (defn sum-to [n]
+   (loop [i 1 sum 0]
+     (if (<= i n)
+       (recur (inc i) (+ i sum))
+       sum)))
+#'user/sum-to
+
+user=> (dotimes [_ 5] (time (sum-to 10000)))
+"Elapsed time: 9.112735 msecs"
+"Elapsed time: 5.394529 msecs"
+"Elapsed time: 2.786857 msecs"
+"Elapsed time: 2.731407 msecs"
+"Elapsed time: 2.598431 msecs"
+
+第二种计算方法：
+user=> (defn integer-sum-to [n]
+(let [n (int n)]
+  (loop [i (int 1) sum (int 0)]
+    (if (<= i n)
+      (recur (inc i) (+ i sum))
+      sum))))
+#'user/integer-sum-to
+
+user=> (dotimes [_ 5] (time (integer-sum-to 10000)))
+"Elapsed time: 2.126595 msecs"
+"Elapsed time: 1.82419 msecs"
+"Elapsed time: 0.105251 msecs"
+"Elapsed time: 0.055963 msecs"
+"Elapsed time: 0.086769 msecs"
+
+说明：
+1. 第二种计算方法将n, i, sum当作int类型处理。
+
+2. dotimes是一个计时函数
+(dotimes bindings & body)
+; bindings => name n
+
+重复执行body代码，循环将name绑定到0到n-1，n即为重复次数。
+
+----
+添加类型暗示
+
+通过 #^宏 给参数添加类型元数据。
+
+Clojure支持给函数参数，let绑定，变量名及表达式添加类型暗示。
+
+类型暗示的作用：
+1. 优化关键性能，
+2. 说明需要的类型，
+3. 运行时强制转换为需要的类型。
+
+示例：
+user=> (defn describe-class [#^Class c]
+  {:name (.getName c)
+    :final (java.lang.reflect.Modifier/isFinal (.getModifiers c))})
+
+user=> (describe-class StringBuffer)
+{:name "java.lang.StringBuffer", :final true}
+
+说明：给函数参数c添加类型暗示。
+
+
+=======
+3.3  使用Clojure创建和编译Java类
+
+Clojure的所有对象都实现了Java的特定接口：
+1. Clojure数据结构实现了Java集合接口。
+2. Clojure函数实现了Runnable和Callable接口。
+
+Clojure可以在需要时很方便地在磁盘上生成一次性的代理或类，使用必要的一些Java代码片段。
+
+----
+创建Java代理
+
+（hxzon：创建代理的作用是什么？）
+
+在Clojure中，可以使用代理来扩展一个类：
+(proxy class-and-interfaces super-cons-args & fns)
+
+示例：
+(def print-element-handler
+    (proxy [DefaultHandler] []
+        (startElement
+        [uri local qname atts]
+        (println (format "Saw element: %s" qname)))))
+
+说明：
+1. proxy创建了代理类的一个实例；
+
+2. proxy机制是完全通用的，可以用在任意Java对象。
+user=> (.start (Thread.
+              (proxy [Runnable] [] (run [] (println "I ran!")))))
+user=> I ran!
+
+3. 在Java中必须实现接口的所有方法，但在Clojure中不必如此，如：
+user=> (proxy [Callable] [])
+#<Object$Callable clojure.proxy.java.lang.Object$Callable@11e0c13>
+
+如果忽略方法实现，Clojure将提供一个默认实现，该实现抛出异常UnsupportedOperationException，如：
+user=> (.call (proxy [Callable] []))
+java.lang.UnsupportedOperationException: call (NO_SOURCE_FILE:0)
+
+Clojure的函数都自动实现Runable和Callable接口，下面举例说明：
+
+; 正常用法：调用匿名函数
+user=> (#(println "foo"))
+
+; 调用run方法通过Runnable接口
+user=> (.run #(println "foo"))
+
+; 调用call方法通过Callable接口
+user=> (.call #(println "foo"))
+
+三种调用方法都输出foo。
+
+----
+编译到硬盘
+
+生成 reader.tasklist类 的Clojure源代码：
+
+(ns reader.tasklist
+    (:gen-class
+    :extends org.xml.sax.helpers.DefaultHandler
+    :state state
+    :init init)
+    (:use [clojure.contrib.duck-streams :only (reader)])
+    (:import [java.io File]
+             [org.xml.sax InputSource]
+             [org.xml.sax.helpers DefaultHandler]
+             [javax.xml.parsers SAXParserFactory]))
+(defn -main [& args]
+   (dosseq [arg args]
+       (println (task-list arg))))
+(defn task-list [arg]
+   (let [handler (new examples.tasklist)]
+      (.. SAXParserFactory newInstance newSAXParser
+          (parse (InputSource. (reader (File. arg)))
+              handler))
+      @(.state handler)))
+(defn -init[]
+   [[] (atom [])])
+(defn -startElement
+  [this uri local qname atts]
+  (when (= qname "target")
+    (swap! (.state this) conj (.getValue atts "name"))))
+
+说明：
+(1) :gen-class 指示Clojure生成Java类reader.tasklist
+
+(2) :extends 指示生成类继承DefaultHandler（实现接口用:implements语句）
+
+(3) Clojure生成Java类将类状态隔离到一个单独的状态结构，:state语句指定状态结构变量
+
+(4) :init语句指定类初始化函数，初始化函数返回Java需要的基类构造函数参数和Clojure使用的初始状态结构
+
+(5) Clojure生成reader.tasklist类，并创建方法；
+这些方法代理你提供的函数，每个方法代理一个相同名字的函数，方法名以连接符(-)为前缀
+
+----
+Clojure提供compile函数：
+(compile lib)
+
+compile函数对运行环境要求很苛刻：
+(1) 要编译的lib必须从classpath可以访问；
+(2) 类文件生成目录(*complile-path*)必须在classpath中，默认为Clojure的启动目录。
+
+Clojure为类本身生成一个class文件，为类的每个函数或方法生成一个类，
+名字包含__init的类很特殊，它在第一次加载时执行lib的顶级代码。
+Clojure的这种模块性允许我们在运行时动态替换单个函数。
+

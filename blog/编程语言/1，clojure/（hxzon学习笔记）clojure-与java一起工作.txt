@@ -25,7 +25,8 @@ by hxzon
 静态方法可写成 (System/currentTimeMillis) 。
 
 ----
-多次连续调用的缩写形式(.. class-or-instance form & forms)。
+多次连续调用的缩写形式
+(.. class-or-instance form & forms)。
 
 (.getLocation (.getCodeSource (.getProtectionDomain (.getClass '(1 2)))))
 可以缩写为
@@ -49,7 +50,7 @@ by hxzon
 4，instance? 类似Java的instanceof，检测一个对象是否是某个类的实例。
 
 (instance? Integer 10)
-
+;= true
 
 
 =========
@@ -107,8 +108,12 @@ to-array函数直接将集合转化为数组：
 
 说明：转换的结果为Object数组。
 
+user=> (to-array ["Easier" "array" "creation"])
+#<Object[] [Ljava.lang.Object;@cf66b>
+
+----
 into-array函数也能将集合转换为数组，并且可以指定数组元素类型：
-(into-array type? seq)。
+(into-array type seq)。type可选。
 
 user=> (into-array String ["Easier" "array" "creation"])
 #<String[] [Ljava.lang.String;@110c31>
@@ -193,9 +198,9 @@ user=> (areduce strings idx ret 0 (max ret (.length (aget strings idx))))
 
 
 ==========
-13，通过 #^宏 给参数添加类型元数据。
+13，通过 ^宏 给参数添加类型元数据。
 
-[#^ClassnameXX c]，内部扩展成#^{:tag ClassnameXX}，clojure内部用tag来表示类型。
+[^ClassnameXX c]，内部扩展成^{:tag ClassnameXX}，clojure内部用tag来表示类型。
 
 最多只能对4个参数进行类型提示。
 clojure中只有long和double两种原始类型，没有int、short、byte、char、boolean等。
@@ -250,6 +255,11 @@ https://code.google.com/p/clojure-doc-en2ch/wiki/Chapter_14_performance
 =========
 14，处理异常
 
+异常处理的目的:
+(1) 包装检查异常；
+(2) 使用finally块清理非内存资源如文件或网络句柄；
+(3) 响应问题：忽略异常，重新操作，转换异常为非异常结果。
+
 (try expr* catch-clause* finally-clause?)
 ; catch-clause -> (catch classname name expr*)
 ; finally-clause -> (finally expr*)
@@ -283,6 +293,8 @@ Clojure内部，with-open创建一个try块，将init-form的结果赋给name，
   (with-open [#^PrintWriter w (writer f)]
     (.print w content)))
 
+(spit "hello.out" "hello, world")
+
 ========
 16，
 在Clojure中，可以使用代理来扩展一个类：
@@ -298,6 +310,7 @@ user=> (.start (Thread.
 user=> I ran!
 
 在Java中必须实现接口的所有方法，但在Clojure中不必如此。
+
 user=> (proxy [Callable] [])
 #<Object$Callable clojure.proxy.java.lang.Object$Callable@11e0c13>
 
@@ -479,3 +492,6 @@ if-let宏接受两个参数，第一个参数为绑定变量，第二个参数�
 		`(let [~a-sym ~nested-array]
 			(aset ~(with-meta a-sym {:tag hint}) ~idx ~v))))
 
+参考资料：
+Programming Clojure学习笔记——与Java一起工作
+http://blog.csdn.net/zh2qiang/article/details/7080485
