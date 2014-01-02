@@ -1,13 +1,78 @@
 （hxzon读书笔记）《clojure编程》第4章：多线程和并发-ref，STM
 
 by hxzon
+----
+hxzon学习笔记：
+
+alter，
+commute，
+ref-set，和alter语义相同。
+ensure，“空写”，用来避免write skew。
+
+=========
+----
+两个用来帮助测试的宏。
+
+(defmacro futures
+  [n & exprs]
+  (vec (for [_ (range n)
+             expr exprs]
+         `(future ~expr))))
+
+(defmacro wait-futures
+  [& args]
+  `(doseq [f# (futures ~@args)]
+     @f#))
+始终返回nil，并且阻塞repl直到所有的future都实例化了。
+
 =====
+1，ref
+
+ref是协调的、同步的引用类型。
+
+STM（软件事务内存）可以保证多个线程可以交互地对这个ref进行操作：
+-1，ref会一直保持在一个一致的状态，任何条件下都不会出现外界可见的不一致状态。
+-2，在多个ref之间不会产生竞争条件。
+-3，不需要手工使用锁、monitor或者其他底层同步原语。
+-4，不会出现死锁。
+
+多版本并发控制：
 https://en.wikipedia.org/wiki/Multiversion_concurrency_control
 
+STM满足原子性、一致性、隔离性，但不满足持久性，这不是STM关注的。
 https://en.wikipedia.org/wiki/ACID
 
+dosync划定了一个事务的边界。
+嵌套的事务范围，既可以是词法上的嵌套dosync形式，
+也可以是一个事务参与到另一个事务里面去了。
+比如多个函数组成一个逻辑事务，这个逻辑事务作为一个整体，
+在控制流离开最外层的dosync时进行提交或重试。
+
+有三个修改函数：alter，commute，ref-set，
+它们拥有不同的“是否产生（或者避免）冲突”的语义。
+
+=========
+1.1，alter
+
+参数：要被修改的ref，修改函数f，f需要的其它参数。
+alter的语义是，当事务提交时，ref的全局值必须跟这个事务第1次调用alter时的值一样，
+否则整个事务使用最新的ref全局值重试。
+
+当alter返回时，ref在这个“事务内的值”会被改成f的返回值。
+注意“事务内的值”这个词。
+第一次修改ref时，产生一条时间线，接下来对ref的修改、访问都是在这条时间线内。
+这个时间线只在这个事务内存在。
+当控制流离开这个事务时，STM会提交这个事务。
+如果ref已经被别的时间线修改且提交，这个事务会整个重试，使用新的ref值重试。
+
+所以STM是一个“乐观地尝试对并发的修改操作进行重新排序，使得它们顺序执行”的一个过程。
+可串行化的快照隔离：
 https://en.wikipedia.org/wiki/Serializability
 
+--
+本章使用多人游戏引擎来示例。
+
+;定义角色。
 (defn character
   [name & {:as opts}]
   (ref (merge {:name name :items #{} :health 500}
@@ -17,6 +82,7 @@ https://en.wikipedia.org/wiki/Serializability
 (def bilbo (character "Bilbo" :health 100 :strength 100))
 (def gandalf (character "Gandalf" :health 75 :mana 750))
 
+;loot，将武器从一个角色移到另一个角色。
 (defn loot
   [from to]
   (dosync
@@ -24,6 +90,7 @@ https://en.wikipedia.org/wiki/Serializability
       (alter to update-in [:items] conj item)
       (alter from update-in [:items] disj item))))
 
+;bilbo和gandalf瓜分smaug的武器。
 (wait-futures 1
   (while (loot smaug bilbo))
   (while (loot smaug gandalf)))
@@ -38,20 +105,42 @@ https://en.wikipedia.org/wiki/Serializability
 @gandalf
 ;= {:name "Gandalf", :items #{32 4 26 ... 15}, :health 500}
 
+;验证瓜分是否正确，总数应该为50。
 (map (comp count :items deref) [bilbo gandalf])
 ;= (21 29)
 
+;验证瓜分是否正确，没有重复的武器。
 (filter (:items @bilbo) (:items @gandalf))
 ;= ()
 
+=========
+1.2，commute
+
+如果对ref的修改可以安全的重新排序，这时可以使用commute。
+这可以减少潜在冲突几率以及事务重试次数。
+
+commute跟符合“交换原则”的函数有关。
 https://en.wikipedia.org/wiki/Commutative_property
 
+这些函数的参数位置不重要。
+但不只这些函数。
+当函数的组合满足交换原则时，也可以使用commute。
+
+;虽然除法不满足交换原则，但是下边的表达式，先除以3还是先除以4，结果仍一样。
 (= (/ (/ 120 3) 4) (/ (/ 120 4) 3))
 ;= true
 
 (= ((comp #(/ % 3) #(/ % 4)) 120) ((comp #(/ % 4) #(/ % 3)) 120))
 ;= true
 
+commute跟alter有两点不同：
+-1，commute产生的“事务内的值”不一定是最终提交的值，
+因为所有被commute的函数，在最终提交时，会使用ref的最新全局值重新计算一遍。
+
+-2，commute对ref的修改从来不会导致冲突，因此从来不会导致一个事务重试。
+
+--
+示例：用1万个事务来修改ref。
 (def x (ref 0))
 ;= #'user/x
 
@@ -68,6 +157,10 @@ https://en.wikipedia.org/wiki/Commutative_property
         (dotimes [_ 1000]
           (dosync (commute x - (apply + (range 1000)))))))
 ; "Elapsed time: 818.41 msecs"
+
+--
+示例：如果抢武器使用commute，则会出错。
+错在从武器库中删除武器时，一定要用alter，因为如果顺序不对，删除的武器就不对了。
 
 (defn flawed-loot
   [from to]
@@ -91,6 +184,8 @@ https://en.wikipedia.org/wiki/Commutative_property
 (filter (:items @bilbo) (:items @gandalf))
 ;= (18 32 1)
 
+;--
+;正确的抢武器。加入武器可以使用commute，但删除武器必须使用alter。
 (defn fixed-loot
   [from to]
   (dosync
@@ -113,6 +208,8 @@ https://en.wikipedia.org/wiki/Commutative_property
 (filter (:items @bilbo) (:items @gandalf))
 ;= ()
 
+;--
+;如果只是对角色的某个属性进行加减，使用commute是安全的。
 (defn attack
   [aggressor target]
   (dosync
@@ -127,6 +224,8 @@ https://en.wikipedia.org/wiki/Commutative_property
         (commute healer update-in [:mana] - (max 5 (/ aid 5)))
         (commute target update-in [:health] + aid)))))
 
+;----
+;游戏玩家模拟函数
 (def alive? (comp pos? :health))
 
 (defn play
@@ -136,6 +235,7 @@ https://en.wikipedia.org/wiki/Commutative_property
            (action character other))
     (Thread/sleep (rand-int 50))))
 
+;让角色之间决斗。
 (wait-futures 1
   (play bilbo attack smaug)
   (play smaug attack bilbo))
@@ -144,6 +244,7 @@ https://en.wikipedia.org/wiki/Commutative_property
 (map (comp :health deref) [smaug bilbo])
 ;= (488.80755445030337 -12.0394908759935)
 
+;三个角色之间的战斗。
 (dosync
   (alter smaug assoc :health 500)
   (alter bilbo assoc :health 100))
@@ -159,12 +260,24 @@ https://en.wikipedia.org/wiki/Commutative_property
 ;= {:health 853.6622368542827, :name "Bilbo"}
 ;= {:mana -2.575955687302212, :health 75, :name "Gandalf"})
 
+=========
+1.3，ref-set
+
+ref-set和alter的语义是一样的。
+ref-set通常用来重新初始化ref。
+
 (dosync (ref-set bilbo {:name "Bilbo"}))
 ;= {:name "Bilbo"}
 
 (dosync (alter bilbo (constantly {:name "Bilbo"})))
 ; {:name "Bilbo"}
 
+=========
+1.4，通过校验器来保证本地的一致性。
+
+如果校验器抛出异常，会导致当前这个事务失败。
+
+;校验器，不允许血量超过最大值。
 (defn- enforce-max-health
   [{:keys [name health]}]
   (fn [character-data]
@@ -177,7 +290,7 @@ https://en.wikipedia.org/wiki/Commutative_property
                 opts)
         cdata (assoc cdata :max-health (:health cdata))
         validators (list* (enforce-max-health name (:health cdata))
-                     (:validators cdata))]
+                     (:validators cdata))]  ;原有的校验器。每个角色可以有自己的额外校验器。
     (ref (dissoc cdata :validators)
       :validator #(every? (fn [v] (v %)) validators))))
 
@@ -187,12 +300,14 @@ https://en.wikipedia.org/wiki/Commutative_property
 (heal gandalf bilbo)
 ;= #<IllegalStateException java.lang.IllegalStateException: Bilbo is already at max health!>
 
+;不允许部分加血。
 (dosync (alter bilbo assoc-in [:health] 95))
 ;= {:max-health 100, :strength 100, :name "Bilbo", :items #{}, :health 95, :xp 0}
 
 (heal gandalf bilbo)
 ;= #<IllegalStateException java.lang.IllegalStateException: Bilbo is already at max health!>
 
+;对heal做修改，使得允许部分加血。
 (defn heal
   [healer target]
   (dosync
@@ -211,7 +326,18 @@ https://en.wikipedia.org/wiki/Commutative_property
 (heal gandalf bilbo)
 ;= nil
 
+要给模型确定一个理想的ref粒度是一个优化的步骤。这篇文章提供了一个潜在的方向：
 http://clj-me.cgrand.net/2011/10/06/a-world-in-a-ref/
+
+==========
+2，STM的一些缺点
+
+----
+2.1，事务内绝对不能执行有副作用的函数。
+
+io操作一般是不能重试的，所以clojure提供了一个io!宏，
+如果它被放在一个事务中执行，会跑出错误。
+这可以防止一个操作被误用在事务中。
 
 (defn unsafe
   []
@@ -220,6 +346,9 @@ http://clj-me.cgrand.net/2011/10/06/a-world-in-a-ref/
 
 (dosync (unsafe))
 ;= #<IllegalStateException java.lang.IllegalStateException: I/O in transaction>
+
+--
+被ref持有的值一定要是不可变的。
 
 (def x (ref (java.util.ArrayList.)))
 ;= #'user/x
@@ -232,17 +361,38 @@ http://clj-me.cgrand.net/2011/10/06/a-world-in-a-ref/
 @x
 ;= #<ArrayList [0, 0, 1, 0, 2, 3, 4, 0, 1, 2, 3, 4]>
 
+这里发生了重试，但是之前的对arrayList的操作并没有撤销。
+
+----
+2.2，最小化每个事务的范围。
+
+一方面不要在事务内进行复杂耗时的计算，
+另一方面，也要减少事务涉及的ref数量。
+太长的事务会不断重试，直到出现一个足够长的时间窗口。
+如果场景合适，commute可以有效避免长事务带来的问题。
+
+活锁：一个很长的事务总是没有机会提交。
+
+clojure stm提供了一些解决办法。
+在某些情况下，当一个老事务跟一个新事务竞争时，系统会强迫新事务进行重试。这称为barging。
+如果barging一定次数后，这个老事务还是不能成功提交，系统会让这个事务失败。
+
 (def x (ref 0))
 ;= #'user/x
 
 (dosync
-  @(future (dosync (ref-set x 0)))
+  @(future (dosync (ref-set x 0)))  ;在事务里又启动一个事务。
+;通过对这个future解引用，强制repl线程等待这个future。
+;因此会导致repl中的事务重试，然后又启动一个future，无限循环。
   (ref-set x 1))
 ;= #<RuntimeException java.lang.RuntimeException:
 ;= Transaction failed after reaching retry limit>
 
 @x
 ;= 0
+
+----
+2.3，读线程也可能重试。
 
 (ref-max-history (ref "abc" :min-history 3 :max-history 30))
 ;= 30
@@ -287,6 +437,20 @@ http://clj-me.cgrand.net/2011/10/06/a-world-in-a-ref/
 @(future (dosync (Thread/sleep 1000) @a))
 ;= 33
 
+
+----
+2.4，write skew
+
+如果一个事务的一致性依赖ref，但只是读取，
+没有修改（所以没有使用alter、commute和ref-set函数，STM无法感知），
+如果恰好别的事务改了这个ref的值，而这个事务基于旧值提交，
+整个状态就不一致了，这种情况成为write skew。
+
+(ensure a)语义上相当于(alter a identity)或者(ref-set a @a) ，即“空写”。
+ensure用来告知STM，这个事务依赖ref的值。
+
+--
+;示例：攻击造成的伤害，受日光影响。
 (def daylight (ref 1))
 
 (defn attack
@@ -294,8 +458,4 @@ http://clj-me.cgrand.net/2011/10/06/a-world-in-a-ref/
   (dosync
     (let [damage (* (rand 0.1) (:strength @aggressor) @daylight)]
       (commute target update-in [:health] #(max 0 (- % damage))))))
-
-(ensure a)
-(alter a identity)
-(ref-set a @a)
 

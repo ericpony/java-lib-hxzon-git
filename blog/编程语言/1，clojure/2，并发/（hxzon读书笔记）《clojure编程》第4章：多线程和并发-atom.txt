@@ -1,6 +1,22 @@
 （hxzon读书笔记）《clojure编程》第4章：多线程和并发-atom
 
 by hxzon
+
+hxzon学习笔记：
+
+1，修改原子。
+swap! 自动不断重试。
+compare-and-set! 手工比较来更新。
+reset! 强行更新。
+
+2，观察器
+add-watch
+remove-watch
+
+3，校验器
+:validator 在创建atom、ref、agent时指定校验器。
+set-validator! 修改4种引用类型的校验器。
+
 =====
 1，clojure中有4种引用类型可以用来 表达标识：var，ref，agent和atom。
 
@@ -45,12 +61,20 @@ clojure的兴趣是解决进城内的并发和并行问题，
   [& args]
   `(doseq [f# (futures ~@args)]
      @f#))
+始终返回nil，并且阻塞repl直到所有的future都实例化了。
 
 ========
 3，atom
 
+atom实现同步的、无须协调的、原子的“先比较再设值”的修改策略。
+对于atom的修改操作都要阻塞直到这个修改完成。
+每个修改操作都是完全隔离的（自动完全隔离），没有办法协调对两个atom的修改。
+
 (def sarah (atom {:name "Sarah" :age 25 :wears-glasses? false}))
 ;= #'user/sarah
+
+----
+3.1，swap! ，用函数返回值来修改atom。swap! 返回atom的更新值。
 
 (swap! sarah update-in [:age] + 3) 
 ;= {:age 28, :wears-glasses? false, :name "Sarah"}
@@ -58,6 +82,11 @@ clojure的兴趣是解决进城内的并发和并行问题，
 (swap! sarah (comp #(update-in % [:age] inc)
                #(assoc % :wears-glasses? true)))
 ;= {:age 29, :wears-glasses? true, :name "Sarah"}
+
+--
+swap! 的语义是先比较旧值，再设值新值，如果atom的值在更新函数返回之前发生了变化，
+swap! 会自动重试（以atom的最新值），会一直重试，直到设值成功。
+没有办法对swap! 的重试语义进行任何控制，所以更新函数必须是纯的。
 
 (def xs (atom #{1 2 3}))
 ;= #'user/xs
@@ -84,6 +113,9 @@ clojure的兴趣是解决进城内的并发和并行问题，
 (swap! x #(Thread/sleep %))
 ;= nil
 
+----
+3.2，compare-and-set! ，在你知道atom的当前值下，可以使用。
+
 (compare-and-set! xs :wrong "new value")
 ;= false
 
@@ -93,11 +125,17 @@ clojure的兴趣是解决进城内的并发和并行问题，
 @xs
 ;= "new value"
 
+--
+compare-and-set! 不适用值语义，它要求你的第2个参数，跟atom的值是identical的。
+
 (def xs (atom #{1 2}))
 ;= #'user/xs
 
 (compare-and-set! xs #{1 2} "new value")
 ;= false
+
+----
+3.3，reset! ，强行更新。
 
 (reset! xs :y)
 ;= :y
@@ -107,7 +145,16 @@ clojure的兴趣是解决进城内的并发和并行问题，
 
 
 =======
-通知器
+引用类型共同的特性：观察器和校验器。
+
+4，观察器
+
+add-watch 添加观察器，参数：atom，观察器的名字，观察器。
+remove-watch 移除观察器，第2个参数是观察器的名字。
+
+观察器在引用类型的每次修改时都会被调用，但它不保证调用时，引用的值确实发生了变化。
+所以需要在观察器里，比较新旧值，看是否真的发生了变化。
+观察器的参数：观察器的名字，atom，旧值，新值。
 
 (defn echo-watch
   [key identity old new]
@@ -143,6 +190,9 @@ clojure的兴趣是解决进城内的并发和并行问题，
 ; :echo {:name Sarah, :age 28} => {:name Sarah, :age 28}
 ;= {:name "Sarah", :age 28}
 
+--
+示例：利用观察器来记录一个引用的所有历史状态。
+
 (def history (atom ()))
 
 (defn log->list
@@ -162,7 +212,7 @@ clojure的兴趣是解决进城内的并发和并行问题，
 (swap! sarah update-in [:age] inc)
 ;= {:age 27, :name "Sarah"}
 
-(swap! sarah identity)
+(swap! sarah identity)  ;identity函数总是返回传入的参数。
 ;= {:age 27, :name "Sarah"}
 
 (swap! sarah assoc :wears-glasses? true)
@@ -186,9 +236,15 @@ clojure的兴趣是解决进城内的并发和并行问题，
 
 (add-watch sarah "jdbc:postgresql://hostname/some_database" log->db)
 
-
 =====
-校验器
+5，校验器
+
+检验器函数检查新值，通过返回逻辑假，或抛出异常，来使修改失败。
+
+atom、ref、agent可以在创建时，通过:validator关键字来指定校验器。
+后期则可通过set-validator! 来改变校验器。
+
+校验器对于ref有着更重要的作用。
 
 (def n (atom 1 :validator pos?))
 ;= #'user/n
@@ -199,6 +255,7 @@ clojure的兴趣是解决进城内的并发和并行问题，
 (swap! n - 1000)
 ;= #<IllegalStateException java.lang.IllegalStateException: Invalid reference state>
 
+--
 (def sarah (atom {:name "Sarah" :age 25}))
 ;= #'user/sarah
 
@@ -208,6 +265,8 @@ clojure的兴趣是解决进城内的并发和并行问题，
 (swap! sarah dissoc :age)
 ;= #<IllegalStateException java.lang.IllegalStateException: Invalid reference state>
 
+--
+;如果新值不含有:age关键字，则抛出异常。
 (set-validator! sarah #(or (:age %)
                          (throw (IllegalStateException. "People must have `:age`s!"))))
 ;= nil
@@ -215,4 +274,8 @@ clojure的兴趣是解决进城内的并发和并行问题，
 (swap! sarah dissoc :age)
 ;= #<IllegalStateException java.lang.IllegalStateException: People must have `:age`s!>
 
+----
+可以选择Slingshot这样的库来抛出一个值，而不是把有用的信息编进一个字符串里。
+
 https://github.com/scgilardi/slingshot
+

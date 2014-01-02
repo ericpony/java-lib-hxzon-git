@@ -12,9 +12,13 @@ hxzon摘要：
 （hxzon：var是一个存储位置，不同的存储位置可以同名，它们会相互遮蔽。）
 
 2，动态作用域（^:dynamic）。
-binding，在每个线程上覆盖这个根绑定的值（不影响其它线程）。
+binding，在某个线程上给这个全局“标识”设置一个新值，
+所以在这个线程上覆盖了这个“标识”的根绑定值（不影响其它线程）。
+而let则是一个完全不同的“标识”，只是名字刚好相同，所以遮住了同名的全局“标识”。
 
 (set! *response-code* response-code)
+
+set! ，替换动态var在本地绑定的当前值。
 
 3，前置声明declare（定义var时先不给它赋值）。
 
@@ -230,7 +234,9 @@ user=> (meta #'v)
   (let [conn (-> url-string java.net.URL. .openConnection)
         response-code (.getResponseCode conn)]
     (when (thread-bound? #'*response-code*)
-      (set! *response-code* response-code)) //注意！
+      (set! *response-code* response-code)) //注意！set! ，替换动态var在本地绑定的当前值。
+//因此通过binding建立这个绑定的——不管这个调用者是在调用栈的上一层还是上50层的函数，都可以拿到这个“返回值”。
+//这种方式，简单的如本例，用来返回一些附加的值，复杂的，可以实现非本地的返回机制。
     (when (not= 404 response-code) (-> conn .getInputStream slurp))))
 
 (http-get "http://google.com")
