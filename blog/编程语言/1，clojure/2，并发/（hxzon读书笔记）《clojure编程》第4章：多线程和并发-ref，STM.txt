@@ -4,10 +4,13 @@ by hxzon
 ----
 hxzon学习笔记：
 
-alter，
-commute，
+1，
+alter，（重点）
+commute，（重点，未理解）
 ref-set，和alter语义相同。
 ensure，“空写”，用来避免write skew。
+
+2，读线程也可能重试。（未理解）
 
 =========
 ----
@@ -114,7 +117,7 @@ https://en.wikipedia.org/wiki/Serializability
 ;= ()
 
 =========
-1.2，commute
+1.2，commute（重点，执行结果为何如此？）
 
 如果对ref的修改可以安全的重新排序，这时可以使用commute。
 这可以减少潜在冲突几率以及事务重试次数。
@@ -371,7 +374,8 @@ io操作一般是不能重试的，所以clojure提供了一个io!宏，
 太长的事务会不断重试，直到出现一个足够长的时间窗口。
 如果场景合适，commute可以有效避免长事务带来的问题。
 
-活锁：一个很长的事务总是没有机会提交。
+----
+2.3，活锁：一个很长的事务总是没有机会提交。
 
 clojure stm提供了一些解决办法。
 在某些情况下，当一个老事务跟一个新事务竞争时，系统会强迫新事务进行重试。这称为barging。
@@ -392,7 +396,7 @@ clojure stm提供了一些解决办法。
 ;= 0
 
 ----
-2.3，读线程也可能重试。
+2.4，读线程也可能重试。（未理解）
 
 (ref-max-history (ref "abc" :min-history 3 :max-history 30))
 ;= 30
@@ -439,7 +443,7 @@ clojure stm提供了一些解决办法。
 
 
 ----
-2.4，write skew
+2.5，write skew（写偏序）
 
 如果一个事务的一致性依赖ref，但只是读取，
 没有修改（所以没有使用alter、commute和ref-set函数，STM无法感知），
