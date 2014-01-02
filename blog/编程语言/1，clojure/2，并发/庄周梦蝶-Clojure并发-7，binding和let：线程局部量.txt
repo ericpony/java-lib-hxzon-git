@@ -37,10 +37,13 @@ set!可以修改binding的变量：
 
 3 Ref和STM
 4 Write Skew(写偏序)分析
+
 5 Atom：原子操作和缓存
+
 6 Agent和Actor：异步更新
 
 7 binding和let：线程局部量
+
 8 并发函数pmap、pvalues和pcalls
 9 future、promise和线程
 
@@ -52,7 +55,8 @@ set!可以修改binding的变量：
 
 这里将介绍下binding，用于线程内的状态的管理。
 
-binding和let:
+=====
+7.1，binding和let:
 当你使用def定义一个var，并传递一个初始值给它，这个初始值就称为这个var的root binding。
 这个root binding可以被所有线程共享，例如：
    user=> (def ^:dynamic foo 1)
@@ -78,6 +82,7 @@ binding的范围是动态的，binding只对于持有它的线程是可见的，
    user=> (binding [foo 2] foo)
    2
 
+----
 粗看起来，binding和let非常相似，两者的调用方式近乎一致：
    user=> (let [foo 2] foo)
    2
@@ -111,13 +116,14 @@ print-foo这时候打印的就是binding绑定的2。
   
 Clojure告诉你，let中的foo不是一个有效的赋值目标，foo是不可变的值。
 
+----
 set!可以修改binding的变量：
    user=> (binding [foo 2] (set! foo 3) (print-foo))
    3
    nil
 
-----
-Binding的妙用：
+=====
+7.2，Binding的妙用：
 
 Binding可以用于实现类似AOP编程这样的效果，
 例如我们有个fib函数用于计算阶乘：
@@ -156,8 +162,8 @@ user=> (call-fibs 3 3)
 因此对于binding的这种使用方式要相当慎重。
 这其实有点类似Ruby中的open class做monkey patch，你可以随时随地地改变对象的行为，但是你要承担相应的后果。
 
-----
-binding和let的实现上的区别：
+=====
+7.3，binding和let的实现上的区别：
 
 前面已经提到，let其实是词法作用域的对变量的“遮蔽”，它并非重新绑定变量值，
 而binding则是在变量的root binding之外在线程的ThreadLocal内存储了一个绑定值，

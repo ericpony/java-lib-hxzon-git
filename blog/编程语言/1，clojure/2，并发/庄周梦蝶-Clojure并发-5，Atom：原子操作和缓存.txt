@@ -5,13 +5,22 @@ http://wiki.fnil.net/index.php?title=Clojure%E5%B9%B6%E5%8F%91
 
 hxzon修订部分字眼和语句。（2013.12.3）
 
+----
+hxzon学习笔记：
+
+atom实现的是独立的（所以不需协调）、原子的、同步的语义。
+1，reset! ，swap! ，compare-and-set! 。
+2，atom非常适合实现缓存。
+
 ========
 1 声明
 2 简介
 
 3 Ref和STM
 4 Write Skew(写偏序)分析
+
 5 Atom：原子操作和缓存
+
 6 Agent和Actor：异步更新
 
 7 binding和let：线程局部量
@@ -28,7 +37,7 @@ Ref适用的场景是系统中存在多个相互关联的状态，他们需要�
 Atom适用的场景是状态是独立，没有依赖，它避免了与其他Ref交互的开销，因此性能会更好，特别是对于读来说。
 
 --
-定义Atom，采用atom函数，赋予一个初始状态:
+5.1，定义Atom，采用atom函数，赋予一个初始状态:
    (def mem (atom {}))
 这里将mem的初始状态定义为一个map。
 
@@ -39,7 +48,7 @@ deref和@：
    (deref mem)  => {}
 
 --
-reset!：
+5.2，reset!：
 重新设置atom的值，不关心当前值是什么：
    (reset! mem {:a 1})
 
@@ -49,7 +58,7 @@ reset!：
 已经更新到新的map了。
 
 --
-swap!：
+5.3，swap!：
 如果你的更新需要依赖当前的状态值，或者只想更新状态的某个部分，那么就需要使用swap!（类似alter)：
    (swap! an-atom f & args)
 
@@ -59,7 +68,7 @@ swap! 将函数f作用于当前状态值和额外的参数args之上，形成新
 :b 2被加入了当前的map。
 
 --
-compare and set:
+5.4，compare-and-set!:
 类似原子变量AtomicInteger之类，atom也可以做compare and set的操作：
    (compare-and-set! atom oldValue newValue)
 
@@ -74,8 +83,9 @@ compare and set:
    user=> @c
    3
 
---
-缓存和atom:
+======
+5.5，缓存和atom:
+
 atom非常适合实现缓存，缓存通常不会跟其他系统状态形成依赖，并且缓存对读的速度要求更高。
 上面例子中用到的mem其实就是个简单的缓存例子，我们来实现一个putm和getm函数：
 
@@ -122,7 +132,8 @@ if-let判断绑定的变量e是否存在，变量e是通过find从缓存中查�
 
 性能测试：
 使用atom实现一个计数器，和使用java.util.concurrent.AtomicInteger做计数器，做一个性能比较，
-各启动100个线程，每个线程执行100万次原子递增，计算各自的耗时，测试程序如下，代码有注释,不再罗嗦：
+各启动100个线程，每个线程执行100万次原子递增，计算各自的耗时，
+测试程序如下，代码有注释，不再罗嗦：
 
 (ns atom-perf)
 (import 'java.util.concurrent.atomic.AtomicInteger)
