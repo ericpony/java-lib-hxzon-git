@@ -34,7 +34,9 @@ hxzon学习笔记：
 原文系列链接 http://www.blogjava.net/killme2008/category/archive/2010/07/archive/2010/07/archive/2010/07/14/326027.html
 
 Clojure处理并发的思路与众不同，采用的是所谓STM的模型——软件事务内存。
-你可以将STM想象成数据库，只不过是内存型的，它只支持事务的ACI，也就是原子性、一致性、隔离性，但是不包括持久性，因为状态的保存都在内存里。
+你可以将STM想象成数据库，只不过是内存型的，
+它只支持事务的ACI，也就是原子性、一致性、隔离性，
+但是不包括持久性，因为状态的保存都在内存里。
 
 Clojure的并发API分为四种模型：
 
@@ -116,16 +118,23 @@ commute的允许的并发程度比alter更高一些，因此性能会更好。
 例如更新聊天窗口的聊天信息，由于网络延迟的因素和个人介入的因素，聊天信息可以认为是天然排序，
 因此使用commute还可以接受，更新乱序的可能性很低。 
 
+----
+（hxzon：需要认真理解。）
+
 另一个例子就不能使用commute了，如实现一个计数器：
    (def counter (ref 0))
+
 实现一个next-counter函数获取计数器的下一个值，我们先使用commute实现：
    (defn next-counter [] (dosync (commute counter inc)))
 这个函数很简单，每次调用inc递增counter的值，
+
 接下来写个测试用例：启动50个线程并发去获取next counter:
    (dotimes [_ 50] (.start (Thread. #(println (next-counter)))))
   
-这段代码稍微解释下，dotimes是重复执行50次，每次启动new并启动一个Thread,这个Thread里干了两件事情：
-调用next-counter，打印调用结果,第一个版本的next-counter执行下，这是其中一次输出的截取：
+这段代码稍微解释下，dotimes是重复执行50次，
+每次启动new并启动一个Thread，这个Thread里干了两件事情：
+调用next-counter，打印调用结果，
+第一个版本的next-counter执行下，这是其中一次输出的截取：
    23
    23
    23
@@ -145,12 +154,14 @@ commute的允许的并发程度比alter更高一些，因此性能会更好。
    23
    25
    28
-可以看到有很多的重复数值，这是由于重排序导致事务结束后的值不同，但是你查看counter，确实是50: @counter => 50
+
+可以看到有很多的重复数值，这是由于重排序导致事务结束后的值不同，
+但是你查看counter，确实是50: @counter => 50
 证明更新是没有问题的，问题出在commute的返回值上。
 
 （hxzon：未理解commute的结果为何如此。
 hxzon理解：
-commute会执行两次，第1次执行，获得结果（可能是错的），这个结果传出去了。
+commute会执行两次，第1次执行，获得结果（可能是错的），这个结果传出去了（被打印出来）。
 提交时又执行一次，得到结果，这次的结果是最终的。）
 
 如果将next-counter修改为alter实现： (defn next-counter [] (dosync (alter counter inc)))
@@ -171,7 +182,7 @@ commute会执行两次，第1次执行，获得结果（可能是错的），这
    50
 查看counter，也是正确更新到50了： @counter => 50
 
-（hxzon：注意顺序是乱的。）
+（hxzon：不再重复，但是注意顺序是乱的。）
 
 最佳实践：通常情况下，你应该优先使用alter，
 除非在遇到明显的性能瓶颈并且对顺序不是那么关心的时候，可以考虑用commute替换。
@@ -246,6 +257,7 @@ T1执行的时候判断A1+A2-200>=0约束成立，从A1扣除了200块；
    ;;两个账户，约束是两个账户的余额之和必须>=0
    (def account1 (ref 100))
    (def account2 (ref 100))
+
 定义一个取钱方法：
    ;;定义扣除函数
    (defn deduct [account n other]
@@ -256,7 +268,9 @@ T1执行的时候判断A1+A2-200>=0约束成立，从A1扣除了200块；
    @account-n+@other>=0
 
 接下来就是搞测试了，各启动N个线程尝试从A1和A2扣钱，
-为了尽快模拟出问题，使得并发程度高一些，我们将线程设置大一些，并且使用java.util.concurrent.CyclicBarrier做关卡，测试代码如下：
+为了尽快模拟出问题，使得并发程度高一些，我们将线程设置大一些，
+并且使用java.util.concurrent.CyclicBarrier做关卡，测试代码如下：
+
    ;;设定关卡
    (def barrier (java.util.concurrent.CyclicBarrier. 6001))
    ;;各启动3000个线程尝试去从账户1和账户2扣除200
@@ -284,6 +298,7 @@ T1执行的时候判断A1+A2-200>=0约束成立，从A1扣除了200块；
          (dosync (ensure account) (ensure other)
              (if (>= (+ (- @account n) @other) 0)
                  (alter account - n))))
+
 在执行事务更新前，先通过ensure保护下account和other账户不被其他事务修改。
 你可以再多次运行看看，会不会再次打印非法结果。
 

@@ -11,7 +11,7 @@ hxzon学习笔记：
 1，异步更新：send，send-off 。
 2，await ，等待本线程的所有异步更新执行完毕。
 3，错误处理。
-4，加入事务（重点）。
+4，在事务里调用send发送一个任务，当事务成功的时候该任务将只会被发送一次，最多最少都一次。（hxzon：需认真理解）
 
 ========
 1 声明
@@ -141,7 +141,7 @@ user=> @counter
 6.5，加入事务
 
 agent跟atom不一样，agent可以加入事务，
-在事务里调用send发送一个任务，当事务成功的时候该任务将只会被发送一次，最多最少都一次。
+在事务里调用send发送一个任务，当事务成功的时候该任务将只会被发送一次，最多最少都一次。（hxzon：需认真理解）
 利用这个特性，我们可以实现在事务操作的时候写文件，达到ACID中的D——持久性的目的。
 
 (def backup-agent (agent "output/messages-backup.clj" ))
@@ -157,7 +157,8 @@ agent跟atom不一样，agent可以加入事务，
                                         filename))
            snapshot)))
 
-定义了一个backup-agent用于保存消息，add-message-with-backup函数首先将状态保存到messages，这是个普通的Ref，
+定义了一个backup-agent用于保存消息，
+add-message-with-backup函数首先将状态保存到messages，这是个普通的Ref，
 然后调用send-off给backup-agent一个任务：
  (fn [filename]
           (spit filename snapshot)

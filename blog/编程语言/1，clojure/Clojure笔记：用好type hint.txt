@@ -70,7 +70,8 @@ user=> (defn ^{:tag String} substr [^String s ^Integer begin ^Integer end] (.sub
 
 问题1，什么时候应该为参数添加type hint呢？
 
-我的观点是，在任何为target object添加type hint的地方，都应该相应地为参数添加type hint，
+我的观点是，在任何为target object添加type hint的地方，
+都应该相应地为参数添加type hint，
 除非你事先不知道参数的类型。
 为什么呢？因为clojure查找类方法的顺序是这样：
 
@@ -89,7 +90,7 @@ user=> (defn ^{:tag String} substr [^String s ^Integer begin ^Integer end] (.sub
 （Java里是允许方法的参数类型重载的，Clojure只允许函数的参数个数重载），
 那么如果没有方法参数的type hint，Clojure编译器仍然无法找到合适的调用方法，而只能通过反射。
    
-看一个例子,定义get-bytes方法调用String.getBytes：
+看一个例子，定义get-bytes方法调用String.getBytes：
 
 user=> (defn get-bytes [s charset] (.getBytes s charset))
 Reflection warning, NO_SOURCE_PATH:26 - call to getBytes can't be resolved.
@@ -103,7 +104,7 @@ Reflection warning, NO_SOURCE_PATH:27 - call to getBytes can't be resolved.
 第二次，s设置了type hint，但是还是有反射警告。
 原因就在于String.getBytes有两个重载方法，参数个数都是一个，但是接收不同的参数类型，
 一个是String的charset名称，一个Charset对象。
-如果我们明确地知道这里charset是字符串，那么还可以为charset添加type hint:
+如果我们明确地知道这里charset是字符串，那么还可以为charset添加type hint。
 
 user=> (defn get-bytes [^String s ^String charset] (.getBytes s charset))
 #'user/get-bytes
@@ -114,7 +115,8 @@ user=> (defn get-bytes [^String s ^String charset] (.getBytes s charset))
 
 问题2：什么时候应该添加tag元数据呢？
 
-理论上，在任何你明确知道返回类型的地方都应该添加tag，但是这不是教条，如果一个偶尔被调用的方法是无需这样做的。
+理论上，在任何你明确知道返回类型的地方都应该添加tag，
+但是这不是教条，如果一个偶尔被调用的方法是无需这样做的。
 这一点只对写库的童鞋要特别注意。
 
 Type hint的原理在上文已经大概描述了下，具体到clojure源码级别，
@@ -268,5 +270,4 @@ http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.10.1.4.5.in
 
 Clojure源码 
 https://github.com/clojure/clojure
-
 

@@ -29,7 +29,7 @@ clojure的类型强制转换函数，如short，int，long等，只在需要用�
 ;= java.lang.Long
 在这方面，类型强制函数与类型提示最为类似。
 
-以上这段话出自《clojure编程》p442，但实际情况是java.lang.Integer，原书有误？亦或clojure新版本做了更改。
+以上这段话出自《clojure编程》p442，但实际情况是java.lang.Integer，clojure新版本做了更改。
 
 
 2，jvm中Long和Double的存在，只是因为集合类无法处理原始类型。
@@ -43,7 +43,8 @@ clojure的类型强制转换函数，如short，int，long等，只在需要用�
 5，数字类型提升
 long->BigInt->Rationals->BigDecimal->double。
 前几项都是扩大精度和数值范围。
-但最后一项确实double，
+
+但最后一项确是double，
 这是因为double本身不精确（精确数和不精确数运算结果是不精确的），
 同时，有些double数（例如Infinity和NaN）无法用BigDecimal表示。
 
@@ -57,6 +58,7 @@ clojure所有的数字操作永远不会返回BigInteger类型。
 7，数值溢出
 clojure不会默默“回绕”数值，而是会抛出溢出异常。
 可以用bigint和bigdec来明确的使用任意精度数值。
+
 也可以使用撇号后缀的运算，例如inc', dec', +', -', 和 *' ，它们会自动提升类型，而且只在必要时提升结果。
 这会付出轻微代价（先使用原始类型计算，然后检查，如果溢出，提升类型然后重新计算）。
 
@@ -255,7 +257,8 @@ clojure不会出现重复键。
 (+ 0.1 0.2)
 ;= 0.30000000000000004
 
-尽管==是类型不敏感的，但32位的float需要扩展为64位的double，而这是无法对1.1做到精确的。
+尽管==是类型不敏感的，但32位的float需要扩展为64位的double，
+而double是无法对1.1做到精确的。
 
 (== 1.1 (float 1.1))
 ;= false

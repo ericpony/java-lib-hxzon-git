@@ -39,6 +39,10 @@ https://github.com/mmcgrana/ring/blob/master/SPEC
 Ring规范用clojure数据结构定义了一个标准的数据模式来表示web请求和应答，
 以及基于函数组合的一两个关键架构概念：适配函数、处理函数、中间件。
 
+适配函数：解析http请求，生成http响应。
+处理函数：业务逻辑。
+中间件：通用功能。
+
 2.1，请求和应答，都表示为常规的map。
 
 请求映射：

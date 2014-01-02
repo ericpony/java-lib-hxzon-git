@@ -142,6 +142,10 @@ commute跟alter有两点不同：
 
 -2，commute对ref的修改从来不会导致冲突，因此从来不会导致一个事务重试。
 
+hxzon理解：
+使用commute，事务内的时间线执行一次，不会重试，它的值和“提交”没有关系。
+然后“提交”时，commute又执行一次，最终修改了ref的全局值。
+
 --
 示例：用1万个事务来修改ref。
 (def x (ref 0))
@@ -170,7 +174,8 @@ commute跟alter有两点不同：
   (dosync
     (when-let [item (first (:items @from))]
       (commute to update-in [:items] conj item)
-      (commute from update-in [:items] disj item))))
+      (commute from update-in [:items] disj item))))	;hxzon：当提交时，这里不会检查[from:items]已经改变，从而抛出异常，
+      ;而是直接以新值再计算一次，用新结果更新全局ref。
 
 (def smaug (character "Smaug" :health 500 :strength 400 :items (set (range 50))))
 (def bilbo (character "Bilbo" :health 100 :strength 100))

@@ -23,6 +23,8 @@ hxzon修订部分字眼和语句。（2013.12.3）
 ========
 8，并发函数pmap、pvalues和pcalls
 
+8.1，pmap
+
 pmap是map的进化版本，map将function依次作用于集合的每个元素，
 pmap也是这样，
 但是它对于每个集合中的元素都是提交给一个线程去执行function，也就是并行地对集合里的元素执行指定的函数。
@@ -54,7 +56,9 @@ user=> (time (doall (pmap (make-heavy inc) [1 2 3 4 5])))
 果然快了很多，只用了1秒多，
 显然pmap并行地将make-heavy包装后的inc作用在集合的5个元素上，总耗时就接近于于单个调用的耗时，也就是一秒。
 
---
+====
+8.2，pvalues，pcalls
+
 pvalues和pcalls是在pmap之上的封装，
 pvalues是并行地执行多个表达式并返回执行结果组成的LazySeq，
 pcalls则是并行地调用多个无参数的函数并返回调用结果组成的LazySeq。
@@ -128,6 +132,8 @@ chunk sequence的思路类似批量处理来提高系统的吞吐量。
 9，future、promise和线程
 
 ----
+9.1，future
+
 Clojure中使用future是启动一个线程，并执行一系列的表达式，当执行完成的时候，线程会被回收：
 
    user=> (def myfuture (future (+ 1 2)))
@@ -139,6 +145,7 @@ future接受一个或者多个表达式，并将这些表达式交给一个线�
 上面的(+ 1 2)是在另一个线程计算的，
 返回的future对象可以通过deref或者@宏来阻塞获取计算的结果。
 
+--
 future函数返回的结果可以认为是一个类似java.util.concurrent.Future的对象，因此可以取消：
 
    user=> (future-cancelled? myfuture)
@@ -146,12 +153,13 @@ future函数返回的结果可以认为是一个类似java.util.concurrent.Futur
    user=> (future-cancel myfuture)
    false
 
+--
 也可以通过谓词future?来判断一个变量是否是future对象：
 
    user=> (future? myfuture)
    true
 
---
+----
 Future的实现
 
 future其实是一个宏，它内部是调用future-call函数来执行的：
@@ -193,7 +201,9 @@ protocol你可以理解成java中的接口，这里就是类似多态调用的�
    nil
    hello
 
-----
+====
+9.2，promise
+
 promise用于线程之间的协调通信，当一个promise的值还没有设置的时候，你调用deref或者@想去解引用的时候将被阻塞：
 
    user=> (def mypromise (promise))
@@ -214,10 +224,13 @@ user=> (deliver mypromise 5)
 user=> @mypromise               
 5
 
+----
+deliver
+
 通过调用deliver函数给mypromise传递了一个值，这使得后续的@mypromise直接返回传递的值5。
 显然promise可以用于不同线程之间的通信和协调。
 
---
+----
 promise的实现：
 promise的实现非常简单，是基于CountDownLatch做的实现，内部除了关联一个CountDownLatch还关联一个atom用于存储值：
 
