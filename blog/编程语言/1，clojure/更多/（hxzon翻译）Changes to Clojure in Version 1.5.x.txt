@@ -7,7 +7,7 @@ https://github.com/clojure/clojure/blob/master/changes.md
 ----
 hxzon摘要：
 
-2.4，添加了一些新的串行宏。
+2.4，添加了5个新的串行宏。
 2.8，修改了string的两个字符串替换函数。
 
 ===========
@@ -162,9 +162,9 @@ Threads the expression (via ->) through each form for which the corresponding te
 Example:
 
 user=> (cond-> 1
-               true inc
-               false (* 42)
-               (= 2 2) (* 3))
+               true inc	;true为逻辑真，(inc 1)得到2。
+               false (* 42) ;false为逻辑假，不执行。
+               (= 2 2) (* 3)) ;(= 2 2)为逻辑真，(* 2 3)得到6。
 6
 
 --
@@ -172,6 +172,7 @@ clojure.core/cond->> [expr & clauses]
 
 Takes an expression and a set of test/form pairs. 
 Threads expr (via ->>) through each form for which the corresponding test expression (not threaded) is true.
+和 cond-> 类似，但是上一次为真的form的值放入到下一为真的子句的form的最后一个位置。
 
 Example:
 
@@ -179,10 +180,10 @@ user=> (def d [0 1 2 3])
 #'user/d
 
 user=> (cond->> d
-                true (map inc)
-                (seq? d) (map dec)
-                (= (count d) 4) (reduce +)) ;; no threading in the test expr
-                                            ;; so d must be passed in explicitly
+                true (map inc)  ;得到[1 2 3 4]
+                (seq? d) (map dec) ;向量本身不是序列，不执行。
+                (= (count d) 4) (reduce +)) ;; no threading in the test expr， so d must be passed in explicitly。
+                ;元素个数为4，(reduce + [1 2 3 4] )得到 10 。
 10
 
 --

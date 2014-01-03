@@ -1,0 +1,316 @@
+（hxzon学习笔记）clojure-流程控制（续）
+
+补充by hxzon
+======
+
+clojure-基本语法-流程控制
+http://dead-knight.iteye.com/blog/1828668
+http://dead-knight.iteye.com/blog/1829618
+
+hxzon摘要：
+
+2，异常处理
+try..catch..finally，throw。
+assert。
+
+3，基于函数的流程控制
+repeatedly（重复执行函数），iterate（返回延迟序列）。
+
+4，基于序列的流程控制。
+dotimes，doseq，for。
+
+5，or，and，not。
+
+============
+二、异常处理
+ 
+Clojure代码里面抛出来的异常都是运行时异常。
+当然从Clojure代码里面调用的java代码还是可能抛出那种需要检查的异常的。
+
+----
+try,catch,finally 以及throw 提供了和java里面类似的功能: 
+
+user=> (try (throw (Exception. "error")) (finally (println "final")))  
+final  
+Exception error  user/eval310 (NO_SOURCE_FILE:1)  
+
+
+user=> (try (/ 3 0) (catch Exception e (println e)))  
+#<ArithmeticException java.lang.ArithmeticException: Divide by zero>  
+nil  
+
+----
+assert： 
+它测试一个表达式， 如果这个表达式的值为false的话，它会抛出异常。 
+
+user=> (assert true)  
+nil  
+
+user=> (assert false)  
+AssertionError Assert failed: false  user/eval317 (NO_SOURCE_FILE:1)  
+
+user=> (assert nil)  
+AssertionError Assert failed: nil  user/eval319 (NO_SOURCE_FILE:1)  
+
+user=> (assert 0)  
+nil  
+
+user=> (assert [1 2 3])  
+nil  
+
+user=> (assert "foo")  
+nil  
+
+
+==========
+三、基于函数的流程控制 
+
+----
+1，repeatedly： 
+repeatedly字面意思为重复函数。一般的用法如下： 
+
+user=> (repeatedly 5 #(rand-int 11))  
+(6 8 2 6 6)  
+
+重复产生5次随机数。
+rand-int 11表示0至11的随机数。 
+
+--
+这里顺便提一下repeat函数：repeat函数接受一/两个常量参数，用法如下： 
+
+user=> (repeat 5 (int (rand-int 100)))  
+(30 30 30 30 30)  
+
+当repeat、repeatedly函数只接受一个参数时（即没有重复次数的参数），需要配合take来中止，否则会产生内存溢出的错误。
+
+user=> (repeatedly #(rand-int 11))  
+OutOfMemoryError Java heap space  java.util.Arrays.copyOf (Arrays.java:2882)  
+
+user=> (take 5 (repeatedly #(rand-int 11)))  
+(10 7 0 2 8)  
+
+----
+2，iterate： 
+(iterate f v)
+返回一个惰性序列， 序列元素的值为 x 、 (f x) 、 (f (f x)) 、 (f (f (f x))) ， 诸如此类。
+函数 f 必须是无副作用的。 
+相当于： 
+while(true) { v = f(v) } 
+所以一般要配合(take n sequence)来中止。
+
+user=> (take 10 (iterate inc 5)) ; (5 6 7 8 9 10 11 12 13 14)  
+user=> (take 10 (iterate #(+ % 5) 5)) ; (5 10 15 20 25 30 35 40 45 50)  
+user=> (take 10 (iterate #(* % 2) 2)) ; (2 4 8 16 32 64 128 256 512 1024)  
+
+
+========
+四、基于序列的流程控制
+
+----
+1，dotimes： 
+dotimes 会执行给定的表达式一定次数, 一个本地binding会被给定值：从0到一个给定的数值。
+
+user=> (dotimes [num 3] (println "number:" (inc num)))  
+number: 1  
+number: 2  
+number: 3  
+nil  
+
+--
+dotimes
+macro
+Usage: (dotimes bindings & body)
+bindings => name n
+
+Repeatedly executes body (presumably for side-effects) with name
+bound to integers from 0 through n-1.
+
+----
+2，doseq： 
+doseq和for的语法是一样的，只不过for返回lazy seq而doseq接受任意数量的表达式，以有副作用的方式执行它们，并且返回nil 。
+
+user=> (doseq [i (range 10)] (println i))  
+0  
+1  
+2  
+3  
+4  
+5  
+6  
+7  
+8  
+9  
+nil  
+
+user=> (doseq [i [1 2 3] j [10 20]] (println i "-" j))  
+1 - 10  
+1 - 20  
+2 - 10  
+2 - 20  
+3 - 10  
+3 - 20  
+nil  
+
+--
+doseq
+macro
+Usage: (doseq seq-exprs & body)
+
+Repeatedly executes body (presumably for side-effects) with bindings and filtering as provided by "for".  
+Does not retain the head of the sequence. 
+Returns nil.
+
+----
+3，for： 
+for、doseq都支持遍历多个集合(最右边的最快)，同时还可以用:when 和 :while来过滤。 
+
+--
+http://qiujj.com/static/clojure-handbook.html
+
+clojure中的for，类似于scala的for..yield和Python的list comps。
+用于简化map、filter、#()、fn。
+
+user=> (for [x (range 3 7)] (* x x))  
+(9 16 25 36) 
+
+(for [i (range 10)] (* i i)) 
+; (0 1 4 9 16 25 36 49 64 81)
+
+(for [i (range 10) :when (> 20 (* i i))] (* i i)) 
+; (0 1 4 9 16) 平方小于20。
+
+注：上例中(* i i)算了两次没有必要，可用:let来解决。
+
+(for [i (range 10) :let [ii (* i i)] :when (> 20 ii)] ii)
+map对单个集合的操作都可以用for来代替（选择原则：很简单的用map，其他都用for）。
+
+user=> (for [x [0 1 2 3 4 5] :let [y (* x 3)] :when (even? y)] y)  
+(0 6 12)  
+
+上面语句可理解为：先定义x为集合，再使用let将y赋值为x*3，最后判断y是否为偶数，偶数才返回。
+
+例子：
+(map (comp count str) '[aa bbb cccc])      
+; (2 3 4)
+
+(for [i '[aa bbb cccc]] (count (str i)))   
+; (2 3 4)
+
+例子：
+(map #(* % %) [1 2 3 4 5]))  
+; (1 4 9 16 25)
+
+(for [i [1 2 3 4 5]] (* i i))
+ 
+for比map少的功能：不能操作多个集合，如(map + [1 2] [10 20] [100 200]) 。
+for比map多出来的功能：可用多个变量，还可加when。
+
+例子：乘法口诀表
+(for	[i (range 1 10) j (range 1 10) :when (>= i j)]  ;只保留i小于等于j的组合。
+		(str j "x" i "=" (* i j))) 
+
+(for 	[i (range 1 10) j (range 1 (inc i))] 	;每次遍历i时，j从1到(inc i) 。
+		(str j "x" i "=" (* i j)))
+该简单问题的最佳解决方案还是分而治之：
+(defn f [n] 
+		(for [i (range 1 (inc n))] (format "%d*%d=%d" i n (* i n))))
+(dotimes [i 9] (println (f (inc i))))
+
+--
+for循环中进行解构。
+(for [[a b c] '((A B C) (D E F))] b) 
+; (B E)
+不需要的也可忽略：
+(for [[a b] '((A B C) (D E F))] b) 
+; (B E)
+
+还可以使用 &:
+(for [ [a & r] '((A B C) (D E F))]  r) 
+; ((B C) (E F))
+
+--
+区别:when和:while
+(for [x [1 2 0 3 4] :when (pos? x)] x)   
+; (1 2 3 4) 全部做完为止
+
+(for [x [1 2 0 3 4] :while (pos? x)] x)  
+; (1 2)     碰到不满足就停
+
+(for [i (range 10) :when (even? i)] i) 
+; (0 2 4 6 8) 做到完
+
+(for [i (range 10) :while (even? i)] i) 
+; (0) 碰到false停止
+
+多个变量：
+(for [x (range 10) y (range 3) :while (< y x)] [x y])
+
+(for [a [1 3 5] b [2 4]] [a b]) 
+; ([1 2] [1 4] [3 2] [3 4] [5 2] [5 4]) 组合。
+ 
+ 
+例子：找杨辉三角形
+(defn tri-yang? [a b] (def c (Math/sqrt (+ (* a a) (* b b)))) (= (int c) c))
+
+(defn f [n] (for [a (range 1 n) b (range (inc a) n) :when (tri-yang? a b)] (list a b)))
+
+(f 21) 
+; ((3 4) (5 12) (6 8) (8 15) (9 12) (12 16) (15 20))
+
+
+--
+for
+macro
+Usage: (for seq-exprs body-expr)
+
+List comprehension. 
+Takes a vector of one or more binding-form/collection-expr pairs, 
+each followed by zero or more modifiers, and yields a lazy sequence of evaluations of expr.
+Collections are iterated in a nested fashion, rightmost fastest,
+and nested coll-exprs can refer to bindings created in prior binding-forms.  
+Supported modifiers are: 
+ :let [binding-form expr ...], :while test, :when test.
+
+(take 100 (for [x (range 100000000) y (range 1000000) :while (< y x)] [x y]))
+
+========
+========
+1，or
+macro
+Usage: (or)
+       (or x)
+       (or x & next)
+
+Evaluates exprs one at a time, from left to right. 
+If a form returns a logical true value, or returns that value 
+and doesn't evaluate any of the other expressions, 
+otherwise it returns the value of the last expression. (or) returns nil.
+
+从左到右，每次计算一个形式，如果该形式返回逻辑真值，停下，返回该值。
+否则，继续，直到返回最后一个形式的值。
+如果没有任何形式，返回nil。
+
+2，and
+macro
+Usage: (and)
+       (and x)
+       (and x & next)
+
+Evaluates exprs one at a time, from left to right. 
+If a form returns logical false (nil or false), 
+and returns that value and doesn't evaluate any of the other expressions, 
+otherwise it returns the value of the last expr. 
+(and) returns true.
+
+从左到右，每次计算一个形式，如果该形式返回逻辑假值（nil或false），停下，返回该值。
+否则，继续，直到返回最后一个形式的值。
+如果没有任何形式，返回true。
+
+3，not
+function
+Usage: (not x)
+
+Returns true if x is logical false, false otherwise.
+返回相反的逻辑值。
+
+4，

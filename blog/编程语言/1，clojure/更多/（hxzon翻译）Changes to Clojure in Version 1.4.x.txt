@@ -12,7 +12,7 @@ CONTENTS
  1 Deprecated and Removed Features
     1.1 Fields that Start With a Dash Can No Longer Be Accessed Using Dot Syntax
  2 New/Improved Features
-    2.1 Reader Literals
+    2.1 Reader Literals 增加时刻字面量，uuid字面量。
     2.2 clojure.core/mapv
     2.3 clojure.core/filterv
     2.4 clojure.core/ex-info and clojure.core/ex-data
@@ -20,6 +20,7 @@ CONTENTS
     2.6 clojure.core/contains? Improved
     2.7 clojure.core/min and clojure.core/max prefer NaN
     2.8 clojure.java.io/as-file and clojure.java.io/as-url Handle URL-Escaping Better
+
     2.9 New Dot Syntax for Record and Type Field Access
     2.10 Record Factory Methods Available Inside defrecord
     2.11 assert-args Displays Namespace and Line Number on Errors
@@ -37,7 +38,8 @@ CONTENTS
 ========
 1 Deprecated and Removed Features，过时并移除的功能。
 
-1.1 Record and Type Fields that Start With a Dash Can No Longer Be Accessed Using Dot Syntax
+1.1 Record and Type Fields that Start With a Dash 
+Can No Longer Be Accessed Using Dot Syntax
 记录和普通类型中，以中横线开头的字段，不能再使用点号来访问。
 
 Clojure 1.4 introduces a field accessor syntax for the dot special form 
@@ -49,12 +51,31 @@ For example, in Clojure 1.3, one can declare a record with a field starting with
 (.-a (Bar. 10)) ;=> 10
 
 In 1.4, the above code results in IllegalArgumentException No matching field found: a for class user.Bar
+在1.4版本，会忽略中横线，而去寻找a字段。参见 2.9 。
 
 However, the field may still be accessed as a keyword:
 但可以通过关键字来访问。
 
 (:-a (Bar. 10)) ;=> 10
 
+
+----
+2.9 New Dot Syntax for Record and Type Field Access
+
+Clojure 1.4 introduces a field accessor syntax for the dot special form 
+that aligns Clojure field lookup syntax with ClojureScript's.
+
+In 1.4, to declare a record type and access its property x, one can write:
+在1.4中，访问记录类型的字段，在点号和字段名之间加中横线。
+
+(defrecord Foo [x]) ;=> user.Foo
+(.-x (Foo. 10)) ;=> 10
+
+This addition makes it easier to write code 
+that will run as expected in both Clojure and ClojureScript.
+这使得clojure和clojureScript在语法层面上兼容。
+
+参见 1.1 。
 
 ========
 2 New and Improved Features，新功能或改进。
@@ -64,7 +85,9 @@ However, the field may still be accessed as a keyword:
 Clojure 1.4 supports reader literals, which are data structures tagged by a symbol to denote how they will be read.
 
 When Clojure starts, it searches for files named data_readers.clj at the root of the classpath. 
+在类路径查找 data_readers.clj 文件。
 Each such file must contain a Clojure map of symbols, like this:
+文件中包含键值对，键名为读者宏字符，值为该读者宏的处理函数。
 
 {foo/bar my.project.foo/bar
  foo/baz my.project/baz}
@@ -82,6 +105,7 @@ Reader tags without namespace qualifiers are reserved for Clojure.
 Default reader tags are defined in clojure.core/default-data-readers 
 but may be overridden in data_readers.clj or by rebinding *data-readers*.
 
+--
 2.1.1 Instant Literals，时刻字面量。
 
 Clojure supports literals for instants in the form #inst "yyyy-mm-ddThh:mm:ss.fff+hh:mm". 
@@ -105,11 +129,13 @@ by binding *data-readers* to use clojure.instant/read-instant-calendar or clojur
   (= java.util.Timestamp (class (read-string instant))))
 ;=> true
 
+--
 2.1.2 UUID Literals，uuid字面量。
 
 Clojure supports literals for UUIDs in the form #uuid "uuid-string". 
 These literals are parsed as java.util.UUIDs.
 
+----
 2.2 clojure.core/mapv
 
 mapv takes a function f and one or more collections 
@@ -119,15 +145,24 @@ until any one of the collections is exhausted.
 Any remaining items in other collections are ignored. 
 f should accept a number of arguments equal to the number of collections.
 
+每次从各个集合取出一个元素，作为f的参数，返回值放入结果向量中。
+多余的元素被忽略。
+和map相同，但是map返回惰性序列，而mapv返回的是向量，v后缀表示向量。
+
 (= [1 2 3] (mapv + [1 2 3]))
 ;=> true
 
 (= [2 3 4] (mapv + [1 2 3] (repeat 1)))
 ;=> true
 
+----
 2.3 clojure.core/filterv
 
-filterv takes a predicate pred and a collection and returns a vector of the items in the collection for which (pred item) returns true. pred must be free of side-effects.
+filterv takes a predicate pred and a collection 
+and returns a vector of the items in the collection for which (pred item) returns true. 
+pred must be free of side-effects.
+
+和filter相同，但是返回的是向量，而不是惰性序列。
 
 (= [] (filterv even? [1 3 5]))
 ;=> true
@@ -135,19 +170,23 @@ filterv takes a predicate pred and a collection and returns a vector of the item
 (= [2 4] (filter even? [1 2 3 4 5]))
 ;=> true
 
+----
 2.4 clojure.core/ex-info and clojure.core/ex-data
 
 ex-info creates an instance of ExceptionInfo. 
 ExceptionInfo is a RuntimeException subclass that takes a string msg and a map of data.
+是运行时异常的子类。
 
 (ex-info "Invalid use of robots" {:robots false})
 ;=> #<ExceptionInfo clojure.lang.ExceptionInfo: Invalid use of robots {:robots false}>
 
 ex-data is called with an exception and will retrieve that map of data if the exception is an instance of ExceptionInfo.
+获得ex-info实例携带的数据。
 
 (ex-data (ex-info "Invalid use of robots" {:robots false}))
 ;=> {:robots false}
 
+----
 2.5 clojure.core/reduce-kv
 
 reduce-kv reduces an associative collection. 
@@ -155,41 +194,44 @@ It takes a function f, an initial value init and an associative collection coll.
 f should be a function of 3 arguments. 
 Returns the result of applying f to init, 
 the first key and the first value in coll, then applying f to that result and the 2nd key and value, etc. 
+
 If coll contains no entries, returns init and f is not called. 
 Note that reduce-kv is supported on vectors, where the keys will be the ordinals.
 
+对关系型数据进行规约。-kv后缀表示关系型。
+向量也是视为关系型。
+
 (reduce-kv str "Hello " {:w \o :r \l :d \!})
 ;=> "Hello :rl:d!:wo"
+
 (reduce-kv str "Hello " [\w \o \r \l \d \!])
 ;=> "Hello 0w1o2r3l4d5!"
 
+----
 2.6 clojure.core/contains? Improved
 
 contains? now works with java.util.Set.
+contains? 支持set，因为set可视为元素自身到自身的关系型结构。
 
+----
 2.7 clojure.core/min and clojure.core/max prefer NaN
 
 min and max now give preference to returning NaN if either of their arguments is NaN.
+如果参数中含有NaN，min 和 max 返回NaN。
 
+----
 2.8 clojure.java.io/as-file and clojure.java.io/as-url Handle URL-Escaping Better
 
 as-file and as-url now handle URL-escaping in both directions.
+as-file 和 as-url 在两个方向上都能处理 url 转义。
 
-2.9 New Dot Syntax for Record and Type Field Access
 
-Clojure 1.4 introduces a field accessor syntax for the dot special form that aligns Clojure field lookup syntax with ClojureScript's.
-
-In 1.4, to declare a record type and access its property x, one can write:
-
-(defrecord Foo [x]) ;=> user.Foo
-(.-x (Foo. 10)) ;=> 10
-
-This addition makes it easier to write code that will run as expected in both Clojure and ClojureScript.
-
+----
 2.10 Record Factory Methods Available Inside defrecord
 
 Prior to 1.4, you could not use the factory functions (->RecordClass and map->RecordClass) 
 to construct a new record from inside a defrecord definition.
+在1.4之前，你不能在记录的定义中，通过工厂函数创建记录的实例。
 
 The following example did not work prior to 1.4, but is now valid. 
 This example makes use of ->Mean which would have not yet been available.
@@ -199,21 +241,32 @@ This example makes use of ->Mean which would have not yet been available.
   (choose [_] (if last-winner last-winner (random-choice)))
   (update-strategy [_ me you] (->Mean (when (iwon? me you) me))))
 
+----
 2.11 assert-args Displays Namespace and Line Number on Errors
 
 assert-args now uses &form to report the namespace and line number where macro syntax errors occur.
 
+assert-args 在出错时会提示命名空间和行号。
+
+----
 2.12 File and Line Number Added to Earmuff Dynamic Warning
 
 When a variable is defined using earmuffs but is not declared dynamic, Clojure emits a warning. 
 That warning now includes the file and line number.
 
+如果一个var的名字含有护耳（两边都是星号，作为约定，表示它是动态变量），却不是动态变量时，
+clojure会发出警告，警告从1.4开始会显示文件名和行号。
+
+----
 2.13 require Can Take a :refer Option
 
 require can now take a :refer option. 
 :refer takes a list of symbols to refer from the namespace 
 or :all to bring in all public vars.
 
+require 支持 refer 选项。
+
+----
 2.14 *compiler-options* Var
 
 The dynamic var *compiler-options* contains a map of options to send to the Clojure compiler.
@@ -230,11 +283,13 @@ The main function of the Clojure compiler sets the *compiler-options* from prope
 
 java -Dclojure.compiler.elide-meta='[:doc :file :line]'
 
+----
 2.15 Improved Reporting of Invalid Characters in Unicode String Literals
 
 When the reader finds an invalid character in a Unicode string literal, 
 it now reports the character instead of its numerical representation.
 
+----
 2.16 clojure.core/hash No Longer Relies on .hashCode
 hash函数不再依赖hashCode方法。
 
@@ -243,55 +298,74 @@ It calls clojure.lang.Util.hasheq,
 which has its own implementation for Integer, Short, Byte, and Clojure collections. 
 This ensures that the hash code returned is consistent with =.
 
+----
 2.17 Java 7 Documentation
 
 *core-java-api* will now return the URL for the Java 7 Javadoc when you are running Java 7.
 
+----
 2.18 loadLibrary Loads Library Using System ClassLoader
 
 A static method, loadLibrary, was added to clojure.lang.RT 
 to load a library using the system ClassLoader instead of Clojure's class loader.
 
+使用系统类加载器的 loadLibrary 方法，而不是clojure的类加载器的。
+
+----
 2.19 Java int is Boxed As java.lang.Integer
 
 Java ints are now boxed as java.lang.Integers. 
 See the discussion on clojure-dev for more information.
-int装箱为Integer。
+
+int装箱为Integer。（原来装箱为Long。）
 
 
 ========
 3 Performance Enhancements，性能改进。
 
 (= char char) is now optimized
+字符比较进行了优化。
+
 equiv is inlined in variadic =
+？ equiv 函数内联到 =（引用相等）。
+
 toString cached on keywords and symbols
+缓存关键字和符号的toString()返回值。
 
 ========
 4 Bug Fixes，bug修复。
 
 CLJ-829 Transient hashmaps mishandle hash collisions
+易变哈希映射没有处理哈希碰撞问题。
 
 CLJ-773 Macros that are expanded away still have their vars referenced in the emitted byte code
 
-CLJ-837 java.lang.VerifyError when compiling deftype or defrecord with argument name starting with double underscore characters
+CLJ-837 java.lang.VerifyError when compiling deftype or defrecord 
+with argument name starting with double underscore characters
+编译普通类型和记录类型时，如果参数名以两个下划线开头，会出错。
 
 CLJ-369 Check for invalid interface method names
+检查不合法的接口方法名。
 
 CLJ-845 Unexpected interaction between protocol extension and namespaced method keyword/symbols
 
 Ignoring namespace portion of symbols used to name methods in extend-type and extend-protocol
 
 CLJ-852 IllegalArgumentException thrown when defining a var whose value is calculated with a primitive fn
+定义var时，如果根值为原始类型，抛出“不合法参数”异常。
 
 CLJ-855 catch receives a RuntimeException rather than the expected checked exception
+catch捕获运行时异常，而不是受检异常。
 
 CLJ-876 #^:dynamic vars declared in a nested form are not immediately dynamic
 
 CLJ-886 java.io/do-copy can garble multibyte characters
+do-copy函数可能截断“多字节”的字符。
 
 CLJ-895 Collection.toArray implementations do not conform to Java API docs
 
 obey contract for toArray return type
+（obey，服从。）
 
 CLJ-898 Agent sends consume heap
 
@@ -299,8 +373,10 @@ Only capture a shallow copy of the current Frame in binding-conveyor-fn,
 so that sends in agent actions don't build infinite Frame stacks
 
 CLJ-928 Instant literal for Date and Timestamp should print in UTC
+时刻字面量须打印成UTC格式。
 
 CLJ-931 Syntactically broken clojure.test/are tests succeed
+（Syntactically，语法上。）
 
 CLJ-933 Compiler warning on clojure.test-clojure.require-scratch
 

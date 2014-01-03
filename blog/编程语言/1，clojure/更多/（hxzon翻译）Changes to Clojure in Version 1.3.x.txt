@@ -60,32 +60,43 @@ CONTENTS
 1.1 Earmuffed Vars Are No Longer Automatically Considered Dynamic.
 
 (def *fred*)
-=> Warning: *fred* not declared dynamic and thus is not dynamically rebindable, but its name suggests otherwise. Please either indicate ^:dynamic ** or change the name.
+=> Warning: *fred* not declared dynamic and thus is not dynamically rebindable, 
+but its name suggests otherwise. 
+Please either indicate ^:dynamic ** or change the name.
 
+名字带护耳的var不再是自动动态的，而是给出警告。
+
+----
 1.2 ISeq No Longer Inherits From Sequential
 
 This allows ISeq implementers to be in the map or set equality partition.
 
+ISeq 不再继承 Sequential 。
+
+----
 1.3 Removed Bit Operation Support for Boxed Numbers
 位操作不再支持装箱类型。
 
 Bit Operations map directly to primitive operations
 
-
+----
 1.4 Ancillary Namespaces No Longer Auto-Load on Startup
 
 The following namespaces are no longer loaded on startup: 
 clojure.set, clojure.xml, clojure.zip
 以上命名空间不再在启动时载入。
 
+----
 1.5 Replicate Deprecated
 
 Use repeat instead.
 
+移除 replicate 函数，改用 repeat 替代。
 
 ========
 2 New/Improved Features，新功能或改进。
 
+----
 2.1 Enhanced Primitive Support
 
 Full details here:
@@ -93,10 +104,12 @@ Full details here:
 Enhanced Primitive Support
 Documentation for 1.3 Numerics
 
+----
 2.2 defrecord and deftype Improvements
 
 Details here: Defrecord Improvements
 
+----
 2.3 Better Exception Reporting
 
 Details here: Error Handling
@@ -112,10 +125,12 @@ In the REPL
 Add "starting at " to EOF while reading exceptions
 Better compilation error reporting
 
+----
 2.4 clojure.reflect/reflect
 
 Full details here: Reflection API
 
+----
 2.5 clojure.data/diff
 
 Recursively compares a and b, returning a tuple of [things-only-in-a things-only-in-b things-in-both]
@@ -123,6 +138,7 @@ Recursively compares a and b, returning a tuple of [things-only-in-a things-only
 (diff {:a 1 :b 2} {:a 1 :b 22 :c 3})
 => ({:b 2} {:c 3, :b 22} {:a 1})
 
+----
 2.6 clojure.core/every-pred and clojure.core/some-fn Combinators
 
 every-pred takes a set of predicates and returns a function f that returns true 
@@ -143,6 +159,7 @@ returned by one of its composing predicates against any of its arguments, else i
 ((some-fn odd?) 2 4 6)
 => false
 
+----
 2.7 clojure.core/realized?
 
 Returns true if a value has been produced for a promise, delay, future or lazy sequence.
@@ -154,6 +171,7 @@ Returns true if a value has been produced for a promise, delay, future or lazy s
 => false
 => true
 
+----
 2.8 clojure.core/with-redefs-fn & clojure.core/with-redefs
 
 with-redefs-fn temporarily redefines Vars during a call to func. 
@@ -162,6 +180,7 @@ with-redefs temporarily redefines Vars while executing the body.
 (with-redefs [nil? :temp] (println nil?))
 => :temp
 
+----
 2.9 clojure.core/find-keyword
 
 Returns a Keyword with the given namespace and name if one already exists.
@@ -172,6 +191,7 @@ Returns a Keyword with the given namespace and name if one already exists.
 (find-keyword "fred")
 => nil
 
+----
 2.10 clojure.repl/pst
 
 Prints a stack trace of the exception
@@ -192,6 +212,7 @@ IllegalArgumentException
     clojure.lang.Var.applyTo (Var.java:518)
     clojure.main.main (main.java:37)
 
+----
 2.11 clojure.pprint/print-table
 
 Prints a collection of maps in a textual table.
@@ -207,10 +228,12 @@ ethel |
 wilma | betty
 ===============
 
+----
 2.12 pprint respects *print-length*
 
 Assigning *print-length* now affects output of pprint
 
+----
 2.13 compilation and deployment via Maven
 
 See the following pages for more information:
@@ -220,8 +243,10 @@ Why Maven?
 Common Contrib Build
 How to Make Releases
 
+----
 2.14 internal keyword map uses weak refs
 
+----
 2.15 ^:const defs
 
 ^:const lets you name primitive values with speedier reference.
@@ -237,6 +262,7 @@ How to Make Releases
 The overhead of looking up :e and :pi in the map happens at compile time, 
 as (:pi constants) and (:e constants) are evaluated when their parent def forms are evaluated.
 
+----
 2.16 Message Bearing Assert，assert可以携带信息。
 
 Assert can take a second argument which will be printed when the assert fails
@@ -252,10 +278,12 @@ For example, the following code will throw an exception:
 (defmulti fred :ethel :lucy :ricky)
 => IllegalArgumentException
 
+----
 2.18 Removed Checked Exceptions，不抛出受检异常。
 
 Clojure does not throw checked exceptions
 
+----
 2.19 vector-of Takes Multiple Args
 
 vector-of takes multiple args used to populate the array
@@ -263,52 +291,67 @@ vector-of takes multiple args used to populate the array
 (vector-of :int 1 2 3)
 => [1 2 3]
 
+----
 2.20 deref with timeout
 
 deref now takes a timeout option - when given with a blocking reference, 
 will return the timeout-val if the timeout (in milliseconds) is reached before value is available.
 
+deref支持超时和超时值。
+
 (deref (promise) 10 :ethel)
 => :ethel
 
+----
 2.21 Walk Support for sorted-by Collections
 
 Walk modified to work on sorted-by collections
 
+walk函数支持有序集合。
+
 let [x (sorted-set-by > 1 2 3)] (walk inc reverse x))
 => (2 3 4)
 
+----
 2.22 string.join Enhanced to Work with Sets
 
 Just like join works on other collections
+string.join 支持 set 。
 
 (join " and " #{:fred :ethel :lucy})
 => ":lucy and :fred and :ethel"
 
+----
 2.23 clojure.test-helper
 
 All test helpers moved into clojure.test-helper
 
+----
 2.24 Newline outputs platform-specific newline sequence
 
 Newline sequence is output as \r\n on Windows now.
 
+----
 2.25 init-proxy and update-proxy return proxy
 
 Now you can chain calls on the proxy
 
+----
 2.26 doc & find-doc moved to REPL
 
 Adds special form docs to the REPL
 
+----
 2.27 clojure.java.shell/sh accepts as input anything that clojure.java.io/copy does
 
 This adds InputStream, Reader, File, byte[] to the list of inputs for clojure.java.shell/sh
 
+----
 2.28 Interrupt Handler Promoted to clojure.repl
 
 Promoting this library eliminates the need for a dependency on old contrib.
 
+----
 2.29 Add support for running -main namespaces from clojure.main
 
 This patch allows clojure.main to accept an argument pointing to a namespace to look for a -main function in. 
@@ -316,6 +359,7 @@ This allows users to write -main functions that will work the same
 whether the code is AOT-compiled for use in an executable jar 
 or just run from source.
 
+----
 2.30 Set thread names on agent thread pools
 
 It's a best practice to name the threads in an executor thread pool with a custom ThreadFactory 
@@ -326,18 +370,25 @@ Patch causes thread names like:
 clojure-agent-send-pool-%d     (should be fixed # of threads)
 clojure-agent-send-off-pool-%d (will be added and removed over time)
 
-2.31 Add docstring support to def，def添加了文档字符串参数。
+----
+2.31 Add docstring support to def
+
+def添加了文档字符串参数。
 
 A def can now have a docstring between name and value.
 
 (def foo "a foo" :foo)
 
+----
 2.32 Comp function returns identity when called with zero arity
 
 (= (comp) identity)
 => true
 
-2.33 Type hints can be applied to arg vectors，可以在参数向量上添加类型提示。
+----
+2.33 Type hints can be applied to arg vectors
+
+可以在参数向量上添加类型提示。
 
 You can hint different arities separately:
 
@@ -351,15 +402,20 @@ Hinting the function name is still allowed for backward compatibility,
 but will likely be deprecated in a future release.
 仍然可以在函数名上添加类型提示，但可能在将来废弃这种功能。
 
+----
 2.34 Binding Conveyance
 
 Clojure APIs that pass work off to other threads (e.g. send, send-off, pmap, future) 
 now convey the dynamic bindings of the calling thread:
 
+重要。
+
 (def ^:dynamic *num* 1)
+
 (binding [*num* 2] (future (println *num*)))
 ;; prints "2", not "1"
 
+动态绑定传播。
 
 ========
 3 Performance Enhancements，性能改进。
@@ -367,18 +423,23 @@ now convey the dynamic bindings of the calling thread:
 Code path for using vars is now much faster for the common case
 
 Improved startup time
+改善启动时间。
 
 Fix performance on some numeric overloads See CLJ-380 for more information
 
 Promises are lock free
+promise是无锁的。
 
 Functions only get metadata support code when metadata explicitly supplied
 
 definterface/gen-interface accepts array type hints
+definterface/gen-interface 可接受数组类型提示。（注：definterface/gen-interface 在未来版本已移除。）
 
 inline nil?
+内联 nil? 。
 
 inline bit-functions & math ops
+内联位操作和数值计算。
 
 inline n-ary min & max
 
@@ -392,98 +453,137 @@ Intrinsics: unchecked math operators now emit bytecodes directly where possible
 
 Complete list of Tickets for 1.3 Release.
 
+--
 CLJ-8 detect and report cyclic load dependencies
+检查和报告循环加载依赖。
 
 Patch restore detection of cyclic load dependencies
 
+--
 CLJ-31 compiler now correctly rejects attempts to recur across try (fn x)) => CompilerException
 
+--
 CLJ-286 *out* being used as java.io.PrintWriter
 
 Patch fixes using Writer instead of PrintWriter
 
 fix clojure.main to not assume that err is a PrintWriter
 
+--
 CLJ-292 LazySeq.sval() nests RuntimeExceptions
 
 Patch causes only the original RuntimeException to be thrown
 
+--
 CLJ-390 sends from agent error-handlers should be allowed
 
 Patch allows agent error-handler to send successfully
+允许在agent的错误处理器里调用send。
 
+--
 CLJ-426 case should handle hash collision
+哈希碰撞。
 
 There were situations where a hash collision would occur with case and an exception would be thrown. 
 See discussion for more details
 
+--
 CLJ-430 clojure.java.io URL Coercion throws java.lang.ClassCastException
 
 Patch correct exception to be thrown
 
+--
 CLJ-432 deftype does not work if containing ns contains dashes
 
 Patch munges namespaces with dashes properly
+在含有下划线的命名空间中，定义普通类型出错。
 
+--
 CLJ-433 munge should not munge $ (which isJavaIdentifierPart), should munge ' (which is not)
 
+--
 CLJ-435 stackoverflow exception in printing meta with :type
 
 Patch fixes exception being thrown on certain type metadata 
 (with-meta {:value 2} {:type Object}) => No message. [Thrown class java.lang.StackOverflowError]
 
+--
 CLJ-437 Bugs in clojure.set/subset? and superset? for sets with false/nil elements
 
 Patch fixes failing on subset? and superset? for sets with false/nil elements
+set含有nil和false元素时，判断子集和超集出错。
 
-CLJ-439 Automatic type translation from Integer to Long，自动类型转换，从Integer到Long。
+--
+CLJ-439 Automatic type translation from Integer to Long
+自动类型转换，从Integer到Long。
 
 Patch fixes increase coercion from Integer to Long
 
+--
 CLJ-444 Infinite recursion in Keyword.intern leads to stack overflow
 
 No more infinite recursion with patch
+关键字池化时，无限递归。
 
+--
 CLJ-673 use system class loader when base loader is null
 
 facilitates placing Clojure on bootclasspath
 
+--
 CLJ-678 into-array should work with all primitive types
 
+into-array须支持所有的原始类型。
+
+--
 CLJ-680 printing promises should not block
 
 Patch allows printing of promises without blocking
+打印promise时不该阻塞。
 
+--
 CLJ-682 cl-format: ~w throws an exception when not wrapped in a pretty-writer
 
 Patch fixes the following bug in cl-format with ~w:
 
+--
 CLJ-693 VerifyError with symbol metadata, macros, and defrecord
 
+--
 CLJ-702 case gives NPE when used with nil
 
 Patch allows nil to be used with case
 
+--
 CLJ-734 starting scope of let bindings seems incorrect from jdi perspective
 
 Patch fixes local variables table to have the correct code index for let bindings.
 
+--
 CLJ-739 version.properties file is not closed
 
 Patch properly closes version.properties file
 
+--
 CLJ-751 cl-format: ~( throws an exception with an empty string
 
 Patch fixes the following bug in cl-format when format is nil (cl-format nil "~:(~a~)" "") => NullPointerException
 
+--
 CLJ-780 race condition in reference cache on Java 5
+在java 5 中，引用缓存产生竞争条件。
 
+--
 Map.Entry instances can have null values prior to Java 6. 
 This patch provides a workaround.
 
+在java 6 之前，map.entry可能含有空的值。
+
+--
 floats were being boxed as Doubles, now they are boxed as Floats
 单精度浮点数被装箱成Double，现在装箱为Float。
 
+--
 several "holding onto head" fixes
 
 Stop top-level defs from hanging onto the head of an expression that uses a lazy seq
@@ -497,6 +597,7 @@ Stop multimethods from holding onto heads of their arguments
 In 1.3, the monolithic clojure-contrib.jar has been replaced by a modular system of contrib libraries, 
 so that production systems can include only the code they actually need. 
 This also allows individual contribs to have their own release cycles. 
+
 Many contribs have moved forward by several point versions already. 
 Documentation for updating applications to use the new contrib libraries is at 
 http://dev.clojure.org/display/design/Where+Did+Clojure.Contrib+Go
