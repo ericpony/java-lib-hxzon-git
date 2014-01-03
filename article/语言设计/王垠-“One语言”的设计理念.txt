@@ -3,6 +3,8 @@
 http://www.yinwang.org/blog-cn/2013/06/22/one-lang/
 http://yinwang0.wordpress.com/2013/06/03/null
 
+https://github.com/yinwang0/y 《The Y Programming Language》
+
 上文提到我下一篇博客要讲静态分析的原理，但是睡了一晚上之后，
 觉得更有动力先讲一下我的语言的设计，以后再讲静态分析的事情。
 当然这篇文章里面也会涉及到静态分析的一些东西。

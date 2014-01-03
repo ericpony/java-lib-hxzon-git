@@ -28,6 +28,7 @@ clojure通过元数据，任意地动态地建立层级，不必为了得到层�
 2，异常处理（受检异常，非受检异常，返回错误值）
 
 2.1，受检异常vs非受检异常
+http://www.mindview.net/Etc/Discussions/CheckedExceptions
 
 受检异常
 

@@ -329,6 +329,6 @@ clojure不会出现重复键。
 每个可能接受原始类型的函数签名必须在单独的接口中定义。
 参数和返回值有三种（double、long和Object），即使允许最大4个参数也会产生数百种不同的接口。
 
-“Use Primitive Arrays Judiciously”部分见《（hxzon学习笔记）clojure与java一起工作》。
+“Use Primitive Arrays Judiciously（优化数值效率）”部分见《（hxzon学习笔记）clojure与java一起工作》。
 
 

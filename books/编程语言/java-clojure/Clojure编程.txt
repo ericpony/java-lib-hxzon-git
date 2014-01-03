@@ -1,5 +1,6 @@
 ﻿Clojure编程
-~ Chas Emerick (作者), Brian Carper (作者), Christophe Grand (作者), 徐明明 (译者), 杨寿勋 (译者) 
+Chas Emerick (作者), Brian Carper (作者), Christophe Grand (作者), 徐明明 (译者), 杨寿勋 (译者) 
+
 http://www.amazon.cn/Clojure%E7%BC%96%E7%A8%8B-Chas-Emerick/dp/product-description/B00BUHZM1Y
 出版社: 电子工业出版社; 第1版 (2013年4月10日)
 平装: 618页
@@ -9,6 +10,7 @@ ISBN: 9787121197185
 条形码: 9787121197185
 品牌: 电子工业出版社
 ASIN: B00BUHZM1Y
+
 --------
 Clojure Programming
 http://www.amazon.cn/Clojure-Programming-Emerick-Chas/dp/1449394701
@@ -23,11 +25,19 @@ ASIN: 1449394701
 ===============
 作者简介
 
-Chas Emerick是软件公司Snowtide informatics的创始人。自2008年以来，致力于Clojure语言本身以及一些开源项目的开发；长期在cemerick.com撰写Clojure、软件开发实践、创业精神，及其他主题的文章。
+Chas Emerick是软件公司Snowtide informatics的创始人。
+自2008年以来，致力于Clojure语言本身以及一些开源项目的开发；
+长期在cemerick.com撰写Clojure、软件开发实践、创业精神，及其他主题的文章。
 
-Brian Carper是一位心理学研究领域的专业程序员，用Clojure从事数据分析与web开发。他开发过一个把Clojure代码转化为CSS代码的编译器以及一个操作关系型数据库的类库，经常在briancarper.net上发表Clojure文章。
+Brian Carper是一位心理学研究领域的专业程序员，用Clojure从事数据分析与web开发。
+他开发过一个把Clojure代码转化为CSS代码的编译器以及一个操作关系型数据库的类库，
+经常在briancarper.net上发表Clojure文章。
 
-Christophe Grand是一个独立顾问，现居法国里昂。他主要从事Clojure培训与编码，参与了Clojure语言的开发，撰写过Enlive和 Moustache类库，也是Counterclockwise——Clojure IDE for Eclipse的贡献者，经常在clj-me.cgrand.net上发表有关Clojure的文章。
+Christophe Grand是一个独立顾问，现居法国里昂。
+他主要从事Clojure培训与编码，参与了Clojure语言的开发，
+撰写过Enlive和 Moustache类库，也是Counterclockwise——Clojure IDE for Eclipse的贡献者，
+经常在clj-me.cgrand.net上发表有关Clojure的文章。
+
 ==========================
 目录
 

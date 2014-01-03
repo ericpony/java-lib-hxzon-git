@@ -1,0 +1,410 @@
+（hxzon读书笔记）《clojure编程》第9章：Java及JVM互操作
+
+by hxzon
+=====
+
+=======
+另见《（hxzon学习笔记）clojure与java一起工作》。
+
+代理，proxy
+
+(defn lru-cache
+  [max-size]
+  (proxy [java.util.LinkedHashMap] [16 0.75 true]
+    (removeEldestEntry [entry]
+      (> (count this) max-size))))
+
+--
+(def cache (doto (lru-cache 5)
+             (.put :a :b)))
+;= #'user/cache
+
+cache
+;= #<LinkedHashMap$0 {:a=:b}>
+
+(doseq [[k v] (partition 2 (range 500))]
+  (get cache :a)
+  (.put cache k v))
+;= nil
+
+cache
+;= #<LinkedHashMap$0 {492=493, 494=495, 496=497, :a=:b, 498=499}>
+
+=======
+gen-class
+
+Ahead-of-Time  Compilation
+
+--
+(ns com.clojurebook.imaging
+  (:use [clojure.java.io :only (file)])
+  (:import (java.awt Image Graphics2D)
+           javax.imageio.ImageIO
+           java.awt.image.BufferedImage
+           java.awt.geom.AffineTransform))
+
+(defn load-image
+  [file-or-path]
+  (-> file-or-path file ImageIO/read))
+
+(defn resize-image
+  ^BufferedImage [^Image original factor]
+  (let [scaled (BufferedImage. (* factor (.getWidth original))
+                 (* factor (.getHeight original))
+                 (.getType original))]
+    (.drawImage ^Graphics2D (.getGraphics scaled)
+      original
+      (AffineTransform/getScaleInstance factor factor)
+      nil)
+    scaled))
+
+(gen-class
+  :name ResizeImage
+  :main true
+  :methods [^:static [resizeFile [String String double] void]
+            ^:static [resize [java.awt.Image double] java.awt.image.BufferedImage]])
+
+(def ^:private -resize resize-image)
+
+(defn- -resizeFile
+  [path outpath factor]
+  (ImageIO/write (-> path load-image (resize-image factor))
+    "png"
+    (file outpath)))
+
+(defn -main
+  [& [path outpath factor]]
+  (when-not (and path outpath factor)
+    (println "Usage: java -jar example-uberjar.jar ResizeImage [INFILE] [OUTFILE] 
+[SCALE]")
+    (System/exit 1))
+  (-resizeFile path outpath (Double/parseDouble factor)))
+
+
+java -cp gen-class-1.0.0-standalone.jar ResizeImage clojure.png resized.png 0.5
+
+ResizeImage.resizeFile("clojure.png", "resized.png", 0.5);
+
+--
+(ns com.clojurebook.CustomException
+  (:gen-class :extends RuntimeException
+              :implements [clojure.lang.IDeref]
+              :constructors {[java.util.Map String] [String]
+                             [java.util.Map String Throwable] [String Throwable]}
+              :init init
+              :state info
+              :methods [[getInfo [] java.util.Map]
+                        [addInfo [Object Object] void]]))
+
+(import 'com.clojurebook.CustomException)
+
+(defn- -init
+  ([info message]
+    [[message] (atom (into {} info))])
+  ([info message ex]
+    [[message ex] (atom (into {} info))]))
+
+(defn- -deref
+  [^CustomException this]
+  @(.info this))
+
+(defn- -getInfo
+  [this]
+  @this)
+
+(defn- -addInfo
+  [^CustomException this key value]
+  (swap! (.info this) assoc key value))
+
+--
+(import 'com.clojurebook.CustomException)
+;= nil
+
+(defn perform-operation
+  [& [job priority :as args]]
+  (throw (CustomException. {:arguments args} "Operation failed")))
+;= #'user/perform-operation
+
+(defn run-batch-job
+  [customer-id]
+  (doseq [[job priority] {:send-newsletter :low
+                          :verify-billings :critical
+                          :run-payroll :medium}]
+    (try
+      (perform-operation job priority)
+      (catch CustomException e
+        (swap! (.info e) merge {:customer-id customer-id
+                                :timestamp (System/currentTimeMillis)})
+        (throw e)))))
+;= #'user/run-batch-job
+
+(try
+  (run-batch-job 89045)
+  (catch CustomException e
+    (println "Error!" (.getMessage) @e)))
+; Error! Operation failed {:timestamp 1309935234556, :customer-id 89045,
+; :arguments (:verify-billings :critical)}
+;= nil
+
+https://github.com/scgilardi/slingshot
+
+--
+import com.clojurebook.CustomException;
+import clojure.lang.PersistentHashMap;
+
+public class BatchJob {
+    private static void performOperation(String jobId, String priority) {
+        throw new CustomException(PersistentHashMap.create("jobId", jobId, "priority", priority), "Operation failed");
+    }
+
+    private static void runBatchJob(int customerId) {
+        try {
+            performOperation("verify-billings", "critical");
+        } catch (CustomException e) {
+            e.addInfo("customer-id", customerId);
+            e.addInfo("timestamp", System.currentTimeMillis());
+            throw e;
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            runBatchJob(89045);
+        } catch (CustomException e) {
+            System.out.println("Error! " + e.getMessage() + " " + e.getInfo());
+        }
+    }
+}
+
+=======
+注解
+
+--
+(ns com.clojurebook.annotations.junit
+  (:import (org.junit Test Assert))
+  (:gen-class
+    :name com.clojurebook.annotations.JUnitTest
+    :methods [[^{org.junit.Test true} simpleTest [] void]
+              [^{org.junit.Test {:timeout 2000}} timeoutTest [] void]
+              [^{org.junit.Test {:expected NullPointerException}}
+               badException [] void]]))
+
+(defn -simpleTest
+  [this]
+  (Assert/assertEquals (class this) com.clojurebook.annotations.JUnitTest))
+
+(defn -badException
+  [this]
+  (Integer/parseInt (System/getProperty "nonexistent")))
+
+(defn -timeoutTest
+  [this]
+  (Thread/sleep 10000))
+
+--
+There were 2 failures:
+1) timeoutTest(com.clojurebook.annotations.JUnitTest)
+java.lang.Exception: test timed out after 2000 milliseconds
+2) throwsWrongException(com.clojurebook.annotations.JUnitTest)
+java.lang.Exception: Unexpected exception,
+expected<java.lang.NullPointerException> but was<java.lang.NumberFormatException>
+
+------
+(ns com.clojurebook.annotations.jaxrs
+  (:import (javax.ws.rs Path PathParam Produces GET)))
+
+(definterface Greeting
+  (greet [^String visitor-name]))
+
+(deftype ^{Path "/greet/{visitorname}"} GreetingResource []
+  Greeting
+  (^{GET true
+     Produces ["text/plain"]}
+    greet
+    [this ^{PathParam "visitorname"} visitor-name]
+    (format "Hello %s!" visitor-name)))
+
+(com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory/create
+  "http://localhost:8080/"
+  {"com.sun.jersey.config.property.packages" "com.clojurebook.annotations.jaxrs"})
+
+--
+% curl http://localhost:8080/application.wadl
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<application xmlns="http://research.sun.com/wadl/2006/10">
+	<doc xmlns:jersey="http://jersey.java.net/" jersey:generatedBy="Jersey: 1.8 06/24/2011 12:17 PM" />
+	<resources base="http://localhost:8080/">
+		<resource path="/greet/{visitorname}">
+			<param xmlns:xs="http://www.w3.org/2001/XMLSchema" type="xs:string"
+				style="template" name="visitorname" />
+			<method name="GET" id="greet">
+				<response>
+					<representation mediaType="text/plain" />
+				</response>
+			</method>
+		</resource>
+	</resources>
+</application>
+
+% curl http://localhost:8080/greet/Jose
+Hello Jose!
+
+=====
+在java中使用clojure
+
+(ns com.clojurebook.histogram)
+(def keywords (map keyword '(a c a d b c a d c d k d a b b b c d e e e f a a a a)))
+
+package com.clojurebook;
+
+import java.util.ArrayList;
+import java.util.Map;
+import clojure.lang.IFn;
+import clojure.lang.Keyword;
+import clojure.lang.RT;
+import clojure.lang.Symbol;
+import clojure.lang.Var;
+
+public class JavaClojureInterop {
+    private static IFn requireFn = RT.var("clojure.core", "require").fn();
+    private static IFn randIntFn = RT.var("clojure.core", "rand-int").fn();
+    static {
+        requireFn.invoke(Symbol.intern("com.clojurebook.histogram"));
+    }
+    private static IFn frequencies = RT.var("clojure.core", "frequencies").fn();
+    private static Object keywords = RT.var("com.clojurebook.histogram", "keywords").deref();
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static void main(String[] args) {
+        Map<Keyword, Integer> sampleHistogram = (Map<Keyword, Integer>) frequencies.invoke(keywords);
+        System.out.println("Number of :a keywords in sample histogram: " + sampleHistogram.get(Keyword.intern("a")));
+        System.out.println("Complete sample histogram: " + sampleHistogram);
+        System.out.println();
+        System.out.println("Histogram of chars in 'I left my heart in san fransisco': " + frequencies.invoke("I left my heart in San Fransisco".toLowerCase()));
+        System.out.println();
+        ArrayList randomInts = new ArrayList();
+        for (int i = 0; i < 500; i++)
+            randomInts.add(randIntFn.invoke(10));
+        System.out.println("Histogram of 500 random ints [0,10): " + frequencies.invoke(randomInts));
+    }
+}
+
+% java -cp target/java-clojure-interop-1.0.0-jar-with-dependencies.jar
+com.clojurebook.JavaClojureInterop
+Number of :a keywords in sample histogram: 8
+Complete sample histogram: {:a 8, :c 4, :d 5, :b 4, :k 1, :e 3, :f 1}
+Frequences of chars in 'I left my heart in san fransisco':
+{\space 6, \a 3, \c 1, \e 2, \f 2, \h 1, \i 3, \l 1, \m 1,
+\n 3, \o 1, \r 2, \s 3, \t 2, \y 1}
+Frequences of 500 random ints [0,10):
+{0 60, 1 61, 2 55, 3 46, 4 37, 5 45, 6 47, 7 52, 8 49, 9 48}
+
+----
+(ns com.clojurebook.classes)
+
+(deftype Range
+  [start end]
+  Iterable
+  (iterator [this]
+    (.iterator (range start end))))
+
+(defn string-range
+  "Returns a Range instance based on start and end values provided as Strings
+  in a list / vector / array."
+  [[start end]]
+  (Range. (Long/parseLong start) (Long/parseLong end)))
+
+(defrecord OrderSummary
+  [order-number total])
+
+package com.clojurebook;
+
+import clojure.lang.IFn;
+import clojure.lang.RT;
+import clojure.lang.Symbol;
+import com.clojurebook.classes.OrderSummary;
+import com.clojurebook.classes.Range;
+
+public class ClojureClassesInJava {
+    private static IFn requireFn = RT.var("clojure.core", "require").fn();
+    static {
+        requireFn.invoke(Symbol.intern("com.clojurebook.classes"));
+    }
+    private static IFn stringRangeFn = RT.var("com.clojurebook.classes", "string-range").fn();
+
+    public static void main(String[] args) {
+        Range range = new Range(0, 5);
+        System.out.print(range.start + "-" + range.end + ": ");
+        for (Object i : range)
+            System.out.print(i + " ");
+        System.out.println();
+        for (Object i : (Range) stringRangeFn.invoke(args))
+            System.out.print(i + " ");
+        System.out.println();
+        OrderSummary summary = new OrderSummary(12345, "$19.45");
+        System.out.println(String.format("order number: %s; order total: %s", summary.order_number, summary.total));
+        System.out.println(summary.keySet());
+        System.out.println(summary.values());
+    }
+}
+
+% java -cp target/java-clojure-interop-1.0.0-jar-with-dependencies.jar
+com.clojurebook.ClojureClassesInJava 5 10
+0-5: 0 1 2 3 4
+5 6 7 8 9
+order number: 12345; order total: $19.45
+#{:order-number :total}
+(12345 "$19.45")
+
+----
+实现协议
+
+(ns com.clojurebook.protocol)
+
+(defprotocol Talkable
+  (speak [this]))
+
+(extend-protocol Talkable
+  String
+  (speak [s] s)
+  Object
+  (speak [this]
+    (str (-> this class .getName) "s can't talk!")))
+
+package com.clojurebook;
+
+import clojure.lang.IFn;
+import clojure.lang.RT;
+import clojure.lang.Symbol;
+import com.clojurebook.protocol.Talkable;
+
+public class BitterTalkingDog implements Talkable {
+    public Object speak() {
+        return "You probably expect me to say 'woof!', don't you? Typical.";
+    }
+
+    Talkable mellow() {
+        return new Talkable() {
+            public Object speak() {
+                return "It's a wonderful day, don't you think?";
+            }
+        };
+    }
+
+    public static void main(String[] args) {
+        RT.var("clojure.core", "require").invoke(Symbol.intern("com.clojurebook.protocol"));
+        IFn speakFn = RT.var("com.clojurebook.protocol", "speak").fn();
+        BitterTalkingDog dog = new BitterTalkingDog();
+        System.out.println(speakFn.invoke(5));
+        System.out.println(speakFn.invoke("A man may die, nations may rise and fall, but an idea lives on."));
+        System.out.println(dog.speak());
+        System.out.println(speakFn.invoke(dog.mellow()));
+    }
+}
+
+% java com.clojurebook.BitterTalkingDog
+java.lang.Integers can't talk!
+A man may die, nations may rise and fall, but an idea lives on.
+You probably expect me to say 'woof!', don't you? Typical.
+It's a wonderful day, don't you think?
+
