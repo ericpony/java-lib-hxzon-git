@@ -3,6 +3,13 @@
 by hxzon
 （2013.12.16）
 https://github.com/clojure/clojure/blob/master/changes.md
+
+----
+hxzon摘要：
+
+2.4，添加了一些新的串行宏。
+2.8，修改了string的两个字符串替换函数。
+
 ===========
 
 Changes to Clojure in Version 1.5.1
@@ -19,18 +26,26 @@ CONTENTS
     1.1 Clojure 1.5 reducers library requires Java 6 or later
  
  2 New and Improved Features
-    2.1 Reducers
-    2.2 Reader Literals improved
+    2.1 Reducers 规约库
+    2.2 Reader Literals improved 自定义读者宏的改进。
+    
     2.3 clojure.core/set-agent-send-executor!, set-agent-send-off-executor!, and send-via
+    可以设置agent的执行器。
+    
     2.4 New threading macros
     2.5 Column metadata captured by reader
     2.6 gen-class improvements
-    2.7 Support added for marker protocols
+    2.7 Support added for marker protocols 协议可以不含任何方法，仅作为一个标记。
+    
     2.8 clojure.pprint/print-table output compatible with Emacs Org mode
+    
     2.9 clojure.string/replace and replace-first handle special characters more predictably
-    2.10 Set and map constructor functions allow duplicates
-    2.11 More functions preserve metadata
+    
+    2.10 Set and map constructor functions allow duplicates 映射和set的构造函数中，允许重复元素。
+    
+    2.11 More functions preserve metadata 更多函数会保留元数据。
     2.12 New edn reader, improvements to *read-eval*
+
  3 Performance Enhancements
  4 Improved error messages
  5 Improved documentation strings
@@ -52,6 +67,7 @@ and building Clojure requires skipping the test suite (e.g. by using the command
 =======
 2 New and Improved Features，新功能或改进。
 
+----
 2.1 Reducers，规约库。
 
 Reducers provide a set of high performance functions for working with collections. 
@@ -95,20 +111,27 @@ user=> (reduce + (red [1 1 1 2]))
 user=> (into #{} (r/filter even? (r/map inc [1 1 1 2])))
 ;=> #{2}
 
-2.2 Reader Literals improved，字面量改进。
+----
+2.2 Reader Literals improved，自定义读者宏的改进。
 
 CLJ-1034 "Conflicting data-reader mapping" should no longer be thrown where there really isn't a conflict. 
 Until this patch, having data_readers.clj on the classpath twice would cause the above exception.
+在类路径里，还有两个 data_readers.clj 文件会抛出异常。
 
 CLJ-927 Added *default-data-reader-fn* to clojure.core. 
 When no data reader is found for a tag and *default-data-reader-fn*is non-nil, 
 it will be called with two arguments, the tag and the value. 
 If *default-data-reader-fn* is nil (the default), an exception will be thrown for the unknown tag.
 
+添加了动态变量 *default-data-reader-fn* ，作为未知的tag的处理函数。
+如果 *default-data-reader-fn* 为nil，在遇到未知tag时会抛出异常。
+
+----
 2.3 clojure.core/set-agent-send-executor!, set-agent-send-off-executor!, and send-via
 
 Added two new functions:
 添加了两个新函数。
+可以设置send和send-off的全局执行器。
 
 clojure.core/set-agent-send-executor!
 
@@ -123,8 +146,9 @@ Defaults to a cached thread pool.
 clojure.core/send-via
 
 Like send, and send-off, except the first argument to this function is an executor to use when sending.
+可以指定执行器。
 
-
+----
 2.4 New threading macros，新的串行宏。
 
 --
@@ -132,6 +156,8 @@ clojure.core/cond-> [expr & clauses]
 
 Takes an expression and a set of test/form pairs. 
 Threads the expression (via ->) through each form for which the corresponding test expression (not threaded) is true.
+一个表达式expr，一系列子句，每个子句含有测试表达式text和form。
+顺序测试每个子句的test，如果为真，将上一次为真的form的值放入本子句的form的第2个位置。
 
 Example:
 
@@ -151,6 +177,7 @@ Example:
 
 user=> (def d [0 1 2 3])
 #'user/d
+
 user=> (cond->> d
                 true (map inc)
                 (seq? d) (map dec)
@@ -163,9 +190,13 @@ clojure.core/as-> [expr name & forms]
 
 Binds name to expr, evaluates the first form in the lexical context of that binding, 
 then binds name to that result, repeating for each successive form
+求值expr，将值绑定到name，求值forms中的第1个形式。
+将值绑定到name，求值forms中的第2个形式。依此循环。
 
 Note: this form does not actually perform any threading. 
 Instead it allows the user to assign a name and lexical context to a value created by a parent threading form.
+其实这个宏并没有串行。
+它用在别的串行宏里面，可以给name绑定一个值。
 
 Example:
 
@@ -175,11 +206,14 @@ user=> (-> 84
                   (* 2 twenty-one)))  ;; no threading here
 42
 
+hxzon：即 (as-> 21 twenty-one (* 2 twenty-one)) 。
+
 --
 clojure.core/some-> [expr & forms]
 
 When expr is not nil, threads it into the first form (via ->), 
 and when that result is not nil, through the next etc.
+不断将前一个表达式代入后一个表达式的第2个位置，直到表达式求值为nil 。
 
 Example:
 
@@ -199,14 +233,17 @@ When expr is not nil, threads it into the first form (via ->>),
 and when that result is not nil, through the next etc.
 
 Same as some-> except the value is threaded as the last argument in each form.
+不断将前一个表达式代入后一个表达式的最后一个位置，直到表达式求值为nil 。
 
-
-2.5 Column metadata captured by reader，列元数据，通过读者捕获。
+----
+2.5 Column metadata captured by reader，读者元数据添加了列号。
 
 CLJ-960 Data read by the clojure reader is now tagged with :column in addition to :line.
 
+----
 2.6 gen-class improvements，改进gen-class 。
 
+--
 CLJ-745 It is now possible to expose protected final methods via :exposes-methods in gen-class. 
 This allows Clojure classes created via gen-class to access protected methods of its parent class.
 可以通过元数据 :exposes-methods 来暴露受保护的最终方法。
@@ -221,6 +258,7 @@ Example:
 
 --
 CLJ-948 It is now possible to annotate constructors via gen-class.
+可以给构造函数添加注解。
 
 Example:
 
@@ -230,7 +268,7 @@ Example:
            :init init
            :prefix "foo")
 
-
+----
 2.7 Support added for marker protocols
 
 CLJ-966 defprotocol no longer requires that at least one method be given in the definition of the protocol. 
@@ -266,7 +304,7 @@ nil
 user=> (satisfies? M2 (T. 1))
 true
 
-
+----
 2.8 clojure.pprint/print-table output compatible with Emacs Org mode
 
 For the convenience of those that use Emacs Org mode, 
@@ -284,6 +322,7 @@ user=> (clojure.pprint/print-table [:name :initial-impression]
 |  Andy |            engineer |
 
 
+----
 2.9 clojure.string/replace and replace-first handle special characters more predictably
 字符串替换函数改动。
 
@@ -323,7 +362,7 @@ user=> (s/replace "x12, b4" #"([a-z]+)([0-9]+)"
                      (s/re-quote-replacement "$1 <- $2"))
 ;=> "$1 <- $2, $1 <- $2"
 
-
+----
 2.10 Set and map constructor functions allow duplicates
 所有的set和map构造函数都允许重复元素。
 
@@ -346,7 +385,7 @@ duplicate keys are checked for once at compile time only, not each time a map is
 
 CLJ-1065 Allow duplicate set elements and map keys for all set and map constructors
 
-
+----
 2.11 More functions preserve metadata
 更多的函数会保留元数据。
 
@@ -360,7 +399,7 @@ for several common types of input collections.
 Now the functions into, select-keys, clojure.set/project, and clojure.set/rename 
 return collections with the same metadata as their input collections.
 
-
+----
 2.12 New edn reader, improvements to *read-eval*
 
 The new clojure.edn namespace reads edn (http://edn-format.org) data, 
@@ -379,21 +418,30 @@ As of 1.5, *read-eval* supports a documented set of thread-local bindings, see t
 
 CLJ-988 Multimethod tables are now protected by a read/write lock instead of a synchronized method. 
 This should result in a performance boost for multithreaded code using multimethods.
+多重方法的表格使用读写锁来控制，而不再是同步方法。
 
 CLJ-1061 when-first now evaluates its expression only once.
+when-first只计算它的表达式一次。
 
 CLJ-1084 PersistentVector$ChunkedSeq now implements Counted interface, 
 to avoid some cases where vector elements were being counted by iterating over their elements.
 
-CLJ-867 Records with same fields and field values, but different types, now usually hash to different values.
+PersistentVector$ChunkedSeq实现可数接口，避免通过迭代来计算向量的元素个数。
+
+CLJ-867 Records with same fields and field values, but different types, 
+now usually hash to different values.
+拥有相同字段和字段值，但不同类型的记录，hash值会不同。
 
 CLJ-1000 Cache hasheq() for seqs, sets, vectors, maps and queues
+对于序列，set，向量，映射，队列，缓存hasheq()的计算结果。
 
 (no ticket) array-map perf tweaks
+（perf tweaks，法律约束调整。）
 
 CLJ-1111 Allows loop to evaluate to primitive values
+允许loop求值成原始类型。
 
-
+======
 4 Improved error messages，异常信息改进。
 
 CLJ-103 Improved if-let error message when form has a improperly defined body.
@@ -409,7 +457,7 @@ CLJ-940 Passing a non-sequence to refer :only results in uninformative exception
 
 CLJ-1052 assoc now throws an exception if the last key argument is missing a value.
 
-
+=====
 5 Improved documentation strings，文档改进。
 
 CLJ-893 Document that vec will alias Java arrays
@@ -433,18 +481,20 @@ CLJ-962 Vectors returned by subvec allow access at negative indices
 subvec返回的向量，允许使用负下标。（hxzon：从而可以访问原向量元素。）
 
 CLJ-952 bigdec does not properly convert a clojure.lang.BigInt
+bigdec不能正确转换BigInt 。
 
 CLJ-975 inconsistent destructuring behaviour when using nested maps
-内嵌映射结构行为不一致。
+嵌套的映射，在解构时行为不一致。
 
 CLJ-954 TAP support in clojure.test.tap Needs Updating
 
 CLJ-881 exception when cl-format is given some ~f directive/value combinations
 
 CLJ-763 Do not check for duplicates in destructuring map creation
-不检查重复元素。
+创建map时，不检查重复元素。
 
 CLJ-667 Allow loops fully nested in catch/finally
+catch/finally 中，loop可以深层嵌套。
 
 CLJ-768 cl-format bug in ~f formatting
 
@@ -452,48 +502,66 @@ CLJ-844 NPE calling keyword on map from bean
 bean返回的map，使用关键字函数时抛出空指针异常。
 
 CLJ-934 disj! Throws exception when attempting to remove multiple items in one call
+disj! 在移除多个项时抛出异常。
 
 CLJ-943 When load-lib fails, a namespace is still created
+加载一个库时失败，但是命名空间却仍然创建了。
 
 CLJ-981 clojure.set/rename-keys deletes keys when there's a collision
+重命名键名，会在有冲突时删除键。
 
 CLJ-961 with-redefs loses a Var's root binding if the Var is thread-bound
+如果一个var有线程绑定值，with-redefs会丢失var的根值。
 
 CLJ-1032 seque leaks threads from the send-off pool
 
 CLJ-1041 reduce-kv on sorted maps should stop on seeing a Reduced value
+reduce-kv在操作有序映射时，在已规约的值上必须停止。
 
 CLJ-1011 clojure.data/diff should cope with null and false values in maps
+clojure.data/diff必须复制映射中的null值和false值。
 
 CLJ-977 (int \a) returns a value, (long \a) throws an exception
+(long \a)抛出异常。
 
 CLJ-964 test-clojure/rt.clj has undeclared dependency on clojure.set
 
 CLJ-923 Reading ratios prefixed by + is not working
+比例数前有正号时出错。
 
 CLJ-1012 partial function should also accept 1 arg (just f)
+partial允许接受一个参数。
 
 CLJ-932 contains? Should throw exception on non-keyed collections
+非映射的集合，使用contains? 须抛出异常。
 
 CLJ-730 Create test suite for functional fns (e.g. juxt, comp, partial, etc.)
 
 CLJ-757 Empty transient maps/sets return wrong value for .contains
+空的易变映射和易变set，调用contains方法时返回错误的值。
 
-CLJ-828 clojure.core/bases returns a cons when passed a class and a Java array when passed an interface
+CLJ-828 clojure.core/bases returns a cons when passed a class 
+and a Java array when passed an interface
+clojure.core/bases，参数为class时，返回一个cons，参数为接口时，返回一个java数组。
 
 CLJ-1062 CLJ-940 breaks compilation of namespaces that don't have any public functions
+没有公开函数的命名空间，破坏了兼容性。
 
 CLJ-1070 PersistentQueue's hash function does not match its equality
+PersistentQueue的hash函数不匹配它的值语义。
 
 CLJ-987 pprint doesn't flush the underlying stream
+pprint没有刷新它的底层流。
 
 CLJ-963 Support pretty printing namespace declarations under code-dispatch
 
 CLJ-902 doc macro broken for namespaces
 
 CLJ-909 Make LineNumberingPushbackReader's buffer size configurable
+LineNumberingPushbackReader的缓冲区大小可以配置。
 
 CLJ-910 Allow for type-hinting the method receiver in memfn
+允许类型提示。
 
 CLJ-1048 add test.generative to Clojure's tests
 
@@ -502,33 +570,44 @@ CLJ-1071 ExceptionInfo does no abstraction
 CLJ-1085 clojure.main/repl unconditionally refers REPL utilities into *ns*
 
 (no ticket) Rich Hickey fix: syntax-quote was walking records, returning maps
+语法引述在遍历记录时，返回映射。
 
 CLJ-1116 More REPL-friendly 'ns macro
 
 (no ticket) Rich Hickey fix: deref any j.u.c.Future
+任何Future实例都能解引用。
 
 CLJ-1092 New function re-quote-replacement has incorrect :added metadata
+re-quote-replacement方法的添加时间不对。
 
 CLJ-1098 Implement IKVReduce and CollFold for nil
+将 nil 扩展到 IKVReduce 和 CollFold 。
 
 (no ticket) Rich Hickey fix: impose once semantics on fabricated closures for e.g. loops
+（fabricate，制作。impose，施加。）
+对闭包施加一次性语义，例如loop中。
 
 CLJ-1140 Restore {:as x} destructuring for empty lists
+对空列表解构时的as选项。
 
 CLJ-1150 Make some PersistentVector's and APersistentVector.SubVector's internals public
+公开 PersistentVector 和 APersistentVector.SubVector 中原来私用的部分方法。
 
 (no ticket) Rich Hickey fix: use non-loading classForName
 
 CLJ-1106 Fixing set equality
+修正set的值语义。
 
 ========
 7 Binary Compatibility Notes，二进制兼容问题。
 
 public static inner class LispReader.ReaderException(int line, Throwable cause) Constructor 
 changed to ReaderException(int line, int column, Throwable cause) 
+
 添加了列号。
 
 public Object clojure.lang.Agent.dispatch(IFn fn, ISeq args, boolean solo) 
 Replaced with dispatch(IFn fn, ISeq args, Executor exec) 
-参数改为Executor。
+
+agent的分派方法，参数改为Executor，不再限制成两个执行器。
 

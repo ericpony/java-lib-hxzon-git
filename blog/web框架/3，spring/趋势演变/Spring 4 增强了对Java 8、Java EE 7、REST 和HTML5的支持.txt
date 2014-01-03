@@ -1,0 +1,137 @@
+﻿Spring 4 增强了对Java 8、Java EE 7、REST 和HTML5的支持
+
+作者 Matt Raible ，译者 孙镜涛 发布于 一月 01, 2014
+http://www.infoq.com/cn/news/2006/01/spring4
+
+=====
+几天之前Pivotal发布了Spring 4.0，这是自2009年之后发布的首个主要版本。
+
+新版本支持Java 8，支持使用Lambda的回调表达式、支持JSR 310日期和时间API
+以及参数名发现。
+对Java EE 7 的支持包括：JMS 2.0、JTA 1.2、JPA 2.1、Bean验证1.1和JSR-236并发工具。
+Spring 4还改善了REST支持，提供了一个新的AsyncRestTemplate
+和HTML5/WebSocket与旧版本浏览器的集成。
+
+如果你想要查看Spring 4的功能及其新特性的完整列表，
+那么可以查看Pivotal应用程序结构的首席架构师Adrian Colyer的博客Spring框架发布4.0GA版。
+
+Spring 4宣称该版本能够让Java和Groovy开发者很容易地交付和整合新应用程序架构、大数据、devops和云友好的部署。
+
+另外，它还包含一个新的名为Spring Boot的项目。
+Spring Boot是一个新Spring技术，该技术的目标是让Java开发也能够实现Ruby on Rails那样的生产效率。
+
+在Spring体系下有很多项目。
+
+最近的Spring IO项目就是为了将核心的Spring API带入一个有凝聚力、版本化的基础平台上而创建的。
+通俗地说，这是一个新的包含参考文档、教程、团队博客和论坛的网站。
+对于Spring IO和Spring Boot能够给开发者带来哪些帮助，Spring 4新闻稿中包含有这样一段非常有趣的话：
+Spring IO的主要目标是通过Spring Boot和Groovy这样的组件让Java成为开发者生产效率方面的领导者。
+“在Pivotal实验室里，开发者对幸福感和样板代码的偏执度已经形成了非常高的要求，
+因为他们过去完成了相当多的Ruby on Rails开发，”
+Pivotal实验室的首席运营官Edward Hieatt说。
+“在我们的实验室里，那些使用Spring框架4.0和Spring Boot的Ruby on Rails开发者对它印象深刻，
+因为它的生产效率很高同时能够在一个单一的编程模型上处理各种各样的场景”。
+
+----
+我想知道Spring 4是否是Spring 3的一个插入式替代品，为了找到答案我最近做了一个实验。
+在使用Spring 4和Spring Boot对Web应用进行大转变一文中，
+我将一个使用Spring 3.2.5、Spring安全3.1.4和Jersey 1.18开发的应用程序升级到了Spring 4、Jersey 2和Java 8。
+此外，我还集成了Spring Boot并且将其转换成了JavaConfig以替代XML。
+整个开发体验是非常令人愉快的。
+我再次发现Spring拥有非常好的向后兼容性。
+而我发现的唯一问题是在缺少容器的环境中使用Jersey时遇到的。
+
+在公告发布之后，我有幸采访了Adrian Colyer。
+
+----
+在你说Spring 4.0深度支持Java 8的时候，你的意思是什么？
+为什么使用Spring能够让Java 8更容易？
+
+Java 8完美地契合了Spring的编程模型。
+我们相信，将Java 8提供的那些优雅的语言特性
+及其立即使用的类库提升与标准的Spring API结合起来将会极具吸引力。
+事实上，Spring框架4.0是业界第一个完全支持Java 8的应用程序框架。
+为了提供能够在现在的Java 8上开发Spring应用程序所需要的所有内容，
+我们甚至在3月份Java 8生产启动之前就已经开始做相关的准备工作。
+
+----
+你提到Spring Boot为Java提供了史无前例的生产效率。
+那你觉得Grails、Spring Roo、Play和JRebel怎么样？
+
+它们可以让你开发一整天而不用重启应用。
+
+----
+Spring Boot在哪些方面要优于这些技术？
+
+Boot提供了比“企业”Java更多的生产力，同时还覆盖了一套更广泛的应用程序，从Web到纯粹的数据应用程序（Spring XD）。
+
+而另一方面，Grails则非常关注Web应用程序在完整堆栈环境中的快速开发。
+
+Spring能处理的内容远不止Web应用程序，Boot代表了可用于Spring及其生态系统项目的一种约定优于配置的方法。
+当然，我们还没有为以前所有的Spring项目提供Boot支持，
+但是采用的步伐是非常令人吃惊的，同时距离100%的饱和度也已经不远了。
+
+----
+为什么Pivotal会有如此之多基于JVM的框架（Grails、Spring Roo以及现在的Spring Boot）用于新应用程序的创建？
+
+事实上，Pivotal所有基于JVM的框架（Boot、Grails和Roo）都是基于Spring MVC的，但是它们的受众不同。
+
+Boot为Spring生态系统提供了一种固执的、约定优于配置风格的框架，它的适用范围比Web应用程序更广泛。
+
+而另一方面，Grails则更加关注领域特定的运行时，让用户能够使用Groovy语言和DSL快速开发Web应用程序。
+
+最后，Roo则是完全关注于代码生成。
+
+所有的这些框架都会将开发者带到Spring平台上，这是我们的主要目标。
+
+----
+你认为更多的选择会让开发者和决策者感到焦虑么？
+
+这是一个棘手的或者说是比较主观的问题。
+对于决策者而言，更多的选择听起来好像代表着更好的风险管理，更容易招聘到开发人员。
+对于开发者而言，这很有可能会引发更多的焦虑，
+相对而言，他们只有确实找到一种比他们的背景和已有技能水平更好的风格，他们才会感到兴奋。
+
+----
+Spring-Loaded看起来好像是一个免费版本的JRebel。
+根据其网站提供的信息，它是Grails 2中使用的重新装载系统。
+该项目与Spring Boot和它惊人的生产效率有关么？
+
+不是的。
+在Spring框架4.0中Boot是通过@Conditional注解启用的。
+你对加载的感知是准确的，但是JRebel更加全面，它能够和多个IDE一起使用。
+
+----
+对于Java EE（或者其他实现）缺失的内容Spring 4的WebSocket支持提供了哪些内容？
+
+这是关于后备选项（SockJS）和高层消息协议（STOMP）的。
+我们主要考虑将WebSocket作为一个传输层，真正有趣的部分出现在它上面。
+Spring的新消息模块表明了我们能够从哪里看到应用程序开发人员的共同点。
+它做的事情比Java EE 7中的JSR-356要多的多，要注意的是，我们也支持JSR-356，它是基础，
+但是我们更关注自己的WebSocket编程模型中的更高层次的交互模式。
+因为低于IE 10的浏览器并不支持WebSocket，所以实际上如果现在没有后备选项那么WebSocket是无法单独使用的。
+
+----
+Spring的JSP标签除了支持WebSockets和HTML5属性之外，
+Spring 4还为HTML5提供了哪些其他的特性？
+
+我们的焦点是让开发者能够使用面向HTML5的Web应用程序架构。
+从我们的角度，这不仅仅是通信风格和状态管理安排的问题，还包括特定的HTML5特性。
+也就是说，相对于客户端上流行的JavaScript框架而言，Spring也是一个好市民。
+我们不仅会做此时此刻的分享，我们还会致力于让Spring 4.x产品线持续地向下一代Web架构进化。
+
+----
+根据我的经验（来自于咨询和大会演讲），大多数开发者依然在通过XML使用Spring。
+你认为会有更多的开发者迁移到JavaConfig和Spring 4 上么？
+
+这是他们的选择，他们可以决定什么时候对哪些内容进行迁移对自己是有意义的。
+他们可以使用注解、JavaConfig或者XML——这比Java EE提供了更多的选项。
+顺便说一下，我们喜欢JavaConfig，希望更多的组织能够采用它。
+
+----
+如果你正在使用Spring和Maven，那么可以通过一个新的“材料清单”POM进行升级。
+如果想要下载或者查看Gradle坐标，那么可以查看Spring框架项目的网站。
+
+查看英文原文：Spring 4 Enhances Support for Java 8, Java EE 7, REST and HTML5
+http://www.infoq.com/news/2013/12/spring4
+

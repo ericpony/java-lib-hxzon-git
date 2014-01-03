@@ -11,35 +11,49 @@ CONTENTS
 1 Compatibility and Dependencies，兼容性和依赖。
 
 1.1 JDK Version Updates
+jdk版本升级。
 
 Clojure now builds with Java SE 1.6 and emits bytecode requiring Java SE 1.6 instead of Java SE 1.5. [CLJ-1268]
+需要java se 1.6或以上。
 
 1.2 Promoted "Alpha" Features
+
 （Promoted，v.<正>促进( promote的过去式和过去分词 )； 提升； 推销； 使 （学生）升级。）
 
 The following features are no longer marked Alpha in Clojure:
 以下功能不再是alpha状态。
 
 Watches - add-watch, remove-watch
+引用类型的观察器。
 
 Transients - transient, persistent!, conj!, assoc!, dissoc!, pop!, disj!
 易变集合。
 
 Exception data - ex-info, ex-data
+异常信息。
+
 Promises - promise, deliver
+承诺。
 
 Records - defrecord
+记录类型。
+
 Types - deftype
+普通类型。
 
 Pretty-print tables - print-table
+美化打印表格。
 
 ========
 2 New and Improved Features，新功能或改进。
 
 2.1 Java API
+供java使用的api。
 
 The clojure.api package provides a minimal interface to bootstrap Clojure access from other JVM languages. 
+
 It does this by providing: 
+
 1. The ability to use Clojure's namespaces to locate an arbitrary var, returning the var's clojure.lang.IFn interface. 
 2. A convenience method read for reading data using Clojure's edn reader
 
@@ -54,7 +68,7 @@ clojure.lang.IFn
 
 All other Java classes should be treated as implementation details, 
 and applications should avoid relying on them.
-以上两个包是公开的，其它的类则属于实现细节，避免直接使用它们。
+以上两个包是公开的，其它的类则属于实现细节，请避免直接使用它们。
 
 To lookup and call a Clojure function:
 
@@ -80,13 +94,16 @@ A few, however, refer to non-function data values.
 To access these, use deref instead of fn:
 
 IFn printLength = API.var("clojure.core", "*print-length*");
-API.var("clojure.core", "deref").invoke(printLength);
+API.var("clojure.core", "deref").invoke(printLength);	//解引用
 
+----
 2.2 bitops
 
 CLJ-827 - unsigned-bit-shift-right
+
 A new unsigned-bit-shift-right (Java's >>>) has been added to the core library. 
 The shift distance is truncated to the least 6 bits (per the Java specification for long >>>).
+
 添加了新函数，无符号右位移。
 
 Examples: 
@@ -100,11 +117,14 @@ Examples:
 (unsigned-bit-shift-right 2r100 3) 
 ;; 2r000
 
+----
 2.3 clojure.test
 
 CLJ-866 - test-vars
+
 Added a new clojure.test/test-vars function that takes a list of vars, 
 groups them by namespace, and runs them with their fixtures.
+
 添加了一个新方法clojure.test/test-vars 。
 
 ========
@@ -115,7 +135,9 @@ groups them by namespace, and runs them with their fixtures.
 CLJ-908 Print metadata for functions when print-meta is true and remove errant space at beginning.
 
 CLJ-937 pprint cl-format now supports E, F, and G formats for ratios.
+比例数支持使用E，F，G来格式化。
 
+----
 3.2 Error messages，改进异常信息。
 
 CLJ-1099 If non-seq passed where seq is needed, 
@@ -129,6 +151,7 @@ CLJ-1102 Better handling of exceptions with empty stack traces.
 
 CLJ-939 Exceptions thrown in the top level ns form are reported without file or line number.
 
+----
 3.3 Documentation strings，改进文档。
 
 CLJ-1164 Fix typos in clojure.instant/validated and other internal instant functions.
@@ -141,12 +164,16 @@ CLJ-1228 Fix a number of spelling errors in namespace and doc strings.
 
 CLJ-835 Update defmulti doc to clarify expectations for hierarchy argument.
 
+----
 3.4 Performance，性能。
 
 CLJ-858 Improve speed of STM by removing System.currentTimeMillis.
+通过移除System.currentTimeMillis，提升STM速度。
 
 CLJ-669 clojure.java.io/do-copy: use java.nio for Files
+使用java nio来复制文件。
 
+----
 3.5 Other improvements，其它改进。
 
 CLJ-908 Make default-data-reader-fn set!-able in REPL, similar to data-readers.
@@ -156,16 +183,20 @@ CLJ-783 Make clojure.inspector/inspect-tree work on sets.
 CLJ-896 Make browse-url aware of xdg-open.
 
 CLJ-1160 Fix clojure.core.reducers/mapcat does not stop on reduced? values.
+mapcat的错误：没有在reduced? 的值上停止。
 
 CLJ-1121 -> and ->> have been rewritten to work with a broader set of macros.
+重新实现这两个串行宏。
 
 CLJ-1105 clojure.walk now supports records.
+clojure.walk支持记录类型。
 
 CLJ-949 Removed all unnecessary cases of sneakyThrow.
 
 CLJ-1238 Allow EdnReader to read foo// (matches LispReader behavior).
 
 CLJ-1264 Remove uses of _ as a var in the Java code (causes warning in Java 8).
+在java中，不再使用 _ 作为一个var。
 
 ========
 4 Bug Fixes，bug修复。
@@ -174,22 +205,28 @@ CLJ-1018 Make range consistently return () with a step of 0.
 当step为0时，range返回空列表。
 
 CLJ-863 Make interleave return () on 0 args and identity on 1 args.
+interleave，没有参数时返回空列表，有1个参数时返回identity 。
 
 CLJ-1072 Update internal usages of the old metadata reader syntax to new syntax.
+内部也使用新的元数据语法，即 #^ 改成 ^ 。
 
 CLJ-1193 Make bigint and biginteger functions work on double values outside long range.
 使bigint和biginteger函数在双精度值上正常，当双精度值超出long范围时。
 
 CLJ-1154 Make Compile.java flush but not close stdout so errors can be reported.
+不关闭stdout，使得错误能输出。
 
 CLJ-1161 Remove bad version.properties from sources jar.
 
 CLJ-1175 Fix invalid behavior of Delay/deref if an exception is thrown 
 - exception will now be rethrown on subsequent calls and not enter a corrupted state.
+delay解引用时，如果发生异常，
 
 CLJ-1171 Fix several issues with instance? to make it consistent when used with apply.
+instance? 和 apply 一起使用时，不一致。
 
 CLJ-1202 Protocol fns with dashes may get incorrectly compiled into field accesses.
+协议的方法名含有下划线时，会错误的编译成字段访问器。
 
 CLJ-850 Add check to emit invokePrim with return type of double or long if type-hinted.
 
@@ -199,22 +236,28 @@ CLJ-1234 Accept whitespace in Record and Type reader forms (similar to data lite
 记录字面量和类型字面量可以包含空白符。
 
 CLJ-1233 Allow ** as a valid symbol name without triggering dynamic warnings.
+允许两个星号作为有效的符号名。
 
 CLJ-1246 Add support to clojure.reflect for classes with annotations.
+clojure.reflect支持带注解的类。
 
 CLJ-1184 Evaling #{do ...} or [do ...] is treated as do special form.
 #{do ...} 和 [do ...] 都视为特殊形式do 。
 
 CLJ-1090 Indirect function calls through Var instances fail to clear locals.
 （indirect，间接的。）
+通过var实例间接调用函数时，清除本地绑定失败。
 
 CLJ-1076 pprint tests fail on Windows, expecting \n.
 
 CLJ-766 Make into-array work consistently with short-array and byte-array on bigger types.
+into-array在字节数组和短整型数组上不一致。
 
-CLJ-1285 Data structure invariants are violated after persistent operations when collision node created by transients.
+CLJ-1285 Data structure invariants are violated after persistent operations 
+when collision node created by transients.
 
 CLJ-1222 Multiplication overflow issues around Long/MIN_VALUE
+long最小值做乘法时溢出。
 
 CLJ-1118 Inconsistent numeric comparison semantics between BigDecimals and other numerics
 bigDecimal和其它数值之间，数值比较的语义不一致。

@@ -1,0 +1,102 @@
+Web Development with Clojure ：Build Bulletproof Web Apps with Less Code
+
+http://pragprog.com/book/dswdcloj/web-development-with-clojure
+
+About this Book
+250 pages (est)
+Published: 2014-01-15
+Release: B6.0 (2013-12-16)
+ISBN: 978-1-93778-564-2
+
+Modern web development needs modern tools. Web Development With Clojure shows you how to apply Clojure programming fundamentals to build real-world solutions. You’ll develop all the pieces of a full web application in this powerful language. If you already have some familiarity with Clojure, you’ll learn how to put it to serious practical use. If you’re new to the language, the book provides just enough Clojure to get down to business.
+
+You’ll learn the full process of web development using Clojure while getting hands-on experience with current tools, libraries, and best practices in the language. You’ll develop Clojure apps with both the Light Table and Eclipse development environments. Rather than frameworks, Clojure development builds on rich libraries. You’ll acquire expertise in the popular Ring/Compojure stack, and you’ll learn to use the Liberator library to quickly develop RESTful services. Plus, you’ll find out how to use ClojureScript to work in one language on the client and server sides.
+
+Throughout the book, you’ll develop key components of web applications, including multiple approaches to database access. You’ll create a simple guestbook app and an app to serve resources to users. By the end, you will have developed a rich Picture Gallery web application from conception to packaging and deployment.
+
+This book is for anyone interested in taking the next step in web development.
+
+What You Need
+
+The latest JVM, Clojure 1.4+, and the Leiningen build tool, as well as an editor such as Emacs, Eclipse, or Light Table.
+
+====
+About the Author
+Dmitri Sotnikov has been developing Web applications professionally for close to a decade. He has developed and continues to maintain several Clojure libraries as well as the Luminus framework. He has worked in both startup and enterprise environments.
+
+====
+Contents and Extracts
+This book is currently in beta, so the contents and extracts will change as the book is developed.
+
+Preface
+Required Background
+Why Functional?
+Why Clojure?
+Getting Your Feet Wet
+Setting Up Your Environment
+Your First Project
+Clojure Web Stack
+Routing Requests With Ring
+Defining the Routes With Compojure
+Application Architecture
+Beyond Compojure and Ring
+What We Just Learned
+Liberator Services
+Creating The Project
+Defining Resources
+Putting It All Together
+Database Access
+Working With Relational Databases
+Report Generation
+Summary
+Picture Gallery
+The Development Process
+What’s In a Gallery
+Creating The Application
+Application Data Model
+Task A: Account Registration
+Task B: Login and Logout
+Task C: Uploading Pictures
+Task D: Displaying Pictures
+Task E: Deleting Pictures
+Task F: Account Deletion
+Finishing Touches
+Adding Some Style
+Unit Tests
+Logging
+Applications Profiles
+Packaging Applications
+Wrapping up
+Mixing It Up
+Using Selmer
+Upgrading To ClojureScript
+SQL Korma
+Creating Application Templates
+Wrapping Up
+Appendix A: Alternative IDE Options
+Installing Eclipse
+Installing Emacs
+Further Alternatives
+Appendix B: Syntax
+Data Types
+Using Functions
+Anonymous Functions
+Named Functions
+Higher-Order Functions
+Closures
+Threading Expressions
+Being Lazy
+Structuring the Code
+Destructuring Data
+Namespaces
+Dynamic variables
+Calling out to Java
+Calling methods
+What About Global State?
+Writing Code That Writes Code For You
+The Read Evaluate Print Loop
+Summary
+Appendix C: Document-Oriented Database Access
+Picking the Right Database
+Using CouchDB
+Using MongoDB

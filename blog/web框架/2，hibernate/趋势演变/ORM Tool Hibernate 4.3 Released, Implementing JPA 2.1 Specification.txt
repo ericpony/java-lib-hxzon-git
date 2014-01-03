@@ -1,3 +1,42 @@
+﻿ORM工具Hibernate 4.3发布, 实现JPA 2.1规范
+
+译者 孙镜涛 发布于 一月 02, 2014
+http://www.infoq.com/cn/news/2014/01/hibernate-4-3-released
+
+====
+最终版本的Hibernate ORM 4.3（一个基于Java的对象关系映射框架）已于最近发布，
+新版本支持存储过程和实体图。
+
+Hibernate 4.3是JPA 2.1规范和JSR 338的一个认证实现。
+该版本的主要目标是支持JPA 2.1规范和定义的新特性，包括：
+
+为存储过程的使用和函数调用提供了标准的支持。
+
+现在能够通过类型安全的方式定义和执行UPDATE及DELETE查询。
+
+用于在单独的类中实现生命周期事件的实体监听器现在可以使用CDI标准（JSR-299）进行依赖注入。
+
+属性转换器（AttributeConverters），基本值可以在数据库表示和相应对象表示之间进行转换。
+
+实体图，可以用于定义一个实体及其子元素的加载方式。一个图形的加载方式也可能会动态变化。
+
+供应商之间执行一种标准的模式生成方式，同时还有一个所有的供应商都理解的基线配置。
+
+现在能够通过SynchronizationType控制当前事务持久化上下文的同步。
+
+现在借助于@ConstructorResult注解能够使用从一个SQL查询返回的参数值构造对象。
+
+--
+其他与新JPA规范并不相关的重大变化包括：
+
+增加了对OSGi环境的支持。计划是在Hibernate 5中进一步提升对它的支持。
+
+支持内联脏检查，基于Hibernate中增强的新字节码支持查找哪些实体的状态发生了变化。
+
+文档也已经被更新以便与新版本匹配。
+
+=====
+=====
 ORM Tool Hibernate 4.3 Released, Implementing JPA 2.1 Specification
 
 by Jan Stenberg on Dec 31, 2013
@@ -5,53 +44,54 @@ http://www.infoq.com/news/2013/12/hibernate-4-3-released
 
 The final version of Hibernate ORM 4.3, a Java-based Object-Relational Mapping, ORM, framework, was recently released, 
 bringing support for stored procedures and entity graphs. 
-֧�ִ洢���̺�ʵ��ͼ��
+支持存储过程和实体图。
 
 Hibernate 4.3 is a certified implementation of the JPA 2.1 Specification, JSR 338, released in May 2013.
-ʵ����jpa2.1�淶��
+实现了jpa2.1规范。
 
 Main focus for this release has been on support for the JPA 2.1 specification and the new features defined which include:
-��Ҫ�ص���֧��jpa2.1�淶�����������ԣ�
+主要重点是支持jpa2.1规范和以下新特性：
 
 Standardized support for working with stored procedure and function calls, across both providers and database vendors.
-�洢���̺ͺ������õı�׼���������ݿ�ƽ̨��
+存储过程和函数调用的标准化，跨数据库平台。
 
 Definition and execution of UPDATE and DELETE queries can now be made in a type-safe way.
-�����ִ��update��delete��䣬���������Ͱ�ȫ�ġ�
+定义和执行update和delete语句，现在是类型安全的。
 
 Entity listeners, for implementing lifecycle events in separate classes, 
 may now use the CDI standard, (JSR-299), for injection of dependencies.
-ʵ����������ڵ���������ʵ�֣�����ʹ��CDI��׼��
+实体监听器，在单独的类中实现，可以使用CDI标准。
 
 AttributeConverters, 
 which enable conversions of basic values between the representation in the database and in the corresponding objects.
-����ת����������ֵת�����ݿ�ı�ʾ�������෴��
+属性转换，将基本值转成数据库的表示，或者相反。
 
 Entity Graphs for defining how an entity and its sub-elements are loaded. 
 How a graph is loaded may also be changed dynamically.
-ʵ��ͼ����������һ��ʵ���������Ԫ����μ��أ����Զ�̬�ı���ط�ʽ��
+实体图，用来定义一个实体和它的子元素如何加载，可以动态改变加载方式。
 
 A standardized way of how schema generation is performed across providers together 
 with a baseline of configuration settings all providers understand.
-��δ������ݿ������׼����
+如何创建数据库表，标准化。
 
 Synchronization of persistence context with the current transaction can now be controlled via SynchronizationType.
-��ǰ����ĳ־������ĵ�ͬ��������ʹ��SynchronizationType���ơ�
+当前事务的持久上下文的同步，可以使用SynchronizationType控制。
 
 An object can now be constructed using argument values 
 returned from a SQL query by using the @ConstructorResult annotation.
-����ʹ��@ConstructorResultע�⣬��һ��sqlԭ����ѯ���صĲ���ֵ������������
+可以使用@ConstructorResult注解，从一个sql原生查询返回的参数值，来构建对象。
 
 Other significant changes, not related to the new JPA specification, include:
-��jpa�淶�޹صĸı䣬���£�
+和jpa规范无关的改变，如下：
 
 Increased support for OSGi environments. 
 The plan is to further improve the support in Hibernate 5.
-֧��osgi������
+支持osgi环境。
 
 Support for inline dirty checking, finding which entities state has changed, 
 based on new bytecode enhancement support within Hibernate.
-֧�����������飬�����ֽ�����ǿ��
+支持内联肮脏检查，基于字节码增强。
 
 Documentation has been updated to correspond with the new version.
-�ĵ��Ѿ����¡�
+文档已经更新。
+
