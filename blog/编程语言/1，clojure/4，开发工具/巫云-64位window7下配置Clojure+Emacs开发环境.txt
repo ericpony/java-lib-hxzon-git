@@ -1,0 +1,213 @@
+﻿巫云-64位window7下配置Clojure+Emacs开发环境
+
+http://www.cnblogs.com/darkluck99/archive/2012/02/20/2360216.html
+
+为了学习Clojure，我最近特别在windows下配置了基于Emacs的Clojure开发环境。
+把过程做个记录，跟大家分享一下。
+过程不算太复杂，关键是要多使用Google来解决问题，有些版本问题比较难解决，耐心多尝试就能成功。
+很多同学都说使用linux更合适等等，我觉得确实有道理，
+但windows毕竟是很多程序员每天工作必用的工具，使用起来方便的多，所以还是有必要折腾一把。
+
+开始了，首先我的操作系统是64位的windows7，英文版。
+随着现在内存的价格下降，64位win7系统已经开始成为程序员的主要工作平台，所以我们配置的开发环境也要能支持64位win7才算合格。
+
+具体步骤：
+
+1.安装jdk，因为Clojure是基于JVM的语言，所以java开发环境肯定是必装的。
+我们直接下载Oracle官方的64位安装包，1.7的最新版本：jdk-7u2-windows-x64.exe。
+下载完毕后双击安装即可。
+
+安装完毕，添加环境变量JAVA_HOME，内容为jdk的系统路径。
+
+例如：
+
+JAVA_HOME => D:\Program Files\Java\jdk1.7.0_02
+
+PATH =>  D:\Program Files\Java\jdk1.7.0_02\bin 
+
+打开终端，测试，输入java –version回车。 
+
+2.安装maven2，maven是java开发常用的项目构建工具，提供jar包的管理功能，
+因为leiningen需要使用maven的软件仓库进行包的管理，因此，我们先要安装maven2。
+从官方下载压缩包，我下载的是2.2.1版。
+
+下载网站：http://maven.apache.org/download.html
+
+下载完毕，解压到本地目录，我放置在D:\new\apache-maven-2
+
+添加环境变量：各位同学请输入自己的路径
+
+M2_HOME => D:\new\apache-maven-2
+
+M2 => D:\new\apache-maven-2\bin
+
+MAVEN_OPTS => -Xms256m -Xmx512m
+
+PATH => %M2%
+
+打开终端，测试，输入mvn --version回车。 
+
+3.安装leiningen，leiningen是基于Clojure的项目构建工具，可以为Clojure项目打包解决项目依赖，
+这也是我们这次配置中要使用的主要工具。
+
+下载leiningen的windows压缩包和jar包
+（这里注意，不要用1.62的安装脚本安装，运行后面步骤时会出现错误），我下载的是：
+
+leiningen-1.5.2-win.zip和leiningen-1.7.0-SNAPSHOT-standalone.jar
+
+下载网站：https://github.com/technomancy/leiningen/downloads
+
+下载完毕，leiningen-1.5.2-win.zip解压缩到本地目录。
+我放置在D:\new\lein，同时把leiningen-1.7.0-SNAPSHOT-standalone.jar拷贝到这个文件夹下面。
+
+添加环境变量：各位同学请输入自己的路径
+
+Path => D:\new\lein
+
+LEIN => D:\new\lein
+
+LEIN_JAR => d:\new\lein\leiningen-1.7.0-SNAPSHOT-standalone.jar
+
+打开终端，测试，输入 lein version回车。
+
+安装leiningen插件：
+
+swank-clojure，用于Emacs的repl插件，集成了SLIME功能。
+使用命令：
+
+lein plugin install swank-clojure 1.4.0回车。
+
+lein会自动下载相关依赖并安装swank-clojure 。
+
+至此，lein安装完毕。
+
+4.安装Emacs，Emacs是一个多功能的文本编辑工具，可谓大名顶顶，是Hacker们的最爱。
+我们下载最新的Emacs2.4版。
+
+下载地址：https://code.google.com/p/emacs-for-windows/updates/list
+
+压缩包解压到本地路径。
+
+安装Clojure插件clojure-mode
+
+下载地址https://github.com/jochu/clojure-mode
+
+只下clojure-mode.el即可，下载完毕放到Emacs的默认插件目录下面。
+
+在win7下，Emacs的默认插件目录是C:\Users\用户名\AppData\Roaming\.emacs.d\
+
+由于AppData是隐藏文件，要注意。
+我放置的路径是C:\Users\Adam\AppData\Roaming\.emacs.d\clojure-mode\clojure-mode.el
+
+Emacs的默认配置文件夹是C:\Users\用户名\AppData\Roaming，配置文件名是.emacs。
+如果文件不存在，可以手动创建一个。
+
+编辑.emacs文件，添加如下内容：
+
+(add-to-list 'load-path "~/.emacs.d")
+
+(add-to-list 'load-path "~/.emacs.d/clojure-mode")
+
+(require 'clojure-mode)
+
+其他插件可选择性的安装，关于Emacs插件的安装和配置，这里就不多讲了，大家多Google即可。
+记住一点，开源东西bug不少，版本兼容性差，大家一定要耐得住性子才能成功啊。
+坚持，再坚持，哈哈，痛苦的过程。
+
+推荐安装的插件：auto-complete, paredit,color-theme
+
+全部的配置如下:
+
+(add-to-list 'load-path "~/.emacs.d")
+(add-to-list 'load-path "~/.emacs.d/clojure-mode")
+(add-to-list 'load-path "~/.emacs.d/color-theme")
+(add-to-list 'load-path "~/.emacs.d/auto-complete")
+ 
+(require 'clojure-mode)
+ 
+(require 'color-theme)
+(color-theme-initialize)
+(color-theme-xemacs)
+ 
+(require 'auto-complete-config)
+(ac-config-default)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/auto-complete/dict")
+      
+(autoload 'paredit-mode "paredit"
+      "Minor mode for pseudo-structurally editing Lisp code." t)
+    (add-hook 'emacs-lisp-mode-hook       (lambda () (paredit-mode +1)))
+    (add-hook 'lisp-mode-hook             (lambda () (paredit-mode +1)))
+    (add-hook 'lisp-interaction-mode-hook (lambda () (paredit-mode +1)))
+    (add-hook 'scheme-mode-hook           (lambda () (paredit-mode +1)))
+    (add-hook 'clojure-mode-hook           (lambda () (paredit-mode +1)))
+    (add-hook 'slime-repl-mode-hook (lambda () (paredit-mode +1)))
+(defun override-slime-repl-bindings-with-paredit ()
+            (define-key slime-repl-mode-map
+                (read-kbd-macro paredit-backward-delete-key) nil))
+                (add-hook 'slime-repl-mode-hook 'override-slime-repl-bindings-with-paredit)  
+ 
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(tool-bar-mode nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :stipple nil :background "gray80" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 113 :width normal :foundry "outline" :family "Consolas")))))
+ 
+(show-paren-mode 1)
+(setq visible-bell nil)
+(setq scroll-step 1
+        scroll-margin 3
+        scroll-conservatively 10000)
+(global-linum-mode 'linum-mode) ;
+(set-scroll-bar-mode nil) ;去掉滚动条
+(auto-save-mode nil) ;;禁止自动保存
+(global-set-key (kbd "C-|") 'other-window);
+(setq frame-title-format 
+      '("%S" (buffer-file-name "%f" 
+                   (dired-directory dired-directory "%b"))))
+ 
+
+5.好了，安装完毕，经过一大堆的配置，现在我们要开始享受劳动成果了。
+
+1）新建一个文件夹，我用的是D:\new\ClojCodes\
+
+2）进入终端，输入以下命令：
+
+cd d: 回车
+
+cd new\ClojCodes\ 回车
+
+lein new Project1回车
+
+3）这时，会创建一个D:\new\ClojCodes\ Project1的项目文件夹。
+
+我们打开这个文件下的project1.clj把内容修改为：
+
+(defproject SwankProject "1.0.0-SNAPSHOT"
+   :description "FIXME: write description"
+   :dependencies [[org.clojure/clojure "1.3.0"]
+                  [org.clojure/clojure-contrib "1.2.0"]])
+ 
+
+保存。
+
+4）终端下进入这个文件夹，输入
+
+lein deps回车
+
+lein将通过maven的仓库管理，自动下载依赖的jar包并更新。
+
+可能需要较长时间的等待，请耐心。
+
+5）启动Emacs，打开我们修改过的project1.clj，按下alt+x，Emacs的表示法为M-x，
+在提示处输入clojure-jack-in，稍候片刻，就会出现slime的repl界面，
+然后我们可以输入简单的clojure代码进行测试和编程了。
+
+文章结束，祝大家玩的开心。
+

@@ -1,0 +1,145 @@
+﻿A dependency injection pattern in Clojure
+依赖注入。
+
+注释by hxzon。
+
+http://tech.puredanger.com/2014/01/03/clojure-dependency-injection/
+
+By Alex, tech.puredanger.com
+January 3rd, 2014
+
+=========
+Patterns and dependency injection – I’m partying like it’s 2006!
+
+Say you have some Clojure functions that look like this:
+
+(defn foo [config queue db-conn arg1] 
+  ...use config, queue, db-conn... )
+(defn bar [config queue db-conn arg1 arg2] 
+  ...use config, queue, db-conn... )
+
+----
+Bindings
+通过动态变量解决。
+
+Seeing all those config options and system resources on every function just looks gross right? 
+There is a temptation to stuff them in a dynamic var and just bind calls around the lot of them:
+
+;; original ns
+(def ^:dynamic *config*)
+(def ^:dynamic *queue*)
+(def ^:dynamic *db-conn*)
+
+(defn foo [arg1] 
+  ...use *config*, *queue*, *db-conn*...)
+(defn bar [arg1 arg2] 
+  ...use *config*, *queue*, *db-conn*...)
+
+;; in calling function
+(binding [*config* {...}
+           *queue* ...
+           *db-conn* ...]
+  (foo arg1))
+
+
+
+We’ve removed a lot of duplication here, 
+but also hidden the dependencies of this function in a set of dynamic vars 
+that have no external linkage to the function. 
+但是隐藏了函数对动态变量的依赖性。
+That’s like Java objects calling into a bunch of singletons. 
+It fills me with a foreboding sense of dread.
+
+----
+A dependency injection pattern
+
+[wherein I completely ignore all formal pattern languages]
+
+I’ve tried a number of ways to do dependency injection in Clojure 
+and this is one pattern that I’ve found to be useful. 
+It bears some similarity to service locators and has some similar dangers.
+
+1) Define a record for the environmental context. 
+为环境上下文定义一个记录。
+
+Sometimes this is the environment for your whole application, 
+sometimes it’s a particular subsystem or component. 
+Words like system, environment, subsystem, and component all seem in the right genre to me.
+
+(defrecord SystemDependencies [
+  config  ;; Configuration map
+  queue   ;; Incoming data queue
+  db-conn ;; External database connection
+  ])
+
+2) Define a protocol for the set of related functions.
+为这些相关的函数定义一个协议。
+
+(defprotocol FooBarFns
+  (foo [system arg1])
+  (bar [system arg1 arg2]))
+
+3) Extend the protocol to the record, filling in the function impls:
+将协议扩展到这个记录。
+
+(extend-protocol FooBarFns 
+  SystemDependencies
+  (foo [system arg1] ... use (:config system) etc... )
+  (bar [system arg1 arg2] ... use (:config system) etc... ))
+
+4) Repeat steps 2-3 as needed for different sets of functions.
+
+I like the way this factors out. 
+SystemDependencies is just a record which is a map, 
+which is visible data that you can extract and manipulate in whatever way you need. 
+Your dependencies and config are plain data. 
+If you want to write tests with mock queues and mock database connections, go for it! 
+Everything is externalized via the SystemDependencies. 
+It’s easy to pass the SystemDependencies between different function sets, each extended to the same record.
+
+----
+State
+
+If you want your dependency holder to be stateful, you can put refs in there, 
+如果你的依赖有状态，可以使用ref。
+however I would not recommend starting that way. 
+但我不建议这么做。
+You have then created the opportunity for all of your functions 
+to be stateful naughty impure tricksy functions in a new way. 
+Bad enough they’re talking to the external world in the first place!
+
+Somewhere higher up, I’d probably want a SystemState record, 
+that saved the SystemDependencies record inside a ref:
+一个新的记录类型，在内部使用ref保存“系统依赖”。
+
+(defrecord SystemState [
+  deps-ref ;; ref -> SystemDependencies 
+  ])
+
+Calls into the subsystem would then extract the SystemDependencies from the SystemState prior to the call.
+
+Depending on your ref granularity, you might extract from many stateful refs 
+(in a doref block of course for a consistent view) to construct the SystemDependencies record.
+
+----
+Dangers and risks
+危险和风险。
+
+One consequence of creating these catch-all containers of dependencies is that 
+it is then easy to be sloppy and just use that everywhere 
+and thus imply that all your functions use all your dependencies. 
+Depending on the scope of your dependency context record and function protocols, 
+this may be a useful simplifying assumption. 
+Or it could just as easily obscure the dependencies used by every function in your system. 
+Creating the dependency records at a subsystem level, 
+and function protocols at the namespace level balances concerns ok.
+
+Similarly, using a bucket of dependencies makes it hard to tell when some of them stop being used. 
+Diligence (ha!), conventions, or tooling can help.
+
+----
+Also see…
+
+I have not yet had a chance to examine it closely, 
+but I suspect there are some similarities here to what Stuart Sierra is doing in his Component library.
+https://github.com/stuartsierra/component
