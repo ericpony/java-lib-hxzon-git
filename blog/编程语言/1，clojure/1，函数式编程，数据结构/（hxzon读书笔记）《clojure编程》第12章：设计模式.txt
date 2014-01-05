@@ -33,6 +33,8 @@ by hxzon
 Robert Hooke 函数库
 https://github.com/technomancy/robert-hooke
 
+设置一个计时函数的钩子：
+
 (defn time-it [f & args]
   (let [start (System/currentTimeMillis)]
     (try
@@ -46,21 +48,25 @@ https://github.com/technomancy/robert-hooke
   (Thread/sleep (rand-int 1000))
   (+ x y))
 
+;把time-it钩子加到#'foo 上，会影响这个函数所有的调用。
 (robert.hooke/add-hook #'foo time-it)
 
 (foo 1 2)
 ; Run time: 772 ms
 ;= 3
 
+;暂时禁用钩子。
 (robert.hooke/with-hooks-disabled foo (foo 1 2))
 ;= 3
 
+;删除钩子。
 (robert.hooke/remove-hook #'foo time-it)
 ;= #<user$foo user$foo@4f13f501>
 
 (foo 1 2)
 ;= 3
 
+;把一个钩子加到一个命名空间里的所有var上。
 (require 'clojure.set)
 ;= nil
 
@@ -73,4 +79,6 @@ https://github.com/technomancy/robert-hooke
                           (set (range -100000 10)))
 ; Run time: 97 ms
 ;= #{0 1 2 3 4 5 6 7 8 9}
+
+Robert Hooke只有100行纯clojure代码，不需要任何特别的语言或编译器支持，而且提供的能力是AOP的超集。
 

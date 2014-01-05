@@ -2,6 +2,28 @@
 
 by hxzon
 ======
+1，agent
+
+不协调、异步的引用类型。
+对agentA和agentB的修改是完全独立的。
+发起对agent进行改变的线程，与真正改变agent值的线程，不是同一个线程。
+
+-1，可以很安全地利用agent进行IO以及其它各种副作用操作。
+-2，agent是STM感知的，因此它们可以很安全地用在事务重试的场景下。 
+
+----
+2，修改agent：send和send-off 。
+参数：更新函数f，以及f需要的参数。f的第1个参数为agent。
+
+更新函数f，加上额外参数，叫做一个“agent action”，每个agent维护一个action的队列。
+注意，动作都是串行执行的。
+
+send和send-off都会马上返回，它们只是把这个action放到agent的动作队列上，
+然后这些动作会以它们被发送的顺序，在一些专用的线程上执行。
+send和send-off的唯一区别就是执行动作的线程不同，
+send的动作在一个固定大小的线程池中执行，所以不适宜进行IO或其它阻塞操作。
+send-off的动作则在一个不限制大小的线程池中执行，所以适宜阻塞的、非CPU密集型的操作。
+
 (def a (agent 500))
 ;= #'user/a
 
@@ -17,7 +39,16 @@ by hxzon
 (send a inc)
 ;= #<Agent@65f7bb1f: 1>
 
+----
+3，等待动作执行完成：await，await-for 。
+
+await-for可以指定超时时间。
+
+(.getQueueCount agentA)可以得到队列中有多少个动作。但这是一个实现细节。
+
+--
 (def a (agent 5000))
+
 (def b (agent 10000))
 
 (send-off a #(Thread/sleep %))
@@ -34,6 +65,17 @@ by hxzon
 
 @a
 ;= nil
+
+=====
+4，处理动作中的错误。
+
+如果一个动作抛出异常，默认的处理策略是这个agent默默的挂掉。
+仍可以对挂掉的agent解引用，获得它最后的值，
+但是再发送新动作会得到“使这个agent挂掉”的异常。
+使用agent-error可以显示获取这个异常。
+
+可以通过restart-agent来重启一个挂掉的agent，并重置它的值。
+如果指定:clear-actions选项，还会清除agent已有的动作，防止它又马上挂掉。
 
 (def a (agent nil))
 ;= #'user/a
@@ -72,6 +114,12 @@ a
 (agent-error a)
 ;= nil
 
+----
+创建agent时，通过:error-mode可以指定错误处理的模式，默认值:fail表示挂掉，:continue表示忽略错误。
+在创建时还可以通过:error-handler指定错误处理函数，它的参数为agent和抛出的异常对象。
+也可以通过set-error-handler! 和 set-error-mode! 来设置错误处理函数和错误处理模式。
+
+
 (def a (agent nil :error-mode :continue))
 ;= #'user/a
 
@@ -105,7 +153,31 @@ a
 (send a identity)
 ;= #<Exception java.lang.Exception: FATAL>
 
+====
+5，IO，事务，以及嵌套的send 。
+
+可以非常安全的利用agent来协调IO或者其它类型的阻塞操作。
+因为agent会串行执行所有发送给它的动作，因此它给有副作用的操作提供一个很自然的同步点。
+
+可以建立一个agent来保持一个指向文件，或者网络socket的输出流，或一个数据库的连接，或一个消息队列的连接，
+可以确定发送到agent的每个动作在执行期间都能独占这个连接。
+这使得agent非常容易融合到clojure的环境中，包括ref和atom，它们的目标就是最小化它们跟周围环境的副作用。
+
+agent跟STM的实现紧密融合的。
+在一个事务内，通过send和send-off发送的动作，会被保持到事务成功提交。
+这意味着，事务被重试100次，被发送给agent的动作，也在事务成功提交“之后”被执行一次。
+
+类似的，在一个agent动作内部，对send和send-off的调用（称为“嵌套发送”），也会被保持直到这个动作完成。
+
+这两种情况下，被发送的动作，都可能因为一个校验器失败而被全部丢弃。
+
 ----
+5.1，示例：利用agent，将引用状态的变更记录到日志
+
+共享IO资源，却不需要使用锁。
+
+利用观察器，以及agent，给游戏中的角色实现一个“后写”日志。
+
 (require '[clojure.java.io :as io])
 
 (def console (agent *out*))
@@ -120,6 +192,7 @@ a
     (.write "\n")
     .flush))
 
+;观察器，把引用类型跟agent连接起来。
 (defn log-reference
   [reference & writer-agents]
   (add-watch reference :log
@@ -186,6 +259,9 @@ a
 ; Gandalf heals Bilbo for 33.37374788147494
 ; ...
 
+----
+5.2，示例：利用agent来并行化工作量。
+
 (require '[net.cgrand.enlive-html :as enlive])
 
 (use '[clojure.string :only (lower-case)])
@@ -219,10 +295,12 @@ a
 
 (declare get-url)
 
+; ::t 保存这个agent下一步要做的事情的函数。这里使用全限定关键字，是为了避免和用户加进状态的关键字冲突。
 (def agents (set (repeatedly 25 #(agent {::t #'get-url :queue url-queue}))))
 
 (declare run process handle-results)
 
+; ::blocking元数据用来表明阻塞。
 (defn ^::blocking get-url
   [{:keys [^BlockingQueue queue] :as state}]
   (let [url (as-url (.take queue))]
@@ -249,6 +327,10 @@ a
                 {}
                 (words-from html))})
     (finally (run *agent*))))
+; 在一个动作内部，*agent*绑定到当前的agent。
+; 这种用法很常见，它使得agent可以连续运行。
+; run会根据有没有::blocking来判断每个动作应该用send还是send-off来分发。
+; run会检查有没有::paused（是否暂停）。
 
 (defn ^::blocking handle-results
   [{:keys [url links words]}]
@@ -260,6 +342,7 @@ a
     {::t #'get-url :queue url-queue}
     (finally (run *agent*))))
 
+; run，网络爬虫的“主循环”。
 (defn paused? [agent] (::paused (meta agent)))
 
 (defn run
@@ -274,6 +357,7 @@ a
                     (dispatch-fn *agent* transition)))
                 state)))))
 
+; 可以通过元数据来暂停和重启agent方法。
 (defn pause
   ([] (doseq [a agents] (pause a)))
   ([a] (alter-meta! a assoc ::paused true)))
@@ -307,6 +391,7 @@ a
 (test-crawler 25 "http://www.bbc.co.uk/news/")
 ;= [670 81775]
 
+; 查看计算出来的单词频度。
 (->> (sort-by val @word-freqs)
   reverse
   (take 10))
@@ -318,6 +403,8 @@ a
 ;= (["relieved" 1] ["karim" 1] ["gnome" 1] ["brummell" 1] ["mccredie" 1]
 ;= ["ensinar" 1] ["estrictas" 1] ["arap" 1] ["forcibly" 1] ["kitchin" 1])
 
+; 区分阻塞和非阻塞操作，可以最大化利用资源。
+; 通过把process标示成阻塞的，查看对整体吞吐量的负面影响。
 (alter-meta! #'process assoc ::blocking true)
 ;= {:arglists ([{:keys [url content]}]), :ns #<Namespace user>,
 ;= :name process, :user/blocking true}
