@@ -11,6 +11,8 @@ by hxzon
 
 易变集合（只是一种性能优化手段）。
 
+group-by，reduce-by。
+
 ==========
 1，《3.1，Abstractions over Implementations，抽象优于实现》
 
@@ -268,11 +270,40 @@ val。
 map作为临时结构。
 defrecord。
 
-group-by。
+----
+分组及分组聚合。
 
+(group-by key-fn coll)：根据key-fn函数把一个集合分成多组。
+
+(group-by #(rem % 3) (rang 10))
+;= {0 [0 3 6 9] , 1 [1 4 7] , 2 [2 5 8]}
+
+(def playlist
+[   {:title "Elephant", :artist "The White Stripes", :year 2003}
+    {:title "Helioself", :artist "Papas Fritas", :year 1997}
+    {:title "Stories from the City, Stories from the Sea",
+        :artist "PJ Harvey", :year 2000}
+    {:title "Buildings and Grounds", :artist "Papas Fritas", :year 2000}
+    {:title "Zen Rodeo", :artist "Mardi Gras BB", :year 2002}])
+
+;按某个键分组。
+(group-by :artist playlist)
+;= {"Papas Fritas" [{:title "Helioself", :artist "Papas Fritas", :year 1997}
+;= {:title "Buildings and Grounds", :artist "Papas Fritas"}]
+;= ...}
+
+;按两个键分组。
+(group-by (juxt :col1 :col2) data)
+
+;分组，计算每组的聚合信息。
+;key-fn，分组函数。summarize，聚合函数。
+(into {} (for [[k v] (group-by key-fn coll)]    ;将group-by的结果解构成键和值。
+              [k (summarize v)]))
+
+;reduce-by，对任意种类的数据计算聚合数据。
 (defn reduce-by
-    [key-fn f init coll]
-    (reduce (fn [summaries x]
+    [key-fn f init coll]    ;f为聚合函数。
+    (reduce (fn [summaries x]   ;summaries为上一轮的聚合结果，是一个map。
                 (let [k (key-fn x)]
                     (assoc summaries k (f (summaries k init) x))))
             {} coll))
@@ -286,17 +317,20 @@ group-by。
         {:product "Anvil", :customer "Elmer Fudd", :qty 2, :total 300}
         {:product "Anvil", :customer "Wile Coyote", :qty 6, :total 900}])
 
+;按照客户名字分组，每个分组求和total值。
 (reduce-by :customer #(+ %1 (:total %2)) 0 orders)
 ;= {"Elmer Fudd" 1200, "Wile Coyote" 7200}
 
+;按照产品名字分组，收集每个产品的客户名字。
 (reduce-by :product #(conj %1 (:customer %2)) #{} orders)
 ;= {"Anvil" #{"Wile Coyote" "Elmer Fudd"},
-;= "Hole" #{"Wile Coyote"},
-;= "Shells" #{"Elmer Fudd"},
-;= "Shotgun" #{"Elmer Fudd"},
-;= "Dynamite" #{"Wile Coyote"},
-;= "Clock" #{"Wile Coyote"}}
+;=  "Hole" #{"Wile Coyote"},
+;=  "Shells" #{"Elmer Fudd"},
+;=  "Shotgun" #{"Elmer Fudd"},
+;=  "Dynamite" #{"Wile Coyote"},
+;=  "Clock" #{"Wile Coyote"}}
 
+;查看每个客户在每种产品上的金额。（下面三种方式是等价的。）
 (fn [order]
     [(:customer order) (:product order)])
 
@@ -310,13 +344,14 @@ group-by。
 (reduce-by  (juxt :customer :product)
             #(+ %1 (:total %2)) 0 orders)
 ;= {["Wile Coyote" "Anvil"] 900,
-;= ["Elmer Fudd" "Anvil"] 300,
-;= ["Wile Coyote" "Hole"] 1000,
-;= ["Elmer Fudd" "Shells"] 100,
-;= ["Elmer Fudd" "Shotgun"] 800,
-;= ["Wile Coyote" "Dynamite"] 5000,
-;= ["Wile Coyote" "Clock"] 300}
+;=  ["Elmer Fudd" "Anvil"] 300,
+;=  ["Wile Coyote" "Hole"] 1000,
+;=  ["Elmer Fudd" "Shells"] 100,
+;=  ["Elmer Fudd" "Shotgun"] 800,
+;=  ["Wile Coyote" "Dynamite"] 5000,
+;=  ["Wile Coyote" "Clock"] 300}
 
+;如果需要包含map的map，需要将assoc和get（隐式调用）换成assoc-in和get-in。
 (defn reduce-by-in
     [keys-fn f init coll]
     (reduce (fn [summaries x]
@@ -327,14 +362,15 @@ group-by。
 
 (reduce-by-in (juxt :customer :product)
               #(+ %1 (:total %2)) 0 orders)
-;= {"Elmer Fudd" {"Anvil" 300,
-;= "Shells" 100,
-;= "Shotgun" 800},
-;= "Wile Coyote" {"Anvil" 900,
-;= "Hole" 1000,
-;= "Dynamite" 5000,
-;= "Clock" 300}}
+;= {"Elmer Fudd" {  "Anvil" 300,
+;=                  "Shells" 100,
+;=                  "Shotgun" 800},
+;= "Wile Coyote" {  "Anvil" 900,
+;=                  "Hole" 1000,
+;=                  "Dynamite" 5000,
+;=                  "Clock" 300}}
 
+;或者直接对结果转换。
 (def flat-breakup
     {   ["Wile Coyote" "Anvil"] 900,
         ["Elmer Fudd" "Anvil"] 300,
@@ -344,14 +380,14 @@ group-by。
         ["Wile Coyote" "Dynamite"] 5000,
         ["Wile Coyote" "Clock"] 300})
 
-(reduce #(apply assoc-in %1 %2) {} flat-breakup)
-;= {"Elmer Fudd" {"Shells" 100,
-;= "Anvil" 300,
-;= "Shotgun" 800},
-;= "Wile Coyote" {"Hole" 1000,
-;= "Dynamite" 5000,
-;= "Clock" 300,
-;= "Anvil" 900}}
+(reduce #(apply assoc-in %1 %2) {} flat-breakup)    ;前面的向量正好是键序列。
+;= {"Elmer Fudd" {  "Shells" 100,
+;=                  "Anvil" 300,
+;=                  "Shotgun" 800},
+;= "Wile Coyote" {  "Hole" 1000,
+;=                  "Dynamite" 5000,
+;=                  "Clock" 300,
+;=                  "Anvil" 900}}
 
 ==========
 5，不可变和持久性

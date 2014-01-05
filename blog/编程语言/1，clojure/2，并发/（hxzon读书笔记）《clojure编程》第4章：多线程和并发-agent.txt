@@ -1,6 +1,15 @@
 （hxzon读书笔记）《clojure编程》第4章：多线程和并发-agent
 
 by hxzon
+
+----
+hxzon摘要：
+
+1，send，send-off（阻塞型）。
+2，await，await-for。
+3，set-error-handler! （设置错误处理器），set-error-mode! （设置错误处理模式，挂掉或忽略）。
+4，爬虫示例：利用agent来并行化工作量，有限状态机。
+
 ======
 1，agent
 
@@ -172,14 +181,15 @@ agent跟STM的实现紧密融合的。
 这两种情况下，被发送的动作，都可能因为一个校验器失败而被全部丢弃。
 
 ----
-5.1，示例：利用agent，将引用状态的变更记录到日志
+5.1，示例：利用agent，将引用状态的变更记录到日志。
 
-共享IO资源，却不需要使用锁。
+利用agent的串行执行（每个动作在执行时独占agent），使得共享IO资源，却不需要使用锁。
 
 利用观察器，以及agent，给游戏中的角色实现一个“后写”日志。
 
 (require '[clojure.java.io :as io])
 
+;两个输出源。
 (def console (agent *out*))
 
 (def character-log (agent (io/writer "character-states.log" :append true)))
@@ -261,6 +271,7 @@ agent跟STM的实现紧密融合的。
 
 ----
 5.2，示例：利用agent来并行化工作量。
+（有限状态机，受益匪浅。）
 
 (require '[net.cgrand.enlive-html :as enlive])
 
@@ -287,75 +298,82 @@ agent跟STM的实现紧密融合的。
       (remove (partial re-matches #"\d+"))
       (map lower-case))))
 
+;网址队列，收集爬取的网页上的新链接。
 (def url-queue (LinkedBlockingQueue.))
 
+;已抓取的网址。
 (def crawled-urls (atom #{}))
 
+;词频信息。
 (def word-freqs (atom {}))
 
 (declare get-url)
 
+;定义25个agent，放入agents集合。
+;每个agent含有::t 和 :queue 。
 ; ::t 保存这个agent下一步要做的事情的函数。这里使用全限定关键字，是为了避免和用户加进状态的关键字冲突。
 (def agents (set (repeatedly 25 #(agent {::t #'get-url :queue url-queue}))))
 
 (declare run process handle-results)
 
-; ::blocking元数据用来表明阻塞。
+; ::blocking元数据用来标明本函数为阻塞型，使得run函数会调用send-off来发送它。
 (defn ^::blocking get-url
   [{:keys [^BlockingQueue queue] :as state}]
-  (let [url (as-url (.take queue))]
+  (let [url (as-url (.take queue))] ;从网址队列里取出一个网址。
     (try
-      (if (@crawled-urls url)
+      (if (@crawled-urls url)   ;如果该网址已经爬取过，agent状态不变。
         state
         {:url url
-         :content (slurp url)
-         ::t #'process})
+         :content (slurp url)   ;抓取网页内容。
+         ::t #'process})    ;下一步进入process函数。
       (catch Exception e
         ;; skip any URL we failed to load
         state)
       (finally (run *agent*)))))
+; 在一个动作内部，*agent*绑定到当前的agent。
+; 这种用法很常见，它使得agent可以连续运行。
 
 (defn process
   [{:keys [url content]}]
   (try
     (let [html (enlive/html-resource (java.io.StringReader. content))]
-      {::t #'handle-results
+      {::t #'handle-results ;下一步进入handle-results函数。
        :url url
        :links (links-from url html)
        :words (reduce (fn [m word]
-                        (update-in m [word] (fnil inc 0)))
+                        (update-in m [word] (fnil inc 0)))  ;fnil返回一个给参数加上默认值的函数（这里是0），它使得不用显示去检查参数是不是nil。
                 {}
                 (words-from html))})
     (finally (run *agent*))))
-; 在一个动作内部，*agent*绑定到当前的agent。
-; 这种用法很常见，它使得agent可以连续运行。
-; run会根据有没有::blocking来判断每个动作应该用send还是send-off来分发。
-; run会检查有没有::paused（是否暂停）。
 
 (defn ^::blocking handle-results
   [{:keys [url links words]}]
   (try
-    (swap! crawled-urls conj url)
+    (swap! crawled-urls conj url)   ;加入已抓取的网址。
     (doseq [url links]
-      (.put url-queue url))
-    (swap! word-freqs (partial merge-with +) words)
-    {::t #'get-url :queue url-queue}
+      (.put url-queue url))     ;加入爬取网页上找到的新链接。
+    (swap! word-freqs (partial merge-with +) words) ;合并词频。
+    {::t #'get-url :queue url-queue}    ;下一步进入get-url函数。
     (finally (run *agent*))))
 
-; run，网络爬虫的“主循环”。
+; run会检查有没有::paused（是否暂停）。
 (defn paused? [agent] (::paused (meta agent)))
 
+; run，网络爬虫的“主循环”。
 (defn run
-  ([] (doseq [a agents] (run a)))
+  ([] (doseq [a agents] (run a)))   ;没有参数的话，启动所有的agent。
   ([a]
-    (when (agents a)
+    (when (agents a)    ;如果a是agents中的一个agent。
       (send a (fn [{transition ::t :as state}]
                 (when-not (paused? *agent*)
-                  (let [dispatch-fn (if (-> transition meta ::blocking)
+                  (let [dispatch-fn (if (-> transition meta ::blocking) ;是否是阻塞型操作，从而选择send或send-off。
                                       send-off
                                       send)]
                     (dispatch-fn *agent* transition)))
                 state)))))
+
+;每个agent都含有::t，所以知道下一步的操作，但它没法知道下一步是不是阻塞的，所以需要run。
+;同时run能检查一个agent是否打上了::paused标记。
 
 ; 可以通过元数据来暂停和重启agent方法。
 (defn pause
@@ -374,7 +392,7 @@ agent跟STM的实现紧密融合的。
   containing the number of URLs crawled, and the number of URLs
   accumulated through crawling that have yet to be visited."
   [agent-count starting-url]
-  (def agents (set (repeatedly agent-count
+  (def agents (set (repeatedly agent-count  ;这里为了测试，重定义了agents，使得可以调整agent数量。
                      #(agent {::t #'get-url :queue url-queue}))))
   (.clear url-queue)
   (swap! crawled-urls empty)
@@ -411,5 +429,4 @@ agent跟STM的实现紧密融合的。
 
 (test-crawler 25 "http://www.bbc.co.uk/news/")
 ;= [573 80576]
-
 

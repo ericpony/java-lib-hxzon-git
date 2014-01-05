@@ -463,7 +463,7 @@ user=> (select-keys {:a 1 :b 2} [:a :c])
 {:a 1}
 
 ----
-6，update-in（更新）： 
+6，(update-in mapX keyX f)
 update-in函数用于更新map中指定key对应的值，不过更新方式使用第三个参数（函数）。 
 
 user=> (update-in {:name "qh" :age 30} [:age] #(inc %))  
@@ -473,7 +473,7 @@ user=> (update-in {:a 3} [:a] / 4 5)
 {:a 3/20}  
 
 ---
-7，merge（更新）： 
+7，(merge map1 map2 ...)
 merge函数用于合并多个map为一个新的map，如果key相同，则保留后一个参数map的key对应值。 
 
 user=> (merge {:name "qh" :age 30} {:gender 'm :mail "qh@mail"})  
@@ -484,7 +484,7 @@ user=> (conj {:name "qh" :age 30} {:gender 'm :mail "qh@mail"})
 {:mail "qh@mail", :gender m, :age 30, :name "qh"}  
 
 ----
-8，merge-with（更新）： 
+8，(merge-with f map1 map2 ...) 
 merge-with可以作为merge的升级版，不仅合并map，还能以第一个参数（函数）对key相同的value做处理。 
 
 user=> (merge-with + {:a 1 :b 2} {:a 2 :b 98 :c 0})  
