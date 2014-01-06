@@ -297,10 +297,12 @@ ref-set通常用来重新初始化ref。
   (let [cdata (merge {:name name :items #{} :health 500}
                 opts)
         cdata (assoc cdata :max-health (:health cdata))
-        validators (list* (enforce-max-health name (:health cdata))
+        validators (list* (enforce-max-health cdata)    ;原文为：(enforce-max-health name (:health cdata)) ，有误。
                      (:validators cdata))]  ;原有的校验器。每个角色可以有自己的额外校验器。
     (ref (dissoc cdata :validators)
       :validator #(every? (fn [v] (v %)) validators))))
+
+;https://github.com/xumingming/clojure-programming-cn-errata
 
 (def bilbo (character "Bilbo" :health 100 :strength 100))
 ;= #'user/bilbo
@@ -403,6 +405,21 @@ clojure stm提供了一些解决办法。
 ----
 2.4，读线程也可能重试。（未理解）
 
+事务最开始时的那个历史快照已经被丢弃掉了（因为别的事务更新了很多次），
+就只能重试才能读取到值。
+
+https://github.com/xumingming/presentations
+
+deref
+-1，如果当前有事务在运行，那么获取ref在事务内的值。
+-2，否则直接获取它的最新值。
+遍历ref的MVCC链，找到离当前事务开始之前、并且离开始时间最近的那个版本。	
+
+Clojure	STM对MVCC做了优化，ref的value链只在如下两种情况下增长：
+-1，min-history	> 0
+-2，产生过“读失败”(read	faults)	
+
+--
 (ref-max-history (ref "abc" :min-history 3 :max-history 30))
 ;= 30
 
