@@ -1,0 +1,175 @@
+（hxzon学习笔记）clojure-集合相关的函数（续2-集合类型检查）
+
+by hxzon
+------
+集合类型检查：
+
+sequential? ，associative? ，sorted? ，
+counted? ，reversible? ，
+
+coll? ，seq? ，vector? ，list? ，map? ，set? 。
+
+=========
+----
+1，sequential?： 
+sequential?检查集合是否实现Sequential接口（不是排序，而是顺序存储），是则返回true，否则返回false。 
+
+user=> (sequential? '(2 1 3))  
+true  
+
+user=> (sequential? {:a 1 :d 2 :b 3})  
+false  
+
+user=> (sequential? 1)  
+false  
+
+----
+2，associative?： 
+associative?检查集合是否实现Associative接口（关系型），是则返回true，否则返回false。 
+
+user=> (associative? [1 2 3])  
+true  
+
+user=> (associative? '(1 2 3))  
+false  
+
+----
+3，sorted?： 
+sorted?检查集合是否实现Sorted接口，是则返回true，否则返回false。 
+
+user=> (sorted? (sorted-set 5 3 1 2 4))  
+true  
+
+user=> (sorted? (sorted-map :a 1 :c 3 :b 2))  
+true  
+
+user=> (sorted? [1 2 3 4 5])  
+false  
+
+----
+4，counted?： 
+如果集合参数以常量时间内返回元素个数总和时，返回true，否则返回false。 
+
+user=> (counted? [:a :b :c])  
+true  
+
+user=> (counted? '(:a :b :c))  
+true  
+
+user=> (counted? {:a 1 :b 2 :c 3})  
+true  
+
+user=> (counted? "asdf")  
+false  
+
+----
+5，reversible?： 
+reversible?检查集合参数是否实现Reversible接口，是则返回true，否则返回false。 
+
+user=> (reversible? [])  
+true  
+
+user=> (reversible? '())  
+false  
+
+user=> (reversible? #{})  
+false  
+
+--------
+----
+1，coll?： 
+如果给定的参数实现IPersistentCollection接口（集合都会实现该接口），则返回true，否则返回false。 
+
+user=> (coll? {})   
+true   
+
+user=> (coll? #{})   
+true   
+
+user=> (coll? [])   
+true   
+
+user=> (coll? ())   
+true   
+
+user=> (coll? 4)   
+false  
+
+user=> (coll? "fred")   
+false
+
+user=> (coll? true)   
+false  
+
+user=> (coll? nil)   
+false  
+
+----
+2，seq?： 
+如果给定的参数实现ISeq接口（序列实现该接口），则返回true，否则返回false 。
+
+user> (seq? 1)   
+false   
+user> (seq? [1])   
+false   
+user> (seq? (seq [1]))   
+true   
+
+----
+3，vector?： 
+如果给定的参数实现IPersistentVector接口（向量Vector实现该接口），则返回true，否则返回false 。
+
+user=> (vector? [1 2 3])   
+true   
+
+user=> (vector? '(1 2 3))   
+false   
+
+user=> (vector? (vec '(1 2 3)))   
+true   
+
+----
+4，list?： 
+如果给定的参数实现IPersistentList接口（列表List实现该接口），则返回true，否则返回false 。
+
+user=> (list? '(1 2 3))   
+true   
+user=> (list? (list 1 2))   
+true   
+user=> (list? 0)   
+false   
+user=> (list? {})   
+false   
+user=> (list? [])   
+false    
+
+----
+5，map?： 
+如果给定的参数实现IPersistentMap接口（映射Map实现该接口），则返回true，否则返回false 。
+
+user=> (map? {:a 1 :b 2 :c 3})   
+true   
+user=> (map? '(1 2 3))   
+false    
+
+----
+6，set?： 
+如果给定的参数实现IPersistentSet接口（set集合实现该接口），则返回true，否则返回false 。
+
+user> (set? #{1 2 3})   
+true   
+
+user> (set? [1 2 3])   
+false   
+
+user> (set? {:a 1 :b 2})   
+false   
+
+=====
+实际上本篇介绍的各种检查语句，都是检查底层实现类所实现的接口（具有对应接口的功能），
+比如说列表List的实现类定义为： 
+
+public class PersistentList extends ASeq  
+  implements IPersistentList, IReduce, List, Counted  
+
+

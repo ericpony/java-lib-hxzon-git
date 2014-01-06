@@ -6,50 +6,18 @@ http://clojure-api-cn.readthedocs.org/en/latest/index.html
 http://clojure.github.io/clojure/
 
 =======
-1，reduce，规约。
-
-(reduce
-    (fn [m v] 
-        (assoc m v (* v v)))
-    {}  ;初始是个空集合
-    [1 2 3 4])
-;= {4 16, 3 9, 2 4, 1 1}
-
-(reduce
-    #(assoc % %2 (* %2 %2))
-    {}
-    [1 2 3 4])
-;= {4 16, 3 9, 2 4, 1 1}
-
 ----
-1.1，reductions，规约历史。
-(reductions f coll)
-(reductions f init coll)
-
-返回一个惰性序列， 序列里包含计算 (reduce f coll) 所产生的所有中间结果。
-如果给定了 init ，那么将它用作所有中间结果的初始值。
-
-user=> (reduce + (range 1 10))
-45
-
-user=> (reductions + (range 1 10))
-(1 3 6 10 15 21 28 36 45)
-
-user=> (reductions + 0 (range 1 10))    ; 注意 init 不止添加到序列头那么简单
-(0 1 3 6 10 15 21 28 36 45)
-
-user=> (reductions + 10 (range 1 10))   ; 它还作为每个中间值的初始化值（这里每个中间值都加上了初始值）
-(10 11 13 16 20 25 31 38 46 55)
-
-----
-2，apply，函数应用。
+1，apply，函数应用。
 
 (apply fnX paramsYY)
 (apply fnX param1 param2 paramsYY)
 可以先指定前几个参数。
 
+======
+构建函数：
+
 ----
-3，partial，部分参数应用，先配置好一个函数的开头几个参数。
+1，partial，部分参数应用，先配置好一个函数的开头几个参数。
 
 (def only-strings (partial filter string?))
 ;= #'user/only-strings
@@ -58,7 +26,7 @@ user=> (reductions + 10 (range 1 10))   ; 它还作为每个中间值的初始�
 ;= ("a" "b")
 
 ----
-4，comp，函数组合。
+2，comp，函数组合。
 
 (comp f3 f2 f1)
 
@@ -71,168 +39,42 @@ user=> (reductions + 10 (range 1 10))   ; 它还作为每个中间值的初始�
 ;= "-25.4"
 
 ----
-4.1，fnil返回一个给参数加上默认值的函数（下面示例中是0），它使得不用显示去检查参数是不是nil。
+3，fnil
+返回一个给参数加上默认值的函数（下面示例中是0），它使得不用显示去检查参数是不是nil。
 
 (fnil inc 0)
 
 ----
-5，map
-(map f [a b c]) 相当于 [(f a) (f b) (f c)] 。
+4，complement （补充，补语。）
+(complement f)
 
-(map f [a b c] [x y x]) 相当于 [(f a x) (f b y) (f c z)] 。
+接受一个函数 f ，返回一个匿名函数。
+这个匿名函数接受的参数、产生的作用都和 f 一样， 但它返回的真值和 f 相反。
 
-map的结果跟它最短的参数一样长。
+user=> (defn f []
+           (println "hello")
+           false)
+#'user/f
 
-----
-5.1，zipmap
-function
-Usage: (zipmap keys vals)
+user=> (f)
+hello
+false
 
-Returns a map with the keys mapped to the corresponding vals.
-
-----
-5.2，mapv
-和map一样，但是返回的是向量，而不是惰性序列。后缀v表示向量。
-
-----
-6，mapcat
-(mapcat f & colls)
-
-等同于调用 (concat (map f colls)) 。
-
-user=> (mapcat reverse [[3 2 1 0]
-                        [6 5 4]
-                        [9 8 7]])
-(0 1 2 3 4 5 6 7 8 9)
-
-7，map-indexed
-(map-indexed f coll)
-
-返回一个惰性序列， 序列里的第一个元素是将 0 和 coll 的第一个元素应用到 f 所得出的值，
- 序列里的第二个元素是将 1 和 coll 的第二个元素应用到 f 所得出的值。。。 
- 以此类推，直到 coll 被处理完为止。
-
-函数 f 应该接受两个参数：一个索引值，一个是 coll 的元素值。
-
-user=> (map-indexed (fn [idx item] [idx item]) "foobar")
-([0 \f] [1 \o] [2 \o] [3 \b] [4 \a] [5 \r])
-
-user=> (map-indexed vector "foobar")    ; 另一种更简单的解法
-([0 \f] [1 \o] [2 \o] [3 \b] [4 \a] [5 \r])
-
-8，max-key
-(max-key f item1)
-(max-key f item1 item2)
-(max-key f item1 item2 & items)
-
-将函数 f 应用到所有给定元素上，其中 (f item) 值最大的那个 item 被返回。
-
-(f item) 的结果必须是数字值。
-
-user=> (max-key count "abc"
-                      "abcd"
-                      "a"
-                      "abcdefg"
-                      "aa")
-"abcdefg"
+user=> ((complement f))
+hello
+true
 
 ----
-9，range
-(range)
-(range end)
-(range start end)
-(range start end step)
+5，constantly
+(constantly x)
 
-返回一个惰性序列， 序列里包含从大于等于 start 到小于 end 区间内的所有数字(start <= numbers < end)， 数字的步进以 step 指定。
-默认情况下， start 为 0 ， step 为 1 ，而 end 则为无限。
+返回一个匿名函数， 接受任何数量的参数， 但总是返回 x 。
 
-10，repeat
-(repeat x)
-(repeat n x)
-
-返回一个包含 n 个 x 的惰性序列。
-如果不指定 n ，那么值 x 可以被包含无限次。
-
-11，repeatedly
-(repeatedly f)
-(repeatedly n f)
-
-给定一个无参数的函数 f (通常带有副作用)，返回一个调用 f 函数 n 次的惰性序列。
-如果不指定参数 n ，那么函数 f 可以执行无限次。
+====
+并发相关：
 
 ----
-12，keep
-(keep f coll)
-
-对于 coll 中的每个项 item ， (keep f coll) 返回一个惰性序列， 序列包含 (f item) 除 nil 之外的所有计算结果。
-因为带副作用的函数会返回与计算结果无关的虚假值， 因此，为了确保虚假值不会混进 keep 所生成的惰性序列中， f 必须是一个无副作用的函数。
-
-user=> (keep inc [1 2 3])
-(2 3 4)
-
-; 将空的 collection 传给 seq 函数会返回 nil
-; 可以根据这个性质来测试 keep
-; 看它是否真的会省略等于 nil 的值
-user=> (seq [])
-nil
-
-user=> (keep seq (list [1 2 3] [] [4 5 6]))
-((1 2 3) (4 5 6))
-
-----
-13，keep-indexed
-(keep-indexed f coll)
-
-对于 coll 中的每个项 item ， 以及 item 对应的索引下标 index ， 
-(keep-indexed f coll) 返回一个惰性序列， 序列中包含 (f index item) 除 nil 之外的所有计算结果。
-
-因为带副作用的函数会返回与计算结果无关的虚假值， 
-因此，为了确保虚假值不会混进 keep-indexed 所生成的惰性序列中， f 必须是一个无副作用的函数。
-
-; 返回 0 - 9 内所有排序位置(index)为偶数的数字（对于奇数，匿名函数返回nil，这些nil被移除了。）
-user=> (keep-indexed #(if (even? %1) %2 nil) (range 10))
-(0 2 4 6 8)
-
-----
-14，juxt，并列。
-function
-Usage: (juxt f)
-       (juxt f g)
-       (juxt f g h)
-       (juxt f g h & fs)
-
-Takes a set of functions and returns a fn that is the juxtaposition（并列） of those fns.  
-The returned fn takes a variable number of args, and
-returns a vector containing the result of applying each fn to the args (left-to-right).
-
-((juxt a b c) x) => [(a x) (b x) (c x)]
-
-----
-15，map-invert
-(map-invert m)
-
-反转一个 map ，将它原本的 value 映射为新 map 的 key ，原本的 key 映射为新 map 的 value 。
-注意，当多个 key 有同一个 value 时，新 map 只保留其中的一个作为 key 。
-
-16，iterate
-(iterate f x)
-
-返回一个惰性序列， 序列元素的值为 x 、 (f x) 、 (f (f x)) 、 (f (f (f x))) ， 诸如此类。
-函数 f 必须是无副作用的。
-
-17，select
-(select pred xset)
-
-返回 xset 中所有使 pred 为真的元素。
-select 和 clojure.core/filter 类似，只是 select 的输入和输出都是 set 。
-
-18，time
-(time expr)
-
-对 expr 进行求值，并打印求值所花费的时间。
-expr 的值作为函数的返回值被返回。
-
-19，pmap
+1，pmap
 (pmap f coll)
 (pmap f coll & colls)
 
@@ -240,7 +82,8 @@ pmap 类似于 map ，唯一的不同是， pmap 对函数 f 的应用是并行�
 pmap 的返回值是半惰性的(semi-lazy)： 并行计算总是发生在消耗(consumption)之前， 不过，计算结果只有在被需要时，才会被 realize 。
 只有当 f 为计算密集型函数， 而且并行获得的性能提升足以抵消并行所需的协调消耗时， 才应该使用 pmap 。
 
-20，pcalls
+----
+2，pcalls
 (pcalls & fns)
 
 并行计算 fns 中的无参数函数，并以惰性序列的形式返回它们的值。
@@ -270,158 +113,22 @@ nil 5
 nil 6
 nil nil)
 
-21，pvalues
+----
+3，pvalues
 (pvalues & exprs)
 
 并行计算 exprs 中的表达式，并以惰性序列的形式返回它们的值。
 
-22，reverse
-(reverse coll)
-
-逆序给定的 coll 。这个操作不是惰性(lazy)的。
-
-23，shuffle
-(shuffle coll)
-
-返回对 coll 进行乱序排列之后得出的序列。
-
-24，doall
-(doall coll)
-(doall n coll)
-
-对于那些带副作用的函数所生成的惰性序列来说，只有当列表的某个元素被求值时，该元素的副作用才会被显现出来。
-doall 使用 next 函数遍历整个序列，从而迫使惰性序列的副作用产生。
-这个函数返回序列的首个元素作为结果，因此它需要在内存中保存整个序列。
-
-25，dorun
-(dorun coll)
-(dorun n coll)
-
-对于那些带副作用的函数所生成的惰性序列来说，只有当列表的某个元素被求值时，该元素的副作用才会被显现出来。
-dorun 使用 next 函数遍历整个序列，从而迫使惰性列表的副作用产生。
-这个函数返回 nil ，而不是序列的首个元素。
-
-26，complement （补充，补语。）
-(complement f)
-
-接受一个函数 f ，返回一个匿名函数。
-这个匿名函数接受的参数、产生的作用都和 f 一样， 但它返回的真值和 f 相反。
-
-user=> (defn f []
-           (println "hello")
-           false)
-#'user/f
-
-user=> (f)
-hello
-false
-
-user=> ((complement f))
-hello
-true
-
-27，constantly
-(constantly x)
-
-返回一个匿名函数， 接受任何数量的参数， 但总是返回 x 。
-
-=======
-28，group-by
-function
-Usage: (group-by f coll)
-
-Returns a map of the elements of coll keyed by the result of f on each element. 
-The value at each key will be a vector of the corresponding elements, 
-in the order they appeared in coll.
-对集合的每个元素调用f，按结果分组。
-
-(group-by #(rem % 3) (range 10))
-;= {0 [0 3 6 9], 1 [1 4 7], 2 [2 5 8]}
-
-(def playlist
-    [   {:title "Elephant", :artist "The White Stripes", :year 2003}
-        {:title "Helioself", :artist "Papas Fritas", :year 1997}
-        {:title "Stories from the City, Stories from the Sea",:artist "PJ Harvey", :year 2000}
-        {:title "Buildings and Grounds", :artist "Papas Fritas", :year 2000}
-        {:title "Zen Rodeo", :artist "Mardi Gras BB", :year 2002}])
-
-(group-by :artist playlist)
-;= {"Papas Fritas" [{:title "Helioself", :artist "Papas Fritas", :year 1997}
-;=     {:title "Buildings and Grounds", :artist "Papas Fritas"}]
-;= ...}
-
-(into {} 
-      (for [ [k v] (group-by key-fn coll)]
-           [ k (summarize v)]))
-
-29，partition，分区。
-function
-Usage: (partition n coll)
-       (partition n step coll)
-       (partition n step pad coll)
-
-Returns a lazy sequence of lists of n items each, at offsets step apart. 
-返回一个延迟序列，序列元素为列表，每个列表含n个元素，根据偏移量step来切分，step表示每个列表的第一个元素之间的距离。
-If step is not supplied, defaults to n, i.e. the partitions do not overlap. 
-如果没有指定步长step，默认等于n，所以每个分区不会重叠。
-If a pad collection is supplied, use its elements as necessary to complete last partition upto n items.
-In case there are not enough padding elements, return a partition with less than n items.
-
-如果没有指定pad集合，不会包含不足元素个数的分区。
-如果指定pad集合，会在末尾添加pad集合中的元素，然后再切一个分区（即最后分区）。
-最后分区有可能不足元素个数。
-
-注意对比有无填充集合的区别（指定比不指定总是多一个分区）：
-(partition 4 1 (range 5))
-;= ((0 1 2 3) (1 2 3 4))
-
-(partition 4 1 [\a \b] (range 5))
-;= ((0 1 2 3) (1 2 3 4) (2 3 4 \a))     ;注意没有(3 4 \a \b) 。
-
-(partition 3 1 [\a \b] (range 5))
-;=  ((0 1 2) (1 2 3) (2 3 4) (3 4 \a))  ;注意没有(4 \a \b) 。
-
-(partition 4 4 [\a \b] (range 13))
-;=  ((0 1 2 3) (4 5 6 7) (8 9 10 11) (12 \a \b))
-
-(partition 1 4 [\a \b] (range 13))
-;=  ((0) (4) (8) (12))
+====
+其它：
 
 ----
-29.1，partition-all
-function
-Usage: (partition-all n coll)
-       (partition-all n step coll)
-
-Returns a lazy sequence of lists like partition, but may include partitions with fewer than n items at the end.
-和partition一样，但包含所有不足元素个数的分区。
-
-(partition-all 4 1 (range 5))
-;= ((0 1 2 3) (1 2 3 4) (2 3 4) (3 4) (4))
-
-(partition-all 4 (range 5))
-;=  ((0 1 2 3) (4))
+1，memoize，内存化，即缓存函数调用结果。
 
 ----
-29.2，partition-by
-function
-Usage: (partition-by f coll)
+2，time
+(time expr)
 
-Applies f to each value in coll, splitting it each time f returns a new value.  
-Returns a lazy seq of partitions.
-对每个元素调用f，每当f返回一个新的值时，开始一个新的分区。
+对 expr 进行求值，并打印求值所花费的时间。
+expr 的值作为函数的返回值被返回。
 
-(partition-by #(= 0 (mod % 4)) (range 14))
-;=  ((0) (1 2 3) (4) (5 6 7) (8) (9 10 11) (12) (13))
-
-----
-30，memoize，内存化，即缓存函数调用结果。
-
-31，replace
-function
-Usage: (replace smap coll)
-
-Given a map of replacement pairs and a vector/collection, 
-returns a vector/seq with any elements = a key in smap replaced with the corresponding val in smap.
-
-将coll集合中的元素替换成smap中该元素（键）对应的值。

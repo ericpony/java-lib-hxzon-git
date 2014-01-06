@@ -2,36 +2,30 @@
 
 by hxzon
 ---------
+into，
 cons，concat，conj，
 assoc，assoc-in，get，get-in，
 find，dissoc，disj，
 last，first，rest，next，peek，pop，
-rseq，subseq，rsubreq，
 drop，take。
 
 clojure.set/union，clojure.set/select，
 clojure.set/difference，clojure.set/intersection。
 
 keys，vals，key，val。
-select-keys，update-in，merge，merge-with。
 
-list，list* ，range，repeat。
+list，list* 。
 
 vector，vec ，vector-of ，subvec。
 
-hash-map ，array-map，sorted-map，zip-map，
-sorted-map-by，bean，frequencies。
+hash-map ，array-map，sorted-map，
+bean。
 
-set，hash-set，sorted-set，sorted-set-by。
+set，hash-set，sorted-set。
 
-count，empty，not-empty，into，
-contains? ，distinct? ，empty? ，
-every? ，not-every? ，some，not-any? 。
-sequential? ，associative? ，sorted? ，
-counted? ，reversible? ，
-coll? ，seq? ，vector? ，list? ，map? ，set? 。
+count，empty，not-empty，
+
 ========
-
 向量看成以索引为键的映射。
 set看成元素到自身的映射。
 
@@ -41,7 +35,23 @@ set看成元素到自身的映射。
 向量支持高效地根据索引来访问元素，与数组类似。
 
 ----
-1，cons，(cons x seq)，返回一个新的序列， 序列的第一个元素是 x ， 而 seq 则是序列的其余部分。
+1，into： 
+into接受两个集合参数，并且将第二个集合参数的元素全部插入到第一个集合参数中，再返回。 
+
+user=> (into {} [[1 2] [3 4]])  
+{1 2, 3 4}  
+
+user=> (into [] {:a 1 :b 2})  
+[[:a 1] [:b 2]]  
+
+user=> (into () '(1 2 3))  
+(3 2 1)  
+
+user=> (into ["a" "b"] '(1 2 3))  
+["a" "b" 1 2 3]  
+
+----
+2，cons，(cons x seq)，返回一个新的序列， 序列的第一个元素是 x ， 而 seq 则是序列的其余部分。
 
 user=> (cons 1 (list 2 3 4 5))  
 (1 2 3 4 5)
@@ -49,7 +59,8 @@ user=> (cons 1 (list 2 3 4 5))
 user=> (cons (list 1 2) '(3 4 5))  
 ((1 2) 3 4 5)
 
-1.1，concat
+----
+3，concat
 function
 Usage: (concat)
        (concat x)
@@ -60,7 +71,7 @@ Returns a lazy seq representing the concatenation of the elements in the supplie
 返回一个延迟序列，元素为参数（是一个集合）里的元素。
 
 ----
-2，conj，如果是列表，在列表头部插入元素。
+4，conj，如果是列表，在列表头部插入元素。
 如果是向量，在尾部插入元素。
 也支持映射，set。
 (conj coll x)
@@ -104,7 +115,7 @@ user=> (conj #{1 3} 1 5 7)
 #{1 3 5 7}
 
 ----
-3，assoc，
+5，assoc，
 如果是映射，更新（或添加）指定的键的值。
 如果是向量，更新指定索引的值，注意，索引不能超出范围，否则抛出异常。
 
@@ -125,7 +136,7 @@ user=> (assoc {:key1 "old value"} :key1 "new value")
 {:key1 "new value"}
 
 ----
-3.1，assoc-in，
+5.1，assoc-in，
 function
 Usage: (assoc-in m [k & ks] v)
 
@@ -139,7 +150,7 @@ user=> (assoc-in {:name "tom" :age 26} [:age] 36)
 {:age 36, :name "tom"}
 
 ----
-4，get，
+6，get，
 (get map key)
 (get map key not-found)
 如果是映射，返回指定键的值。
@@ -160,7 +171,7 @@ user=> (get {:a 1 :b 2} :z "missing")
 "missing"
 
 ----
-4.1，get-in，
+6.1，get-in，
 function
 Usage: (get-in m ks)
        (get-in m ks not-found)
@@ -180,7 +191,7 @@ user=> (((({:n "qh", :addr {:cn {:bj {:hd "tsinghua"}}}} :addr) :cn) :bj) :hd)
 
 
 ----
-5，find，(find map key)，
+7，find，(find map key)，
 如果是映射，返回指定的键值对（用向量表示）。
 如果是向量，返回指定的索引和值（用向量表示）。
 如果键不存在，返回nil。
@@ -201,7 +212,7 @@ nil
 
 ---------
 ----
-6，dissoc
+8，dissoc
 function
 Usage: (dissoc map)
        (dissoc map key)
@@ -223,7 +234,7 @@ user=> (dissoc {:a 1 :b 2 :c 3} :a :b :c)
 {}
 
 ----
-7，disj
+9，disj
 function
 Usage: (disj set)
        (disj set key)
@@ -237,11 +248,11 @@ user=> (disj #{1 3 5 7} 3 7)
 
 ----------
 ----
-8，last，Return the last item in coll, in linear time。
+10，last，Return the last item in coll, in linear time。
 在线性时间内返回集合的最后一个元素。
 
 ----
-9，first，返回第一个元素（传入的coll会被seq处理）。
+11，first，返回第一个元素（传入的coll会被seq处理）。
 如果 coll 为 nil ，返回 nil 。
 支持向量，列表，映射，set。
 
@@ -255,7 +266,7 @@ user=> (first (list 1 2 3))
 1
 
 ----
-9.1，rest，
+11.1，rest，
 Returns a possibly empty seq of the items after the first. Calls seq on its argument.
 rest返回去除first之后的序列，内部对参数调用seq。
 如果没有更多元素，返回空序列。
@@ -270,7 +281,7 @@ user=> (rest ())
 ()
 
 ----
-9.2，next，
+11.2，next，
 Returns a seq of the items after the first. 
 Calls seq on its argument.  
 If there are no more items, returns nil.
@@ -279,7 +290,7 @@ If there are no more items, returns nil.
 如果没有更多元素，返回nil。（而rest返回空序列）
 
 ----
-10，peek，
+12，peek，
 如果是列表或队列，类似于first。
 如果是向量，类似last，但更高效。
 如果列表或向量是空的，返回nil。
@@ -300,7 +311,7 @@ user=> (peek [])
 nil
 
 ----
-10.1，pop，
+12.1，pop，
 返回去除peek之后的新集合。
 如果是列表，返回去除头部元素的新列表。
 如果是向量，返回去除尾部元素的新向量。
@@ -325,65 +336,6 @@ user=> (pop '(1 2 3))
 (2 3)  
 
 ----
-11，rseq，在常数时间内，返回 rev 的逆序序列。
-rev 只能是向量或者 sorted-map 。
-rev 为空时，返回 nil 。
-
-user=> (rseq [])
-nil
-
-user=> (rseq [3 5 9 1 3])
-(3 1 9 5 3)
-
-user=> (rseq (sorted-map :a 1 :c 2 :b 4))  
-([:c 2] [:b 4] [:a 1])
-
-----
-12，subseq，
-(subseq sc test key)
-(subseq sc start-test start-key end-test end-key)
-过滤 sc 并返回一个序列，序列里的所有实体(entry)的键 ek 都必须符合条件 (true? (test (.. sc comparator (compare ek key)) 0)) 。
-
-如果没有任何实体符合条件，则返回 nil 。
-参数 sc 必须是一个 sorted collection ，测试条件 test 可以是 < 、 <= 、 > 或者 >= 。
-
-user=> (def numbers (sorted-map 1 "one" 2 "two" 3 "three" 4 "four" 5 "five"))
-#'user/numbers
-
-user=> numbers
-{1 "one", 2 "two", 3 "three", 4 "four", 5 "five"}
-
-
-; 过滤所有键小于 3 的键-值对
-user=> (subseq numbers >= 3)
-([3 "three"] [4 "four"] [5 "five"])
-
-
-; 过滤所有键小于 1 大于 4 的键-值对
-user=> (subseq numbers >= 2 <= 4)
-([2 "two"] [3 "three"] [4 "four"])
-
-
-; 过滤所有键小于 10 的键-值对，返回 nil
-user=> (subseq numbers >= 10)
-nil
-
-user=> (subseq (sorted-map :a 1 :c 2 :b 4) < :b)  
-([:a 1])
-
-user=> (subseq (sorted-map :a 1 :c 2 :b 4) >= :b)  
-([:b 4] [:c 2])
-
-----
-12.1，rsubseq，
-(rsubseq sc test key)
-(rsubseq sc start-test start-key end-test end-key)
-用法和 `subseq`_ 一样，但是返回的序列是逆序排序的。
-
-user=> (rsubseq (sorted-map :a 1 :c 2 :b 4) >= :b)
-([:c 2] [:b 4])
-
-----
 13，drop
 function
 Usage: (drop n) ，hxzon：抛出异常。
@@ -395,24 +347,35 @@ Elides the first n values from the reduction of coll.
 (drop 2 [\a \b \c \d \e \f])
 ;= (\c \d \e \f)
 
+----
 14，take
 
 
 ----------
 set操作：
 
+----
 1，合并子集
 user=> (clojure.set/union #{1 2 3} #{1 2 4})
 #{1 2 3 4}
 
+----
 2，根据条件选择
+select
+(select pred xset)
+
+返回 xset 中所有使 pred 为真的元素。
+select 和 clojure.core/filter 类似，只是 select 的输入和输出都是 set 。
+
 user=> (clojure.set/select even? #{1 2 3 4 5})
 #{2 4}
 
+----
 3，取差集
 user=> (clojure.set/difference #{1 2 3} #{1 2 4})
 #{3}
 
+----
 4，取交集
 user=> (clojure.set/intersection #{1 2 3} #{1 2 4})
 #{1 2}
@@ -452,46 +415,6 @@ user=> (key (first {:a 1 :b 2}))
 user=> (val (first {:one :two}))  
 :two  
 
-----
-5，select-keys: 
-根据指定的key序列，返回包含指定key的map。
-
-user=> (select-keys {:a 1 :b 2} [:a])
-{:a 1}
-
-user=> (select-keys {:a 1 :b 2} [:a :c])
-{:a 1}
-
-----
-6，(update-in mapX keyX f)
-update-in函数用于更新map中指定key对应的值，不过更新方式使用第三个参数（函数）。 
-
-user=> (update-in {:name "qh" :age 30} [:age] #(inc %))  
-{:age 31, :name "qh"}  
-
-user=> (update-in {:a 3} [:a] / 4 5)  
-{:a 3/20}  
-
----
-7，(merge map1 map2 ...)
-merge函数用于合并多个map为一个新的map，如果key相同，则保留后一个参数map的key对应值。 
-
-user=> (merge {:name "qh" :age 30} {:gender 'm :mail "qh@mail"})  
-{:mail "qh@mail", :gender m, :age 30, :name "qh"}  
-
-;这里也可以用conj
-user=> (conj {:name "qh" :age 30} {:gender 'm :mail "qh@mail"})  
-{:mail "qh@mail", :gender m, :age 30, :name "qh"}  
-
-----
-8，(merge-with f map1 map2 ...) 
-merge-with可以作为merge的升级版，不仅合并map，还能以第一个参数（函数）对key相同的value做处理。 
-
-user=> (merge-with + {:a 1 :b 2} {:a 2 :b 98 :c 0})  
-{:c 0, :a 3, :b 100}  
-
-这里把value值相加作为新的value值。
-
 ========
 clojure具体类型的创建（包括从其它类型转换，截取）
 
@@ -516,6 +439,7 @@ Clojure的List是单向链表，在头部增加新元素。List形式以“(1,2,
 List是以单向链接列表的形式来实现的，在这一点上有利有弊。
 读取列表的第一个元素或者在列表头添加一个元素的操作都可以在常量时间内完成，然而访问列表的第N个元素却需要N次操作。 
 
+----
 1.1，字面量：
 
 user=> '(1 2 3);'符号阻止对后面的表达式立即求值，与quote意义相同。
@@ -524,7 +448,8 @@ user=> '(1 2 3);'符号阻止对后面的表达式立即求值，与quote意义�
 user=> (quote (1 2 3))
 (1 2 3)
 
-1.2，通过list创建（这里list是clojure定义的指向clojure.lang.PersistentList的creator方法的符号）。 
+----
+1.2，list（这里list是clojure定义的指向clojure.lang.PersistentList的creator方法的符号）。 
 
 user=> (list 1 2 3)  
 (1 2 3)  
@@ -535,8 +460,8 @@ user=> (list "a" "b" "c")
 user=> (list "a" 1 2.3 'a :keyname)  
 ("a" 1 2.3 a :keyname)  
 
-
-1.3，通过list*创建，list*要求最后一个参数必须为集合。 
+----
+1.3，list* ，list*要求最后一个参数必须为集合。 
 
 user=> (list* 1 [2 3])  
 (1 2 3)  
@@ -547,7 +472,7 @@ user=> (list* 1 nil)
 user=> (list* 1 ())  
 (1)  
 
-
+----
 1.4，通过其它方式创建：
 
 user=> (range 1 10)  ;不包含end元素。
@@ -562,8 +487,10 @@ user=> (repeat 5 1)
 Vector支持高效地根据索引来访问元素，与数组类似。
 Vector形式以“[1,2,3]”符号表示。
 
+----
 2.1，字面量：
 
+----
 2.2，vector： 
 vector接收任意数量的参数并将它们的值组成一个Vector。 
 
@@ -576,7 +503,7 @@ user=> (vector 1 2 3)
 user=> (vector (list 1 2 3))  
 [(1 2 3)]  
 
-
+----
 2.3，vec： 
 vec接收一个单独的参数，可能是任何Clojure或Java的数据类型，然后将其元素的值作为参数，组成一个新的向量。 
 
@@ -589,7 +516,7 @@ user=> (vec '())
 user=> (vec nil)  
 []  
 
-
+----
 2.4，vector-of： 
 vector-of函数第一个参数指定Vector元素的类型，后面任意个参数作为元素，
 如果类型转换正确，则返回一个vector。
@@ -601,6 +528,7 @@ user=> (vector-of :int "1" "2")
 ClassCastException java.lang.String cannot be cast to java.lang.Character  cloju  
 re.lang.RT.intCast (RT.java:1076)
 
+----
 2.5，subvec： 
 subvec接收两个或三个参数。
 第一个是向量，第二个和第三个（如果有的话）是索引。
@@ -625,7 +553,8 @@ clojure的Map有三种实现方式：数组映射、哈希映射和有序映射�
 数组映射适用于较小的映射，而对哈希映射和有序映射的比较则要基于特定应用场合的情况。
 
 Map形式以“{:a 1 :b 2}“符号表示。
- 
+
+----
 3.1，字面量：
 
 user=> (def my-map {:a 1 :b 2 :c 3})  
@@ -634,7 +563,7 @@ user=> (def my-map {:a 1 :b 2 :c 3})
 user=> (type my-map)  ;type查看符号的类型，这里默认采用哈希映射  
 clojure.lang.PersistentHashMap  
 
-
+----
 3.2，hash-map： 
 创建哈希映射。 
 
@@ -647,7 +576,7 @@ user=> (hash-map :key1 1, :key2 2)
 user=> (def user {:name "steve" :age 24 :salary 8000 :company "ibm"})  
 #'user/user  
 
-
+----
 3.3，array-map： 
 array-map创建数组映射，也有资料说是有序映射
 （不是根据key排序的意思，而是根据元素的初始顺序，相对于hash-map中key的位置不确定而言）。 
@@ -661,8 +590,8 @@ user=> (def am (array-map  :b 1 :a 2 :c 3))
 user=> (type am)  
 clojure.lang.PersistentArrayMap  
 
-
-3.4、sorted-map： 
+----
+3.4，sorted-map： 
 sorted-map对键进行比较：根据数字或者字母表进行排序。 
 
 user=> (type (sorted-map));底层实现方式为PersistentTreeMap  
@@ -674,44 +603,10 @@ user=> (sorted-map :b 2 :a 1)
 user=> (sorted-map 0 0 2 2 1 1)  
 {0 0, 1 1, 2 2}  
 
-
-3.5、zipmap： 
-zipmap使用给定的keys映射到匹配的vals，返回一个数组映射。
-
-user=> (def zm (zipmap [:a :b :c :d :e] [1 2 3 4 5]))  
-#'user/zm  
-
-user=> (type zm)  
-clojure.lang.PersistentArrayMap  
-
-user=> zm  
-{:e 5, :d 4, :c 3, :b 2, :a 1}  
-
-user=> (zipmap [:a :b :c] [1 2 3 4])  
-{:c 3, :b 2, :a 1}  
-
-
-3.6、sorted-map-by： 
-使用提供的比较器，返回一个新建的有序映射。 
-
-user=> (sorted-map-by > 1 "a", 2 "b", 3 "c")  
-{3 "c", 2 "b", 1 "a"}  
-
-user=> (sorted-map-by < 1 "a", 2 "b", 3 "c")  
-{1 "a", 2 "b", 3 "c"}  
-
-
-3.7、bean： 
+----
+3.5，bean： 
 根据java对象，返回该对象的属性构成的map。 
 
-3.8、frequencies： 
-根据集合中元素出现的次数，构成一个数组映射。
-
-user=> (frequencies [1 2 1 1 "a" "b" "a"])  
-{1 3, 2 1, "a" 2, "b" 1}  
-
-user=> (type (frequencies [1 2 1 1 "a" "b" "a"]))  
-clojure.lang.PersistentArrayMap
 
 --------
 4，set
@@ -720,7 +615,8 @@ Set是一个包含不重复元素的集合。
 当我们要求集合里面的元素不可以重复，并且我们不要求集合里面的元素保持它们添加时候的顺序，那么使用set比较合适。
 Set形式以“#{1,2,3}”符号表示。
 Set可以使用哈希表或二叉树来实现，使用 hash-set 或者 sorted-set 函数。
- 
+
+----
 4.1，字面量： 
 
 user=> (def languages #{:java :list :c++})  
@@ -729,7 +625,7 @@ user=> (def languages #{:java :list :c++})
 user=> languages  
 #{:c++ :list :java}  
 
-
+----
 4.2，set： 
 使用set函数转换其他集合类型为set类型，并且去除重复元素。
 
@@ -748,7 +644,7 @@ user=> (set "abccdd")
 user=> (set {:one 1 :two 2 :three 3})  
 #{[:two 2] [:three 3] [:one 1]}  
 
-
+----
 4.3，hash-set： 
 使用hash-set创建基于哈希表的集合。 
 
@@ -759,7 +655,7 @@ user=> (hash-set 3 2 1 2);通过hash-set创建set时，需要检查给定的key�
 IllegalArgumentException Duplicate key: 2  clojure.lang.PersistentHashSet.create  
 WithCheck (PersistentHashSet.java:80)  
 
-
+----
 4.4，sorted-set： 
 使用sorted-set创建基于二叉树的集合。 
 
@@ -798,19 +694,11 @@ hash-set函数调用clojure.lang.PersistentHashSet类的createWithCheck方法
 （一般方法名称为create表示对参数不做检查）。
  
 
-4.5，sorted-set-by: 
-sorted-set-by方法根据比较函数，确定set的排序规则。
-
-user=> (sorted-set-by > 3 5 8 2 1)  
-#{8 5 3 2 1}  
-
-user=> (sorted-set-by <  3 5 8 2 1)  
-#{1 2 3 5 8}
-
 ========
 操作集合的通用语句
 
-1、count： 
+----
+1，count： 
 count函数返回集合中元素的个数，如果count参数为nil，则返回0 。
 
 user=> (count nil)  
@@ -826,8 +714,8 @@ user=> (count {:one 1 :two 2})
 user=> (count "string")  
 6  
 
-
-2、empty： 
+----
+2，empty： 
 返回一个空的集合，集合类型不变，如果empty参数为nil，则返回nil 。
 
 user=> (empty [1 2 3])  
@@ -842,8 +730,8 @@ user=> (empty {:key1 1})
 user=> (empty nil)  
 nil  
 
-
-3、not-empty： 
+----
+3，not-empty： 
 如果集合为空，返回nil，否则直接返回参数指向的集合 。
 
 user=> (not-empty [])  
@@ -852,293 +740,6 @@ nil
 user=> (not-empty '(1 2 3))  
 (1 2 3)  
 
-
-4、into： 
-into接受两个集合参数，并且将第二个集合参数的元素全部插入到第一个集合参数中，再返回。 
-
-user=> (into {} [[1 2] [3 4]])  
-{1 2, 3 4}  
-
-user=> (into [] {:a 1 :b 2})  
-[[:a 1] [:b 2]]  
-
-user=> (into () '(1 2 3))  
-(3 2 1)  
-
-user=> (into ["a" "b"] '(1 2 3))  
-["a" "b" 1 2 3]  
-
-
-5、contains?： 
-如果当前给定的集合（第一个参数）存在key（第二个参数），则返回true，否则返回false。
-特别指出，对于数组、vector以索引标识的集合，如果key在索引范围内，则返回true，否则返回false，
-对于列表类型，总是返回false。 
-
-user=> (contains? {:a 1} :a)  
-true  
-user=> (contains? {:a nil} :a)  
-true  
-user=> (contains? {:a 1} :b)  
-false  
-user=> (contains? [:a :b :c] :b)  
-false  
-user=> (contains? [:a :b :c] 2)  
-true  
-user=> (contains? "f" 0)  
-true  
-user=> (contains? "f" 2)  
-false  
-
-user=> (contains? '(1 2 3) 1)  
-false  
-
-user=> (contains? #{"a" "b" "v"} "a")  
-true  
-user=> (contains? #{"a" "b" "c"} "z")  
-false  
-
-
-6、distinct?： 
-如果传递的参数列表中有值相同的（即出现重复），返回false，否则返回true。 
-
-user=> (distinct? 1 2 3)  
-true  
-
-user=> (distinct? 1 1 2 3)  
-false  
-
-user=> (distinct? "a" "b" "a")  
-false  
-
-
-7、empty?： 
-接受一个集合参数，如果该集合没有元素，则返回true，否则返回false。 
-
-user=> (empty? ())  
-true  
-user=> (empty? '(1 2 3))  
-false  
-user=> (empty? [])  
-true  
-user=> (empty? {})  
-true  
-user=> (empty? #{})  
-true  
-
-
-8、every?： 
-every?接受两个参数，第一个参数为检查函数，第二个参数为集合。
-如果该检查函数对集合所有元素都通过，则返回true，否则返回false。 
-
-user=> (every? even? '(2 4 6))  
-true  
-
-user=> (every? odd? '(1 3 9))  
-true  
-
-user=> (every? true? '())  
-true  
-
-user=> (every? false? '())  
-true  
-
-
-9、not-every?： 
-not-every?与every作用相反。参照every介绍。 
-如果有元素不通过的，返回true，否则返回false。
-
-user=> (not-every? odd? '(1 2 3))  
-true  
-
-user=> (not-every? odd? '(1 3))  
-false  
-
-
-10、some： 
-只要有一个元素检查为true，则返回true。所有检查都不通过，则返回nil。 
-
-user=> (some even? '(1 2 3 4))  
-true  
-
-user=> (some even? '(1 3 5 7))  
-nil  
-
-user=> (some true? [false false false])  
-nil  
-
-user=> (some true? [false true false])  
-true  
-
-
-11、not-any?： 
-not-any?与some函数作用也相反（定义为comp not some），可参考some描述。 
-
-user=> (not-any? odd? '(2 4 6))  
-true  
-
-user=> (not-any? odd? '(1 2 3))  
-false  
-
-
-12、sequential?： 
-sequential?检查集合是否实现Sequential接口（不是排序，而是顺序存储），是则返回true，否则返回false。 
-
-user=> (sequential? '(2 1 3))  
-true  
-
-user=> (sequential? {:a 1 :d 2 :b 3})  
-false  
-
-user=> (sequential? 1)  
-false  
-
-
-13、associative?： 
-associative?检查集合是否实现Associative接口（关系型），是则返回true，否则返回false。 
-
-user=> (associative? [1 2 3])  
-true  
-
-user=> (associative? '(1 2 3))  
-false  
-
-
-14、sorted?： 
-sorted?检查集合是否实现Sorted接口，是则返回true，否则返回false。 
-
-user=> (sorted? (sorted-set 5 3 1 2 4))  
-true  
-
-user=> (sorted? (sorted-map :a 1 :c 3 :b 2))  
-true  
-
-user=> (sorted? [1 2 3 4 5])  
-false  
-
-
-15、counted?： 
-如果集合参数以常量时间内返回元素个数总和时，返回true，否则返回false。 
-
-user=> (counted? [:a :b :c])  
-true  
-
-user=> (counted? '(:a :b :c))  
-true  
-
-user=> (counted? {:a 1 :b 2 :c 3})  
-true  
-
-user=> (counted? "asdf")  
-false  
-
-
-16、reversible?： 
-reversible?检查集合参数是否实现Reversible接口，是则返回true，否则返回false。 
-
-user=> (reversible? [])  
-true  
-
-user=> (reversible? '())  
-false  
-
-user=> (reversible? #{})  
-false  
-
-=========
-集合类型检查 
-
-1、coll?： 
-如果给定的参数实现IPersistentCollection接口（集合都会实现该接口），则返回true，否则返回false。 
-
-user=> (coll? {})   
-true   
-
-user=> (coll? #{})   
-true   
-
-user=> (coll? [])   
-true   
-
-user=> (coll? ())   
-true   
-
-user=> (coll? 4)   
-false  
-
-user=> (coll? "fred")   
-false  
-
-user=> (coll? true)   
-false  
-
-user=> (coll? nil)   
-false  
-
-
-2、seq?： 
-如果给定的参数实现ISeq接口（序列实现该接口），则返回true，否则返回false 。
-
-user> (seq? 1)   
-false   
-user> (seq? [1])   
-false   
-user> (seq? (seq [1]))   
-true   
-
-
-3、vector?： 
-如果给定的参数实现IPersistentVector接口（向量Vector实现该接口），则返回true，否则返回false 。
-
-user=> (vector? [1 2 3])   
-true   
-
-user=> (vector? '(1 2 3))   
-false   
-
-user=> (vector? (vec '(1 2 3)))   
-true   
-
-
-4、list?： 
-如果给定的参数实现IPersistentList接口（列表List实现该接口），则返回true，否则返回false 。
-
-user=> (list? '(1 2 3))   
-true   
-user=> (list? (list 1 2))   
-true   
-user=> (list? 0)   
-false   
-user=> (list? {})   
-false   
-user=> (list? [])   
-false    
-
-
-5、map?： 
-如果给定的参数实现IPersistentMap接口（映射Map实现该接口），则返回true，否则返回false 。
-
-user=> (map? {:a 1 :b 2 :c 3})   
-true   
-user=> (map? '(1 2 3))   
-false    
-
-
-6、set?： 
-如果给定的参数实现IPersistentSet接口（set集合实现该接口），则返回true，否则返回false 。
-
-user> (set? #{1 2 3})   
-true   
-
-user> (set? [1 2 3])   
-false   
-
-user> (set? {:a 1 :b 2})   
-false   
-
-实际上本篇介绍的各种检查语句，都是检查底层实现类所实现的接口（具有对应接口的功能），比如说列表List的实现类定义为： 
-
-public class PersistentList extends ASeq  
-  implements IPersistentList, IReduce, List, Counted  
 
 =======
 参考：
