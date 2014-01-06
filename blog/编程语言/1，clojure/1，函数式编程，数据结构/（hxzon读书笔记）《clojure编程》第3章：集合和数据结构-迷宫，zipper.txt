@@ -34,10 +34,10 @@ Wilson的算法是一个雕刻算法，它从一个全是墙、没有路径的�
     [walls]
     (let [paths (reduce (fn [index [a b]] 	;a，b是墙的两个坐标。
                             (merge-with into index {a [b] b [a]} ))	;合并index 和 {a [b] b [a]} ，相同键名的值合并（into）。
-                            ;得到一个新map，键为坐标，值为坐标可达的新坐标。
+                            ;得到一个新map，键为坐标，值为坐标可达的坐标集（向量）。
                         {} 
                         (map seq walls))		;将墙（含两个坐标的set）转成序列。
-          start-loc (rand-nth (keys paths))] ;随机选择路径中的一个坐标，绑定到start-loc 。
+          start-loc (rand-nth (keys paths))] ;随机选择路径中的一个坐标，绑定到 start-loc 。
         (loop [ walls walls
                 unvisited (disj (set (keys paths)) start-loc)] 	;未访问的坐标。
               (if-let [loc (when-let [s (seq unvisited)] (rand-nth s))] 	;从未访问的坐标中随机选择一个，绑定到 loc 。
@@ -71,10 +71,10 @@ Wilson的算法是一个雕刻算法，它从一个全是墙、没有路径的�
                                             (.setStroke (java.awt.BasicStroke. 0.4)))]
                                      (.drawRect g -1 -1 w h)
 
-                                     (doseq [ [[xa ya] [xb yb]] (map sort maze)]
+                                     (doseq [ [ [xa ya] [xb yb] ] (map sort maze) ]	;maze是墙的序列，墙是含有两个坐标的向量。对墙内的两个坐标排序。
                                             (let [ [xc yc] (if (= xa xb)
-                                                   [(dec xa) ya]
-                                                   [xa (dec ya)])]
+                                                   				[ (dec xa) ya ]
+                                                   				[ xa (dec ya) ] ) ]
                                                  (.drawLine g xa ya xc yc))))))
                         (.setPreferredSize (java.awt.Dimension.
                             (* 10 (inc w)) (* 10 (inc h))))))
@@ -104,10 +104,13 @@ Wilson的算法是一个雕刻算法，它从一个全是墙、没有路径的�
             start-loc (rand-nth (keys paths)) ]
         (loop   [walls walls unvisited (disj (set (keys paths)) start-loc)]
                 (if-let [loc (when-let [s (seq unvisited)] (rand-nth s))]
+
                     (let [walk (iterate (comp rand-nth paths) loc)
                           steps (zipmap (take-while unvisited walk) (next walk))
-                          walk (take-while identity (iterate steps loc))    ;这里只追溯随机遍历的最近的分支，从loc开始。
-                          steps (zipmap walk (next walk)) ]        ;把这个路径变成一个map，每个元素是一个[from-loc to-loc]键值对。
+
+                          walk (take-while identity (iterate steps loc))    ;这里只追溯随机遍历的最近的分支，从 loc 开始。
+                          steps (zipmap walk (next walk)) ]        ;把这个路径变成一个map，每个元素是一个 [ from-loc to-loc ] 键值对。
+
                         (recur  (reduce disj walls (map set steps))
                                 (reduce disj unvisited (keys steps))))
                         walls))))
@@ -157,7 +160,7 @@ http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.47.8598
                                                 (.draw g
                                                     (java.awt.geom.Line2D$Double.
                                                         xa (* 2 ya) xb (* 2 yb))))]
-                            (doseq [[[xa ya] [xb yb]] (map sort maze)]
+                            (doseq [ [ [xa ya] [xb yb] ]   (map sort maze) ]
                                 (draw-line
                                     (cond
                                         (= ya yb) [[(inc xa) (+ ya 0.4)] [(inc xa) (- ya 0.4)]]
@@ -312,11 +315,11 @@ root is the root node.
     [labyrinth loc]
     (let [  paths (reduce  (fn  [index [a b]]
                                 (merge-with into index {a [b] b [a]}))
-                           {} (map seq labyrinth))
-            children (fn [[from to]]
-                         (seq (for [loc (paths to) 
-                                    :when (not= loc from)]
-                                   [to loc])))]
+                           {} (map seq labyrinth))		; paths 是一个map，键为坐标，值为这个坐标可达的坐标集（向量）。
+            children (fn [ [from to] ]	; children是一个函数，
+	                         (seq (for [loc (paths to) 	; 获得 to 的可达坐标集，依次绑定到 loc 。
+	                                    	:when (not= loc from)]
+	                                   		[to loc]))) ]		; 得到 to 和每个可达坐标 的向量，除了 to 到 from 。
         (z/zipper   (constantly true)    ;因为所有的坐标都可能通向另外其它的坐标。
                     children
                     nil    ;因为这个zipper是完全只读遍历的。

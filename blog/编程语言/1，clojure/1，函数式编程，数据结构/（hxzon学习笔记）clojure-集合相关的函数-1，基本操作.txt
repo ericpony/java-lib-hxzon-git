@@ -7,7 +7,7 @@ cons，concat，conj，
 assoc，assoc-in，get，get-in，
 find，dissoc，disj，
 last，first，rest，next，peek，pop，
-drop，take。
+drop，take，take-last，take-nth，take-while 。
 
 clojure.set/union，clojure.set/select，
 clojure.set/difference，clojure.set/intersection。
@@ -334,6 +334,7 @@ Usage: (drop n) ，hxzon：抛出异常。
 
 Elides the first n values from the reduction of coll.
 （Elides，滑动，幻灯片。）
+丢弃开头n个元素。
 
 (drop 2 [\a \b \c \d \e \f])
 ;= (\c \d \e \f)
