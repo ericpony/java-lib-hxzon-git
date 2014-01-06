@@ -1,4 +1,4 @@
-（hxzon学习笔记）clojure-集合相关的函数（续2-集合类型检查）
+（hxzon学习笔记）clojure-集合相关的函数-4，集合类型检查
 
 by hxzon
 ------

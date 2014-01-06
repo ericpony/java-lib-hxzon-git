@@ -1,4 +1,4 @@
-（hxzon学习笔记）clojure-集合相关的函数（续）
+（hxzon学习笔记）clojure-集合相关的函数-3，常用操作
 
 by hxzon
 
@@ -548,7 +548,7 @@ false
 4，iterate
 (iterate f x)
 
-返回一个惰性序列， 序列元素的值为 x 、 (f x) 、 (f (f x)) 、 (f (f (f x))) ， 诸如此类。
+返回一个惰性序列， 序列元素的值为 x 、 (f x) 、 (f (f x)) 、 (f (f (f x)))  。
 函数 f 必须是无副作用的。
 
 ----

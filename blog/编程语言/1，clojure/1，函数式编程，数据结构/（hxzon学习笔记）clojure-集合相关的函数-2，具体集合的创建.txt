@@ -1,0 +1,304 @@
+（hxzon学习笔记）clojure-集合相关的函数-2，具体集合的创建
+
+by hxzon
+
+----
+list，list* 。
+
+vector，vec ，vector-of ，subvec 。
+
+hash-map ，array-map，sorted-map，bean 。
+
+set，hash-set，sorted-set 。
+
+========
+clojure具体类型的创建（包括从其它类型转换，截取）
+
+Clojure提供以下集合类型: list, vector, set, map。
+并且可以使用Java里面提供的集合类型。
+所有的clojure集合是不可修改的、异源的以及持久的。
+
+不可修改表示集合产生之后，不能从集合里面增加或删除元素。
+异源表示集合里面可以装任意类型的数据。
+持久的表示集合有更新时，更新之前的数据还在。
+
+CLojure以一种高效的，共享内存的方式来实现集合。 
+
+因为clojure里面的集合是不可修改的，所以也就没有对集合进行修改的函数。
+相反clojure里面提供了一些函数从一个已有的集合来高效地创建新的集合。
+同时也有一些函数操作一个已有的集合（比如vector)来产生另外一种类型的集合(比如LazySeq), 这些函数有不同的特性。 
+
+========
+1，列表
+Clojure的List是单向链表，在头部增加新元素。List形式以“(1,2,3)”符号表示 。
+
+List是以单向链接列表的形式来实现的，在这一点上有利有弊。
+读取列表的第一个元素或者在列表头添加一个元素的操作都可以在常量时间内完成，然而访问列表的第N个元素却需要N次操作。 
+
+----
+1.1，字面量：
+
+user=> '(1 2 3);'符号阻止对后面的表达式立即求值，与quote意义相同。
+(1 2 3)
+
+user=> (quote (1 2 3))
+(1 2 3)
+
+----
+1.2，list（这里list是clojure定义的指向clojure.lang.PersistentList的creator方法的符号）。 
+
+user=> (list 1 2 3)  
+(1 2 3)  
+
+user=> (list "a" "b" "c")  
+("a" "b" "c")  
+
+user=> (list "a" 1 2.3 'a :keyname)  
+("a" 1 2.3 a :keyname)  
+
+----
+1.3，list* ，list*要求最后一个参数必须为集合。 
+
+user=> (list* 1 [2 3])  
+(1 2 3)  
+user=> (list* nil [1 2])  
+(nil 1 2)  
+user=> (list* 1 nil)  
+(1)  
+user=> (list* 1 ())  
+(1)  
+
+----
+1.4，通过其它方式创建：
+
+user=> (range 1 10)  ;不包含end元素。
+(1 2 3 4 5 6 7 8 9)  
+
+user=> (repeat 5 1)  
+(1 1 1 1 1)
+
+========
+2，向量
+
+Vector支持高效地根据索引来访问元素，与数组类似。
+Vector形式以“[1,2,3]”符号表示。
+
+----
+2.1，字面量：
+
+----
+2.2，vector： 
+vector接收任意数量的参数并将它们的值组成一个Vector。 
+
+user=> (vector)  
+[]  
+user=> (vector nil)  
+[nil]  
+user=> (vector 1 2 3)  
+[1 2 3]  
+user=> (vector (list 1 2 3))  
+[(1 2 3)]  
+
+----
+2.3，vec： 
+vec接收一个单独的参数，可能是任何Clojure或Java的数据类型，然后将其元素的值作为参数，组成一个新的向量。 
+
+user=> (vec (list 1 2 3))  
+[1 2 3]  
+user=> (vec [1 2 3])  
+[1 2 3]  
+user=> (vec '())  
+[]  
+user=> (vec nil)  
+[]  
+
+----
+2.4，vector-of： 
+vector-of函数第一个参数指定Vector元素的类型，后面任意个参数作为元素，
+如果类型转换正确，则返回一个vector。
+vector-of第一个参数包括：:int :long :float :double :byte :short :char or :boolean 。 
+
+user=> (vector-of :int 1 2 3)  
+[1 2 3]  
+user=> (vector-of :int "1" "2")  
+ClassCastException java.lang.String cannot be cast to java.lang.Character  cloju  
+re.lang.RT.intCast (RT.java:1076)
+
+----
+2.5，subvec： 
+subvec接收两个或三个参数。
+第一个是向量，第二个和第三个（如果有的话）是索引。
+它返回一个新向量，这个向量由原来那个向量的介于两个索引之间或者第一个索引到向量末尾（如果没有第二个索引）的部分组成。 
+
+user=> (subvec [12 3 4 5 6 7] 2)  
+[4 5 6 7]
+
+user=> (subvec [12 3 4 5 6 7] 2 4)  
+[4 5]
+
+
+========
+3，映射
+
+Map存储一个键-值对的集合。
+键和值都可以是任何数据类型的对象，无论是基本数据类型还是其它映射。
+然而，使用关键字来作为映射的键非常合适，因此它们经常在应用映射的场合被使用。
+
+clojure的Map有三种实现方式：数组映射、哈希映射和有序映射。
+它们分别使用数组、哈希表和二叉树来作为底层实现。
+数组映射适用于较小的映射，而对哈希映射和有序映射的比较则要基于特定应用场合的情况。
+
+Map形式以“{:a 1 :b 2}“符号表示。
+
+----
+3.1，字面量：
+
+user=> (def my-map {:a 1 :b 2 :c 3})  
+#'user/my-map  
+
+user=> (type my-map)  ;type查看符号的类型，这里默认采用哈希映射  
+clojure.lang.PersistentHashMap  
+
+----
+3.2，hash-map： 
+创建哈希映射。 
+
+user=> (hash-map)  
+{}  
+
+user=> (hash-map :key1 1, :key2 2)  
+{:key2 2, :key1 1}  
+
+user=> (def user {:name "steve" :age 24 :salary 8000 :company "ibm"})  
+#'user/user  
+
+----
+3.3，array-map： 
+array-map创建数组映射，也有资料说是有序映射
+（不是根据key排序的意思，而是根据元素的初始顺序，相对于hash-map中key的位置不确定而言）。 
+
+user=> (array-map :b 1 :a 2 :c 3)  
+{:b 1, :a 2, :c 3}  
+
+user=> (def am (array-map  :b 1 :a 2 :c 3))  
+#'user/am  
+
+user=> (type am)  
+clojure.lang.PersistentArrayMap  
+
+----
+3.4，sorted-map： 
+sorted-map对键进行比较：根据数字或者字母表进行排序。 
+
+user=> (type (sorted-map));底层实现方式为PersistentTreeMap  
+clojure.lang.PersistentTreeMap  
+
+user=> (sorted-map :b 2 :a 1)  
+{:a 1, :b 2}  
+
+user=> (sorted-map 0 0 2 2 1 1)  
+{0 0, 1 1, 2 2}  
+
+----
+3.5，bean： 
+根据java对象，返回该对象的属性构成的map。 
+
+
+========
+4，set
+
+Set是一个包含不重复元素的集合。
+当我们要求集合里面的元素不可以重复，并且我们不要求集合里面的元素保持它们添加时候的顺序，那么使用set比较合适。
+Set形式以“#{1,2,3}”符号表示。
+Set可以使用哈希表或二叉树来实现，使用 hash-set 或者 sorted-set 函数。
+
+----
+4.1，字面量： 
+
+user=> (def languages #{:java :list :c++})  
+#'user/languages  
+
+user=> languages  
+#{:c++ :list :java}  
+
+----
+4.2，set： 
+使用set函数转换其他集合类型为set类型，并且去除重复元素。
+
+user=> (set '(1 1 2 3 4 4 5))  
+#{1 2 3 4 5}  
+
+user=> (set [1 1 2 3 4 4 5])  
+#{1 2 3 4 5}  
+
+user=> (set "abcd")  
+#{\a \b \c \d}  
+
+user=> (set "abccdd")  
+#{\a \b \c \d}  
+
+user=> (set {:one 1 :two 2 :three 3})  
+#{[:two 2] [:three 3] [:one 1]}  
+
+----
+4.3，hash-set： 
+使用hash-set创建基于哈希表的集合。 
+
+user=> (hash-set :a :b :c)  
+#{:a :c :b}  
+
+user=> (hash-set 3 2 1 2);通过hash-set创建set时，需要检查给定的key是否重复  
+IllegalArgumentException Duplicate key: 2  clojure.lang.PersistentHashSet.create  
+WithCheck (PersistentHashSet.java:80)  
+
+----
+4.4，sorted-set： 
+使用sorted-set创建基于二叉树的集合。 
+
+user=> (sorted-set 3 2 1)  
+#{1 2 3}  
+
+user=> (sorted-set 3 2 1 1);通过sorted-set创建set时，不检查key是否重复  
+#{1 2 3}  
+
+为何这里不检查key重复，而hash-set检查出现重复时抛出异常？ 
+原因如下： 
+
+;使用source查看函数的源码  
+user=> (source hash-set)  
+(defn hash-set  
+  "Returns a new hash set with supplied keys."  
+  {:added "1.0"  
+   :static true}  
+  ([] #{})  
+  ([& keys]  
+   (clojure.lang.PersistentHashSet/[color=red]createWithCheck[/color] keys)))  
+nil  
+
+user=> (source sorted-set)  
+(defn sorted-set  
+  "Returns a new sorted set with supplied keys."  
+  {:added "1.0"  
+   :static true}  
+  ([& keys]  
+   (clojure.lang.PersistentTreeSet/[color=red]create[/color] keys)))  
+nil  
+
+hash-set函数调用clojure.lang.PersistentHashSet类的createWithCheck方法
+（一般clojure里集合创建时，方法名称为createWithCheck的就表示创建时需要检查参数的合法性），
+而sorted-set函数调用clojure.lang.PersistentTreeSet的create方法
+（一般方法名称为create表示对参数不做检查）。
+ 
+
+=======
+参考：
+
+clojure-基本语法-集合（一）列表和向量
+http://dead-knight.iteye.com/blog/1830583
+
+clojure-基本语法-集合（二）映射和集合
+http://dead-knight.iteye.com/blog/1830683
+
+clojure-基本语法-集合（三）集合通用
+http://dead-knight.iteye.com/blog/1831446
+

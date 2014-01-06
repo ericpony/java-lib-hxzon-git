@@ -22,28 +22,33 @@ Wilson的算法是一个雕刻算法，它从一个全是墙、没有路径的�
 
 -1，用一个向量来表示坐标：[x y]。
 -2，用一个set来保存访问过的坐标。
--3，迷宫本身是由墙组成的，而一堵墙处于两个坐标之间，因此一堵墙可以表示成含有两个坐标的set。
+-3，迷宫本身是由墙组成的，而一堵墙处于两个坐标之间，因此一堵墙可以表示成含有两个坐标的set。#{ [x y] [x y1] }
 -4，迷宫则是一个墙的set。
 -5，遍历其实就是坐标的序列。
--6，离开方向其实就是从离开的坐标到它新进入的坐标，可以用两个坐标的向量表示。
+-6，离开方向其实就是从离开的坐标到它新进入的坐标，可以用两个坐标的向量表示。[ [x y] [x y1] ]
 
 (defn maze
     "Returns a random maze carved out of walls; walls is a set of
     2-item sets #{a b} where a and b are locations.
     The returned maze is a set of the remaining walls."
     [walls]
-    (let [paths (reduce (fn [index [a b]] 
-                            (merge-with into index {a [b] b [a]}))
+    (let [paths (reduce (fn [index [a b]] 	;a，b是墙的两个坐标。
+                            (merge-with into index {a [b] b [a]} ))	;合并index 和 {a [b] b [a]} ，相同键名的值合并（into）。
+                            ;得到一个新map，键为坐标，值为坐标可达的新坐标。
                         {} 
-                        (map seq walls))
-          start-loc (rand-nth (keys paths))] 
+                        (map seq walls))		;将墙（含两个坐标的set）转成序列。
+          start-loc (rand-nth (keys paths))] ;随机选择路径中的一个坐标，绑定到start-loc 。
         (loop [ walls walls
-                unvisited (disj (set (keys paths)) start-loc)] 
-              (if-let [loc (when-let [s (seq unvisited)] (rand-nth s))] 
-                      (let [walk (iterate (comp rand-nth paths) loc) 
-                            steps (zipmap (take-while unvisited walk) (next walk))] 
-                           (recur (reduce disj walls (map set steps)) 
-                                  (reduce disj unvisited (keys steps))))
+                unvisited (disj (set (keys paths)) start-loc)] 	;未访问的坐标。
+              (if-let [loc (when-let [s (seq unvisited)] (rand-nth s))] 	;从未访问的坐标中随机选择一个，绑定到 loc 。
+                      (let [walk (iterate (comp rand-nth paths) loc) 	; (paths loc)得到 loc 可达的坐标（向量），从可达坐标中随机选择一个。
+                      ; iterate 返回一个惰性序列， 序列元素的值为 x 、 (f x) 、 (f (f x)) 、 (f (f (f x)))  。
+                      ; 从 loc 的可达坐标中随机选择一个 loc2，再从 loc2 的可达坐标中随机选择一个 loc3 ... 
+                      ; walk 为经过的坐标（序列）。
+                            steps (zipmap (take-while unvisited walk) (next walk))] ; steps 为 map，键为坐标，值为这个坐标的下一个坐标。
+                            ; take-while 获取满足谓词的元素。找出 walk 中新访问的坐标（不在 unvisited 中）。
+                           (recur (reduce disj walls (map set steps)) 	;拆墙，从 walls 中移除 steps 。
+                                  (reduce disj unvisited (keys steps))))	;从未访问的坐标中移除 steps 。
                       walls))))
 
 两个工具函数，grid用来创建一个全是墙的迷宫。draw用来渲染生成好的迷宫，这里使用swing。
