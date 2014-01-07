@@ -1,0 +1,595 @@
+﻿maven配置篇之pom.xml
+http://www.blogjava.net/zyl/archive/2006/12/30/91055.html
+posted @ 2006-12-30 20:05 布衣郎
+
+修正部分字眼by hxzon。
+
+=====
+说完了settings.xml配置，下来说一下maven2的主要配置pom.xml 。
+
+什么是pom?
+
+pom作为项目对象模型。通过xml表示maven项目，使用pom.xml来实现。
+主要描述了项目：包括配置文件；开发者需要遵循的规则，缺陷管理系统，组织和licenses，
+项目的url，项目的依赖性，以及其他所有的项目相关因素。
+
+快速察看：
+<project>
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- The Basics -->
+  <groupId>...</groupId>
+  <artifactId>...</artifactId>
+  <version>...</version>
+  <packaging>...</packaging>
+  <dependencies>...</dependencies>
+  <parent>...</parent>
+  <dependencyManagement>...</dependencyManagement>
+  <modules>...</modules>
+  <properties>...</properties>
+
+  <!-- Build Settings -->
+  <build>...</build>
+  <reporting>...</reporting>
+
+  <!-- More Project Information -->
+  <name>...</name>
+  <description>...</description>
+  <url>...</url>
+  <inceptionYear>...</inceptionYear>
+  <licenses>...</licenses>
+  <organization>...</organization>
+  <developers>...</developers>
+  <contributors>...</contributors>
+
+  <!-- Environment Settings -->
+  <issueManagement>...</issueManagement>
+  <ciManagement>...</ciManagement>
+  <mailingLists>...</mailingLists> 
+  <scm>...</scm>
+  <prerequisites>...</prerequisites>
+  <repositories>...</repositories>
+  <pluginRepositories>...</pluginRepositories>
+  <distributionManagement>...</distributionManagement>
+  <profiles>...</profiles>
+</project>
+
+基本内容：
+
+POM包括了所有的项目信息。
+
+maven 相关：
+
+pom定义了最小的maven2元素，允许groupId,artifactId,version。
+
+所有需要的元素：
+groupId:项目或者组织的唯一标志，并且配置时生成的路径也是由此生成，如org.codehaus.mojo生成的相对路径为：/org/codehaus/mojo
+artifactId: 项目的通用名称
+version:项目的版本
+packaging: 打包的机制，如pom, jar, maven-plugin, ejb, war, ear, rar, par
+classifier: 分类
+
+POM关系： 
+
+主要为依赖，继承，合成。
+
+  依赖关系：
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.0</version>
+      <type>jar</type>
+      <scope>test</scope>
+      <optional>true</optional>
+    </dependency>
+    ...
+  </dependencies>
+
+groupId, artifactId, version:描述了依赖的项目唯一标志
+
+可以通过以下方式进行安装： 
+使用以下的命令安装：
+mvn install:install-file –Dfile=non-maven-proj.jar –DgroupId=some.group –DartifactId=non-maven-proj –Dversion=1
+
+创建自己的库,并配置，使用deploy:deploy-file
+
+设置此依赖范围为system，定义一个系统路径。不提倡。
+type:相应的依赖产品包形式，如jar，war
+scope:用于限制相应的依赖范围，包括以下的几种变量：
+compile ：默认范围，用于编译
+provided：类似于编译，但支持你期待jdk或者容器提供，类似于classpath
+runtime:在执行时，需要使用
+test:用于test任务时使用
+system:需要外在提供相应得元素。通过systemPath来取得
+systemPath: 仅用于范围为system。提供相应的路径
+optional: 标注可选，当项目自身也是依赖时。用于连续依赖时使用
+
+依赖性
+告诉maven你只包括指定的项目，不包括相关的依赖。此因素主要用于解决版本冲突问题。
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-embedder</artifactId>
+      <version>2.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.maven</groupId>
+          <artifactId>maven-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+表示项目maven-embedder需要项目maven-core，但我们不想引用maven-core 。
+
+继承关系
+
+另一个强大的变化,maven带来的是项目继承。
+主要的设置：
+
+定义父项目
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.codehaus.mojo</groupId>
+  <artifactId>my-parent</artifactId>
+  <version>2.0</version>
+  <packaging>pom</packaging>
+</project>
+
+packaging 类型，需要pom用于parent和合成多个项目。
+我们需要增加相应的值给父pom，用于子项目继承。
+
+主要的元素如下：
+依赖型
+开发者和合作者
+插件列表
+报表列表
+插件执行使用相应的匹配ids
+插件配置
+子项目配置
+
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>my-parent</artifactId>
+    <version>2.0</version>
+    <relativePath>../my-parent</relativePath>
+  </parent>
+  <artifactId>my-project</artifactId>
+</project>
+
+relativePath可以不需要，但是用于指明parent的目录，用于快速查询。
+
+dependencyManagement：
+用于父项目配置共同的依赖关系，主要配置依赖包相同因素，如版本，scope。
+
+合成（或者多个模块）
+一个项目有多个模块，也叫做多重模块，或者合成项目。
+
+如下的定义：
+
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.codehaus.mojo</groupId>
+  <artifactId>my-parent</artifactId>
+  <version>2.0</version>
+  <modules>
+    <module>my-project1<module>
+    <module>my-project2<module>
+  </modules>
+</project>
+
+build 设置
+主要用于编译设置，包括两个主要的元素，build和report 。
+build主要分为两部分，基本元素和扩展元素集合。
+
+注意：包括项目build和profile build。
+
+<project>
+  <!-- "Project Build" contains more elements than just the BaseBuild set -->
+  <build>...</build>
+  <profiles>
+    <profile>
+      <!-- "Profile Build" contains a subset of "Project Build"s elements -->
+      <build>...</build>
+    </profile>
+  </profiles>
+</project>
+
+基本元素
+<build>
+  <defaultGoal>install</defaultGoal>
+  <directory>${basedir}/target</directory>
+  <finalName>${artifactId}-${version}</finalName>
+  <filters>
+    <filter>filters/filter1.properties</filter>
+  </filters>
+  ...
+</build>
+
+defaultGoal: 定义默认的目标或者阶段。如install
+directory: 编译输出的目录
+finalName: 生成最后的文件的样式
+filter: 定义过滤，用于替换相应的属性文件，使用maven定义的属性。设置所有placehold的值
+
+资源(resources)
+你项目中需要指定的资源。如spring配置文件，log4j.properties 等。
+
+<project>
+  <build>
+    ...
+    <resources>
+      <resource>
+        <targetPath>META-INF/plexus</targetPath>
+        <filtering>false</filtering>
+        <directory>${basedir}/src/main/plexus</directory>
+        <includes>
+          <include>configuration.xml</include>
+        </includes>
+        <excludes>
+          <exclude>**/*.properties</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <testResources>
+      ...
+    </testResources>
+    ...
+  </build>
+</project>
+
+resources: resource的列表，用于包括所有的资源
+targetPath: 指定目标路径，用于放置资源，用于build
+filtering: 是否替换资源中的属性placehold
+directory: 资源所在的位置
+includes: 样式，包括那些资源
+excludes: 排除的资源
+
+testResources: 测试资源列表
+
+插件 
+在build时，执行的插件，比较有用的部分，如使用jdk 5.0编译等。
+
+<project>
+  <build>
+    ...
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.0</version>
+        <extensions>false</extensions>
+        <inherited>true</inherited>
+        <configuration>
+          <classifier>test</classifier>
+        </configuration>
+        <dependencies>...</dependencies>
+        <executions>...</executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+
+extensions: true or false，是否装载插件扩展。默认false
+inherited: true or false，是否此插件配置将会应用于poms，那些继承于此的项目
+configuration: 指定插件配置
+dependencies: 插件需要依赖的包
+executions: 用于配置execution目标，一个插件可以有多个目标。
+
+如下：
+    <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+
+        <executions>
+          <execution>
+            <id>echodir</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>verify</phase>
+            <inherited>false</inherited>
+            <configuration>
+              <tasks>
+                <echo>Build Dir: ${project.build.directory}</echo>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+说明：
+
+id:规定execution 的唯一标志
+goals: 表示目标
+phase: 表示阶段，目标将会在什么阶段执行
+inherited: 和上面的元素一样，设置false maven将会拒绝执行继承给子插件
+configuration: 表示此执行的配置属性
+
+插件管理 
+pluginManagement：插件管理以同样的方式包括插件元素，用于在特定的项目中配置。
+所有继承于此项目的子项目都能使用。
+主要定义插件的共同元素。
+
+扩展元素集合，主要包括以下的元素：
+
+Directories
+
+用于设置各种目录结构，如下：
+  <build>
+        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        <scriptSourceDirectory>${basedir}/src/main/scripts</scriptSourceDirectory>
+        <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+        <outputDirectory>${basedir}/target/classes</outputDirectory>
+        <testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>
+        ...
+  </build>
+
+Extensions
+
+表示需要扩展的插件，必须包括进相应的build路径。
+
+<project>
+  <build>
+    ...
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ftp</artifactId>
+        <version>1.0-alpha-3</version>
+      </extension>
+    </extensions>
+    ...
+  </build>
+</project>
+
+Reporting
+用于在site阶段输出报表。特定的maven 插件能输出相应的定制和配置报表。
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <outputDirectory>${basedir}/target/site</outputDirectory>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <reportSets>
+          <reportSet></reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+Report Sets
+用于配置不同的目标，应用于不同的报表。
+
+<reporting>
+    <plugins>
+      <plugin>
+        ...
+        <reportSets>
+          <reportSet>
+            <id>sunlink</id>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+            <inherited>true</inherited>
+            <configuration>
+              <links>
+                <link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+              </links>
+            </configuration>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+更多的项目信息：
+
+name:项目除了artifactId外，可以定义多个名称。
+description: 项目描述
+url: 项目url
+inceptionYear:创始年份
+
+Licenses
+
+<licenses>
+  <license>
+    <name>Apache 2</name>
+    <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    <distribution>repo</distribution>
+    <comments>A business-friendly OSS license</comments>
+  </license>
+</licenses>
+
+Organization，配置组织信息：
+
+  <organization>
+    <name>Codehaus Mojo</name>
+    <url>http://mojo.codehaus.org</url>
+  </organization>
+
+Developers，配置开发者信息：
+
+<developers>
+    <developer>
+      <id>eric</id>
+      <name>Eric</name>
+      <email>eredmond@codehaus.org</email>
+      <url>http://eric.propellors.net</url>
+      <organization>Codehaus</organization>
+      <organizationUrl>http://mojo.codehaus.org</organizationUrl>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+      <timezone>-6</timezone>
+      <properties>
+        <picUrl>http://tinyurl.com/prv4t</picUrl>
+      </properties>
+    </developer>
+  </developers>
+
+Contributors，贡献者信息：
+
+  <contributors>
+    <contributor>
+      <name>Noelle</name>
+      <email>some.name@gmail.com</email>
+      <url>http://noellemarie.com</url>
+      <organization>Noelle Marie</organization>
+      <organizationUrl>http://noellemarie.com</organizationUrl>
+      <roles>
+        <role>tester</role>
+      </roles>
+      <timezone>-5</timezone>
+      <properties>
+        <gtalk>some.name@gmail.com</gtalk>
+      </properties>
+    </contributor>
+  </contributors>
+
+环境设置：
+
+Issue Management，定义相关的bug跟踪系统，如bugzilla,testtrack,clearQuest等。
+
+  <issueManagement>
+    <system>Bugzilla</system>
+    <url>http://127.0.0.1/bugzilla</url>
+  </issueManagement>
+
+Continuous Integration Management，连续集成管理，基于triggers或者timings 。
+
+  <ciManagement>
+    <system>continuum</system>
+    <url>http://127.0.0.1:8080/continuum</url>
+    <notifiers>
+      <notifier>
+        <type>mail</type>
+        <sendOnError>true</sendOnError>
+        <sendOnFailure>true</sendOnFailure>
+        <sendOnSuccess>false</sendOnSuccess>
+        <sendOnWarning>false</sendOnWarning>
+        <configuration><address>continuum@127.0.0.1</address></configuration>
+      </notifier>
+    </notifiers>
+  </ciManagement>
+
+Mailing Lists，邮件列表。
+
+  <mailingLists>
+    <mailingList>
+      <name>User List</name>
+      <subscribe>user-subscribe@127.0.0.1</subscribe>
+      <unsubscribe>user-unsubscribe@127.0.0.1</unsubscribe>
+      <post>user@127.0.0.1</post>
+      <archive>http://127.0.0.1/user/</archive>
+      <otherArchives>
+        <otherArchive>http://base.google.com/base/1/127.0.0.1</otherArchive>
+      </otherArchives>
+    </mailingList>
+  </mailingLists>
+
+SCM，软件配置管理，如cvs 和svn 。
+
+  <scm>
+    <connection>scm:svn:http://127.0.0.1/svn/my-project</connection>
+    <developerConnection>scm:svn:https://127.0.0.1/svn/my-project</developerConnection>
+    <tag>HEAD</tag>
+    <url>http://127.0.0.1/websvn/my-project</url>
+  </scm>
+
+Repositories，配置同setting.xml中的开发库。
+
+Plugin Repositories，配置同 repositories 。
+
+Distribution Management，
+用于配置分发管理，配置相应的产品发布信息,主要用于发布，在执行mvn deploy后表示要发布的位置。
+
+1，配置到文件系统：
+<distributionManagement>
+    <repository>
+        <id>proficio-repository</id>
+        <name>Proficio Repository</name>
+        <url>file://${basedir}/target/deploy</url>
+    </repository>
+</distributionManagement>
+
+2，使用ssh2配置：
+<distributionManagement>
+    <repository>
+        <id>proficio-repository</id>
+        <name>Proficio Repository</name>
+        <url>scp://sshserver.yourcompany.com/deploy</url>
+    </repository>
+</distributionManagement>
+
+3，使用sftp配置：
+<distributionManagement>
+    <repository>
+        <id>proficio-repository</id>
+        <name>Proficio Repository</name>
+        <url>sftp://ftpserver.yourcompany.com/deploy</url>
+    </repository>
+</distributionManagement>
+
+4，使用外在的ssh配置：
+编译扩展用于指定使用wagon外在ssh提供，用于提供你的文件到相应的远程服务器。
+
+<distributionManagement>
+    <repository>
+        <id>proficio-repository</id>
+        <name>Proficio Repository</name>
+        <url>scpexe://sshserver.yourcompany.com/deploy</url>
+    </repository>
+</distributionManagement>
+
+<build>
+    <extensions>
+        <extension>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-ssh-external</artifactId>
+            <version>1.0-alpha-6</version>
+        </extension>
+    </extensions>
+</build>
+
+5，使用ftp配置：
+
+<distributionManagement>
+    <repository>
+        <id>proficio-repository</id>
+        <name>Proficio Repository</name>
+        <url>ftp://ftpserver.yourcompany.com/deploy</url>
+    </repository>
+</distributionManagement>
+
+<build>
+    <extensions>
+        <extension>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-ftp</artifactId>
+            <version>1.0-alpha-6</version>
+        </extension>
+    </extensions>
+</build>
+
+repository 对应于你的开发库，用户信息通过settings.xml中的server取得 。
+
+Profiles ，类似于settings.xml中的profiles，增加了几个元素，如下的样式：
+
+  <profiles>
+    <profile>
+      <id>test</id>
+      <activation>...</activation>
+      <build>...</build>
+      <modules>...</modules>
+      <repositories>...</repositories>
+      <pluginRepositories>...</pluginRepositories>
+      <dependencies>...</dependencies>
+      <reporting>...</reporting>
+      <dependencyManagement>...</dependencyManagement>
+      <distributionManagement>...</distributionManagement>
+    </profile>
+  </profiles>
+
