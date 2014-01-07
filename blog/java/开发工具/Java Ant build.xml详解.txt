@@ -1,0 +1,380 @@
+﻿Java Ant build.xml详解
+
+（节选，清理by hxzon）
+http://www.cnblogs.com/wufengxyz/archive/2011/11/24/2261797.html
+
+http://ant.apache.org/manual/index.html
+http://ant.apache.org/manual/tasksoverview.html 内置任务。
+http://ant.apache.org/manual/tutorial-HelloWorldWithAnt.html
+
+http://ant.apache.org/external.html 周边工具。
+http://ant.apache.org/manual/tutorial-writing-tasks.html 自己创建任务。
+
+=======
+1，构建ant环境
+
+设置ANT_HOME ，
+PATH中添加ANT_HOME目录下的bin目录。
+
+ANT_HOME:D:\apache-ant-1.8.2
+PATH:%ANT_HOME%\bin)
+
+测试一下你的设置，
+cmd键入 ant 回车，如果看到下面的提示表示成功。
+
+Buildfile: build.xml does not exist!
+Build failed
+
+=======
+2，体验ant
+
+要运行ant需要有一个build.xml虽然不一定要叫这个名字，但是建议你这么做。
+下边就是一个完整的build.xml。
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="HelloWorld" default="run" basedir=".">
+    <property name="src" value="src"/>
+    <property name="dest" value="classes"/>
+    <property name="hello_jar" value="hello1.jar"/>
+
+    <target name="init">
+       <mkdir dir="${dest}"/>
+    </target>
+
+    <target name="compile" depends="init">
+       <javac srcdir="${src}" destdir="${dest}"/>
+    </target>
+
+    <target name="build" depends="compile">
+       <jar jarfile="${hello_jar}" basedir="${dest}"/>
+    </target>
+
+    <target name="run" depends="build">
+       <java classname="test.ant.HelloWorld" classpath="${hello_jar}"/>
+    </target>
+
+    <target name="clean">
+       <delete dir="${dest}" />
+       <delete file="${hello_jar}" />
+    </target>
+
+    <target name="rerun" depends="clean,run">
+       <ant target="clean" />
+       <ant target="run" />
+    </target>
+</project>
+
+--
+根节点：
+
+<project name="HelloWorld" default="run" basedir=".">
+</project>
+ant的所有内容必须包含在这个里边，name是你给它取的名字，
+basedir故名思意就是工作的根目录， .代表当前目录。
+default代表默认要做的事情。
+
+--
+变量：
+<property name="src" value="src"/>
+
+--
+目标：
+
+<target name="compile" depends="init">
+   <javac srcdir="${src}" destdir="${dest}"/>
+</target>
+把你想做的每一件事情写成一个target ，它有一个名字，
+depends是它所依赖的target，在执行这个target（例如这里的compile）之前，
+ant会先检查init是否曾经被执行过，
+如果执行过则直接直接执行compile，
+如果没有则会先执行它依赖的target例如这里的init，然后在执行这个target 。
+
+
+目标，编译：
+<target name="compile" depends="init">
+    <javac srcdir="${src}" destdir="${dest}"/>
+</target>
+
+目标，生成jar包:
+<target name="build" depends="compile">
+    <jar jarfile="${hello_jar}" basedir="${dest}"/>
+</target>
+
+目标，运行：
+<target name="run" depends="build">
+    <java classname="test.ant.HelloWorld" classpath="${hello_jar}"/>
+</target>
+
+为了不用拷贝，我们可以在最开始定义好目标文件夹，这样ant直接把结果就放在目标文件夹中了。
+
+目标，新建文件夹:
+<target name="init">
+    <mkdir dir="${dest}"/>
+</target>
+
+为了更多一点的功能体现，又加入了两个target。
+
+目标，删除生成的文件：
+<target name="clean">
+    <delete dir="${dest}" />
+    <delete file="${hello_jar}" />
+</target>
+
+再次运行，这里显示了如何在一个target里边调用其他的target。
+<target name="rerun" depends="clean,run">
+    <ant target="clean" />
+    <ant target="run" />
+</target>
+
+只需在命令行键入ant 就能运行代码。
+
+有的时候我们可能并不想运行程序，只想执行这些步骤中的某一两个步骤，
+例如我只想重新部署而不想运行，键入
+ant build
+ant中的每一个任务都可以这样调用ant + target name 。
+
+========
+3，独立的属性文件，及包含xml。
+
+在实际的工作过程中可能会出现以下一些情况，一个项目分成很多个模块，每个小组或者部门负责一个模块，
+为了测试，他们自己写了一个build.xml，而你负责把这些模块组合到一起使用，写一个build.xml 。
+
+这个时候你有两种选择：
+1，自己重新写一个build.xml ，这将是一个麻烦的事情。
+2，尽量利用他们已经写好的build.xml，减少自己的工作。
+
+举个例子：
+
+假设你下边有三个小组，每个小组负责一个部分，他们分别有一个src 和一个写好的build.xml 。
+这个时候你拿到他们的src，你需要做的是建立三个文件夹src1 ,src2, src3分别把他们的src和build.xml放进去，
+然后写一个build.xml 。
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="main" default="build" basedir=".">
+    <property name="bin" value="${basedir}\bin" /> 
+    <property name="src1" value="${basedir}\src1" /> 
+    <property name="src2" value="${basedir}\src2" /> 
+    <property name="src3" value="${basedir}\src3" /> 
+
+    <target name="init">
+       <mkdir dir="${bin}" />
+    </target>
+    <target name="run">
+       <ant dir="${src1}" target="run" />
+       <ant dir="${src2}" target="run" />
+       <ant dir="${src3}" target="run" />
+    </target>
+    <target name="clean">
+       <ant dir="${src1}" target="clean" />
+       <ant dir="${src2}" target="clean" />
+       <ant dir="${src3}" target="clean" />
+    </target> 
+    <target name="build" depends="init,call">
+       <copy todir="${bin}">
+        <fileset dir="${src1}">
+         <include name="*.jar" />
+        </fileset>
+        <fileset dir="${src2}">
+         <include name="*.jar" />
+        </fileset>
+        <fileset dir="${src3}">
+         <include name="*.jar" />
+        </fileset>
+       </copy>
+    </target>
+    <target name="rebuild" depends="build,clean">
+       <ant target="clean" />
+       <ant target="build" />
+    </target>
+</project>
+
+但是，在那些build.xml中，大多数是重复的，而且更改一次目录需要更改不少东西。
+是否能让工作做的更好一点呢，答案是肯定的。
+
+引入两个东西：
+1,propery
+2,xml include
+
+这两个东西都有一个功能，就是能把build.xml中<propery />中的内容分离出来，共同使用。
+
+除此之外它们各有特点：
+propery的特点是维护简单，只需要简单的键值对，因为并不是所有人都喜欢xml的格式。
+xml include的特点是不单可以提取出属性来，还可以提取target。
+
+还是上边的例子：
+
+例如我们想把src1 src2 src3这三个属性从xml中提出来，可以新建一个文件叫all.properties 。
+
+里边的内容：
+src1=D:\\study\\ant\\src1
+src2=D:\\study\\ant\\src2
+src3=D:\\study\\ant\\src3
+
+然后你的build.xml文件可以这样写，别人只需要更改配置文件，而不需要更改你的build.xml文件了。
+
+property标签改用file属性来指明属性文件的位置。
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="main" default="build" basedir=".">
+    <property file="all.properties" /> 
+    <property name="bin" value="${basedir}\bin" /> 
+
+    <target name="init">
+       <mkdir dir="${bin}" />
+    </target>
+    <target name="run">
+       <ant dir="${src1}" target="run" />
+       <ant dir="${src2}" target="run" />
+       <ant dir="${src3}" target="run" />
+    </target>
+    <target name="clean">
+       <ant dir="${src1}" target="clean" />
+       <ant dir="${src2}" target="clean" />
+       <ant dir="${src3}" target="clean" />
+    </target> 
+    <target name="build" depends="init,call">
+       <copy todir="${bin}">
+        <fileset dir="${src1}">
+         <include name="*.jar" />
+        </fileset>
+        <fileset dir="${src2}">
+         <include name="*.jar" />
+        </fileset>
+        <fileset dir="${src3}">
+         <include name="*.jar" />
+        </fileset>
+       </copy>
+    </target>
+    <target name="rebuild" depends="build,clean">
+       <ant target="clean" />
+       <ant target="build" />
+    </target>
+    <target name="test">
+       <ant dir="${src1}" target="test" />
+       <ant dir="${src2}" target="test" />
+       <ant dir="${src3}" target="test" />
+    </target>
+</project>
+
+如果你自己看的话你会看到这样一个target：
+<target name="test">
+    <ant dir="${src1}" target="test" />
+    <ant dir="${src2}" target="test" />
+    <ant dir="${src3}" target="test" />
+</target>
+
+
+====
+有的时候你想给每个小组的build.xml加入几个target，一种做法是每个里边写，然后在这里调用。
+但是有一种更好的方法。
+
+你可以写一个include.xml文件，内容如下：
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<property name="src" value="src"/>
+<property name="dest" value="classes"/>
+<target name="test" >
+<ant target="run" />
+</target>
+
+然后更改你三个小组的build.xml文件,每个里边加入如下内容：
+
+<!--include a xml file ,it can be common propery ,can be also a target   -->
+<!DOCTYPE project [
+<!ENTITY share-variable SYSTEM "file:../include.xml">
+]>
+
+&share-variable;
+
+这个时候，你只要在include.xml添加propery , 添加target，三个build.xml会同时添加这些propery和target，
+而且不会让三个组的build.xml变得更复杂。
+
+变成如下的样子：
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--include a xml file ,it can be common propery ,can be also a target   -->
+<!DOCTYPE project [
+<!ENTITY share-variable SYSTEM "file:../include.xml">
+]>
+<project name="HelloWorld" default="run" basedir=".">
+
+    <!--use the include   -->
+    &share-variable;
+
+    <!--defined the property-->
+
+    <!--via include
+    <property name="src" value="src"/>
+    <property name="dest" value="classes"/>
+    -->
+
+    <property name="hello_jar" value="hello1.jar"/>
+
+    <!--define the op-->
+
+    <target name="init">
+       <mkdir dir="${dest}"/>
+    </target>
+    <target name="compile" depends="init">
+       <javac srcdir="${src}" destdir="${dest}"/>
+    </target>
+    <target name="build" depends="compile">
+       <jar jarfile="${hello_jar}" basedir="${dest}"/>
+    </target>
+    <target name="run" depends="build">
+       <java classname="test.ant.HelloWorld" classpath="${hello_jar}"/>
+    </target>
+    <target name="clean">
+       <delete dir="${dest}" />
+       <delete file="${hello_jar}" />
+    </target>
+    <target name="rerun" depends="clean,run">
+       <ant target="clean" />
+       <ant target="run" />
+    </target>
+</project>
+
+掌握了上边的那些内容之后，你就知道如何去写一个好的ant，
+但是你会发现当你真的想去做的时候，你不能马上作出好的build.xml，
+因为你知道太少的ant的默认提供的命令。
+
+这个时候如果你想完成任务，并提高自己，有很多办法：
+1，很多开源的程序都带有build.xml，看看它们如何写的。
+2，ant的document，里边详细列写了ant的各种默认命令。
+
+=======
+如果使用的是远程的cvs，可以这样使用：
+
+<xml version="1.0" encoding="utf-8"?>
+<project>
+      <property name="cvsroot" value=":pserver:wang:@192.168.1.2:/cvsroot"/>
+      <property name="basedir" value="/tmp/testant/"/>
+      <property name="cvs.password" value="wang"/>
+      <property name="cvs.passfile" value="${basedir}/ant.cvspass"/>
+
+      <target name="initpass">
+              <cvspass cvsroot="${cvsroot}" password="${cvs.password}" passfile="${cvs.passfile}"/>
+      </target>
+
+      <target name="checkout" depends="initpass">
+              <cvs cvsroot="${cvsroot}" command="checkout" cvsrsh="ssh" package="myproject" dest="${basedir}" 
+               passfile="${cvs.passfile}"/>
+       </target>
+</project>
+
+======
+hxzon补充：
+
+	<target name="upload_for_test">
+		<ftp userid="xxx" password="xxx" server="192.168.1.2" remotedir="/xxx" verbose="yes">
+			<fileset dir="${project.build.directory}">
+				<include name="classes/**/*.class" />
+				<include name="defs/**" />
+				<include name="lib/**" />
+				<modified>
+					<param name="cache.cachefile" value="upload_for_test.properties" />
+				</modified>
+			</fileset>
+		</ftp>
+	</target>
+
