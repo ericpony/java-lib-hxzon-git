@@ -13,11 +13,8 @@ http://ant.apache.org/manual/tutorial-writing-tasks.html 自己创建任务。
 =======
 1，构建ant环境
 
-设置ANT_HOME ，
-PATH中添加ANT_HOME目录下的bin目录。
-
 ANT_HOME:D:\apache-ant-1.8.2
-PATH:%ANT_HOME%\bin)
+PATH:%ANT_HOME%\bin
 
 测试一下你的设置，
 cmd键入 ant 回车，如果看到下面的提示表示成功。
@@ -69,9 +66,10 @@ Build failed
 
 <project name="HelloWorld" default="run" basedir=".">
 </project>
+
 ant的所有内容必须包含在这个里边，name是你给它取的名字，
-basedir故名思意就是工作的根目录， .代表当前目录。
-default代表默认要做的事情。
+basedir就是工作的根目录， .代表当前目录。
+default代表默认的目标。
 
 --
 变量：
@@ -83,11 +81,12 @@ default代表默认要做的事情。
 <target name="compile" depends="init">
    <javac srcdir="${src}" destdir="${dest}"/>
 </target>
+
 把你想做的每一件事情写成一个target ，它有一个名字，
 depends是它所依赖的target，在执行这个target（例如这里的compile）之前，
 ant会先检查init是否曾经被执行过，
 如果执行过则直接直接执行compile，
-如果没有则会先执行它依赖的target例如这里的init，然后在执行这个target 。
+如果没有则会先执行它依赖的target（例如这里的init），然后再执行这个target 。
 
 
 目标，编译：
@@ -120,7 +119,7 @@ ant会先检查init是否曾经被执行过，
     <delete file="${hello_jar}" />
 </target>
 
-再次运行，这里显示了如何在一个target里边调用其他的target。
+目标，再次运行（这里显示了如何在一个target里边调用其他的target）：
 <target name="rerun" depends="clean,run">
     <ant target="clean" />
     <ant target="run" />
@@ -365,16 +364,18 @@ property标签改用file属性来指明属性文件的位置。
 ======
 hxzon补充：
 
-	<target name="upload_for_test">
-		<ftp userid="xxx" password="xxx" server="192.168.1.2" remotedir="/xxx" verbose="yes">
-			<fileset dir="${project.build.directory}">
-				<include name="classes/**/*.class" />
-				<include name="defs/**" />
-				<include name="lib/**" />
-				<modified>
-					<param name="cache.cachefile" value="upload_for_test.properties" />
-				</modified>
-			</fileset>
-		</ftp>
-	</target>
+ftp文件上传：
+
+<target name="upload_for_test">
+	<ftp userid="xxx" password="xxx" server="192.168.1.2" remotedir="/xxx" verbose="yes">
+		<fileset dir="${project.build.directory}">
+			<include name="classes/**/*.class" />
+			<include name="defs/**" />
+			<include name="lib/**" />
+			<modified>
+				<param name="cache.cachefile" value="upload_for_test.properties" />
+			</modified>
+		</fileset>
+	</ftp>
+</target>
 
