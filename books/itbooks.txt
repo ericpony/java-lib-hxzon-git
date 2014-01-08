@@ -462,13 +462,14 @@ Mark C. Chu-Carroll (作者), 刘姝 (译者), 管雪涛 (译者)
 ----
 201，Clojure编程乐趣
 福格斯 (Michael Fogus) (作者), 豪泽 (Chris Houser) (作者), 郑晔 (译者)
+40.70(69折)
 不买，值得一读，但部分内容过时。英文版已出第2版。优先电子版。
 
 ----
 139，Clojure程序设计
 2013年3月20日
 Programming Clojure, Second Edition，The Pragmatic Programmers，2012年4月17日
-36.80 (7.5折)，24.00(49折)，不买。优先电子版。
+36.80 (7.5折)，33.80(69折)，24.00(49折)，不买。优先电子版。
 
 ----
 208，Haskell函数式编程基础(第3版)

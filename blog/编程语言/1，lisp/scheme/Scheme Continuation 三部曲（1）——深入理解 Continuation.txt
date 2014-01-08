@@ -1,0 +1,204 @@
+﻿Scheme Continuation 三部曲（1）——深入理解 Continuation
+(2012-08-26 10:39:34)
+http://blog.sina.com.cn/s/blog_4dff871201018wtz.html
+
+======
+终于，我也不能免俗地要来谈谈这几个 Schemer 的必谈话题（顺便山寨了一个标题）。
+Scheme 是一门神奇的编程语言，它不仅是世界上第一个完整支持闭包（closure）的语言，也是世界上第一个提供 continuation 的语言。你可以看到 wiki 上几个关于 Continuation 的条目全部用 Scheme 作为示例语言。如无特指，本文以及接下来的两篇文章中凡是提到 continuation 的地方，均是指 Scheme 中的 continuation。
+什么是 continuation ，它的语义其实不难理解，The Scheme Programming Language 说得很明白：
+During the evaluation of a Scheme expression, the implementation must keep track of two things: (1) what to evaluate and (2) what to do with the value. ... We call "what to do with the value" the continuation of a computation.
+Continuation 就是一个表达式被求值之后，接下来要做的事情。描述很简单，但是 Scheme continuation 的用法比较奇葩，导致我在学习 continuation 的过程中被几个问题困扰了很久，不过没关系，哥现在终于搞清楚了。写下这篇文章不是为了说明 continuation 是什么，而是想能帮助其他人更好地理解这个东西。下面我们通过几个小实验全面了解 continuation 的各个特性，在看每一个例子的时候，希望你先思考一下“这段代码的结果是什么？”、或者“为什么是这个结果？”，然后再看我的解说。
+温馨提示：接下来的内容可能会让你的大脑感到不适，建议先阅读这篇文章。
+
+I. 非本地退出
+Non-local exit，翻译成中文即“非本地退出”。非本地退出是初学 continuation 很好的例子，因为它逻辑简单，并且体现了 continuation 的三个特性，：
+continuation as first-class，简单地说就是 continuation 也可以视为一等公民，可以当做参数被传递和返回；
+continuation is represented by procedure，也就是说可以视 continuation 为过程，可以调用它，本来也应该如此，因为 continuation 表示的正是“将来要做的事情；
+假设 call/cc 捕捉了当前的 continuation，并绑定到 lambda 的参数 cc，那么在 lambda 函数体内，一旦 cc 被直接或间接的作为过程调用，那么 call/cc 会立即返回，并且提供给 cc 的参数即为 call/cc 的返回值。
+请看下面这段程序：
+
+(define (test element cc) 
+  (if (zero? element) 
+      (cc 'found-zero) ; non-local exit
+      (void))) 
+
+(define (search-zero test lst) 
+  (call/cc 
+   (lambda (return) 
+     (for-each (lambda (element)
+                 (test element return)
+                 (printf "~a~%" element)) ; print
+               lst)
+     #f)))
+
+(search-zero test '(-3 -2 -1 0 1 2 3))
+
+
+运行结果：
+
+-3
+-2
+-1
+'found-zero
+函数 search-zero 遍历表中所有的元素，每一次都把当前的 continuation 取出来然后传给 test，一旦遇到0，就立即终止并返回 'found-zero。本来 for-each 应当遍历了整个表，但是test发现0的时候，就把 'found-zero 传给 cc，并调用之，由此 search-zero 在这时直接返回，而不会执行下剩下的迭代。
+进一步说明一下。
+Scheme <wbr>Continuation <wbr>三部曲（一）鈥斺斏钊肜斫 <wbr>Continuation
+
+我把函数的一次次求值画成一段段的箭头，当 test 遇到0的时候，它利用 cc 执行了一次非本地退出，跳到了 cc 定义的 continuation，怎么知道这个 continuation 是什么呢？分析一下它的值被用来做什么了。由于 search-zero 的整个函数体都被 call/cc 包起来了，所以 call/cc 的返回值刚好就是 search-zero 的返回值，而这个值接下来被用来执行的操作就是输出到屏幕 —— 这就是 cc 的内容，test 利用 cc 令 search-zero 中的 call/cc 返回 'found-zero，随后这个结果被输出到了屏幕上。
+实际上还没完，R5RS描述道，“ The continuation represents an entire (default) future for the computation”。continuation 不仅保存了这个表达式的值被求出来后拿去做了什么，还保存着这个值被求出来后，对后序表达式的求值操作。search-zero 是在顶层被调用的，所以 cc 还包括“提示下一个输入，执行输入的表达式，如此永不停歇”。也就是说， cc 中包含着一个无限的操作 —— 一时难以理解是吧，但事实就是如此，哈哈哈。
+再看一个生成器，它接收一个列表作为参数，每次被调用的时候就返回一个元素，有点像 python 的 yield：
+
+(define (generate-one-element-at-a-time lst)
+  ;; Hand the next item from a-list to "return" or an end-of-list marker
+  (define (control-state return)
+    (for-each 
+     (lambda (element)
+       (call/cc
+        (lambda (resume-here)
+          ;; Grab the current continuation
+          (set! control-state resume-here) ;; !!!
+          (return element))))
+     lst)
+    (return 'end))
+
+  (define (generator)
+    (call/cc control-state)) 
+
+  ;; Return the generator 
+  generator)
+
+(define generate-digit
+  (generate-one-element-at-a-time '(0 1 2)))
+
+> (generate-digit)
+0
+> (generate-digit)
+1
+> (generate-digit)
+2
+> (generate-digit)
+'end
+> (generate-digit)
+'end
+又是一个非本地退出的例子，值得注意的是 control-state，这个函数第一次被调用的时候它还是个函数，但是看注释“!!!”的这一行，经过第一次调用后， control-state 就把自己改成了一个 continuation，随后借助 generator 传进来的 return，完成一次非本地退出（在 control-state 里退出 generator）。第一次看这个可能有点晕，因为这里有两个 call/cc，而且还是嵌套的。这两个 call/cc 各司其职，generator 里的 call/cc 是为了非本地退出，第二个 call/cc 则是为了记录遍历列表的状态——这样下一次调用 generator 的时候，通过 control-state（它是个 continuation），就能直接从上次修改 continuation 的地方继续运行，从而跳了回去，达到生成器的效果。
+通过在 call/cc 内 apply continuation，我们可以在任意时刻从函数中跳出来；通过修改中途获取的 continuation，我们还可以跳回去。
+
+II. 非引用透明性
+我们知道，引用透明性（Referential Transparent）是纯函数式语言的重要特征，但通过 call/cc，我们能定义出一个不具有引用透明性的函数：
+(define (get-cc) (call/cc (lambda (c) c)))
+看出 get-cc 做了什么吗？它捕捉到当前的 continuation 然后返回，显然这个函数的返回值受到上下文——准确地说是下文，的影响，所以它其实很不透明= = 但正是它的不透明性能帮助我们更好地了解 continuation。来看下面这段代码：
+
+> (define x (get-cc))
+> x
+#< continuation>
+> (x 10)
+> x
+10
+> (number? x)
+#t
+> ((get-cc) 10)
+. . a application: not a procedure;
+ expected a procedure that can be applied to arguments
+  given: 10
+  arguments...:
+   10
+
+你明白上面发生了什么吗？ x 明明是个 continuation，怎么变成10了？？为什么 (get-cc) define 成 x 可以被调用，却不能被直接调用？？？
+我曾经被这几个“奇怪的现象”困扰了好一阵子。但是想清楚 get-cc 的不透明性及其缘由就明白了。实际上，经过 define 之后， x 获得了一个 continuation，这个 continuation 是什么呢？……是获取一个值，然后绑定到 x —— 恰好就是 define 所做的事情。所以再以10为参数调用 x 的时候， continuation 把10绑定到 x，x 又被绑定了一次，就变成数字10了。但是直接对 (get-cc) apply 10的时候，却提示错误，这是因为这个 (get-cc) 接下来被用来当成函数调用了，所以给它传一个10之后，这个10就被当做函数执行，显然这是不对的。get-cc 是个神奇的函数，就是获取它这个位置上的 continuation， (get-cc) 自己被用来做了什么事，它返回的 continuation 就对别人做同样的事，以彼之道，还施彼身。如果你感到有点晕，别急着往下看，先消化一下。
+接下来这个表达式，你能看出它的返回值是什么吗？
+(let ([x (get-cc)]) (x (lambda (unused) "我擦")))
+也许你能马上猜到结果，但是不一定能马上明白。我们仍然从 (get-cc) 开始分析。我们看到 (get-cc) 被用来绑定到 x上，随后以 (lambda (unused) "我擦")) 为参数调用 x。现在开始还施彼身。于是，接下来 (lambda (unused) "我擦")) 也被绑定到 x 上，然后用参数 (lambda (unused) "我擦")) 调用新的 x，显然这个参数没有用上，所以 x 直接返回了“我擦”。真是我擦啊……
+这是最后一个关于 get-cc 的例子。
+(((get-cc) (lambda (x) x)) "我又擦")
+你应该马上就能猜到，这个表达式返回了“我又擦”，but why?
+沿用刚才的思路，先分析 (get-cc) 自己被用来做了什么？它被当成函数，以 (lambda (x) x) 为参数进行调用，调用的返回值又被当成函数，以“我又擦”为参数执行调用。好，(get-cc) 的参数是 (lambda (x) x)——一个恒等函数，于是 (lambda (x) x) 被当成了函数，以 (lambda (x) x)（没错，就是它自己）为参数执行调用，返回值当然还是它自己，又一个恒等函数；最后，这个恒等函数接收参数“我又擦”，当然也就返回“我又擦”。
+(get-cc) 的非引用透明性来源于它的语义，它总是捕捉当前的 continuation 并返回之。可以这么理解 call/cc，它可以出现在任何一个本应是表达式的地方（它占了表达式的位置）。凡是表达式都要求值，并且还要求它的后续表达式的值，程序员通过call/cc，可以在该表达式出现的地方捕捉（catch）到该表达式的后续操作。被捕捉到的后续操作即为 continuation，某种程度上说，它就像个时光机，调用捕捉到的 continuation 可以回到过去。但是注意调用 continuation 和非本地退出的区别，后者是在 call/cc 的函数体内（直接或间接）调用捕捉到的 cc，这是 continuation 的特殊用法，它能立即退出，而且可以在非本地退出；而前者是在相应 continuation 的 call/cc 之外调用，它的作用就是重复后续操作。
+
+III. 移花接木
+这一部分只讲解一个例子，不过这个例子更绕~ V神跟我说，monad 就是给一个函数打很多个孔，然后灵活地组合，我觉得 continuation 也是给函数打孔，而且不同函数打的孔还可以对接起来。
+生产者-消费者问题是检验多任务机制的经典问题，我们可以用 continuation 模拟这个过程，即生成-消费-再生产-再消费-...
+
+(define dish #f)
+
+(define (put! fruit) (set! dish fruit))
+(define (get!) (let ([fruit dish]) (set! dish #f) fruit))
+
+(define (consumer do-other-stuff)
+  (let loop ()
+    (when dish
+      (printf "C: get a ~a~%" (get!))
+      (set! do-other-stuff (call/cc do-other-stuff))
+      (loop))))
+
+(define (producer do-other-stuff)
+  (for-each (lambda (fruit)
+              (put! fruit)
+              (printf "P: put a ~a~%" fruit)
+              (set! do-other-stuff (call/cc do-other-stuff)))
+            '("apple" "strawberry" "peach"  "grape")))
+
+(producer consumer)
+
+producer 通过 for-each “生产”了几个水果，每生成一个就放进盘子里，并通过 call/cc 把控制权交给 consumer，consumer 先看看盘子里有没有水果，如果有就取。运行结果不难预科：
+
+> (producer consumer)
+P: put a apple
+C: get a apple
+P: put a strawberry
+C: get a strawberry
+P: put a peach
+C: get a peach
+P: put a grape
+C: get a grape
+实际上这段程序有两个过程交替运行，我们知道多任务控制流的一个关键就是，保存每个任务的上下文，让它切出去再返回的时候能接着执行，就像没有发生过切换一样。这个任务，continuation 完全胜任。How does it works?
+producer 往盘子里放水果之后，通过 call/cc 调用 consumer，它的 continuation 就传进 consumer 了（consumer 的 do-other-stuff 就是 producer 的 continuation）， consumer 取出水果之后，就能通过这个 continuation 回到 producer，同时它也把自己的 continuation 传给了 producer。两个函数通过互传 continuation 的方式实现切换和恢复。
+
+IV. 模拟多任务
+最后，我们看看如何用 continuation 模拟多任务。刚才的例子已经模拟了一个很简单的多任务过程，即 producer 和 conmuser 两个过程“同时”运行，但那是两个任务都知道对方的存在从而实现精确的同步。如果是几个独立的进程，如何并发执行呢？
+
+(define lwp-list '())
+(define lwp
+  (lambda (thunk)
+    (set! lwp-list (append lwp-list (list thunk)))))
+
+(define start
+  (lambda ()
+    (let ([p (car lwp-list)])
+      (set! lwp-list (cdr lwp-list))
+      (p))))
+
+(define pause
+  (lambda ()
+    (call/cc
+      (lambda (k)
+        (lwp (lambda () (k #f)))
+        (start)))))
+
+(lwp (lambda () (let f () (pause) (display "h") (f))))
+(lwp (lambda () (let f () (pause) (display "e") (f))))
+(lwp (lambda () (let f () (pause) (display "y") (f))))
+(lwp (lambda () (let f () (pause) (display "!") (f))))
+(lwp (lambda () (let f () (pause) (newline) (f))))
+
+lwp 即 ligth-weight process, lwp-list 是进程表，不难看出 lwp 和 start 的作用分别是添加一进程到进程表、和从进程表里取出一个进程并执行，理解这段程序的关键在于 pause。
+pause 是这些进程真正的调度者，它不仅有副作用，而且也不具有引用透明性，所以难以理解，我们分析一下。(lwp (lambda () (k #f))) 把 pause 的 continuation 添加到进程表尾，以备将来恢复。但注意，call/cc 能取出一个函数的全部未来，当然也包括这个函数执行完毕后的后续操作——每一个 lwp 调用 pause 之后的操作是“输出一个字符，然后再递归调用自己”，这些操作当然也在 pause 的 continuation 里面——
+oh no
+你看出来了吗？这些进程第一次被执行时不输出任何信息，因为它们到达 (pause) 的时候，pause 把剩余操作打包成 continuation 放到进程表尾，然后就执行下一个进程了。最后的执行结果就是不停的打印 "hey!"：
+
+> (start)
+hey!
+hey!
+hey!
+hey!
+hey!
+ 
+V. 总结一下
+如果充分理解的上面所有的例子，那也就相当程度地掌握了 continuation。说了那么多，continuation 有什么用呢？这篇文章举的例子已展示了一些使用 continuation 的模式，如非本地退出、保存上下文等。在第三篇文章中我们还会看到如何用 continuation 消除非尾递归。continuation 为程序员提供了一种强大、灵活、近乎随心所欲的控制流（Tom 言：时光机），但是它太锋利，而且很多时候还要涉及一些带副作用的操作，另外想必你也发现带 call/cc 的代码非常难读= =，综上所述，除非你已经非常非常熟悉 continuation， 否则不建议轻易使用。其实我仍然有一些小细节没有讲，有些是连自己也没明白透，有些是特意留着让你自己去发现。
+下一篇文章，我们将领略 continuation 的终极奥义，真·阴阳谜题，敬请期待。
+
+Reference
+continuation
+call-with-current-continuation
+The Scheme Programming Language
+R5RS
+A short introduction to call-with-current-continuation

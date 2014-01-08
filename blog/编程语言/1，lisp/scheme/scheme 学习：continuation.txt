@@ -1,0 +1,388 @@
+﻿scheme 学习：continuation
+
+scheme 学习:continuation (1)
+http://www.cnblogs.com/sniperHW/archive/2013/06/02/3114011.html
+
+continuation是在scheme中被提出和实现的，经典的应用有：no-local exit,exception，back-tracking算法，coroutine等.
+所谓continuation，其实本来是一个函数调用机制。我们熟悉的函数调用方法都是使用堆栈，采用Activation record或者叫Stack frame来记录从最顶层函数到当前函数的所有context。
+Continuation则是另一种函数调用方式。它不采用堆栈来保存上下文，而是把这些信息保存在continuation record中。这些continuation record和堆栈的activation record的区别在于，
+它不采用后入先出的线性方式，所有record被组成一棵树（或者图），从一个函数调用另一个函数就等于给当前节点生成一个子节点，然后把系统寄存器移动到这个子节点。
+
+一个函数的退出等于从当前节点退回到父节点。这些节点的删除是由garbage collection来管理。如果没有引用这个record，则它就是可以被删除的。
+
+这样的调用方式和堆栈方式相比的好处在哪里呢？最大的好处就是，它可以让你从任意一个节点跳到另一个节点。而不必遵循堆栈方式的一层一层的return方式。
+比如说，在当前的函数内，你只要有一个其它函数的节点信息，完全可以选择return到那个函数，而不是循规蹈矩地返回到自己的调用者。
+
+continuation 的三个特性:
+continuation as first-class，简单地说就是 continuation 也可以视为一等公民，可以当做参数被传递和返回；
+
+continuation is represented by procedure，也就是说可以视 continuation 为过程，可以调用它，本来也应该如此，因为 continuation 表示的正是“将来要做的事情；
+
+假设 call/cc 捕捉了当前的 continuation，并绑定到 lambda 的参数 cc，那么在 lambda 函数体内，一旦 cc 被直接或间接的作为过程调用，那么 call/cc 会立即返回，
+并且提供给 cc 的参数即为 call/cc 的返回值。
+
+
+下面先用一个no-local exit的使用作为例子:
+
+复制代码
+(define (search-element element lst)
+    (display (call/cc (lambda (break)
+        (for-each (lambda (item) (if (equal? item element) (break #t))) lst) 
+        #f)))    
+    ;;;;(break)会跳转到这里
+    (display " end of search-element\n")    
+)
+复制代码
+上面代码的作用是从一个list中搜索给定的元素，如果找到返回#t,否则返回#f.
+先让我们看下输出:
+> (search-element 0 '(1 2 3 4))
+#f end of search-element
+> (search-element 3 '(1 2 3 4))
+#t end of search-element
+
+search-element使用call/cc方式调用了一个匿名函数,这个匿名函数返回一个boolean类型的值，所以这个返回值也就是search-element的返回值.
+匿名函数中的参数break就是当前函数的continuation.当这个continuation被作为过程调用时将会应用continuation的第三个特性.
+
+
+下面再来看一个复杂点的例子,一个generate,当generate被调用时，每次从其输入的序列中输出下一个元素，当到达序列的尾部时输出'end.
+
+复制代码
+(define (for-each proc items)
+  (define (iter things)
+    (cond ((null? things))
+        (else
+            (proc (car things))
+            (display "come back\n")
+            (iter (cdr things)))))
+ (iter items))
+
+
+(define (generate-one-element-at-a-time lst)
+  ;; Hand the next item from a-list to "return" or an end-of-list marker
+  (define (control-state return)
+    (for-each 
+     (lambda (element)
+       (call/cc
+        (lambda (resume-here)
+          ;; Grab the current continuation
+          (set! control-state resume-here) ;; !!!
+          (return element))))
+     lst)
+    (return 'end))
+
+  (define (generator)
+    (call/cc control-state)) 
+  ;; Return the generator 
+  generator)
+复制代码
+我们先来看一下上面代码的输出 
+
+> (define generate-digit (generate-one-element-at-a-time '(0 1 2)))
+> (generate-digit)
+0
+> (generate-digit)
+come back
+1
+> (generate-digit)
+come back
+2
+> (generate-digit)
+come back
+end
+> (generate-digit)
+come back
+end
+
+上面输出奇怪的一个地方在于除了0的上面没有come back，所有的其它输出都跟了come back.我们来看看这到底是什么原因.
+当我们第一次调用generate-digit在for-each内部调用proc时，在此例中proc就是(call/cc (lambda (resume-here) ...),call/cc调用捕捉到了当前continuation,
+并将其绑定到control-state,这样后面每次调用generate-digit就会使得从continuation中返回，在这里返回点在proc之后,也就是(display "come back\n"),
+这就解释了为什么除了第一次generate-digit以外，其后的每次generate-digit都会输出一个come back。
+
+最后，贴一段用continuation实现coroutine的代码结束本文.
+
+复制代码
+(begin
+    ;一个简单的,用continuation实现的协程接口
+    (define current-coro '());当前获得运行权的coro
+    
+    ;创建coro并返回,fun不会立即执行，由start-run执行
+    (define (make-coro fun)
+        (define coro (list #f #f))
+        (let ((ret (call/cc (lambda (k) (begin
+            (set-context! coro k)
+            (list 'magic-kenny coro))))))
+            (if (and (pair? ret) (eq? 'magic-kenny (car ret)))
+                (cadr ret)
+                ;如果下面代码被执行,则是从switch-to调用过来的
+                (begin (let ((result (fun ret)))
+                       (set-context! coro #f)
+                       (set! current-coro (get-from coro))            
+                       ((get-context (get-from coro)) result)));fun执行完成后要回到调用者处
+            )
+        )
+    )
+            
+    (define (get-context coro) (car coro))
+    (define (set-context! coro context) (set-car! coro context))        
+    (define (get-from coro) (cadr coro))
+    (define (set-from! coro from) (set-car! (cdr coro) from))
+    
+    (define (switch-to from to arg)
+        (let ((ret
+              (call/cc (lambda (k)
+                    (set-from! to from)
+                    (set! current-coro to)
+                    (set-context! from k)
+                    ((get-context to) arg)
+                    arg))))
+         ret)
+    )
+    
+    ;启动一个coro的运行，那个coro将会从它在创建时传入的函数开始运行
+    (define (start-run coro . arg)
+        (let ((param (if (null? arg) arg (car arg))))
+            (if (null? current-coro) (set! current-coro (make-coro #f)))
+            (switch-to current-coro coro param))
+    )
+    
+    ;将运行权交给另一个coro
+    (define (yield coro . arg)
+        (let ((param (if (null? arg) arg (car arg))))
+            (switch-to current-coro coro param)))
+    
+    ;将运行权还给原来把运行权让给自己的那个coro
+    (define (resume . arg)
+        (let ((param (if (null? arg) arg (car arg))))
+            (switch-to current-coro (get-from current-coro) param)))
+    
+    (define (fun-coro-a arg)
+        (display "fun-coro-a\n")
+        (yield (make-coro fun-coro-b))
+        (display "coro-a end\n")
+        "end"
+    )
+    
+    (define (fun-coro-b arg)
+        (display "fun-coro-b\n")
+        (display "fun-coro-b end\n")
+        "end"
+    )
+    
+    (define (test-coro1)
+        (start-run (make-coro fun-coro-a))
+    )
+    
+    (define (fun-coro-a-2 arg)
+        (define coro-new (make-coro fun-coro-b-2))
+        (define (iter)
+            (display "fun-coro-a\n")
+            (display (yield coro-new 1))(newline)
+            (iter)
+        )
+        (iter)
+    )
+    
+    (define (fun-coro-b-2 arg)
+        (define (iter)
+            (display "fun-coro-b\n")
+            (display(resume 2))(newline)
+            (iter)
+        )
+        (iter)
+    )
+    
+    (define (test-coro2)
+        (start-run (make-coro fun-coro-a-2))
+    )
+    
+)
+
+======
+scheme 学习: continuation(2)
+http://www.cnblogs.com/sniperHW/archive/2013/06/03/3115961.html
+
+上一篇文章我参考了很多其它文章，自己对continuation也没有完全吃透，本篇继续贴出自己对continuation的
+
+理解，希望大家看完后能理解continuation到底是一个什么东西，当然也希望能得到些反馈,例如看完之后是否能
+
+对continuation有个基本的了解，又或者我的解释有没有什么不对的地方.首先看一下tspl中对continuation的介
+
+绍:
+
+在对scheme表达式求值的过程中，一个scheme实现必须要追踪两样东西:(1)对什么求值(2)对那个值做些什么.考虑
+
+下面表达式中的求值过程(null?x).
+
+(if (null?x) (quote ()) (cdr x))
+
+scheme实现首先要求值(null? x),然后基于求出来的这个值(在这里求出来的值是true或false)决定后面将要调用
+
+(quote ()还是(cdr x).在这里,要求的值就是(null? x),或者说是对(null? x)求值，而后面根据这个值选择到底
+
+是调用(quote ())还是(cdr x)就是对这个值将要做的事.
+
+因此，在计算一个表达式的过程中的任何一个点，都存在着一个准备完成的continuation,或者说，存在一个将计算
+继续下去的点.我们假设x有值(a b c),我们可以把对表达是 (if (null?x) (quote ()) (cdr x))的求值分隔成6个
+continuations,它们分别在等待:(这段翻译得有点别扭)
+
+1)(if (null? x) (quote ()) (cdr x))被求值
+
+2)(null? x)被求值
+
+3)null?被求值
+
+4)x被求值(在(null? x)中
+
+5)cdr 被求值
+
+6)x被求值((在cdr x)中)
+
+(cdr x)的continuation没有被列出来，因为它跟等待(if (null? x) (quote ()) (cdr x))被求值的continuation
+是一样的.(这句不是很理解)
+
+scheme允许我们通过call/cc捕捉任何表达式的continuation.我们必须以一个只有一个参数的过程作为参数调用call/cc,
+
+call/cc把捕捉到的continuation当作参数传递给那个作为call/cc参数的过程.
+
+
+从上面的介绍,可以了解,在每一个需要被求值的位置,都存在着一个continuation,一但这个位置被求值,或者说
+等待到了它需要的值,后续的求值计算就可以continue.例如我们以上面列出的2)和4)举例,用c?表示一个等待求
+值的位置来表示一个continuation:
+
+2)(if c? (quote ()) (cdr x))
+
+4)(if (null? c?) (quote ()) (cdr x))
+
+如上面两个例子,整个表达式要想继续求值,首先要等待c?的位置被求值,由此可见一个continuation就是一个表达
+式加上一个等待求值的位置,一但给等待位置提供了值,整个表达式就可以被求值了.
+
+根据tspl的描述,我们可以通过call/cc捕获任何位置的continuation,并且可以把这个continuation绑定到某个变量
+,在将来的某个时刻,把这个continuation当做一个过程调用,并给它传递一个值作为参数(参数的作用相当与给等待
+求值的位置提供一个值)来继续求值它所代表的求值表达式.
+
+下面看一个例子:
+
+复制代码
+(define c #f)
+
+(define (test2 x)
+    (if 
+        (call/cc (lambda (k)
+            (set! c k) #t))    
+        (quote ()) (cdr x))
+)
+复制代码
+call/cc所捕捉到的continuation相当于下面这样:
+
+(define (test2 x)
+    (if c? (quote ()) (cdr x))
+)
+下面在提示符下输入下面代码:
+> (test2 '(1 2))
+()
+> (c #f)
+(2)
+
+可以看见,当我们执行(c #f)的时候,表达式继续求值了,并以#f为c?的值,输出了(2).而上面代码中用call/cc捕捉到的
+
+continuation实际上与下面这段代码在效果上是等价的:
+
+(define (create-continuation x)
+    (lambda (val)
+        (if val (quote ()) (cdr x))    
+    ))
+> (define c (create-continuation '(1 2)))
+> (c #f)
+(2)
+> (c #t)
+()
+
+======
+shceme学习:continuation(3)阴阳谜题
+http://www.cnblogs.com/sniperHW/archive/2013/06/04/3116884.html
+
+本篇分析continuation的一个著名例子"阴阳迷题",这是由David Madore先生提出的,原谜题如下:
+
+(let* ((yin ((lambda (foo) (display "@") foo) (call/cc (lambda (bar) bar))))
+       (yang ((lambda (foo) (display "*") foo) (call/cc (lambda (bar) bar)))))
+  (yin yang))
+这里引用了http://www.ibm.com/developerworks/cn/linux/l-schm/part3/中的一些简化手段将其中的lambda表达式定义为过程，使其看起来更清晰：
+
+(define bar (lambda (bar) bar))
+(define foox (lambda (foo) (display "@") foo))
+(define fooy (lambda (foo) (display "*") foo))
+则上面的繁琐的表达式可以变成为：
+
+ (let* ((yin (foox (call/cc bar)))
+       (yang (fooy (call/cc bar))))
+  (yin yang))
+将let*改变成let，使其进一步简化为：
+
+  (let ((yin (foox (call/cc bar))))
+     (let ((yang (fooy (call/cc bar))))
+  (yin yang)))
+ 这里要说明的一点是，链接处介绍的最后一个简化也就是下面这个:
+
+最后将let去掉，继而成为：
+((foox (call/cc bar)) (fooy (call/cc bar)))
+其实是错误的.
+
+Ok,我们开始人肉解释器的运行:
+
+(let ((yin (foox (call/cc bar))))
+    (let ((yang (fooy (call/cc bar))))
+(yin yang)))
+首先注意到(call/cc bar)会返回一个continuation,这里将第一行和第二行的continuation分别标识为c1,c2. 所以上面代码相当于:
+
+(let ((yin c1));输出@
+    (let ((yang c2));输出*
+(yin yang)))
+而(yin yang)就变成了(c1 c2).(c1 c2)相当于下面的调用
+
+(define (c1 c2)
+    (let ((yin (foox c2)));输出@
+        (let ((yang (fooy (call/cc bar))));输出*
+    (yin yang)))
+)
+用同样的手段,将(let ((yang (fooy (call/cc bar))))简化成(let ((yang c3))
+
+(define (c1 c2)
+    (let ((yin c2))
+        (let ((yang c3))
+    (yin yang)))
+)
+所以最后的(yin yang)变成了(c2 c3),而(c2 c3)又相当于下面的函数调用:
+
+(define (c2 c3)
+    (let ((yin c1))
+    (let ((yang (fooy c3)));输出*
+    (yin yang)))
+)
+继续简化:(yin yang)变成(c1 c3),(c1 c3)又等价于:
+
+(define (c1 c3)
+    (let ((yin (foox c3)));输出@
+        (let ((yang (fooy (call/cc bar))));输出*
+    (yin yang)))
+)
+将(let ((yang (fooy (call/cc bar))))用(let ((yang c4))替代(yin yang)变成了(c3 c4)
+
+(define (c3 c4)
+    (let ((yin c2))
+        (let ((yang (fooy c4)));输出*
+    (yin yang)))
+)
+简化后(yin yang)变成(c2 c4),我们又回到这一步
+
+(define (c2 c4)
+    (let ((yin c1))
+    (let ((yang (fooy c4)));输出*
+    (yin yang)))
+)
+(yin yang)变成(c1 c4)
+
+现在看下至今为止的输出:@*@**@***
+
+好了,人肉scheme解释器的过程到此结束,因为这个程序会无休止的运行下去,所以人肉分析也是无休止的.
+
+经过上述分析之后,相信对阴阳迷题和continuation又了更深刻的理解.

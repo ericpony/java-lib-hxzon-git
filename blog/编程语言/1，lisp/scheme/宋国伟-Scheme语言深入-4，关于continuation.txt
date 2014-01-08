@@ -1,0 +1,175 @@
+﻿宋国伟-Scheme语言深入-4，关于continuation
+
+宋国伟 (gwsong52@sohu.com)吉林省德惠市信息中心
+发布日期： 2004 年 10 月 01 日 
+http://www.ibm.com/developerworks/cn/linux/l-schm/part3/
+
+=====
+续延，让一个函数调用多次返回。
+
+======
+四、关于continuation（hxzon：重点）
+
+Scheme语言相对Lisp语言的重要特征是提出并实现了continuation，这是让初学者最难理解，也是最让程序员心动的特征。
+那么Continuation到底是什么呢？
+在运算Scheme表达式过程中，我们必须跟踪两个东西：
+1、运算什么？2、什么与值相关？
+
+看一看下面表达式的计算：	(if (null? x) (quote ()) (car x)) 。
+其中首先要运算的是(null? x)，然后在这个值的基础上再运算(quote ())或(cdr x)，
+要运算的是(null? x)而与值相关的是(quote ())和(car x)；
+这里把与值相关的称为运算的continuation。
+
+我们看(null? x)表达式中与值相关的东西就有三个，
+1、表达式本身，结果为#t或#f；
+2、过程null?，它是一个lambda表达式；
+3、变量x，它应当有一个值。
+
+那么上面的表达式里面有几个continuation呢？
+答案是六个，上面的表达式本身，我们说过的三个，car也是一个lambda表达式，还有它后面的x，也和值相关；
+而(car x)没有计算在内，因为它与上面表达式结果之一是相同的。
+
+在任何表达式中，Continuation可以用一个叫call-with-current-continuation的过程来得到，多数情况下它被简化为call/cc。
+在guile的1.6.4或以前版本中，简化代码如下所示：
+(define call/cc call-with-current-continuation)
+
+而在其它的Scheme语言的实现版本中完全可以不用这样定义，而直接使用call/cc。
+call/cc过程的唯一个参数应该是一个过程(或lambda表达式)，
+而且这个过程只能有一个参数，continuation就绑定在这个参数上。
+
+看下面的代码：
+
+guile> (define call/cc call-with-current-continuation)
+
+guile> call/cc
+#<procedure call-with-current-continuation (proc)>
+
+guile> (call/cc (lambda (k) 5))
+5
+;;;此时过程参数k未用到，所以取过程的返回值5做为结果
+
+guile> (call/cc (lambda (k) (* 5 (k 8))))	;hxzon：将 8 绑定到 k 。
+8
+;;;此时过程参数k绑定为8，所以其结果为8
+
+guile> (+ 2 (call/cc (lambda (k) (* 5 (k 8)))))
+10
+;;;此时结果在我们意料之中了
+
+----
+可以利用call/cc这一特点，让它从一个循环中跳出来，这有点像C语言中的break，看下面的代码：
+guile> (call/cc (lambda (return)
+        (for-each (lambda (x) (if (< x 0) (return x)))
+                '(99 88 77 66 55))
+        #t))
+#t
+
+其结果为#t，因为for-each运算过程中未出现过(< x 0)的情况，所以(lambda (return ) ...)的结果为#t，call/cc取此值为最终结果。
+
+guile> (call/cc (lambda (return)
+         (for-each (lambda (x) (if (< x 0) (return x)))	;hxzon：将 x 绑定到 return 。
+                '(11 22 33 44 -55 66 77))
+        #t))
+-55
+
+其结果为-55，因为当遇到小于0的数时，return就绑定x，call/cc就返回此值，即从for-each处理过程中跳出来，
+这是call/cc的重要功能之一，也是最基本的功能。
+
+----
+call/cc 还可以这样操作：
+
+guile> (define foo #f)
+
+guile> (call/cc (lambda (bar) (set! foo bar) 123))
+123
+
+guile> (foo 456)
+456
+
+guile> (foo 'abc)
+abc
+
+上面的操作中，call/cc绑定了lambda表达式的参数bar，而后我们又设定foo的值为bar，此时foo即为一个灵活的continuation；
+最后我们又让lambda表达式的值为123，所以整个call/cc表达式的值为123，
+如果我们不加这个123而直接结束这个表达式的话，此表达式就没有结果，不返回任何值。
+
+当foo成为一个continuation后，我们可以像调用过程那样来调用它(当然它并不是过程)，
+其后面绑定的值即为此continuation的结果，如上面的代码运行所示。
+这段代码的前提是有call/cc的定义，如果你直接运行guile后就输入上面的代码是肯定会出错的。
+
+----
+在赵蔚的文章 http://www.ibm.com/developerworks/cn/linux/l-scheme/part2/index.shtml中
+提到过由David Madore先生提出的"阴阳迷题"，
+下面我们通过对它的研究来理解一下continuation，代码如下所示(为解释方便，稍做改动)：
+
+(let* ((yin ((lambda (foo) (display "@") foo) (call/cc (lambda (bar) bar))))
+       (yang ((lambda (foo) (display "*") foo) (call/cc (lambda (bar) bar)))))
+  (yin yang))
+
+我们进行一些简化，将其中的lambda表达式定义为过程，使其看起来更清晰：
+(define bar (lambda (bar) bar))
+(define foox (lambda (foo) (display "@") foo))
+(define fooy (lambda (foo) (display "*") foo))
+
+则上面的繁琐的表达式可以变成为：
+  (let* ((yin (foox (call/cc bar)))
+       (yang (fooy (call/cc bar))))
+  (yin yang))
+  
+
+将let*改变成let，使其进一步简化为：
+  (let ((yin (foox (call/cc bar))))
+     (let ((yang (fooy (call/cc bar))))
+  (yin yang)))
+  
+
+最后将let去掉，继而成为：
+((foox (call/cc bar)) (fooy (call/cc bar)))
+
+经过这一翻简化处理(对初学者是有必要的)，相信我们对Scheme语言会有新的认识。
+需要说明的是每一次简化后，都要运行一下，保证它的结果如下所示，否则说明我们简化过程中有错误：
+@*@**@***@****@*****@******@*******@********@*********@**********  ......
+
+在理解continuation之前，这一结果是我们无论如何也想不到的，
+如果你有足够奈心的话，你会发现它会按这一规律无限的延长，
+在我的老机上从11:20一直到15:20仍无迹象表明要停止。
+为什么会出现这一结果呢？
+
+首先看看我们为了简化而定义的三个过程bar、foox和fooy，bar是Scheme语言中最简单的过程，只有一个参数，并且返回这个参数；
+foox和fooy比它们只多了一步，执行完一个display过程后再返回这个参数；
+这样简单的两个过程确出现如此复杂的结果，原因全在call/cc身上。
+
+首先，看(call/cc bar)表达式，它形成了一个灵活的continuation，用它来做foox的参数，
+表达式(foox (call/cc bar))则形成一个新的灵活的continuation，即显示一个@字符同时也是一个continuation。
+
+再看，表达式((call/cc bar) (foox bar))的结果与表达式((foox bar) (foox bar))的结果相同，均为显示两个@字符，
+同时返回一个过程#<procedure bar (bar)>，这就让我们在某种程度上理解了表达式(call/cc procedure?)的结果为#t了，
+因为(procedure? procedure?)也为#t；
+而(call/cc boolean?)则不然，因为(boolean? boolean?)为#f。
+
+从上面我们可以看出表达式((call/cc bar) (foox (call/cc bar)))实际则是与表达式((foox (call/cc bar)) (foox (call/cc bar)))，
+运行一下会发现，两者确实相同，显示@字符，无穷无尽，看来(call/cc bar)这个参数起到了关键作用。
+
+那么再看我们的阴阳表达式((foox (call/cc bar)) (fooy (call/cc bar)))，
+前者(foox (call/cc bar))为一个显示字符@的continuation，我们表示为*cc；
+后者(fooy (call/cc bar))为一个显示字符*的continuation，我们表示为*cc；
+则在@cc的调动指挥下，每次*cc再加下一个(fooy (call/cc bar))，形成**cc，再加后，如此形成我们前面的效果。
+过程如下所示：
+
+@cc *cc
+@cc **cc
+@cc ***cc
+@cc ****cc  一直至无穷尽
+
+前一段时间，"晕"这个字总会出现在网友的聊天中，相信现在不"晕"了。
+我们给上面的代码改动一下：
+
+#! /usr/local/bin/guile -s
+!#
+(define call/cc call-with-current-continuation)
+(define n 0)
+(define bar (lambda (bar) bar))
+(define foo (lambda (foo) (display n) (newline) (set! n (+ n 1)) foo))
+((call/cc bar) (foo (call/cc bar)))
+
+这样形成了，0 1 2 3 4 ......无限制的循环，由此我们解决了一个不用循环语句来形成循环的问题。

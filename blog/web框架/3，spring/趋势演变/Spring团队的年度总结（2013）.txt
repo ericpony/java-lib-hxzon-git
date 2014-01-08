@@ -1,0 +1,78 @@
+﻿Spring团队的年度总结（2013）
+http://www.infoq.com/cn/news/2014/01/this-year-in-spring
+作者 张卫滨 发布于 一月 07, 2014
+
+
+来自GoPivotal的工作人员Josh Long回顾总结了在过去的2013年Spring相关领域的重大事件，
+这其中包括了Spring 4的发布、团队加入GoPivotal等。
+
+Josh Long是Apress的《Spring Recipes, 2nd Edition》、O'Reilly的《Pro Spring Roo》
+以及Pearson的《Livelessons for Spring》这些技术图书的作者。
+他是多个Spring项目以及Activiti BPMN框架的提交者。
+
+Spring社区的“This Week in Spring”基本上都是由他来发布。
+
+在Josh Long的年终总结中，在2013年度Spring领域相关的大事包括：
+
+--
+发布Spring 4。
+这个版本的主要特性包括提升了对REST的支持、对Java EE 7
+以及Java 8的支持、对websockets的支持，
+除此之外，还有大量的新特性。
+关于Spring 4发布的消息，还可以参考这里和这里。
+
+--
+在2013年3月底，Spring团队加入了GoPivotal。
+EMC将原属于VMware的Spring、Cloud Foundry等项目组建成立了新的公司，
+关于该重组，我们曾经在2012年底关注过。
+
+--
+在年度的SprinOne2GX会议上，Spring启用了新的网站主页，Spring.IO。
+
+--
+Cloud Foundry v2发布。
+http://www.infoq.com/news/2013/06/cloudfoundry_v2
+
+--
+启动了Pivotal One，
+http://www.gopivotal.com/press-center/11122013-pivotal-one
+这是一个综合性的平台，它的特性包括Pivotal HD以及Cloud Foundry，
+同时包括诸多流行的基础设施，如RabbitMQ以及Redis，当然Spring在其中扮演着核心的角色。
+
+--
+在2013年度，很多的项目发布了更新版本，
+包括Spring Social、Spring Integration、Spring Batch、Spring Data、Spring Security以及Spring for Hadoop。
+
+其中，值得注意的是：Spring Batch添加了新的Java Configuration API并且在设计上支持了新发布的Batch规范；
+
+Spring Integration 3.0新增了众多新的适配器以及功能提升；
+
+Spring Security支持Java Configuration API并且针对open-web应用程序提供了众多的功能提升。
+
+--
+Spring Boot项目的组建。
+Spring Boot能够对Spring平台以及第三方库进行自动分析，这样就能够在很短的时间内很容易地上手使用Spring。
+Spring Boot在整个行业都产生了一定的影响力，大家都认为Boot是很高效且富有生产力的。
+
+--
+针对大数据应用的构建，Spring XD项目提供了便利的基础设施。
+Spring XD是针对数据摄取、实时分析、批处理和数据导出而提供的统一的、分布式的以及可扩展的系统。
+它的目标是简化大数据应用程序的开发。
+Spring XD基于Spring Batch和Spring Integration而构建，
+是一个运行时环境，能够自动处理大数据中常见的任务。
+
+--
+在大数据方面，不得不提的就是Pivotal HD，
+这是一个企业级的Hadoop发布版。
+Pivotal HD能够很好地与Spring for Hadoop集成，是Spring XD中自带的数据存储组件。
+
+--
+社区的发展，
+在过去的一年中，有众多关于Spring的代码、博客、文章、视频以及访谈发布，从而也印证了它强大的影响力。
+
+近几年来Java特性有着快速的发展和演进，
+Oracle也在鼓励开发人员将应用直接迁移到Java EE之上以抗衡Spring，
+http://www.infoq.com/cn/news/2014/01/spring-springs-facing-oracle
+不过相信在未来的一段时间内，Spring在Java开发领域会持续发挥一定的影响力。
+我们期待在新的一年中，技术社区能够带来更多新的理念。
+
