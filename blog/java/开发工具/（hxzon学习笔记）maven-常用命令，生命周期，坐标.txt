@@ -1,0 +1,284 @@
+（hxzon学习笔记）maven-常用命令，生命周期，坐标
+
+摘要：
+
+创建项目：mvn archetype:generate 。
+常用命令：clean，compile，test，package，install。
+三套生命周期：clean，default，site。
+坐标：groupId，artifactId，version，packaging（打包方式），classifier（附件，如javadoc，sources）。
+
+=====
+《maven实战-3.5 使用Archetype生成项目骨架》
+http://hzbook.group.iteye.com/group/wiki/2872-Maven-in-action
+
+创建项目：
+mvn archetype:generate
+
+但在Maven 2中这是不安全的，因为该命令没有指定Archetype插件的版本，
+于是Maven会自动去下载最新的版本，进而可能得到不稳定的SNAPSHOT版本，导致运行失败。
+在Maven 3中，即使用户没有指定版本，Maven也只会解析最新的稳定版本，因此这是安全的。
+
+所以maven 2最好使用以下命令：
+mvn org.apache.maven.plugins:maven-archetype-plugin:2.0-alpha-5:generate
+
+我们实际上是在运行插件maven-archetype-plugin，注意冒号的分隔，
+其格式为 groupId:artifactId:version:goal ，
+org.apache.maven.plugins 是maven官方插件的groupId，
+maven-archetype-plugin 是archetype插件的artifactId，
+2.0-alpha-5 是目前该插件最新的稳定版，
+generate是我们要使用的插件目标。
+
+紧接着我们会看到一段长长的输出，有很多可用的archetype供我们选择，
+包括著名的Appfuse项目的archetype，JPA项目的archetype等等。
+每一个archetype前面都会对应有一个编号，同时命令行会提示一个默认的编号，
+其对应的archetype为maven-archetype-quickstart，
+我们直接回车以选择该archetype，
+紧接着Maven会提示我们输入要创建项目的groupId、artifactId、 version、以及包名package，
+如下输入并确认：
+
+Define value for groupId: : com.juvenxu.mvnbook
+Define value for artifactId: : hello-world
+Define value for version:  1.0-SNAPSHOT: :
+Define value for package:  com.juvenxu.mvnbook: : com.juvenxu.mvnbook.helloworld
+Confirm properties configuration:
+groupId: com.juvenxu.mvnbook
+artifactId: hello-world
+version: 1.0-SNAPSHOT
+package: com.juvenxu.mvnbook.helloworld
+ Y: : Y
+
+Archetype插件将根据我们提供的信息创建项目骨架。
+在当前目录下，Archetype插件会创建一个名为hello-world（我们定义的artifactId）的子目录，
+从中可以看到项目的基本结构：
+
+基本的pom.xml已经被创建，里面包含了必要的信息以及一个junit依赖；
+
+主代码目录src/main/java已经被创建，在该目录下还有一个Java类com.juvenxu.mvnbook.helloworld.App，
+注意这里使用到了我们刚才定义的包名，而这个类也仅仅只有一个简单的输出Hello World!的main方法；
+
+测试代码目录src/test/java也被创建好了，并且包含了一个测试用例com.juvenxu.mvnbook.helloworld.AppTest。
+
+Archetype可以帮助我们迅速地构建起项目的骨架，
+在前面的例子中，我们完全可以在Archetype生成的骨架的基础上开发Hello World项目以节省我们大量时间。
+
+此外，我们这里仅仅是看到了一个最简单的archetype，
+如果你有很多项目拥有类似的自定义项目结构以及配置文件，你完全可以一劳永逸地开发自己的archetype，
+然后在这些项目中使用自定义的archetype来快速生成项目骨架，
+本书后面的章节会详细阐述如何开发Maven Archetype。
+
+（本节完。）
+
+====
+直接指定更新详细的信息：
+mvn archetype:generate 
+-DgroupId=com.mycompany.app 
+-DartifactId=my-app-simple
+-Dversion=1.0 
+-DarchetypeArtifactId=maven-archetype-quickstart
+
+
+====
+清理： clean
+mvn clean
+会将target文件删除，即清理项目，该命令可以结合其他命令运行。
+
+编译： compile
+mvn clean compile
+build success之后我们会在my-app-simple下看到新增了一个target目录，该目录下存放项目编译后的文件，如.class文件。
+ 
+测试: test
+mvn test
+会执行src/test/java 下的Junit 测试代码。
+在执行测试之前会自动执行编译命令。
+ 
+打包: package
+mvn package
+会将项目打成jar包，并放在target目录中。
+执行此命令之前会先执行编译和测试命令。
+ 
+安装：install
+mvn install
+会将项目jar包安装到本地仓库中，以便其他项目使用。
+执行此命令之前会先执行编译，测试，打包命令。
+
+====
+clean告诉Maven清理输出目录target/，
+compile告诉Maven编译项目主代码，
+从输出中我们看到Maven首先执行了clean:clean任务，删除target/目录，
+默认情况下Maven构建的所有输出都在target/目录中；
+接着执行resources:resources任务；
+最后执行compiler:compile任务，将项目主代码编译至target/classes目录。
+
+上文提到的clean:clean、resources:resources，以及compiler:compile对应了一些Maven插件及插件目标，
+比如clean:clean是clean插件的clean目标，
+compiler:compile是compiler插件的compile目标。
+
+====
+命令行输入的是mvn clean test，而Maven实际执行的可不止这两个任务，
+还有clean:clean、resources:resources、compiler:compile、resources:testResources以及compiler:testCompile。
+暂时我们需要了解的是，在Maven执行测试（test）之前，
+它会先自动执行项目主资源处理，主代码编译，测试资源处理，测试代码编译等工作，
+这是Maven生命周期的一个特性。
+
+构建在执行compiler:testCompile任务的时候失败了，
+Maven输出提示我们需要使用-source 5或更高版本以启动注释，也就是前面提到的JUnit 4的@Test注解。
+这是Maven初学者常常会遇到的一个问题。
+由于历史原因，Maven的核心插件之一compiler插件默认只支持编译Java 1.3，
+因此我们需要配置该插件使其支持Java 5 。
+
+<project>
+…
+  <build>
+    <plugins>
+       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-compiler-plugin</artifactId>
+         <configuration>
+           <source>1.5</source>
+           <target>1.5</target>
+         </configuration>
+       </plugin>
+    </plugins>
+  </build>
+…
+</project>  
+
+我们看到compiler:testCompile任务执行成功了，
+测试代码通过编译之后在target/test-classes下生成了二进制文件，
+紧接着surefire:test任务运行测试，surefire是Maven世界中负责执行测试的插件。
+
+====
+jar:jar任务负责打包，实际上就是jar插件的jar目标将项目主代码打包成一个名为hello-world-1.0-SNAPSHOT.jar的文件，
+该文件也位于target/输出目录中，
+它是根据artifact-version.jar规则进行命名的，
+如有需要，我们还可以使用finalName来自定义该文件的名称。
+
+====
+到目前为止，我们还没有运行Hello World项目，不要忘了HelloWorld类可是有一个main方法的。
+默认打包生成的jar是不能够直接运行的，
+因为带有main方法的类信息不会添加到manifest中
+(我们可以打开jar文件中的META-INF/MANIFEST.MF文件，将无法看到Main-Class一行)。
+为了生成可执行的jar文件，我们需要借助maven-shade-plugin 。
+
+<plugin>
+<groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-shade-plugin</artifactId>
+  <version>1.2.1</version>
+  <executions>
+    <execution>
+      <phase>package</phase>
+      <goals>
+        <goal>shade</goal>
+      </goals>
+      <configuration>
+        <transformers>
+          <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+            <mainClass>com.juvenxu.mvnbook.helloworld.HelloWorld</mainClass>
+         </transformer>
+       </transformers>
+     </configuration>
+     </execution>
+  </executions>
+</plugin>
+
+待构建完成之后打开target/目录，我们可以看到hello-world-1.0-SNAPSHOT.jar和original-hello-world-1.0-SNAPSHOT.jar，
+前者是带有Main-Class信息的可运行jar，后者是原始的jar。
+现在，我们在项目根目录中执行该jar文件：
+D: \code\hello-world>java -jar target\hello-world-1.0-SNAPSHOT.jar
+
+======
+maven生命周期
+http://www.iteye.com/topic/1123228
+
+1. 三套生命周期
+
+Maven拥有三套相互独立的生命周期，它们分别为clean，default和site。 
+
+每个生命周期包含一些阶段，这些阶段是有顺序的，并且后面的阶段依赖于前面的阶段，
+用户和Maven最直接的交互方式就是调用这些生命周期阶段。 
+
+以clean生命周期为例，
+它包含的阶段有pre-clean, clean 和 post clean。
+当用户调用pre-clean的时候，只有pre-clean得以执行，
+当用户调用clean的时候，pre-clean和clean阶段会得以顺序执行；
+当用户调用post-clean的时候，pre-clean,clean,post-clean会得以顺序执行。 
+
+较之于生命周期阶段的前后依赖关系，三套生命周期本身是相互独立的，
+用户可以仅仅调用clean生命周期的某个阶段，或者仅仅调用default生命周期的某个阶段，而不会对其他生命周期产生任何影响。 
+
+2. clean 生命周期
+
+clean生命周期的目的是清理项目，它包含三个阶段：
+
+1）pre-clean 执行一些清理前需要完成的工作。
+2）clean 清理上一次构建生成的文件。
+3）post-clean 执行一些清理后需要完成的工作。
+ 
+3. default 生命周期
+
+default生命周期定义了真正构件时所需要执行的所有步骤，它是生命周期中最核心的部分，
+它包含的阶段如下：
+
+1）validate 验证项目是否正确和所有需要的相关资源是否可用
+2）initialize 初始化构建
+3）generate-sources
+4) process-sources 处理源代码
+5）generate-resources 
+6) process-resources 处理项目主资源文件。对src/main/resources目录的内容进行变量替换等工作后，复制到项目输出的主classpath目录中。
+7）compile 编译项目的主源代码
+8）process-classes
+9) generate-test-sources
+10) process-test-sources 处理项目测试资源文件
+11）generate-test-resources
+12) process-test-resources 处理测试的资源文件
+13）test-compile 编译项目的测试代码
+14）process-test-classes
+15) test 使用单元测试框架运行测试，测试代码不会被打包或部署
+16）prepare-package 做好打包的准备
+17）package 接受编译好的代码，打包成可发布的格式
+18) pre-integration-test
+19) integration-test
+20) post integration-test
+21) verify
+22) install 将包安装到Maven本地仓库，供本地其他Maven项目使用
+23）deploy 将最终的包复制到远程仓库，供其他开发人员和Maven项目使用
+
+4. site 生命周期
+
+site生命周期的目的是建立和发布项目站点，Maven能够基于POM所包含的信息，
+自动生成一个友好的站点，方便团队交流和发布项目信息。
+该生命周期包含如下阶段：
+
+1）pre-site 执行一些在生成项目站点之前需要完成的工作
+2）site 生成项目站点文档
+3）post-site 执行一些在生成项目站点之后需要完成的工作
+4）site-deploy 将生成的项目站点发布到服务器上
+
+=====
+maven坐标
+http://www.iteye.com/topic/1123231
+
+groupId ：定义当前Maven项目隶属的实际项目。
+首先，Maven项目和实际项目不一定是一对一的关系。
+比如SpringFrameWork这一实际项目，其对应的Maven项目会有很多，如spring-core,spring-context等。
+这是由于Maven中模块的概念，因此，一个实际项目往往会被划分成很多模块。
+其次，groupId不应该对应项目隶属的组织或公司。
+原因很简单，一个组织下会有很多实际项目，如果groupId只定义到组织级别，
+而后面我们会看到，artifactId只能定义Maven项目（模块），那么实际项目这个层次将难以定义。
+最后，groupId的表示方式与Java包名的表达方式类似，通常与域名反向一一对应。
+ 
+artifactId : 该元素定义当前实际项目中的一个Maven项目（模块），
+推荐的做法是使用实际项目名称作为artifactId的前缀。比如上例中的my-app。
+ 
+version : 该元素定义Maven项目当前的版本。
+ 
+packaging ：定义Maven项目打包的方式，
+首先，打包方式通常与所生成构件的文件扩展名对应，如上例中的packaging为jar，最终的文件名为my-app-0.0.1-SNAPSHOT.jar。
+也可以打包成war, ear等。
+当不定义packaging的时候，Maven 会使用默认值jar。
+ 
+classifier: 该元素用来帮助定义构建输出的一些附件。
+附属构件与主构件对应，如上例中的主构件为my-app-0.0.1-SNAPSHOT.jar，
+该项目可能还会通过一些插件生成如my-app-0.0.1-SNAPSHOT-javadoc.jar，my-app-0.0.1-SNAPSHOT-sources.jar，
+这样附属构件也就拥有了自己唯一的坐标。
+

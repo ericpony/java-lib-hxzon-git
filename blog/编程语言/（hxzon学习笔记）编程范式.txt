@@ -21,10 +21,67 @@ actor 。
 ----
 异步 。
 
-----
-continuation 。
+=======
+continuation ，续延。
 
 ----
+什么是scheme continuation?
+
+(+ 1 (call/cc
+       (lambda (k)
+         (+ 2 (k 3)))))
+
+the rest of the program, from the point of view of the call/cc-application, 
+is the following program-with-a-hole (with [] representing the hole):
+
+(+ 1 [])
+
+In other words, this continuation is a program 
+that will add 1 to whatever is used to fill its hole.
+
+上面这段英文是说，从call/cc开始的剩下的代码，也就是(+ 1 [])，"[]"就代表了一个位置，
+而continuation k就代表了(+ 1 []) ，
+其实 k 就是个保存了加1运算的全局变量，只要你以后绑定k的值，
+比如(k 100) ，那么就会把100放在[]处，然后继续加1运算。
+
+----
+假设我们调试一个很简单的lisp表达式：
+
+(+ x (* y z)) 
+
+如果现在计算子表达式(* y z)，这个时候程序的continuation表示为lambda表达式，可以简化的写为：
+
+(lambda (v) (+ x v)) 
+
+一边是当前子表达式(* y z)，
+另一边所谓延续就是等待子表达式结果的一个函数，
+这个函数将完成剩下的全部计算，得到整个表达式的最终值。 
+
+在scheme中，可以用call/cc在程序中获得当前的continuation。
+
+把上面那个表达式写成这样： 
+
+(+ x (call/cc (lambda (k) (k (* y z))))) 
+
+执行结果是一样的，那个k参数就代表获得的continuation。
+
+(* y z)的求值结果通过v传递给continuation。
+
+======
+CSP（Continuation Passing Style，续延传递风格。）
+
+正常函数的返回都隐含一个continuation，就是利用这个函数的返回值来做的后续事情，
+而cps的本质就是将这个隐式的continuation显式的当做参数传递进去，
+并在函数中完成应有的continuation并将最终结果返回。
+
+这跟尾递归似乎很像，在改造递归为尾递归的时候，
+就将当前状态通过accumulator汇集到函数内部的操作，
+当达到结束条件时返回汇集结果，而不必再返回来收集递归过程中的返回值。
+
+cps似乎就是同样的道理，每次将continuation传递到内部进行操作的组合，
+当达到底部的时候直接将汇集的continuation的计算结果返回，而不必返回来再去计算每一步的continuation。
+
+======
 python yield 。
 一个带有 yield 的函数就是一个 generator，它和普通函数不同，生成一个 generator 看起来像函数调用，
 但不会执行任何函数代码，直到对其调用 next()（在 for 循环中会自动调用 next()）才开始执行。
