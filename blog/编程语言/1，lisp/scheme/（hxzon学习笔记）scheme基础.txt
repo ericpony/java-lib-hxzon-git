@@ -1,0 +1,84 @@
+﻿（hxzon学习笔记）scheme基础
+
+by hxzon
+======
+----
+clojure中的函数，在scheme中称为“过程”。
+
+define，为事物定义一个名字，即 clojure 中的 def 。
+但define还可以用来定义过程，所以同时也是 clojure 中的 defn 。
+
+lambda，创建一个过程。类似 clojure 中的 fn 。
+（不过 clojure 的 fn 可以指定一个内部名字，用于自引用，例如递归或参数个数重载。）
+
+(lambda (x) (+ x 2))
+
+可以使用define定义过程。
+
+(define (add2 x)
+       (+ x 2))
+
+----
+let，后续的局部变量不能引用前边的局部变量。
+let可以靠 lambda 来实现。
+
+let*，后续的局部变量可以引用前边的局部变量。
+
+(let ((x 1)
+      (y x))	;这里 y 的值是 全局变量 x 的值。
+  (+ x y))
+
+(let* ((x 1)
+       (y x))	;这里 y 的值是前面的局部变量 x 的值。
+  (+ x y))
+
+fluid-let ，即 clojure 中的 binding 。）
+
+----
+letrec，内部递归定义。
+
+(letrec ((local-even? (lambda (n)
+                        (if (= n 0) #t
+                            (local-odd? (- n 1)))))
+         (local-odd? (lambda (n)
+                       (if (= n 0) #f
+                           (local-even? (- n 1))))))
+ (list (local-even? 23) (local-odd? 23)))
+
+这无法靠 let 和 let* 完成。使用 let* 时，local-even? 无法引用后边的 local-odd? 。
+
+----
+“已命名let”。
+
+(letrec ((countdown (lambda (i)
+                      (if (= i 0) 'liftoff
+                          (begin
+                            (display i)
+                            (newline)
+                            (countdown (- i 1)))))))
+ (countdown 10))
+
+可以写成：
+
+(let countdown ((i 10))
+ (if (= i 0) 'liftoff
+      (begin
+        (display i)
+        (newline)
+        (countdown (- i 1)))))
+
+----
+set! ，修改变量值。
+
+----
+受约束的变量：即局部变量。
+自由变量：即全局变量。
+
+begin，即clojure中的do。
+
+load，加载源文件。
+
+eqv? ，有点类似引用比较。
+= ，数值比较。
+
+

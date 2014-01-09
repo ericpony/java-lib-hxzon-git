@@ -1,0 +1,83 @@
+﻿(heros译)Scheme简明教程4-数据类型转换及其它类型
+http://www.cnblogs.com/heros/archive/2009/11/30/1614111.html
+
+====
+2.2.1，数据类型转换
+
+Scheme提供了许多可以进行数据类型转换的过程。
+我们已经知道可以通过char-downcase 和 char-upcase过程来进字符大小写的转换。
+字符还可以通过使用char->integer来转换成整型，
+同样的整型也可以通过integer->char被转换成字符。
+(字符转换成整型得到的结果通常是这个字符的ascii码值。)
+
+(char->integer #\d) =>  100
+(integer->char 50)  =>  #\2
+
+字符串可以被转换成等价的字符列表。
+
+(string->list "hello") =>  (#\h #\e #\l #\l #\o)
+
+其它的转换过程也都是一样的风格list->string， vector->list 和 list->vector。
+
+数字可以转换成字符串：(number->string 16) =>  "16"
+
+字符串也可以转换成数字。如果字符串不能转换成数字，则会返回#f。
+
+(string->number "16")
+=>  16
+ 
+(string->number "Am I a not number?")
+=>  #f
+
+string->number第二个参数是可选参数，指示以几进制来转换。
+
+(string->number "16" 8) =>  14
+
+八进制的数字 16 等于 14。
+
+Symbols也可以转换为字符串，反之亦然：
+
+(symbol->string 'symbol)
+=>  "symbol"
+ 
+(string->symbol "string")
+=>  string
+
+
+======
+2.1，其它数据类型
+
+Scheme还包含了一些其它数据类型。
+一个是procedure(过程)。
+我们已经见过了许多过程了，例如，display， +， cons等。
+实际上，它们是一些承载了过程值的变量，过程本身内部的数值和字符并不可见：
+
+cons
+=>  <procedure>
+
+迄今为止我们所见过的这些过程都属于原始过程（系统过程），由一些全局变量来承载它们。
+用户还可以添加自定义的过程。
+
+还有另外种数据类型是port端口。
+一个端口是为输入输出提供执行的通道。
+端口通常会和文件和控制台操作相关联。
+
+在我们的”Hello，World！”程序中，我们使用display过程向控制台输出了一个字符串。
+display可以接受两个参数，第一个参数值是将输出的值，另一个值则表示了即将承载显示结果的输出port(端口)。
+
+在我们的程序中，display的第二参数是隐式参数。
+这时候display会采用标准输出端口作为它的默认输出端口。
+我们可以通过调用current-output-port过程来取得当前的标准输出端口。
+我们可以更清楚的写出
+
+(display "Hello, World!" (current-output-port))
+
+=====
+2.2，S-expressions
+
+所有这些已经被讨论过的数据类型可以被统一成一种通用的叫作s-expression(符号表达式或s-表达式)
+的数据类型(s代表符号)。
+
+像 42，#\c，(1 . 2) ， #(a b c) ，"Hello"， (quote xyz) ， (string->number "16")， 
+和 (begin (display "Hello, World!") (newline))都是s-表达式。
+

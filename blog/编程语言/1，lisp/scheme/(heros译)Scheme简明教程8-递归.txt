@@ -1,0 +1,102 @@
+﻿(heros译)Scheme简明教程8-递归
+http://www.cnblogs.com/heros/archive/2009/12/18/1627474.html
+
+----
+hxzon学习笔记;
+
+letrec，内部递归定义。
+“已命名let”。
+
+=====
+第六章，递归
+
+一个过程体中可以包含对其它过程的调用，特别的是也可以调用自己。
+
+(define factorial
+ (lambda (n)
+    (if (= n 0) 1
+        (* n (factorial (- n 1))))))
+
+这个递归过程用来计算一个数的阶乘。
+如果这个数是0，则结果为1。对于任何其它的值n，
+这个过程会调用其自身来完成n-1阶乘的计算，然后将这个子结果乘上n并返回最终产生的结果。
+
+互递归过程也是可以的。
+下面判断奇偶数的过程相互进行了调用。
+
+(define is-even?
+ (lambda (n)
+    (if (= n 0) #t
+        (is-odd? (- n 1)))))
+ 
+(define is-odd?
+ (lambda (n)
+    (if (= n 0) #f
+        (is-even? (- n 1)))))
+
+这里提供的两个过程的定义仅作为简单的互递归示例。
+Scheme已经提供了简单的判断过程even? 和 odd?。
+
+=====
+6.1，letrec
+
+如果希望将上面的过程定义为局部的，我们会尝试使用let结构：
+
+(let ((local-even? (lambda (n)
+                     (if (= n 0) #t
+                         (local-odd? (- n 1)))))
+      (local-odd? (lambda (n)
+                    (if (= n 0) #f
+                        (local-even? (- n 1))))))
+ (list (local-even? 23) (local-odd? 23)))
+
+但这并不能成功，
+因为在初始化值过程中出现的local-even? 和 local-odd?指向的并不是这两个过程本身。
+
+把let换成let*同样也不能奏效，
+因为这时虽然local-odd?中出现的local-even?指向的是前面刚创建好的局部的过程，
+但local-even? 中的local-odd?还是指向了别处。
+
+为解决这个问题，Scheme提供了letrec结构。
+
+(letrec ((local-even? (lambda (n)
+                        (if (= n 0) #t
+                            (local-odd? (- n 1)))))
+         (local-odd? (lambda (n)
+                       (if (= n 0) #f
+                           (local-even? (- n 1))))))
+ (list (local-even? 23) (local-odd? 23)))
+
+用letrec创建的词法变量不仅可以在letrec执行体中可见而且在初始化中也可见。
+letrec是专门为局部的递归和互递归过程而设置的。
+(这里也可以使用define来创建两个子结构的方式来实现局部递归)
+
+=====
+6.2，“已命名let”
+
+使用letrec定义递归过程可以实现循环。
+如果我们想显示10到1的降数列，可以这样写：
+
+(letrec ((countdown (lambda (i)
+                      (if (= i 0) 'liftoff
+                          (begin
+                            (display i)
+                            (newline)
+                            (countdown (- i 1)))))))
+ (countdown 10))
+
+这会在控制台上输出10到1，并会返回结果liftoff。
+
+Scheme允许使用一种叫“已命名let”的let变体来更简洁的写出这样的循环:
+
+(let countdown ((i 10))
+ (if (= i 0) 'liftoff
+      (begin
+        (display i)
+        (newline)
+        (countdown (- i 1)))))
+
+注意在let的后面立即声明了一个变量用来表示这个循环。
+这个程序和先前用letrec写的程序是等价的。
+你可以将“已命名let”看成一个对letrec结构进行扩展的宏。
+

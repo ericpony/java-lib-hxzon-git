@@ -1,0 +1,144 @@
+﻿(heros译)Scheme简明教程1-序及进入Scheme编程
+
+译:heros
+http://www.cnblogs.com/heros/archive/2009/11/26/1610940.html
+
+----
+hxzon学习笔记：
+
+begin，即clojure中的do。
+load，加载源文件。
+
+======
+Scheme简明教程
+
+序言:
+
+这是一份Scheme编程语言的入门教程。旨在作为一份快速上手指南，
+以便初学者在步入更广更深的正式课程前可以获取该语言上手所需的应用知识
+（入门后，请读者更深入的学习Scheme）。
+
+本教程将引导读者写出简明实用的Scheme代码。
+尽管不会覆盖到Scheme语言的方方面面，
+但我们也不会避开这门语言中的很有用处但让人觉得难理解、生涩、罕见、不标准、甚至奇怪的部分。
+比如call-with-current-continuation、系统接口和多样化的方言等。
+我们会基于解决问题来做一些讨论，但不会是单纯的探索高深的纯语言理论。
+我因此删除了许多经典的Scheme指南。
+所以本教程不会出现深层次的教学方法、不会详细的关注Scheme语义、没有元数据解释、
+没有对深层次的实现的讨论、也没有对Scheme语言优点的评价。
+这并不是说这些内容不重要，但它们对想快速上手的初学者来说没有实际意义。
+
+到底能够有多快？
+我不确定是否有人能够在三周时间内自学完Scheme，但我确实听说了Scheme的入门应该只需要半天的工夫。
+Scheme标准手册，虽然很细至完备，但也只不过只有50页。
+最终在某个下午，你会完全理解Scheme和它的标准，
+但在那之前没有人会知道需要度过多少个让人觉得满头雾水的下午。
+希望读者能尽快领悟，这就是我的简明教程。
+
+Acknowledgment: Matthias Felleisen , Matthew Flatt (鸣谢部分翻译省略)
+
+=====
+开发环境:译者用的是Berkeley大学的STK环境，可在附属文件中查找。
+
+Berkeley大学的Scheme课程资料
+http://webcast.berkeley.edu/course_details_new.php?seriesid=2008-D-26263&semesterid=2008-D
+
+MIT大学的Scheme课程资料
+http://ocw.mit.edu/OcwWeb/Electrical-Engineering-and-Computer-Science/6-00Fall-2008/LectureVideos/index.htm
+
+
+====
+第一章，进入Scheme编程
+
+按惯例，我们总是以一个可以输出”Hello, World!”字符串的控制台程序开始。
+打开你最习惯的文本编辑器，用以下内容创建一个名为hello.scm的文件：
+
+;The first program
+ 
+(begin
+  (display "Hello, World!")
+  (newline))
+
+第一行是注释语句，当Scheme遇到一个分号，它将忽略该分号以及这一行分号之后的语句。
+
+begin是Scheme中一种用来标明语句段开始的语句。
+这个语句段中有两个子语句段。
+第一段调用了display过程来向控制台输出它的参数(“Hello, World!”字符串)。
+它后面调用newline 过程输出一个回车换行。
+
+要运行这段程序，首先得启动你的Scheme。
+通常在操作系统的命令运行窗口直接输入执行Scheme环境启动程序就可以了。
+比如MzScheme，只要在命令窗口中输入运行mzscheme就可以了。
+(如果是STK-Win32 ，只需要双击运行MS-Win32下的相应bat文件就行了)
+
+这将启动Scheme的命令提示行程序，它将读取你的输入并执行，
+然后会将结果打印在命令窗口上，再等待接程序的输入。
+由此我们通常称之为 “输入-执行-打印” 循环。
+这和操作系统的命令行提示没什么区别，它也是读取你的命令并执行，然后再等待更多的命令被输入。
+就像操作系统的命令提示行一样，Scheme的命令行有它自己的提示符，通常是 > 符号，也可能是其它类似符号。
+
+在Scheme命令提示符后输入命令加载hello.scm文件。
+在提示符后输入：
+
+(load "hello.scm")
+
+Scheme将执行hello.scm文件中的程序，输出Hello, World!和回车换行。
+之后又会回到命令提示符，等待新输入。
+
+有这样一个勤劳的命令提示行，你没有必要总是把程序写到文件再加载。
+有时候可以更简单一些，尤其是当你在分析代码的时候，可以直接在命令提示符后直接输入表达式来查看结果。
+比如直接在命令提示符输入
+
+(begin (display "Hello, World!")
+       (newline))
+
+马上在提示符后得到输出结果。
+
+Hello, World! 
+ 
+
+实际上你可以更简单的直接在命令行中输入”Hello, World!”字符串，然后你可以立刻得输出的字符串结果,
+
+"Hello, World!"
+
+因为命令行会马上运算字面量 "Hello, World!" 得到 "Hello, World!"。(注意结果有双引号)
+
+除了第二种方式产生的结果具有双引号外，两段程序还有一个标志性的区别。
+第一段(用begin开头的)并没有做任何的运算，而显示的结果是display和newline过程的副作用向标准输出写出来的。
+第二段程序，"Hello, World!"运算得到的结果在这个情况下和这个字符串本身是一致的。
+
+以后，我们会使用标记 => 来表示运算。
+就像这样 E => v 表示语句段E 运算得到结果值为v。
+例如，
+
+(begin
+  (display "Hello, World!")
+  (newline))
+=>
+（没有结果），尽管它有输出 Hello, World!到标准输出的副作用。
+
+而另一个程序段，
+
+"Hello, World!"
+=>  "Hello, World!"
+
+
+在上面两种代码情况下，我们运行完后还是停在命令提示符后。
+如果要退出Scheme，输入
+(exit)
+代码段，这样会退出Scheme命令行。
+
+Scheme命令行非常便于交互式的测试程序和程序片段。然而这绝不是必须的。
+你当然可以坚持传统的方式完全在文件中来创建程序，
+然后用Scheme来执行它们但并不使用任何明显的命令行。
+
+在MzScheme中，例如你可以在操作系统的命令行中这样输
+
+mzscheme –r hello.scm
+
+这样不需要和Scheme命令行打交道就可以产生问候的结果了。
+在问候结果产生后，mzscheme将会退回操作系统的命令提示。
+这几乎就像是你直接写了echo Hello , World!
+
+你甚至可以把hello.scm当成是一个系统命令来看待(一个内核脚本或批处理文件)，但具体得等到第十六章来讲解。
+

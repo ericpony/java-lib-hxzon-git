@@ -1,0 +1,204 @@
+﻿(heros译)Scheme简明教程3-数据类型之复合数据类型
+http://www.cnblogs.com/heros/archive/2009/11/29/1613273.html
+
+=====
+2.1，复合数据类型
+
+复合数据类型是以组合的方式通过组合其它数据类型数据来获得。
+
+----
+2.2.1，Strings
+
+字符串类型是由字符组成的序列（不能和symbols混淆，symbols仅是由一组字符来命名的简单类型）。
+你可以通过将一些字符包上闭合的双引号来得到字符串。
+Strings是自运算类型。
+
+"Hello, World!"
+=>  "Hello, World!"
+
+还可以通过向string 过程传递一组字符并返回由它们合并成的字符串：
+
+(string #\h #\e #\l #\l #\o)
+=>  "hello"
+
+现在让我们定义一个全局字符串变量 greeting。
+
+(define greeting "Hello; Hello!")
+
+注意一个字符串数据中的分号不会得到注释。
+
+一个给定字符串数据中的字符可以分别被访问和更改。
+通过向string-ref过程传递一个字符串和一个从0开始的索引号，可以返回该字符串指定索引号位置的字符。
+
+(string-ref greeting 0)
+=>  #\H
+
+可以通在一个现有的字符串上追加其它字符串的方式来获得新字符串：
+
+(string-append "E "
+               "Pluribus "
+               "Unum")
+=>  "E Pluribus Unum"
+
+你可以定义一个指定长度的字符串，然后用期望的字符来填充它。
+
+(define a-3-char-long-string (make-string 3))
+
+检测一个值是否是字符串类型的过程是string?。
+
+通过调用string， make-string 和 string-append获得的字符串结果都是可修改的。
+而过程string-set!就可以替换字符串指定索引处的字符。
+
+(define hello (string #\H #\e #\l #\l #\o)) 
+hello
+=>  "Hello"
+ 
+(string-set! hello 1 #\a)
+hello
+=>  "Hallo"
+
+----
+2.2.2，Vectors (向量)
+
+Vectors是像strings一样的序列，但它们的元素可以是任何类型，而不仅仅是字符，
+当然元素也可以是Vetors类型，这是一种生成多维向量的好方式。
+
+这使用五个整数创建了一个vector：
+
+(vector 0 1 2 3 4)
+=>  #(0 1 2 3 4)
+
+注意Scheme表现一个向量值的方式：在用一对小括号包括起来的向量元素前面加了一个 # 字符。
+
+和make-string过程类似，过程make-vectors可以构建一个指定长度的向量：
+
+(define v (make-vector 5))
+
+而过程vector-ref 和 vector-set!分别可以访问和修改向量元素。
+
+检测值是否是一个向量的过程是vector?。
+
+----
+2.2.3，Dotted pairs(点值对) 和 lists(列表)
+
+点值对是将两个任意数值组合成有序数偶的复合类型。
+点值对的第一个数值被称作car，第二值被称作cdr，而将两个值组合成点值对的过程是cons。
+
+(cons 1 #t)
+=>  (1 . #t)
+
+点值对不能自运算，因此直接以值的方式来定义它们（即不通过调用cons来创建），必须显式的使用引号：
+
+'(1 . #t) =>  (1 . #t)
+ 
+(1 . #t)  -->ERROR!!!
+
+访问点值对值的过程分别是car (car访问点值对的第一个元素)和 cdr(cdr访问点值对的非一个元素)：
+
+(define x (cons 1 #t))
+ 
+(car x)
+=>  1
+ 
+(cdr x)
+=>  #t
+
+点值对的元素可以通过修改器过程set-car! 和 set-cdr!来进行修改：
+
+(set-car! x 2)
+ 
+(set-cdr! x #f)
+ 
+x
+=>  (2 . #f)
+
+点值对也可以包含其它的点值对。
+
+(define y (cons (cons 1 2) 3))
+ 
+y
+=>  ((1 . 2) . 3)
+
+这个点值对的car运算结果car运算结果是1。
+而car运算结果的cdr运算结果是2。即，
+
+(car (car y))
+=>  1
+ 
+(cdr (car y))
+=>  2
+
+Scheme提供了可以简化car 和 cdr组合起来连续访问操作的简化过程。
+像caar表示”car 运算结果的 car运算结果”， cdar表示”car运算结果的cdr运算结果”，等等。
+
+(caar y)
+=>  1
+ 
+(cdar y)
+=>  2
+
+像c...r这样风格的简写最多只支持四级连续操作。
+像cadr，cdadr，和 cdaddr都是存在的。而cdadadr这样的就不对了。
+
+当第二个元素是一个嵌套的点值对时，Scheme使用一种特殊的标记来表示表达式的结果：
+
+(cons 1 (cons 2 (cons 3 (cons 4 5))))
+=>  (1 2 3 4 . 5)
+
+即，(1 2 3 4 . 5)是对(1 . (2 . (3 . (4 . 5))))的一种简化。
+这个表达式的最后一个cdr运算结果是5。
+
+如果嵌套点值对最后一个cdr 运算结果是一个空列表对象，
+Scheme提供了一种更进一步的用表达式()来表示的简化方式。
+空列表没有被考虑做为可以自运算的值，所以为程序提供一个空列表值时必须用单引号方式来创建：
+
+'() =>  ()
+
+诸如像(1 . (2 . (3 . (4 . ()))))这样形式的点值对被简化成(1 2 3 4)。
+像这样第二元素都是一个点值对特殊形式的嵌套点值对就称作列表list。
+这是一个四个元素长度的列表。可以像这样来创建：
+
+(cons 1 (cons 2 (cons 3 (cons 4 '()))))
+
+但Scheme提供了一个list过程可以更方便的创建列表。
+List可以将任意个数的参数变成列表返回：
+
+(list 1 2 3 4)
+=>  (1 2 3 4)
+
+实际上，如果我们知道列表所包含的所有元素，我们还可以用quote 来定义一个列表：
+
+'(1 2 3 4)
+=>  (1 2 3 4)
+
+列表的元素可以通过指定索引号来访问。
+
+(define y (list 1 2 3 4))
+ 
+(list-ref y 0) =>  1
+(list-ref y 3) =>  4
+ 
+(list-tail y 1) =>  (2 3 4)
+(list-tail y 3) =>  (4)
+
+list-tail返回了给定索引号后的所有元素。
+
+pair?， list? 和 null?判断过程可以分别用来检查它们的参数是不是一个点值对，列表或空列表。
+
+(pair? '(1 . 2)) =>  #t
+(pair? '(1 2))   =>  #t
+(pair? '())      =>  #f
+(list? '())      =>  #t
+(null? '())      =>  #t
+(list? '(1 2))   =>  #t
+(list? '(1 . 2)) =>  #f
+(null? '(1 2))   =>  #f
+(null? '(1 . 2)) =>  #f
+
+补：在scheme中没有list-set!过程，但我们可以自己手动加一个。
+
+(define (list-set! l k obj) 
+  (cond    ((or (< k 0) (null? l)) #f)
+           ((= k 0) (set-car! l obj))   
+           (else  (list-set! (cdr l) (- k 1) obj))))
+
