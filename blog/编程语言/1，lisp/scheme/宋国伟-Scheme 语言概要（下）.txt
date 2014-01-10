@@ -1,0 +1,711 @@
+﻿宋国伟-Scheme 语言概要（下）
+宋国伟 (gwsong52@sohu.com)
+发布日期： 2003 年 12 月 01 日 
+http://www.ibm.com/developerworks/cn/linux/l-schm/index2.html
+
+=======
+目录：
+
+一．常用结构
+二．递归调用
+三．变量和过程的绑定
+四．输入输出
+五．语法扩展
+六. 其它功能
+参考资料
+关于作者
+建议
+
+========
+谈完了 scheme 的基本概念、数据类型和过程，
+我们接着介绍 scheme 的结构、递归调用、变量和过程的绑定、输入输出等功能。
+
+====
+一．常用结构
+
+----
+顺序结构
+
+也可以说成由多个form组成的form，用begin来将多个form放在一对小括号内，最终形成一个form。
+格式为：(begin form1 form2 …)
+
+如用Scheme语言写成的经典的helloworld程序是如下样子的：
+
+(begin 
+	(display "Hello world!")  ; 输出"Hello world!"
+	(newline))				; 换行
+
+----
+if结构
+
+Scheme语言的if结构有两种格式，一种格式为：
+(if 测试 过程1 过程2)，即测试条件成立则执行过程1，否则执行过程2。
+例如下面代码：
+
+(if (= x 0) 
+(display "is zero")
+(display "not zero"))
+
+还有另一种格式：(if 测试 过程) ，即测试条件成立则执行过程。
+例如下面代码：
+
+(if (< x 100) (display "lower than 100"))
+
+根据类型判断来实现自省功能，下面代码判断给定的参数是否为字符串：
+
+(define fun 
+	(lambda ( x )
+		(if (string? x)
+			(display "is a string")
+			(display "not a string"))))
+
+如执行 (fun 123) 则返回值为"not a string"，这样的功能在C++或JAVA中实现的话可能会很费力气。
+
+----
+cond结构
+
+Scheme语言中的cond结构类似于C语言中的switch结构，cond的格式为：
+
+(cond ((测试) 操作) … (else 操作))
+
+如下是在Guile中的操作：
+
+guile> (define w (lambda (x)
+      (cond ((< x 0) 'lower)
+           ((> x 0) 'upper)
+           (else 'equal))))
+
+guile> w
+#<procedure w (x)>
+
+guile> (w 9)
+upper
+
+guile> (w -8)
+lower
+
+guile> (w 0)
+equal
+
+上面程序代码中，我们定义了过程w，它有一个参数x，
+如果x的值大于0，则返回符号upper，
+如x的值小于0则返回符号lower，如x 的值为0则返回符号equal。
+
+下载已做成可执行脚本的 例程。
+
+cond可以用if形式来写，上面的过程可以如下定义：
+
+guile> (define ff
+		     (lambda (x)
+                    (if (< x 0) 'lower
+                            (if (> x 0) 'upper 'zero))))
+guile> ff
+#<procedure ff (x)>
+guile> (ff 9)
+upper
+guile> (ff -9)
+lower
+guile> (ff 0)
+zero
+
+这在功能上是和cond一样的，可以看出cond实际上是实现了if的一种多重嵌套。
+
+----
+case结构
+
+case结构和cond结构有点类似，它的格式为：
+(case (表达式) ((值) 操作))	... (else 操作)))
+
+case结构中的值可以是复合类型数据，如列表，向量表等，
+只要列表中含有表达式的这个结果，则进行相应的操作，
+如下面的代码：
+
+ (case (* 2 3)
+  ((2 3 5 7) 'prime)
+  ((1 4 6 8 9) 'composite))
+
+上面的例子返回结果是composite，因为列表(1 4 6 8 9)中含有表达式(* 2 3)的结果6；
+下面是在Guile中定义的func过程，用到了case结构：
+
+guile> (define func
+                (lambda (x y)
+                        (case (* x y)
+                                ((0) 'zero)
+                                (else 'nozero))))
+guile> func
+#<procedure func (x y)>
+guile> (func 2 3)
+nozero
+guile> (func 2 0)
+zero
+guile> (func 0 9)
+zero
+guile> (func 2 9)
+nozero
+
+可以下载另一个脚本文件 te.scm，参考一下。
+
+----
+and结构
+
+and结构与逻辑与运算操作类似，and后可以有多个参数，
+只有它后面的参数的表达式的值都为#t时，它的返回值才为#t，否则为#f。
+看下面的操作：
+
+guile> (and (boolean? #f) (< 8 12))
+#t
+guile> (and (boolean? 2) (< 8 12))
+#f
+guile> (and (boolean? 2) (> 8 12))
+#f
+
+如果表达式的值都不是boolean型的话，返回最后一个表达式的值，
+如下面的操作：
+
+guile> (and (list 1 2 3) (vector 'a 'b 'c))
+#(a b c)
+guile> (and 1 2 3 4 )
+4
+guile> (and 'e 'd 'c 'b 'a)
+a
+
+----
+or结构
+
+or结构与逻辑或运算操作类似，or后可以有多个参数，
+只要其中有一个参数的表达式值为#t，其结果就为#t，只有全为#f时其结果才为#f。
+如下面的操作：
+
+guile> (or #f #t)
+#t
+guile> (or #f #f)
+#f
+guile> (or (rational? 22/7) (< 8 12))
+#t
+guile> (rational? 22/7)
+#t
+guile> (real? 22/7)
+#t
+guile> (or (real? 4+5i) (integer? 3.22))
+#f
+
+我们还可以用and和or结构来实现较复杂的判断表达式，如在C语言中的表达式：
+
+((x > 100) && (y < 100)) 和 ((x > 100) || (y > 100))
+
+在Scheme中可以表示为：
+
+guile> (define x 123)
+guile> (define y 80)
+guile> (and (> x 100) (< y 100))
+#t
+guile> (or (> x 100) (> y 100))
+#t
+
+Scheme语言中只有if结构是系统原始提供的，
+其它的cond，case，and，or，
+另外还有do，when，unless等都是可以用宏定义的方式来定义的，
+这一点充分体现了Scheme的元语言特性，
+关于do，when等结构的使用可以参考R5RS。
+
+=====
+二．递归调用
+
+用递归实现阶乘
+
+在Scheme语言中，递归是一个非常重要的概念，可以编写简单的代码很轻松的实现递归调用，
+如下面的阶乘过程定义：
+
+(define  factoral (lambda (x)
+		  (if (<= x 1) 1
+		      (* x (factoral (- x 1))))))
+
+我们可以将下面的调用(factoral 4)，即4的阶乘的运算过程图示如下：
+
+ 
+以下为factoral过程在Guile中的运行情况：
+
+guile> (define factoral (lambda (x) (if (<= x 1) 1 (* x (factoral (- x 1))))))
+guile> factoral
+#<procedure factoral (x)>
+guile> (factoral 4)
+24
+
+----
+另一种递归方式
+
+下面是一另一种递归方式的定义：
+
+(define (factoral n)
+	(define (iter product counter)
+		(if (> counter n)
+			product
+			(iter (* counter product) (+ counter 1))))
+	(iter 1 1))
+(display (factoral 4))
+
+这个定义的功能和上面的完全相同，只是实现的方法不一样了，
+我们在过程内部实现了一个过程iter，它用counter参数来计数，调用时从1开始累计，
+这样它的展开过程正好和我们上面的递归过程的从4到1相反，而是从1到4。
+
+----
+循环的实现
+
+在Scheme语言中没有循环结构，
+不过循环结构可以用递归来很轻松的实现（在Scheme语言中只有通过递归才能实现循环）。
+对于用惯了C语言循环的朋友，在Scheme中可以用递归简单实现：
+
+guile> (define loop
+	     (lambda(x y)
+    	     (if (<= x y)
+             	(begin (display x) (display #\\space) (set! x (+ x 1))
+                	(loop x y)))))
+
+guile> loop
+#<procedure loop (x y)>
+
+guile> (loop 1 10)
+1 2 3 4 5 6 7 8 9 10
+
+这只是一种简单的循环定义，过程有两个参数，第一个参数是循环的初始值，第二个参数是循环终止值，每次增加1。
+相信读者朋友一定会写出更漂亮更实用的循环操作来的。
+
+=====
+三．变量和过程的绑定
+
+let，let*，letrec
+
+在多数编程语言中都有关于变量的存在的时限问题，
+Scheme语言中用let，let*和letrec来确定变量的存在的时限问题，即局部变量和全局变量，
+一般情况下，全局变量都用define来定义，并放在过程代码的外部；
+而局部变量则用let等绑定到过程内部使用。
+
+用let可以将变量或过程绑定在过程的内部，即实现局部变量：
+
+guile> let
+#<primitive-macro! let>
+
+从上面的操作可以看出let是一个原始的宏，即guile内部已经实现的宏定义。
+
+下面的代码显示了let的用法（注意多了一层括号）：
+
+guile> (let ((x 2) (y 5)) (* x y))
+10
+
+它的格式是：(let ((…)…) …)，下面是稍复杂的用法：
+
+guile> (let ((x 5))
+         (define foo (lambda (y) (bar x y)))
+         (define bar (lambda (a b) (+ (* a b) a)))
+         (foo (+ x 3)))
+45
+
+以上是Guile中的代码实现情况。
+它的实现过程大致是：(foo 8) 展开后形成 (bar 5 8)，再展开后形成 (+ (* 5 8) 5) ，最后其值为45。
+
+再看下面的操作：
+
+guile> (let ((iszero?
+                (lambda(x)
+                (if (= x 0) #t #f))))
+        (iszero? 9))
+#f
+
+guile> (iszero? 0)  ;此时会显示出错信息
+
+let的绑定在过程内有效，过程外则无效，这和上面提到的过程的嵌套定是一样的，
+上面的iszero?过程在操作过程内定义并使用的，操作结束后再另行引用则无效，显示过程未定义出错信息。
+
+----
+下面操作演示了let*的用法：
+
+guile> (let ((x 2) (y 5))
+       (let* ((x 6)(z (+ x y)))  ;此时x的值已为6，所以z的值应为11，如此最后的值为66
+       (* z x)))
+66
+
+----
+还有letrec，看下面的操作过程：
+
+guile> (letrec ((even?
+                (lambda(x)
+                (if (= x 0) #t
+                        (odd? (- x 1)))))
+            (odd?
+                (lambda(x)
+                (if (= x 0) #f
+                        (even? (- x 1))))))
+        (even? 88))
+#t
+
+上面的操作过程中，内部定义了两个判断过程even?和odd?，这两个过程是互相递归引用的，
+如果将letrec换成let或let*都会不正常，因为letrec是将内部定义的过程或变量间进行相互引用的。
+看下面的操作：
+
+guile> (letrec ((countdown
+                (lambda (i)
+                (if (= i 0) 'listoff
+                        (begin (display i) (display ",")
+                                (countdown (- i 1)))))))
+        (countdown 10))
+10,9,8,7,6,5,4,3,2,1,listoff
+
+letrec帮助局部过程实现递归的操作，
+这不仅在letrec绑定的过程内，而且还包括所有初始化的东西，
+这使得在编写较复杂的过程中经常用到letrec，也成了理解它的一个难点。
+
+----
+apply
+
+apply的功能是为数据赋予某一操作过程，它的第一个参数必需是一个过程，随后的其它参数必需是列表，如：
+
+guile> (apply + (list 2 3 4))
+9
+guile> (define sum
+           (lambda (x )
+                  (apply + x)))  ; 定义求和过程
+
+guile> sum
+#<procedure sum (x)>
+
+guile> (define ls (list 2 3 4 5 6))
+
+guile> ls
+(2 3 4 5 6)
+
+guile> (sum ls)
+20
+
+guile> (define avg
+          (lambda(x)
+                 (/ (sum x) (length x))))   ; 定义求平均过程
+
+guile> avg
+#<procedure avg (x)>
+
+guile> (avg ls)
+4
+
+以上定义了求和过程sum和求平均的过程avg，
+其中求和的过程sum中用到了apply来绑定"+"过程操作到列表，
+结果返回列表中所有数的总和。
+
+----
+map
+
+map的功能和apply有些相似，它的第一个参数也必需是一个过程，
+随后的参数必需是多个列表，返回的结果是此过程来操作列表后的值，
+如下面的操作：
+
+guile> (map + (list 1 2 3) (list 4 5 6))
+(5 7 9)
+guile> (map car '((a . b)(c . d)(e . f)))
+(a c e)
+
+除了apply，map以外，Scheme语言中还有很多，
+诸如：eval，delay，for-each，force，call-with-current-continuation等过程绑定的操作定义，
+它们都无一例外的提供了相当灵活的数据处理能力，也就是另初学者望而生畏的算法，
+当你仔细的体会了运算过程中用到的简直妙不可言的算法后，
+你就会发现Scheme语言设计者的思想是多么伟大。
+
+=====
+四．输入输出
+
+Scheme语言中也提供了相应的输入输出功能，是在C基础上的一种封装。
+
+----
+端口
+
+Scheme语言中输入输出中用到了端口的概念，
+相当于C中的文件指针，也就是Linux中的设备文件，
+请看下面的操作：
+
+guile> (current-input-port)
+#<input: standard input /dev/pts/0> ;当前的输入端口
+
+guile> (current-output-port)
+#<output: standard output /dev/pts/0> ;当前的输出端口
+
+判断是否为输入输出端口，可以用下面两个过程：
+input-port? 和output-port? ，
+其中input-port?用来判断是否为输入端口，output-port?用来判断是否为输出端口。
+
+open-input-file，open-output-file，close-input-port，close-output-port这四个过程用来打开和关闭输入输出文件，
+其中打开文件的参数是文件名字符串，关闭文件的参数是打开的端口。
+
+----
+输入
+
+打开一个输入文件后，返回的是输入端口，可以用read过程来输入文件的内容：
+
+guile> (define port (open-input-file "readme"))
+
+guile> port
+#<input: readme 4>
+
+guile> (read port)
+GUILE语言
+
+上面的操作打开了readme文件，并读出了它的第一行内容。
+
+此外还可以直接用read过程来接收键盘输入，
+如下面的操作：
+
+guile> (read)  ; 执行后即等待键盘输入
+12345
+12345
+
+guile> (define x (read))  ; 等待键盘输入并赋值给x
+12345
+
+guile> x
+12345
+
+以上为用read来读取键入的数字，还可以输入字符串等其它类型数据：
+
+guile> (define name (read))
+tomson
+
+guile> name
+tomson
+
+guile> (string? name)
+#f
+
+guile> (symbol? name)
+#t
+
+此时输入的tomson是一个符号类型，因为字符串是用引号引起来的，所以出现上面的情况。
+下面因为用引号了，所以(string? str)返回值为#t 。
+
+guile> (define str (read))
+"Johnson"
+
+guile> str
+"Johnson"
+
+guile> (string? str)
+#t
+
+--
+还可以用load过程来直接调用Scheme语言源文件并执行它，
+格式为：(load "filename")，
+还有read-char过程来读单个字符等等。
+
+----
+输出
+
+常用的输出过程是display，还有write，
+它的格式是：(write 对象 端口)，
+这里的对象是指字符串等常量或变量，端口是指输出端口或打开的文件。
+
+下面的操作过程演示了向输出文件temp中写入字符串"helloworld"，并分行的实现。
+
+[root@toymouse test]# guile
+guile> (define port1 (open-output-file "temp"))  ; 打开文件端口赋于port1
+
+guile> port1
+#<output: temp 3> 
+
+guile> (output-port? port1)
+#t                     ; 此时证明port1为输出端口
+
+guile> (write "hello\\nworld" port1)
+
+guile> (close-output-port port1)
+
+guile> (exit)               ; 写入数据并关闭退出
+
+[root@toymouse test]# more temp          显示文件的内容，达到测试目的
+"hello
+world"
+
+在输入输出操作方面，还有很多相关操作，读者可以参考R5RS的文档。
+
+=====
+五．语法扩展
+
+Scheme语言可以自己定义象cond，let等功能一样的宏关键字。
+标准的Scheme语言定义中用define-syntax和syntax-rules来定义，
+它的格式如下：
+
+(define-syntax 宏名
+	(syntax-rules()
+		((模板) 操作))
+		. . . ))
+
+下面定义的宏start的功能和begin相同，可以用它来开始多个块的组合：
+
+(define-syntax start
+        (syntax-rules ()
+                ((start exp1)
+                        exp1)
+                ((start exp1 exp2 ...)
+                        (let ((temp exp1)) (start exp2 ...))) ))
+
+这是一个比较简单的宏定义，但对理解宏定义来说是比较重要的，
+理解了他你才会进一步应用宏定义。
+
+在规则 ((start exp1) exp1) 中，(start exp1) 是一个参数时的模板，
+exp1是如何处理，也就是原样搬出，不做处理。
+这样 (start form1) 和 (form1) 的功能就相同了。
+
+在规则 ((start exp1 exp2 ...) (let ((temp exp1)) (start exp2 ...))) 中，
+(start exp1 exp2 …) 是多个参数时的模板，
+首先用let来绑定局部变量temp为exp1，
+然后用递归实现处理多个参数，
+注意这里说的是宏定义中的递归，并不是过程调用中的递归。
+另外在宏定义中可以用省略号（三个点）来代表多个参数。
+
+在Scheme的规范当中，将表达式分为原始表达式和有源表达式，
+Scheme语言的标准定义中只有原始的if分支结构，
+其它均为有源型，即是用后来的宏定义成的，由此可见宏定义的重要性。
+附上面的定义在GUILE中实现的 代码。
+
+=====
+六. 其它功能
+
+----
+1. 模块扩展
+
+在R5RS中并未对如何编写模块进行说明，
+在诸多的Scheme语言的实现当中，几乎无一例外的实现了模块的加载功能。
+
+所谓模块，实际就是一些变量、宏定义和已命名的过程的集合，
+多数情况下它都绑定在一个Scheme语言的符号下（也就是名称）。
+
+在Guile中提供了基础的ice-9模块，
+其中包括POSIX系统调用和网络操作、正则表达式、线程支持等等众多功能，
+此外还有著名的SFRI模块。
+
+引用模块用use-modules过程，它后面的参数指定了模块名和我们要调用的功能名，如：
+(use-modules (ice-9 popen))，
+如此后，就可以应用popen这一系统调用了。
+
+如果你想要定义自己的模块，最好看看ice-9目录中的那些tcm文件，它们是最原始的定义。
+
+另外Guile在面向对象编程方面，开发了GOOPS（Guile Object-Oriented Programming System），
+对于喜欢OO朋友可以研究一下它，从中可能会有新的发现。
+
+----
+2. 如何输出漂亮的代码
+
+如何编写输出漂亮的Scheme语言代码应该是初学者的第一个问题，
+这在Guile中可以用ice-9扩展包中提供的pretty-print过程来实现，
+看下面的操作：
+
+guile> (use-modules (ice-9 pretty-print))    ; 引用漂亮输出模块
+guile> (pretty-print '(define fix (lambda (n)
+        (cond ((= n 0) 'iszero)
+                ((< n 0) 'lower)
+                (else 'upper)))))   ; 此处是我们输入的不规则代码
+(define fix
+  (lambda (n)
+    (cond ((= n 0) 'iszero)
+          ((< n 0) 'lower)
+          (else 'upper))))     ; 输出的规则代码
+
+----
+3. 命令行参数的实现
+
+在把Scheme用做shell语言时，经常用到命令行参数的处理，
+下面是关于命令行参数的一种处理方法：
+
+#! /usr/local/bin/guile -s
+!#
+(define cmm (command-line))
+(display "应用程序名称：")
+(display (car cmm))  
+(newline)
+(define args (cdr cmm))
+(define long (length args))
+(define loop (lambda (count len obj)
+	(if (<= count len)
+		(begin
+			(display "参数 ")
+			(display count)
+			(display " 是：")
+			(display (list-ref obj (- count 1)))
+			(newline)
+			(set! count (+ count 1))
+			(loop count len obj)))))
+(loop 1 long args)
+
+下面是运行后的输出结果：
+
+[root@toymouse doc]# ./tz.scm abc 123 ghi
+应用程序名称：./tz.scm
+参数 1 是：abc
+参数 2 是：123
+参数 3 是：ghi
+
+其中最主要的是用到了command-line过程，
+它的返回结果是命令参数的列表，列表的第一个成员是程序名称，其后为我们要的参数，
+定义loop递归调用形成读参数的循环，显示出参数值，达到我们要的结果。
+
+----
+4. 特殊之处
+
+一些精确的自己计算自己的符号
+
+数字	Numbers		2 ==> 2
+字符串	Strings		"hello" ==> "hello"
+字符	Charactors	#\\g ==> #\\g
+逻辑值    Booleans	#t ==> #t
+向量	Vectors		#(a 2 5/2) ==> #(a 2 5/2)
+
+通过变量计算来求值的符号
+
+如：
+	
+x ==> 9
+   -list ==> ("tom" "bob" "jim")
+factoral ==> #<procedure: factoral>
+	 ==> #<primitive: +>
+
+define，特殊的form
+
+(define x 9) ，define不是一个过程，	
+它是一个不用求所有参数值的特殊的form，它的操作步骤是，
+初始化空间，绑定符号x到此空间，然后初始此变量。
+
+必须记住的东西
+
+下面的这些定义、过程和宏等是必须记住的：
+
+define，lambda，let，lets，letrec，quote，set!，if，case，cond，begin，and，or等等，
+当然还有其它宏，必需学习，还有一些未介绍，可参考有关资料。
+
+走进Scheme语言的世界，你就发现算法和数据结构的妙用随处可见，
+可以充分的检验你对算法和数据结构的理解。
+Scheme语言虽然是古老的函数型语言的继续，
+但是它的里面有很多是在其它语言中学不到的东西，
+我想这也是为什么用它作为计算机语言教学的首选的原因吧。
+
+====
+参考资料
+
+王垠的个人主页，此篇文章的很多东西都是从他哪里受到启发而写出来的。 
+
+自由软件杂志编辑洪峰在他的文章中有很多对Scheme语言的评价，在他开创的工程中也有很多应用。 
+
+在此网站的Linux专区中，赵蔚对 Scheme的介绍还是比较精彩的。 
+
+R5RS，Scheme语言的标准定义： 
+http://www.swiss.ai.mit.edu/~jaffer/r5rs_toc.html 
+
+Guile，GNU的扩展语言： 
+http://www.gnu.org/software/guile/和 Guile Reference Manual 
+
+Scheme语言在MIT的6.0001课程中广泛应用，即有名的 SICP，这是该校计算机科学专业的必修课之一。 
+
+Scheme语言在学校中的应用， http://www.schemers.com/schools.html，
+这是一个不完全列表，从这里可以看出SCHEME语言在教学中的重要性。 
+
+====
+关于作者
+
+宋国伟（ gwsong52@sohu.com），
+目前在 吉林省德惠市信息中心从事网络维护工作，
+著有 《GTK+2.0编程范例》一书，热衷于Linux系统上的编程及相关的研究。
+
