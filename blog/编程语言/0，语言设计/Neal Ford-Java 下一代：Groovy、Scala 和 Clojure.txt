@@ -81,6 +81,23 @@ Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks
 2013 年 10 月 24 日
 http://www.ibm.com/developerworks/cn/java/j-jn7/index.html
 
+----------
+Java 下一代: 混入和特征
+将新行为混合到 Groovy 和 Scala 类中
+Neal Ford, 软件架构师, ThoughtWorks Inc.
+2013 年 11 月 28 日
+http://www.ibm.com/developerworks/cn/java/j-jn8/index.html
 
+----------
+Java 下一代: 局部套用和部分应用
+为函数调度添加功能和间接引用
+Neal Ford, 软件架构师, ThoughtWorks Inc.
+2014 年 1 月 09 日
+http://www.ibm.com/developerworks/cn/java/j-jn9/index.html
 
+Java.next: Currying and partial application
+http://www.ibm.com/developerworks/java/library/j-jn9/index.html
 
+----------
+Java.next: Functional coding styles
+http://www.ibm.com/developerworks/java/library/j-jn10/index.html
