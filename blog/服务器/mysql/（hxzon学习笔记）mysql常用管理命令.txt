@@ -1,0 +1,120 @@
+﻿（hxzon学习笔记）mysql常用管理命令
+
+by hxzon
+
+==========
+修改账号密码
+mysqladmin -uroot -p password passwordNewXX
+
+注意：password选项指的是新密码。
+
+=====
+启动服务器
+
+mysqld
+
+=====
+连接数据库
+
+mysql -uroot -proot
+
+====
+查看数据库和数据表
+
+show databases;
+use dbXX;
+show tables;
+
+create database dbXX;
+drop database dbXX;
+drop table tableXX;
+
+desc tableXX;
+show columns from tableXX;
+describe tableXX;
+
+查看表的创建语句：
+show create table tableXX\G;
+
+查看数据库创建语句：
+show create database dbXX;
+
+use information_schema
+
+select * from columns where table_name='tableXX';
+
+查看当前状态（包括字符集设置）：
+status或者\s 
+
+show full columns from tableXX;
+
+=======
+字符集相关
+
+----
+查看系统字符集设置（包括所有的字符集设置）：
+show variables like 'character_set_%'; 
+
+Variable_name Value 
+character_set_client utf8 
+character_set_connection utf8 
+character_set_database utf8 
+character_set_filesystem binary 
+character_set_results utf8 
+character_set_server utf8
+character_set_system utf8 
+
+--
+show character set;
+
+----
+修改字符集命令
+
+
+服务器，临时：
+SET GLOBAL character_set_server=utf8;
+
+服务器，修改配置文件，永久：
+[mysqld]  default-character-set=utf8  	　 
+
+数据库，临时：
+SET GLOBAL character_set_database=utf8; 	　 
+
+数据库，同修改服务器，临时。
+
+表，永久：
+ALTER TABLE table_name DEFAULT CHARSET utf8;	
+
+列，永久：
+alter table `t_test` change `name` `name` varchar (255)  
+character set  utf8 collate utf8_general_ci null default null; 
+
+连接，临时：
+show variables like 'char%';
+
+连接，修改配置文件，永久：
+[client] default-character-set=utf8  
+
+----
+创建时指定字符集
+
+
+服务器级，在安装MySQL时可以设置服务器的默认编码格式。
+
+数据库级：
+CREATE DATABASE dbXX DEFAULT CHARACTER SET utf8; 
+
+create database dbXX character set utf8;
+
+CREATE DATABASE ms_db CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+alter database dbXX character set utf8;
+
+表级：
+CREATE TABLE  `dbXX`.`tableXX` (id VARCHAR(20) NOT NULL,name VARCHAR(20)) 
+ENGINE=InnoDB  DEFAULT CHARSET=utf8; 
+
+列级：
+CREATE TABLE  `dbXX`.`tableXX` (id varchar(20) NOT NULL,  name varchar(20) CHARACTER SET utf8);
+
+

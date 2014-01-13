@@ -1,0 +1,44 @@
+（hxzon学习笔记）lisp学习资料
+
+=======
+1，
+http://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html
+http://www.cs.cmu.edu/afs/cs.cmu.edu/project/ai-repository/ai/lang/lisp/doc/cltl/cltl_ht.tgz
+Common Lisp the Language, 2nd Edition
+
+This document contains the complete text of the book
+
+   Common Lisp the Language, 2nd edition
+   by Guy L. Steele, Thinking Machines, Inc.
+   Digital Press
+   1990 paperbound
+   1029 pages
+   ISBN 1-55558-041-6  $39.95
+
+======
+2，An Introduction and Tutorial for Common Lisp
+http://www.apl.jhu.edu/~hall/lisp.html
+
+3，ANSI Common Lisp 中文翻譯版 (Chinese Translation of ANSI Common Lisp)
+http://acl.readthedocs.org/en/latest/
+
+4，How to Design Programs
+September 26, 2003
+http://www.htdp.org/
+http://www.ccs.neu.edu/home/matthias/HtDP2e/
+
+5，
+《Common Lisp: A Gentle Introduction to Symbolic Computation》——David Touretzky
+《Practical Common Lisp》——Peter Seibel
+《Common Lisp》——Patrick Winston
+《On Lisp》——Paul Graham
+
+《Structure and Interpretation of Computer Programs》
+（SICP）可以启发思想，尤其是函数式编程入门。
+http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-001-structure-and-interpretation-of-computer-programs-spring-2005/video-lectures/
+
+《The Little Schemer》
+
+《Lambda the Ultimate》
+http://lambda-the-ultimate.org/
+
