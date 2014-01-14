@@ -38,7 +38,7 @@ call/cc必须接受一个单一参数的函数作为参数。
     ;显式调用break的时候，直接跳到这里，也就是返回(call/cc。。。)的返回值
     (call/cc  
       (lambda (break)
-        (let f ([ls ls])	;hxzon：定义了函数f，形参名为ls，传入实参ls 。
+        (let f ([ls ls])	;hxzon：定义函数f，形参名为ls，传入实参ls 。
           (cond
             [(null? ls) 1]		;hxzon：没有用到break，所以1作为返回值。
             [(= (car ls) 0) (break "zero")]		;hxzon：ls的头元素是0时，续延的值（即break）赋值成 "zero" ，并且作为返回值。

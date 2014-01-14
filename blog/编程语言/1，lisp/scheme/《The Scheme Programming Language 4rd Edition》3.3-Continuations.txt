@@ -1,27 +1,43 @@
 ﻿《The Scheme Programming Language 4rd Edition》3.3. Continuations
 
+翻译 by hxzon
+
+====
 Section 3.3. Continuations
 
 During the evaluation of a Scheme expression, 
 the implementation must keep track of two things: 
 (1) what to evaluate and 
 (2) what to do with the value. 
+
+对表达式求值时，底层实现必须跟踪两件事：
+“什么被求值”，“接下来对值做什么”。
+
 Consider the evaluation of (null? x) within the expression below.
 
 (if (null? x) (quote ()) (cdr x))
 
 The implementation must first evaluate (null? x) and, 
 based on its value, evaluate either (quote ()) or (cdr x). 
+
 "What to evaluate" is (null? x), 
 and "what to do with the value" is to make the decision which of (quote ()) and (cdr x) to evaluate and to do so. 
 We call "what to do with the value" the continuation of a computation.
 
+我们将“接下来对值做什么”称为“续延”。
+
 Thus, at any point during the evaluation of any expression, 
 there is a continuation ready to complete, or at least continue, 
 the computation from that point. 
+
+对任何表达式，求值过程中的任何时间点，总有一个“续延”，
+从该时间点到求值完成。
+
 Let's assume that x has the value (a b c). 
 We can isolate six continuations during the evaluation of (if (null? x) (quote ()) (cdr x)), 
 the continuations waiting for
+
+有六个续延：
 
 the value of (if (null? x) (quote ()) (cdr x)),
 the value of (null? x),
@@ -30,121 +46,174 @@ the value of x,
 the value of cdr, and
 the value of x (again).
 
-The continuation of (cdr x) is not listed because it is the same as the one waiting for (if (null? x) (quote ()) (cdr x)).
+The continuation of (cdr x) is not listed 
+because it is the same as the one waiting for (if (null? x) (quote ()) (cdr x)).
 
-Scheme allows the continuation of any expression to be captured with the procedure call/cc. 
+(cdr x)这个续延没有列出，因为它就是整个表达式的值。
+
+Scheme allows the continuation of any expression to be captured with the procedure call/cc.
+可以使用 call/cc 捕获任何表达式的续延。 
 call/cc must be passed a procedure p of one argument. 
-call/cc constructs a concrete representation of the current continuation and passes it to p. 
-The continuation itself is represented by a procedure k. 
+传给 call/cc 的是一个过程 p， p只有一个参数。
+call/cc constructs a concrete representation of the current continuation and passes it to p.
+call/cc 构造一个当前续延的具体表示，并传递给p的参数。
+ 
+The continuation itself is represented by a procedure k.
+续延本身表示为 过程k 。 
 Each time k is applied to a value, 
-it returns the value to the continuation of the call/cc application. 
+it returns the value to the continuation of the call/cc application.
+每当 k 被赋值时，它返回这个值。 
 This value becomes, in essence, the value of the application of call/cc.
+这个返回值也作为 call/cc 的返回值。
 
 If p returns without invoking k, 
 the value returned by the procedure becomes the value of the application of call/cc.
+如果p的返回值未使用 k，这个返回值作为 call/cc 的返回值。
 
+----
 Consider the simple examples below.
+简单的例子：
 
 (call/cc
   (lambda (k)
-    (* 5 4))) <graphic> 20 
+    (* 5 4))) 		; 20 
 
 (call/cc
   (lambda (k)
-    (* 5 (k 4)))) <graphic> 4 
+    (* 5 (k 4)))) 	; 4 	;hxzon：k被赋值为4，返回4。 
 
 (+ 2
    (call/cc
      (lambda (k)
-       (* 5 (k 4))))) <graphic> 6
+       (* 5 (k 4))))) 	; 6
 
 In the first example, the continuation is captured and bound to k, 
 but k is never used, so the value is simply the product of 5 and 4. 
+续延被捕捉，并绑定到 k 。
+但 k 未使用，所以值为 4和5的乘积。
+
 In the second, the continuation is invoked before the multiplication, 
 so the value is the value passed to the continuation, 4. 
+第2个例子，续延在乘积之前调用，所以值为传递给续延的值，即 4 。
 
 In the third, the continuation includes the addition by 2; 
 thus, the value is the value passed to the continuation, 4, plus 2.
+第3个例子，续延包含了“加2”，因此，值为传递给续延的值，加上2 。
 
+----
 Here is a less trivial example, 
 showing the use of call/cc to provide a nonlocal exit from a recursion.
+示例：在递归中，非本地退出。
 
 (define product
   (lambda (ls)
     (call/cc
       (lambda (break)
-        (let f ([ls ls])
+        (let f ([ls ls])		;定义函数f，形参名为 ls，传入实参 ls 。
           (cond
             [(null? ls) 1]
-            [(= (car ls) 0) (break 0)]
+            [(= (car ls) 0) (break 0)]		;将 0 绑定到续延，并且提前返回。
             [else (* (car ls) (f (cdr ls)))]))))))
 
-(product '(1 2 3 4 5)) <graphic> 120
-(product '(7 3 8 0 1 9 5)) <graphic> 0
+(product '(1 2 3 4 5)) 		; 120
+
+(product '(7 3 8 0 1 9 5)) 		; 0
 
 The nonlocal exit allows product to return immediately, 
 without performing the pending multiplications, when a zero value is detected.
+非本地退出允许 过程product 在遇到 0 的时候立即退出，不必再继续计算乘积。
 
-Each of the continuation invocations above returns to the continuation while control remains within the procedure passed to call/cc. 
+Each of the continuation invocations above 
+returns to the continuation while control remains within the procedure passed to call/cc.
+上面的每个续延调用，都返回（传递给 call/cc 的）续延，即使控制流仍在过程内。
+
+----
 The following example uses the continuation after this procedure has already returned.
+下面的例子，在过程已返回后使用续延。
 
 (let ([x (call/cc (lambda (k) k))])
-  (x (lambda (ignore) "hi"))) <graphic> "hi"
+  (x (lambda (ignore) "hi"))) 	; "hi"
 
 The continuation captured by this invocation of call/cc may be described as 
 "Take the value, bind it to x, and apply the value of x to the value of (lambda (ignore) "hi")." 
+接受一个值，把它绑定到 x ，将 x 的值 应用到 (lambda (ignore) "hi") 的值。
+
 Since (lambda (k) k) returns its argument, x is bound to the continuation itself; 
+因为 (lambda (k) k) 返回它的参数，所以 x 被绑定到 “续延” 本身。
 this continuation is applied to the procedure resulting from the evaluation of (lambda (ignore) "hi"). 
 This has the effect of binding x (again!) to this procedure and applying the procedure to itself. 
+这使得 x 绑定这个过程，然后这个过程以自己本身作为参数。
 The procedure ignores its argument and returns "hi".
 
-The following variation of the example above is probably the most confusing Scheme program of its size; 
+The following variation of the example above 
+is probably the most confusing Scheme program of its size; 
 it might be easy to guess what it returns, but it takes some thought to figure out why.
 
-(((call/cc (lambda (k) k)) (lambda (x) x)) "HEY!") <graphic> "HEY!"
+(((call/cc (lambda (k) k)) (lambda (x) x)) "HEY!") 	; "HEY!"
 
-The value of the call/cc is its own continuation, as in the preceding example. 
+The value of the call/cc is its own continuation, as in the preceding example.
+call/cc 的值是它拥有的续延。 
 This is applied to the identity procedure (lambda (x) x), 
-so the call/cc returns a second time with this value. 
-Then, the identity procedure is applied to itself, yielding the identity procedure. 
+so the call/cc returns a second time with this value.
+这个续延被应用到过程 identity ，即  (lambda (x) x)  ，所以 call/cc 再一次返回这个值。
+Then, the identity procedure is applied to itself, yielding the identity procedure.
+过程 
 This is finally applied to "HEY!", yielding "HEY!".
 
+----
 Continuations used in this manner are not always so puzzling. 
-Consider the following definition of factorial that saves the continuation at the base of the recursion before returning 1, 
+Consider the following definition of factorial that 
+saves the continuation at the base of the recursion before returning 1,
 by assigning the top-level variable retry.
+在返回1之前，保存这个续延到全局变量 retry 。 
 
 (define retry #f) 
+
+;阶乘：
 
 (define factorial
   (lambda (x)
     (if (= x 0)
-        (call/cc (lambda (k) (set! retry k) 1))
+        (call/cc (lambda (k) (set! retry k) 1))		;当 x 为 0 时，将续延赋值给 retry 。
         (* x (factorial (- x 1))))))
 
-With this definition, factorial works as we expect factorial to work, except it has the side effect of assigning retry.
+With this definition, factorial works as we expect factorial to work, 
+except it has the side effect of assigning retry.
 
-(factorial 4) <graphic> 24
-(retry 1) <graphic> 24
-(retry 2) <graphic> 48
+(factorial 4) 	; 24 ;1*2*3*4
+(retry 1) 	; 24
+(retry 2) 	; 48
 
 The continuation bound to retry might be described as 
 "Multiply the value by 1, then multiply this result by 2, then multiply this result by 3, then multiply this result by 4." 
+“将值乘以1，得到的结果再乘以2，得到的结果再乘以3，得到的结果再乘以4。”
+
 If we pass the continuation a different value, i.e., not 1, 
 we will cause the base value to be something other than 1 and hence change the end result.
+使得基础值不再是1，所以最终值改变。
 
-(retry 2) <graphic> 48
-(retry 5) <graphic> 120
+(retry 2) 	; 48
+(retry 5) 	; 120
 
 This mechanism could be the basis for a breakpoint package implemented with call/cc; 
 each time a breakpoint is encountered, 
 the continuation of the breakpoint is saved 
 so that the computation may be restarted from the breakpoint (more than once, if desired).
+这可以作为断点库的基础。
+每当断点产生，这个断点的续延被保存，所以接下来可以多次从这个断点重新运行。
 
+----
 Continuations may be used to implement various forms of multitasking. 
-The simple "light-weight process" mechanism defined below allows multiple computations to be interleaved. 
-Since it is nonpreemptive, it requires that each process voluntarily "pause" from time to time in order to allow the others to run.
+续延可以用来实现各种“多任务”的形式。
+The simple "light-weight process" mechanism defined below allows multiple computations to be interleaved.
+（interleave，交错。） 
+下面的代码实现了一个“轻量级线程”，允许多道程序交错运行。
+Since it is nonpreemptive, it requires that each process voluntarily "pause" from time to time 
+in order to allow the others to run.
+因为它是非抢占式的，所以需要每个进程自己暂停，使得其它代码可以运行。
 
 (define lwp-list '())
+
 (define lwp
   (lambda (thunk)
     (set! lwp-list (append lwp-list (list thunk))))) 
@@ -163,19 +232,26 @@ Since it is nonpreemptive, it requires that each process voluntarily "pause" fro
         (start)))))
 
 The following light-weight processes cooperate to print an infinite sequence of lines containing "hey!".
+下面的程序将打印出无限的行序列。
 
 (lwp (lambda () (let f () (pause) (display "h") (f))))
 (lwp (lambda () (let f () (pause) (display "e") (f))))
 (lwp (lambda () (let f () (pause) (display "y") (f))))
 (lwp (lambda () (let f () (pause) (display "!") (f))))
 (lwp (lambda () (let f () (pause) (newline) (f))))
-(start) <graphic> hey!
-         hey!
-         hey!
-         hey!
-         <graphic>
+(start) 	
+; hey!
+; hey!
+; hey!
+; hey!
+
 
 See Section 12.11 for an implementation of engines, which support preemptive multitasking, with call/cc.
+（preemptive，先发制人）
+实现一个引擎，支持抢占式多任务。
+
+====
+练习：
 
 Exercise 3.3.1
 
@@ -189,7 +265,8 @@ Rewrite product without call/cc, retaining the feature that no multiplications a
 Exercise 3.3.3
 
 What would happen if a process created by lwp as defined above were to terminate, i.e., 
-simply return without calling pause? Define a quit procedure that allows a process to terminate without otherwise affecting the lwp system. 
+simply return without calling pause? 
+Define a quit procedure that allows a process to terminate without otherwise affecting the lwp system. 
 Be sure to handle the case in which the only remaining process terminates.
 
 Exercise 3.3.4
