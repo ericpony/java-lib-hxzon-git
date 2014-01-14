@@ -1,0 +1,134 @@
+﻿危险代码：如何使用Unsafe操作内存中的Java类和对象—Part3
+
+怎样才能获得对象内存地址？
+
+获取对象内存地址要比获取类内存地址更加需要技巧。
+我们需要使用长度和 java.lang.Object 类型的辅助数组（长度为1）获得对象的内存地址。
+
+下面是获取对象内存地址的详细步骤：
+
+1、将目标对象设为辅助数组的第一个元素（也是唯一的元素）。
+由于这是一个复杂类型元素（不是基本数据类型），它的地址存储在数组的第一个元素。
+
+2、然后，获取辅助数组的基本偏移量。
+数组的基本偏移量是指数组对象的起始地址与数组第一个元素之间的偏移量。
+
+3、确定JVM的地址空间：
+
+如果是32位JVM，可以通过 sun.misc.Unsafe 类得到数组对象的内存地址（address_of_array）
+与数组基本偏移量（base_offset_of_array）相加的整型结果。
+这个4字节整型数值就是目标对象的内存地址。
+
+如果是64位JVM，可以通过 sun.misc.Unsafe 类得到数组对象的内存地址（address_of_array）
+与数组基本偏移量（base_offset_of_array）相加的长整型值结果。
+这个8字节长整型数值就是目标对象的内存地址。
+
+32位JVM
+
+
+Object helperArray[]    = new Object[1];
+helperArray[0]      = targetObject;
+long baseOffset     = unsafe.arrayBaseOffset(Object[].class);
+int addressOfObject = unsafe.getInt(helperArray, baseOffset);
+
+64位JVM
+
+
+Object helperArray[]    = new Object[1];
+helperArray[0]      = targetObject;
+long baseOffset     = unsafe.arrayBaseOffset(Object[].class);
+long addressOfObject    = unsafe.getLong(helperArray, baseOffset);
+
+可以认为这段代码中的 targetObject 是上文中 SampleClass 的某个实例。
+但请记住，这段代码适用于任何类的任何实例。
+
+类的内存布局
+
+32位JVM
+
+
+[header                ] 4  byte
+[klass pointer         ] 4  byte (pointer)
+[C++ vtbl ptr          ] 4  byte (pointer)
+[layout_helper         ] 4  byte
+[super check offset    ] 4  byte 
+[name                  ] 4  byte (pointer)
+[secondary super cache ] 4  byte (pointer)
+[secondary supers      ] 4  byte (pointer)
+[primary supers        ] 32 byte (8 length array of pointer)
+[java mirror           ] 4  byte (pointer)
+[super                 ] 4  byte (pointer)
+[first subklass        ] 4  byte (pointer)
+[next sibling          ] 4  byte (pointer)
+[modifier flags        ] 4  byte
+ 4  byte
+
+64位JVM
+
+
+[header                ] 8  byte
+[klass pointer         ] 8  byte (4 byte for compressed-oops)
+[C++ vtbl ptr          ] 8  byte (4 byte for compressed-oops)
+[layout_helper         ] 4  byte
+[super check offset    ] 4  byte 
+[name                  ] 8  byte (4 byte for compressed-oops)
+[secondary super cache ] 8  byte (4 byte for compressed-oops)
+[secondary supers      ] 8  byte (4 byte for compressed-oops)
+[primary supers        ] 64 byte (32 byte for compressed-oops)
+                                     {8 length array of pointer}
+[java mirror           ] 8  byte (4 byte for compressed-oops)
+[super                ] 8  byte (4 byte for compressed-oops)
+[first subklass         ] 8  byte (4 byte for compressed-oops)
+[next sibling          ] 8  byte (4 byte for compressed-oops)
+[modifier flags        ] 4  byte
+ 4  byte
+
+上面内容可参见源码 klass.hpp ：
+http://hg.openjdk.java.net/jdk7/hotspot/hotspot/file/9b0ca45cd756/src/share/vm/oops/klass.hpp。
+
+下图展示了 SampleClass 在32位JVM中的内存布局，列出了自起始地址起的前128个字节：
+
+
+
+这是 SampleBaseClass 在32位JVM中的内存布局，列出了自起始地址起的前128个字节：
+
+
+我们只对重要的字段进行说明，数字的颜色对应着相应字段的颜色。
+
+header 是一个常量：0×00000001。
+
+klass pointer 指向 java.lang.Class 类在内存中的定义
+（即 java.lang.Class 类的内存地址，这两个类的klass pointer字段都指向0x38970v8a8），
+表明这是一个类的内存结构。
+
+C++ vtbl ptr 指向其对应类的虚函数表。
+虚函数表用于实现运行时虚函数调用的多态性。
+
+layout helper 用于记录该实例的浅尺寸（Shallow size）。
+浅尺寸是根据JVM的字段对齐机制计算出来的。
+在我们的环境中，对象按8字节对齐。
+
+super 指向其父类的定义，
+在我们的演示代码中，SampleBaseClass 是 SampleClass 的父类。
+在 SampleClass 类的内存布局中，可以看到SampleBaseClass 的内存地址为0x34104b70。
+而在 SampleBaseClass 类的内存布局中， 父类的内存地址为0×38970000，
+这是  java.lang.Object 类的地址。
+因为在Java中，每一个类都是 Object 类的子类。
+
+modifier flags 即类的修饰符标志位。
+在Java中类的修饰符包括：public、protected、private、abstract、static、final以及strictfp。
+modifier flags 字段的值是对目标类的所有修饰符进行按位或运算得到的。
+在我们的示例代码中，SampleClass 类的修饰符有 public 和 final 。
+因此它的 modifier flags 字段的值为“0×00000001 | 0×00000010 =  0×00000011 ”。
+而 SampleBaseClass 类的修饰符只有 public，所以它的modifier flags 字段的值为0×00000001 。
+
+各修饰符的对应取值如下所示：
+
+
+下一篇我们会讨论字段内存布局和字段对齐，以及关于普通对象指针OOP的更多信息。
+
+ 
+  
+原文链接： zeroturnaround 翻译： ImportNew.com - 夏千林
+译文链接： http://www.importnew.com/8494.html
+

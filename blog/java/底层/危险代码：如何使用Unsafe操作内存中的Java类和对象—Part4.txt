@@ -1,0 +1,185 @@
+﻿危险代码：如何使用Unsafe操作内存中的Java类和对象—Part4
+
+字段布局和对齐
+
+和C/C++不同，Java没有 sizeOf 运算符计算基本数据类型类型或对象所占用的内存空间，
+sizeOf 运算符在IO操作和内存管理中非常实用。
+事实上，由于基本数据类型的大小在语言规范中预先定义，
+Java中也不会出现指针拷贝内存和指针运算（因为没有指针）。
+因此，sizeOf 运算符并没有存在的必要。
+
+有两种方法能够确定一个类及其属性共占用了多少内存空间。
+分别是浅尺寸（shallow size）和深尺寸（deep size）。
+浅尺寸就是对象本身各个字段所占用内存的大小，不包含该类中所引用的其他对象；
+于是引入了深尺寸概念，深尺寸在浅尺寸的基础上增加了该类引用的其他对象的浅尺寸。
+
+Sun Java虚拟机规定：
+除数组外的所有对象都包含一个长度为双字（two-word，一个字由两个字节组成）的 header，
+一个长度为单字（one-word）flags，
+以及一个指向对应类引用的单字（one-word）的字段。
+
+当我们用 new Object() 方法创建一个对象时，堆上就会为其分配8个字节的内存空间。
+
+对于一个继承了 Object 的类来说，情况会变得复杂而有趣。
+在这8个字节后面，类的各个属性在堆内存上会按照一定的规则对齐，但并不按照他们的声明顺序进行对齐。
+
+基本数据类型按照下列顺序进行对齐：
+
+double、long
+int、float
+short、char
+boolean、byte
+
+接下来，该类中所引用其他类的对象也会在堆上进行对齐。
+JVM会把对象的大小调整为8字节的倍数
+（http://www.codeinstructions.com/2008/12/java-objects-memory-structure.html）。
+
+请看下面的示例：
+
+
+class BooleanClass {
+    byte a;
+}
+
+这里会自动填充7个字节，整个对象的大小被扩大到16个字节。
+
+
+Headers (include flags and ref to class) : 8 bytes
+value of byte : 1 byte
+padding : 7 bytes
+
+关于OOP的更多信息
+
+有关OOP的一些基本信息已经在 OOP 和 压缩OOP 章节介绍过了。
+我们假定你已经对JVM中 OOP 相关的术语有一定的了解了，下面就让我们对它作进一步的了解。
+
+OOP由两个机器字长度的字段组成（32位JVM上机器字长为4字节，64位JVM上机器字长为8字节），
+这两个字段分别是 Mark 和 Klass。
+这两个字段出现在该实例的所有成员字段之前
+（译注：这两个字段应该就是对应上面字段的布局和对齐章节中 headers 所占用的8个字节）。
+但对于数组对象来说，在这两个字段之前会有一个额外的字段用于记录数组的长度。
+Mark 字段用于垃圾回收（在mark-and-sweep回收算法中使用），Klass 字段用于指向其对应类的元数据。
+所有的基本数据类型字段和引用字段都排在OOP（Mark 和 Klass 字段）的后面，
+包括引用其他对象的字段，甚至是引用OOP的字段
+（ http://www.infoq.com/articles/Introduction-to-HotSpot ）。
+
+KlassOOPs
+
+Klass 字段是一个指向对应类的元数据（包括字段的定义以及类似C++的虚函数表）的指针。
+每一个实例都携带一份类的元数据是一种非常低效的方式，
+KlassOOPs能让所有对象共享同一份元数据从而减少不必要的开销。
+需要注意的是 KlassOOP 和类加载器所产生的 Class object（java.lang.class 类型的对象）并不相同。
+
+下面是两者之间的区别：
+
+Class objects 只是普通的Java对象。
+Class objects和其他的Java对象一样可以用OOP（InstanceOOPs）表示。
+其表现行为也与其他的Java对象相同，还可以存放到Java变量里。
+
+KlassOOPs 是类的元数据在JVM中的表现形式，
+例如类的虚函数表就存放在 KlassOOPs 中。
+由于 KlassOOPs 生存在堆的永久区里（Permgen space），
+因此在Java代码中无法直接获得 KlassOOPs 的引用。
+你也可以简单地认为 KlassOOP 是对应类的 Class object 在虚拟机级别上的镜像。
+
+MarkOOPs
+
+Mark字段指向一个维护着OOP相关管理信息的数据结构。
+在32位JVM中，mark字段的数据结构为
+（http://hg.openjdk.java.net/jdk7/hotspot/hotspot/file/9b0ca45cd756/src/share/vm/oops/markOop.hpp for more details ）：
+
+哈希值（25 bits）：记录着该对象的 HashCode() 方法的返回值。
+
+年龄（4 bits）：对象的年龄（即这个对象所经历过的垃圾回收的次数）。
+
+偏向锁（1 bit）+ 锁（2 bits）：用于表示该对象的同步状态。
+
+Java 5引入了一种全新的对象同步方式，叫做偏向锁（Java 6中默认使用偏向锁 Biased-Lock）。
+经过观察发现，在多数情况下对象在运行时往往只被一个线程锁住，因此引入了偏向锁的概念。
+处于偏向锁状态中的对象会优先朝向第一个锁住它的线程，这个线程也会获得到更好的锁性能。
+Mark字段中会记录获取到该对象偏向锁的线程：
+
+Java线程指针：23 bits
+
+历元时间戳（Epoch）：2 bits
+
+年龄：4 bits
+
+偏向锁状态：1 bit
+
+锁状态：2 bits
+
+如果另一个线程尝试锁定该对象，偏向锁就会失效（无法重新获取）。
+这样，所有的线程都必须通过显式调用lock、unlock方法来锁定和解锁对象。
+
+下面是对象可能出现的状态：
+
+未锁定状态（Unlocked）
+偏向锁状态（Biased）
+轻量级锁定（Lightweight Locked）
+重量级锁定（Heavyweight Locked）
+标记状态（Marked，仅会在垃圾回收期间出现）
+
+32位JVM
+
+
+<mark class=""></mark>         ] 8  byte
+[klass pointer ] 8  byte (pointer)
+[fields        ] values of all fields including fields from super classe
+
+64位JVM
+
+
+<mark class=""></mark>         ] 8  byte
+[klass pointer ] 8  byte (4 byte for compressed-oops)
+[fields        ] values of all fields including fields from super classes
+
+请参考：http://hg.openjdk.java.net/jdk7/hotspot/hotspot/file/9b0ca45cd756/src/share/vm/oops/oop.hpp。
+
+下面我们来聊一聊深尺寸的计算，并考虑继承关系的影响。
+我们继续在32位的JVM上以 SampleClass 和 SampleBaseClass 为例。
+下面是 SampleClass 对象的内存布局。
+请再仔细看看这两个类的代码和各个字段，以便于更好的理解后续内容。
+
+
+mark字段是内存布局中的第一个字（0x69e34e01），字段中包含有该对象的哈希值，还有锁状态、对象年龄之类的标志位。
+
+klass 字段指向 SampleClass 类的定义，即0x34104cc0。
+
+字段 s 的值是20（0×0014），s是父类 SampleBaseClass 中的字段。
+父类字段排在内存布局的最前面，并且不会和子类的字段交叉排列。
+内存布局中的父类字段会以完整的系统字长结束。
+在字段的结尾，如果字长为4字节会按4字节进行自动补齐；
+如果字长为8字节，也会按4字节进行自动补齐。
+两个填充字节（0×0000）可用于填充长度为4字节（一个字长）的空隙。
+
+字段 i 的值为5（0×00000005）。
+字段 l 排在字段 i 的后面，它的值为10（0x000000000000000a）。
+
+正如上文提到的类属性顺序：首先是long和double，其次是int和float，然后是char和short，
+再然后是byte和boolean，最后是引用类型。
+属性按照各自的粒度进行对齐。
+当子类的第一个字段是double或者long类型，而父类并不满足8字节对齐，
+JVM为了填补这个空隙会破例尝试在子类的最前面摆放一个相对较短的字段。
+JVM会依次尝试摆放int、short和byte类型的字段，最后尝试引用类型的字段。
+
+因此整型字段排在长整型字段的前面，字段 i 排在字段 l 的前面。
+
+本文到此结束，我们还会带来更多的惊喜！
+
+我们希望你喜欢本文对Java中非常酷的底层机制所做的深入探讨，希望能从中有所收获。
+现在你已经知道了如何利用不安全的后门直接访问内存和线程并完成一些底层操作，
+能够通过一个类的对象轻松的获取到这个类和这个实例的内存地址，
+或者是根据预定义的偏移量计算出类的内存地址。
+
+现在你还知道如何了解一个类的内存布局，知道如何通过字段的完整对齐来最小化内存的占用。
+本文通篇都以 SampleClass 类为例，在保持示例一致的同时也有助于读者更好的理解本文的内容。
+我们还详细介绍了所有32位JVM和64位JVM相关的例子，希望本文能覆盖到更多的读者。
+
+感谢你阅读本文！
+你对我们的留言将是我们前进的最大动力，请把你最真实的想法告诉我们。Twitter @RebelLabs。
+
+  
+原文链接： zeroturnaround 翻译： ImportNew.com - 夏千林
+译文链接： http://www.importnew.com/8514.html
+
