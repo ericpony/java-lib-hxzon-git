@@ -10,7 +10,8 @@ http://www.ibm.com/developerworks/cn/linux/l-schm/part3/
 ======
 四、关于continuation（hxzon：重点）
 
-Scheme语言相对Lisp语言的重要特征是提出并实现了continuation，这是让初学者最难理解，也是最让程序员心动的特征。
+Scheme语言相对Lisp语言的重要特征是提出并实现了continuation，
+这是让初学者最难理解，也是最让程序员心动的特征。
 那么Continuation到底是什么呢？
 在运算Scheme表达式过程中，我们必须跟踪两个东西：
 1、运算什么？2、什么与值相关？
@@ -26,10 +27,12 @@ Scheme语言相对Lisp语言的重要特征是提出并实现了continuation，�
 3、变量x，它应当有一个值。
 
 那么上面的表达式里面有几个continuation呢？
-答案是六个，上面的表达式本身，我们说过的三个，car也是一个lambda表达式，还有它后面的x，也和值相关；
+答案是六个，上面的表达式本身，我们说过的三个，
+car也是一个lambda表达式，还有它后面的x，也和值相关；
 而(car x)没有计算在内，因为它与上面表达式结果之一是相同的。
 
-在任何表达式中，Continuation可以用一个叫call-with-current-continuation的过程来得到，多数情况下它被简化为call/cc。
+在任何表达式中，Continuation可以用一个叫call-with-current-continuation的过程来得到，
+多数情况下它被简化为call/cc。
 在guile的1.6.4或以前版本中，简化代码如下所示：
 (define call/cc call-with-current-continuation)
 
@@ -48,31 +51,36 @@ guile> (call/cc (lambda (k) 5))
 5
 ;;;此时过程参数k未用到，所以取过程的返回值5做为结果
 
-guile> (call/cc (lambda (k) (* 5 (k 8))))	;hxzon：将 8 绑定到 k 。
+guile> (call/cc (lambda (k) (* 5 (k 8))))		;hxzon：将 8 绑定到 k 。和 (* 5)没有任何关系。
 8
 ;;;此时过程参数k绑定为8，所以其结果为8
 
-guile> (+ 2 (call/cc (lambda (k) (* 5 (k 8)))))
+guile> (+ 2 (call/cc (lambda (k) (* 5 (k 8)))))		;hxzon：将 8 绑定到 k 。和 (* 5)没有任何关系。
 10
 ;;;此时结果在我们意料之中了
 
 ----
-可以利用call/cc这一特点，让它从一个循环中跳出来，这有点像C语言中的break，看下面的代码：
+可以利用call/cc这一特点，让它从一个循环中跳出来，
+这有点像C语言中的break，看下面的代码：
+
 guile> (call/cc (lambda (return)
-        (for-each (lambda (x) (if (< x 0) (return x)))
-                '(99 88 77 66 55))
-        #t))
+				        (for-each (lambda (x) (if (< x 0) (return x)))
+				                '(99 88 77 66 55))
+				        #t))
 #t
 
-其结果为#t，因为for-each运算过程中未出现过(< x 0)的情况，所以(lambda (return ) ...)的结果为#t，call/cc取此值为最终结果。
+其结果为#t，因为for-each运算过程中未出现过(< x 0)的情况，
+所以(lambda (return ) ...)的结果为#t，call/cc取此值为最终结果。
 
 guile> (call/cc (lambda (return)
-         (for-each (lambda (x) (if (< x 0) (return x)))	;hxzon：将 x 绑定到 return 。
-                '(11 22 33 44 -55 66 77))
-        #t))
+				         (for-each (lambda (x) (if (< x 0) (return x)))	;hxzon：将 x 绑定到 return ，作为返回值。
+				         																;但这里为何会提前返回？call/cc的特殊功能？
+				                '(11 22 33 44 -55 66 77))
+				        #t))
 -55
 
-其结果为-55，因为当遇到小于0的数时，return就绑定x，call/cc就返回此值，即从for-each处理过程中跳出来，
+其结果为-55，因为当遇到小于0的数时，return就绑定x，
+call/cc就返回此值，即从for-each处理过程中跳出来，
 这是call/cc的重要功能之一，也是最基本的功能。
 
 ----
@@ -80,16 +88,17 @@ call/cc 还可以这样操作：
 
 guile> (define foo #f)
 
-guile> (call/cc (lambda (bar) (set! foo bar) 123))
+guile> (call/cc (lambda (bar) (set! foo bar) 123))		;hxzon：foo变成了续延。
 123
 
-guile> (foo 456)
+guile> (foo 456)		;foo不是过程，但可以像过程一样调用。
 456
 
 guile> (foo 'abc)
 abc
 
-上面的操作中，call/cc绑定了lambda表达式的参数bar，而后我们又设定foo的值为bar，此时foo即为一个灵活的continuation；
+上面的操作中，call/cc绑定了lambda表达式的参数bar，
+而后我们又设定foo的值为bar，此时foo即为一个灵活的continuation；
 最后我们又让lambda表达式的值为123，所以整个call/cc表达式的值为123，
 如果我们不加这个123而直接结束这个表达式的话，此表达式就没有结果，不返回任何值。
 
@@ -97,7 +106,7 @@ abc
 其后面绑定的值即为此continuation的结果，如上面的代码运行所示。
 这段代码的前提是有call/cc的定义，如果你直接运行guile后就输入上面的代码是肯定会出错的。
 
-----
+======
 在赵蔚的文章 http://www.ibm.com/developerworks/cn/linux/l-scheme/part2/index.shtml中
 提到过由David Madore先生提出的"阴阳迷题"，
 下面我们通过对它的研究来理解一下continuation，代码如下所示(为解释方便，稍做改动)：

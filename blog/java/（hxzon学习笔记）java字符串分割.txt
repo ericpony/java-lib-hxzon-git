@@ -1,0 +1,53 @@
+﻿（hxzon学习笔记）java字符串分割
+
+package org.hxzon.test.xx;
+
+public class TestStringSplit
+{
+
+	public static void main(String[] args)
+	{
+		String orig = "  a   b   -c   de   -f   g  ";
+		String[] sps = orig.split("\\s+");
+		int index = 0;
+		for (String sp : sps)
+		{
+			System.out.println(index + "," + sp + "|");
+			index++;
+		}
+	}
+}
+
+输出：
+
+0,|
+1,a|
+2,b|
+3,-c|
+4,de|
+5,-f|
+6,g|
+
+开头的空格会产生一个多余的空串，末尾的空格不会。
+中间可以不只一个空格。
+
+	public static void main(String[] args)
+	{
+		String orig = "a   b   -c   de   -f   g  ";
+		String[] sps = orig.split("\\s+");
+		int index = 0;
+		for (String sp : sps)
+		{
+			System.out.println(index + "," + sp + "|");
+			index++;
+		}
+	}
+
+输出：
+
+0,a|
+1,b|
+2,-c|
+3,de|
+4,-f|
+5,g|

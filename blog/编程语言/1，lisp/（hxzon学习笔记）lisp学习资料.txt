@@ -1,10 +1,12 @@
-£¨hxzonÑ§Ï°±Ê¼Ç£©lispÑ§Ï°×ÊÁÏ
+ï»¿ï¼ˆhxzonå­¦ä¹ ç¬”è®°ï¼‰lispå­¦ä¹ èµ„æ–™
 
 =======
-1£¬
+1ï¼Œ
+Common Lisp the Language, 2nd Edition
+ç®€ç§° cltl2 ã€‚
+
 http://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html
 http://www.cs.cmu.edu/afs/cs.cmu.edu/project/ai-repository/ai/lang/lisp/doc/cltl/cltl_ht.tgz
-Common Lisp the Language, 2nd Edition
 
 This document contains the complete text of the book
 
@@ -16,29 +18,35 @@ This document contains the complete text of the book
    ISBN 1-55558-041-6  $39.95
 
 ======
-2£¬An Introduction and Tutorial for Common Lisp
+2ï¼ŒAn Introduction and Tutorial for Common Lisp
 http://www.apl.jhu.edu/~hall/lisp.html
 
-3£¬ANSI Common Lisp ÖĞÎÄ·­×g°æ (Chinese Translation of ANSI Common Lisp)
+3ï¼ŒANSI Common Lisp ä¸­æ–‡ç¿»è­¯ç‰ˆ (Chinese Translation of ANSI Common Lisp)
 http://acl.readthedocs.org/en/latest/
 
-4£¬How to Design Programs
+4ï¼ŒHow to Design Programs
 September 26, 2003
 http://www.htdp.org/
 http://www.ccs.neu.edu/home/matthias/HtDP2e/
 
-5£¬
-¡¶Common Lisp: A Gentle Introduction to Symbolic Computation¡·¡ª¡ªDavid Touretzky
-¡¶Practical Common Lisp¡·¡ª¡ªPeter Seibel
-¡¶Common Lisp¡·¡ª¡ªPatrick Winston
-¡¶On Lisp¡·¡ª¡ªPaul Graham
+5ï¼Œ
+ã€ŠCommon Lisp: A Gentle Introduction to Symbolic Computationã€‹â€”â€”David Touretzky
+ã€ŠPractical Common Lispã€‹â€”â€”Peter Seibel
+ã€ŠCommon Lispã€‹â€”â€”Patrick Winston
+ã€ŠOn Lispã€‹â€”â€”Paul Graham
 
-¡¶Structure and Interpretation of Computer Programs¡·
-£¨SICP£©¿ÉÒÔÆô·¢Ë¼Ïë£¬ÓÈÆäÊÇº¯ÊıÊ½±à³ÌÈëÃÅ¡£
+ã€ŠStructure and Interpretation of Computer Programsã€‹
+ç®€ç§° SICP ï¼Œå¯ä»¥å¯å‘æ€æƒ³ï¼Œå°¤å…¶æ˜¯å‡½æ•°å¼ç¼–ç¨‹å…¥é—¨ã€‚
 http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-001-structure-and-interpretation-of-computer-programs-spring-2005/video-lectures/
 
-¡¶The Little Schemer¡·
+ã€ŠThe Little Schemerã€‹
+http://www.ccs.neu.edu/home/matthias/BTLS/
 
-¡¶Lambda the Ultimate¡·
+ã€ŠLambda the Ultimateã€‹
 http://lambda-the-ultimate.org/
+
+6ï¼ŒThe Scheme Programming Language, 4rd Edition
+ç®€ç§° tspl4 ã€‚
+http://www.scheme.com/tspl4/â€
+R. Kent Dybvig ï¼ŒChez Scheme ä½œè€…ï¼Œç‹å ç§°ä¹‹ä¸ºç¼–è¯‘å™¨é¢†åŸŸç¬¬ä¸€äººã€‚
 

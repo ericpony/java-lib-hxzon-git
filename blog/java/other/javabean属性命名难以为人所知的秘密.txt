@@ -1,0 +1,279 @@
+﻿javabean属性命名难以为人所知的秘密
+http://spiritfrog.iteye.com/blog/422351
+
+原文：http://www.blogjava.net/Unmi/archive/2009/07/01/285020.html
+
+当我刚看到此文时，就想到曾经我碰上过hibernate属性映射，某属性死活都找不到的问题，却没有去认真思考寻找原因，还是该文作者想的更多。
+ 
+作为 Java  程序员，对于 JavaBean 也许你会说再熟悉不过了，它贯穿在系统的多层中，
+不同的叫法有 PO、VO、DTO、POJO、DO(Domain Object)。
+然而它无外乎就是一个 Class 类，带上些属性和它们的 setter/getter 方法，set/get 后面那一个字母大写。
+虽然我们现在很少把 JavaBean 与那个古老的 2.0 的 EJB 搞混，
+但为什么明明用 IDE 为属性生成的 getter/setter 方法，
+应用一运行，还是报找不到某个 bean 属性的 setter 或 getter 方法呢？
+
+要知道，在 Sun 的网站上那个关于 JavaBean 规范的 PDF 文档可是有足足实实的 114 页啊。
+难免有些规则有点古怪，至使知名的 IDE 都难以应对，
+所以我们还是有必要了解其中二三，来规范我们的 JavaBean 和解释一些情形。
+
+Sun  的关于 JavaBean 规范见：http://java.sun.com/javase/technologies/desktop/javabeans/docs/spec.html ，
+其中可下载到 JavaBean 规范的  PDF 文档。
+
+
+实际中的问题 
+
+首 先，当然还是要说它的属性及 setter/getter 方法。
+属性以小写字母开头，驼峰命名格式，相应的 getter/setter 方法是 get/set 接上首字母大写的属性名。
+多数情况是对的，且当前流行的 IDE(Eclipse、JBuilder) 也都认这个死理，
+这里 NetBean 值得表扬一下。
+但要是碰到些遗留的代码中属性名不规范，或者有些人就是顽固，
+
+或真是对属性命名犹豫不决时的写下的代码时，那还是有得你研究一下。
+
+这里来看看 Eclipse 为几个属性生成的 getter/setter 方法吧：
+
+sName(从 C 转过来的，受匈牙利的影响，认为 Name 是个字符串，所以加个前缀 s)
+getSName()/setSName(String name)
+
+URL (平时认为是缩略语/专有名词，理当全部大写，这在我们对待 ID 时经常发生的)
+getURL()/setURL(String url)
+
+上面第一个由 Eclipse 为我们生成的 getSName()/setSName(String name) 方法，
+参照 JavaBean  规范来说，其实是错误的。
+如果出现这样的方法，放到我们的标签(像 Struts 标签，如 <s:textfield name="sName"/>)，
+或是进行 Hibernate/iBatis 那种映射时，你就能收到报 找不到 sName 属性相应的 getter/setter 方法 那样的错误。
+不是明明有 getSName() 和 setSName(String name)，可是方法名错了，
+正确的版本应该是 getsName() 和 setsName(String name)。
+
+前面首先解释了属性命名不规范产生问题的原因，
+现在就来更仔细的了解关于 JavaBean 属性及其 getter/setter 方法的约定，有些是硬性的。
+
+
+属性与存取访问的规定 
+
+为 JavaBean 创建属性时，必须牢记：
+缩略语通常被视为一个独立的单词，而不是单个字母。
+例如，URL 对应的属性名应该用 url，相应的 getUrl()/setUrl()，
+所以 ID 还是用 id 作为属性吧，相应的 getId()/setId()。
+
+规范中另一个特别的地方就是，
+第二个字母为大写的属性名要区别对待。
+如果属性名的第二个字母是大写的，
+那么该属性名直接用作 getter/setter 方法中 get/set 的后部分，就是说大小写不变。
+这就是为什么 sName 对应的存取方法是 getsName()/setsName() 的原因，
+不能不说这条规则很令人费解。
+那就更有必要看看下面表格的规范：
+
+属性名/类型	getter 方法	setter 方法
+
+xcoordinate/Double	public Double getXcoordinate()	public void setXcoordinate(Double newValue)
+xCoordinate/Double	public Double getxCoordinate()	public void setxCoordinate(Double newValue)
+XCoordinate/Double	public Double getXCoordinate()	public void setXCoordinate(Double newValue)
+Xcoordinate/Double	不允许	不允许
+student/Boolean	public Boolean getStudent()	public void setStudent(Boolean newValue)
+student/boolean	public boolean getStudent()
+public boolean isStudent()	public void setStudent(boolean newValue)
+
+属性是首字母大写，次字母小写是，
+你永远都找不到它的 getter/setter 方法的，对这个属性的使用是会害人的。
+对于 boolean 类型属性的 getter 方法是 isXxx() 还是 getXxx() 就自己决定了，
+isXxx() 应该更接近于自然语言，更顺溜些。
+
+知道了属性及存取方法的规定，那么你即使是面对古老代码，
+在使用标签来引用或与 Hibernate/iBatis 等进行映射，你就知道该填什么样的属性名了。
+
+还有一个我们很少碰触到的是关于可索引属性的 getter/setter 方法(这方面 C# 表现的比 Java 要优秀)，比如有属性
+ 
+private  OrderItem[] orderItem;      那它相应的 getter/setter 除常见的两个外，还有带索引参数的两个版本，如下：
+
+public OrderItem[] getOrderItem();
+public void setOrderItem(OrderItem[] newArray);
+public OrderItem[] getOrderItem(int index);
+public void setOrderItem(int index, OrderItem orderItem);
+
+====
+关于 Bean 导航 
+
+最后就是 Bean 导航的规范，通常用点记法(dot notation) 来引用属性，同时也要注意索引属性的访问。
+在 Web MVC 的表单中，以及标签中， Jarkata-Commons-BeanUtils  中用得很多。
+看点记法的示例：
+
+Java 代码	点记法
+
+anOrder.getAccount().getUsername()	anOrder.account.username
+anOrder.getOrderItem().get(0).getProductId()	anOrder.orderItem[0].productId
+anObject.getId()	anObject.id
+anObject.getxCoordinate()	anObject.xCoordinate
+
+上表应该从右往左边看，点记法中的属性名运行时要被解析成相应的存取方法调用。
+比如像 Struts1 标签：
+
+< html:text   property = "stocks[1].code" /> 
+
+会显示出 FormBean 中 stocks 列表的第二个元素的 code 属性，提交就填充到相应的位置上去。
+
+---------------------------------------
+ognl.NoSuchPropertyException
+
+把属性pId改成 pid或者piD 或者ppId，就是不要用pId.对应发的get和set方法也要改！
+你的action中的getter() setter()方法应该是用Eclipse自动生成的吧。
+如果的话能都读出来都见鬼了，写也写不进去。    
+
+struts标签获取action属性值是通过getXXX方法。
+根据javabean的命名规则，属性名的第一个单词
+（注意哦问题就出现在这里 谁让你的第一个单词就一个字母了）的第一个字母大写 ，
+你的属性pId用Eclipse自动生成的方法为 getpId()和setpId;
+根据get方法的解析规则，指挥找get紧挨则的大些字母以后还原成属性(当然然还原不回去了，get后面的是小写嘛)。
+
+--------------
+或者直接改为public
+--------------
+javaBean命名规范
+
+转自：http://lzh166.iteye.com/blog/631838
+
+前段时间，写程序时，出了错误，竟然没有想到是自己属性命名的问题，哎~~~真是一定要注意规范呀，在这里我从网上找了些，规范作为参考。
+
+Sun 推荐的命名规范
+
+1 ，类名要首字母大写，后面的单词首字母大写
+2 ，方法名的第一个单词小写，后面的单词首字母大写
+3 ，变量名的第一个单词小写，后面的单词首字母大写
+
+为了使 JavaBean 的属性名和存取方法都符合规范， 
+Sun 在 JSR 文档中规定了属性名和存取方法名的映射规则： 
+① 属性名对应的存取方法为 get/set 加上首字母大写的属性名，
+如属性 userName 的存取方法为 setUserName/getUserName 。
+这样属性名和存取方法都符合命名规范。
+这个规则强制的，如果不符合规则就会出现异常。
+
+但是这里有一个例外规则， Sun 考虑在偶然的情况下会有全大写的属性名，所以又定了一条规则： 
+②如果属性名的第二个字母是大写，则它的存取方法是 set/get 加上属性原名。
+
+上面两个属性与存取方法的映射规则如下：
+
+① 属性名对应的存取方法为 get/set 加上首字母大写的属性名，
+如属性 userName 的存取方法为setUserName/getUserName 。
+
+②如果属性名的第二个字母是大写，则它的存取方法是 set/get 加上属性原名。
+
+应用这两个规则时有两个特殊情况需要注意 ，属性名的第一个单词只有一个字母，
+如 sName ，按照第 2 条映射规则，它的存取方法为 setsName/getsName 。
+这样存取方法名就与方法名的命名规范有一定的出入，按规范应该是setSName/getSName 。
+
+所以最好不要让属性名的第一个单词只有一个字母。
+另一个特殊情况是起了一个不符合规范的属性名 Sname ，首字母大写后面的小写，
+这种情况既没有映射规则，也是不允许出现的。
+
+例子：
+public void setAge(int age){ 
+        this.age = age;      
+}
+public int getAge(){
+        return this.age;
+}
+
+Age-->如果第二个字母是小写的，则把第一个字母变成小的-->age
+
+ 例如：如果你看到JavaBean中的如下的方法，你应该能判读出他所能操作的JavaBean属性的名称
+ gettime()--->time
+ setTime()--->time
+ getCPU()--->CPU
+ getsName --->sName
+
+下面用一个表格说明映射规则。
+
+属性名/类型	getter 方法	setter 方法
+
+xcoordinate/Double	public Double getXcoordinate()	public void setXcoordinate(Double newValue)
+xCoordinate/Double	public Double getxCoordinate()	public void setxCoordinate(Double newValue)
+XCoordinate/Double	public Double getXCoordinate()	public void setXCoordinate(Double newValue)
+Xcoordinate/Double	不允许	不允许
+student/Boolean	public Boolean getStudent()	public void setStudent(Boolean newValue)
+student/boolean	public boolean getStudent()
+public boolean isStudent()	public void setStudent(boolean newValue)
+
+----------------
+Hibernate的model类中getter和setter方法也要符合javaBean命名规范。
+
+Hibernate用的方法是
+
+java代码: 
+BasicPropertyAccessor.java
+String methodName = methods[i].getName();
+// try "get"
+if( methodName.startsWith("get") ) {
+        String testStdMethod = Introspector.decapitalize(methodName.substring(3) );
+        String testOldMethod = methodName.substring(3);
+        if( testStdMethod.equals(propertyName) || testOldMethod.equals(propertyName) ) return methods[i];       
+}
+
+他调用的是
+Introspector.decapitalize(String name);
+
+Sun的注释说明
+but in the (unusual) special case when there is more than one character 
+and both the first anｄ second characters are upper case, we leave it alone.
+
+他得到getXSize这个方法名，
+substring[3]为XSize然后decapitalize之后不修改首位字符，就Could not find a getter for xSize了
+
+-----------------------------
+http://jun1986.iteye.com/blog/1183911
+
+-------------------------------
+JavaBean 属性命名规范特例
+http://blog.csdn.net/liwen19840617/article/details/5060845
+
+上次周会瑶红说过如果JavaBean的属性值第二个字母为大写，有的Eclipse会出问题，
+在叶渡的指导下，在这个问题上又研究了一下下，总结如下：
+
+一般JavaBean属性以小写字母开头，驼峰命名格式，相应的 getter/setter 方法是 get/set 接上首字母大写的属性名。
+例如：属性名为userName，其对应的getter/setter 方法是 getUserName/setUserName。
+
+但是，还有一些特殊情况：
+
+1、如果属性名的第二个字母大写，那么该属性名直接用作 getter/setter 方法中 get/set 的后部分，就是说大小写不变。
+例如属性名为uName，方法是getuName/setuName。
+
+2、如果前两个字母是大写（一般的专有名词和缩略词都会大写），
+也是属性名直接用作 getter/setter 方法中 get/set 的后部分。
+例如属性名为URL，方法是getURL/setURL。
+
+3、如果首字母大写，也是属性名直接用作 getter/setter 方法中 get/set 的后部分。
+例如属性名为Name，方法是getName/setName，
+这种是最糟糕的情况，会找不到属性出错，因为默认的属性名是name。
+
+所以在JavaBean命名时应该注意符合以上命名规范。
+
+需要注意的是有些开发工具的自动生成的getter/setter方法，并没有考虑到上面所说的特例情况，导致bug的产生，
+比如Eclipse3.4版本。
+Eclipse3.5较3.4智能些，避免了一些问题。
+以下是我在Eclipse3.5和Eclipse3.4分别做的实验：
+
+在User的实体类中，设了两个变量，一个是userName，另一个是uName，然后用Eclipse的自动生成的get和set方法（source–>Generate getter andsetter），
+在Eclipse3.5中生成的是下图所示的正确的方法，
+正常的方法是将变量名的首字母变成大写，
+而如果变量名的第一个字母是小写，第二个字母是大写，则第一个字母为小写不变。
+
+然后在spring配置文件中对User类进行bean注入
+
+接下来运行一个测试的方法，将两个变量输出
+
+以下是输出结果。
+
+而在Eclipse3.4中，这样的命名方法就会出问题，看下图红色标注的地方，Eclipse3.4只是简单的将第一个字母变成大写。
+
+这样在同样的配置文件下，运行测试方法就会出问题，说uName这个属性找不到，因为已经变成了UName，所以在创建bean的时候就找不到uName这个变量了。
+
+前两个字母大写的情况：
+
+输出结果：
+
+
+首字母大写的情况：
+
+这时会出现问题：
+
+希望大家在对属性进行命名的时候注意一下特殊情况，可以避免相关问题的产生。
+

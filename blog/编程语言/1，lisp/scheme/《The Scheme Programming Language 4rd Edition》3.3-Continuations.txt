@@ -1,0 +1,206 @@
+﻿《The Scheme Programming Language 4rd Edition》3.3. Continuations
+
+Section 3.3. Continuations
+
+During the evaluation of a Scheme expression, 
+the implementation must keep track of two things: 
+(1) what to evaluate and 
+(2) what to do with the value. 
+Consider the evaluation of (null? x) within the expression below.
+
+(if (null? x) (quote ()) (cdr x))
+
+The implementation must first evaluate (null? x) and, 
+based on its value, evaluate either (quote ()) or (cdr x). 
+"What to evaluate" is (null? x), 
+and "what to do with the value" is to make the decision which of (quote ()) and (cdr x) to evaluate and to do so. 
+We call "what to do with the value" the continuation of a computation.
+
+Thus, at any point during the evaluation of any expression, 
+there is a continuation ready to complete, or at least continue, 
+the computation from that point. 
+Let's assume that x has the value (a b c). 
+We can isolate six continuations during the evaluation of (if (null? x) (quote ()) (cdr x)), 
+the continuations waiting for
+
+the value of (if (null? x) (quote ()) (cdr x)),
+the value of (null? x),
+the value of null?,
+the value of x,
+the value of cdr, and
+the value of x (again).
+
+The continuation of (cdr x) is not listed because it is the same as the one waiting for (if (null? x) (quote ()) (cdr x)).
+
+Scheme allows the continuation of any expression to be captured with the procedure call/cc. 
+call/cc must be passed a procedure p of one argument. 
+call/cc constructs a concrete representation of the current continuation and passes it to p. 
+The continuation itself is represented by a procedure k. 
+Each time k is applied to a value, 
+it returns the value to the continuation of the call/cc application. 
+This value becomes, in essence, the value of the application of call/cc.
+
+If p returns without invoking k, 
+the value returned by the procedure becomes the value of the application of call/cc.
+
+Consider the simple examples below.
+
+(call/cc
+  (lambda (k)
+    (* 5 4))) <graphic> 20 
+
+(call/cc
+  (lambda (k)
+    (* 5 (k 4)))) <graphic> 4 
+
+(+ 2
+   (call/cc
+     (lambda (k)
+       (* 5 (k 4))))) <graphic> 6
+
+In the first example, the continuation is captured and bound to k, 
+but k is never used, so the value is simply the product of 5 and 4. 
+In the second, the continuation is invoked before the multiplication, 
+so the value is the value passed to the continuation, 4. 
+
+In the third, the continuation includes the addition by 2; 
+thus, the value is the value passed to the continuation, 4, plus 2.
+
+Here is a less trivial example, 
+showing the use of call/cc to provide a nonlocal exit from a recursion.
+
+(define product
+  (lambda (ls)
+    (call/cc
+      (lambda (break)
+        (let f ([ls ls])
+          (cond
+            [(null? ls) 1]
+            [(= (car ls) 0) (break 0)]
+            [else (* (car ls) (f (cdr ls)))]))))))
+
+(product '(1 2 3 4 5)) <graphic> 120
+(product '(7 3 8 0 1 9 5)) <graphic> 0
+
+The nonlocal exit allows product to return immediately, 
+without performing the pending multiplications, when a zero value is detected.
+
+Each of the continuation invocations above returns to the continuation while control remains within the procedure passed to call/cc. 
+The following example uses the continuation after this procedure has already returned.
+
+(let ([x (call/cc (lambda (k) k))])
+  (x (lambda (ignore) "hi"))) <graphic> "hi"
+
+The continuation captured by this invocation of call/cc may be described as 
+"Take the value, bind it to x, and apply the value of x to the value of (lambda (ignore) "hi")." 
+Since (lambda (k) k) returns its argument, x is bound to the continuation itself; 
+this continuation is applied to the procedure resulting from the evaluation of (lambda (ignore) "hi"). 
+This has the effect of binding x (again!) to this procedure and applying the procedure to itself. 
+The procedure ignores its argument and returns "hi".
+
+The following variation of the example above is probably the most confusing Scheme program of its size; 
+it might be easy to guess what it returns, but it takes some thought to figure out why.
+
+(((call/cc (lambda (k) k)) (lambda (x) x)) "HEY!") <graphic> "HEY!"
+
+The value of the call/cc is its own continuation, as in the preceding example. 
+This is applied to the identity procedure (lambda (x) x), 
+so the call/cc returns a second time with this value. 
+Then, the identity procedure is applied to itself, yielding the identity procedure. 
+This is finally applied to "HEY!", yielding "HEY!".
+
+Continuations used in this manner are not always so puzzling. 
+Consider the following definition of factorial that saves the continuation at the base of the recursion before returning 1, 
+by assigning the top-level variable retry.
+
+(define retry #f) 
+
+(define factorial
+  (lambda (x)
+    (if (= x 0)
+        (call/cc (lambda (k) (set! retry k) 1))
+        (* x (factorial (- x 1))))))
+
+With this definition, factorial works as we expect factorial to work, except it has the side effect of assigning retry.
+
+(factorial 4) <graphic> 24
+(retry 1) <graphic> 24
+(retry 2) <graphic> 48
+
+The continuation bound to retry might be described as 
+"Multiply the value by 1, then multiply this result by 2, then multiply this result by 3, then multiply this result by 4." 
+If we pass the continuation a different value, i.e., not 1, 
+we will cause the base value to be something other than 1 and hence change the end result.
+
+(retry 2) <graphic> 48
+(retry 5) <graphic> 120
+
+This mechanism could be the basis for a breakpoint package implemented with call/cc; 
+each time a breakpoint is encountered, 
+the continuation of the breakpoint is saved 
+so that the computation may be restarted from the breakpoint (more than once, if desired).
+
+Continuations may be used to implement various forms of multitasking. 
+The simple "light-weight process" mechanism defined below allows multiple computations to be interleaved. 
+Since it is nonpreemptive, it requires that each process voluntarily "pause" from time to time in order to allow the others to run.
+
+(define lwp-list '())
+(define lwp
+  (lambda (thunk)
+    (set! lwp-list (append lwp-list (list thunk))))) 
+
+(define start
+  (lambda ()
+    (let ([p (car lwp-list)])
+      (set! lwp-list (cdr lwp-list))
+      (p))))
+
+(define pause
+  (lambda ()
+    (call/cc
+      (lambda (k)
+        (lwp (lambda () (k #f)))
+        (start)))))
+
+The following light-weight processes cooperate to print an infinite sequence of lines containing "hey!".
+
+(lwp (lambda () (let f () (pause) (display "h") (f))))
+(lwp (lambda () (let f () (pause) (display "e") (f))))
+(lwp (lambda () (let f () (pause) (display "y") (f))))
+(lwp (lambda () (let f () (pause) (display "!") (f))))
+(lwp (lambda () (let f () (pause) (newline) (f))))
+(start) <graphic> hey!
+         hey!
+         hey!
+         hey!
+         <graphic>
+
+See Section 12.11 for an implementation of engines, which support preemptive multitasking, with call/cc.
+
+Exercise 3.3.1
+
+Use call/cc to write a program that loops indefinitely, printing a sequence of numbers beginning at zero. 
+Do not use any recursive procedures, and do not use any assignments.
+
+Exercise 3.3.2
+
+Rewrite product without call/cc, retaining the feature that no multiplications are performed if any of the list elements are zero.
+
+Exercise 3.3.3
+
+What would happen if a process created by lwp as defined above were to terminate, i.e., 
+simply return without calling pause? Define a quit procedure that allows a process to terminate without otherwise affecting the lwp system. 
+Be sure to handle the case in which the only remaining process terminates.
+
+Exercise 3.3.4
+
+Each time lwp is called, the list of processes is copied because lwp uses append to add its argument to the end of the process list. 
+Modify the original lwp code to use the queue data type developed in Section 2.9 to avoid this problem.
+
+Exercise 3.3.5
+
+The light-weight process mechanism allows new processes to be created dynamically, 
+although the example given in this section does not do so. 
+Design an application that requires new processes to be created dynamically and implement it using the light-weight process mechanism.
+
+

@@ -24,7 +24,7 @@ call/cc必须接受一个单一参数的函数作为参数。
   (lambda (k)
      exp))
 
-这里面k就是捕捉到的continuation。 
+这里面k就是捕捉到的continuation。
 每当显式的调用k的时候，我们就可以简单的把它想成直接将 (call/cc…)替换成传递给k的值并继续执行。
 
 比如call/cc放在递归的终止条件处，
@@ -38,11 +38,12 @@ call/cc必须接受一个单一参数的函数作为参数。
     ;显式调用break的时候，直接跳到这里，也就是返回(call/cc。。。)的返回值
     (call/cc  
       (lambda (break)
-        (let f ([ls ls])
+        (let f ([ls ls])	;hxzon：定义了函数f，形参名为ls，传入实参ls 。
           (cond
-            [(null? ls) 1]
-            [(= (car ls) 0) (break "zero")]
-            [else (* (car ls) (f (cdr ls)))]))))))
+            [(null? ls) 1]		;hxzon：没有用到break，所以1作为返回值。
+            [(= (car ls) 0) (break "zero")]		;hxzon：ls的头元素是0时，续延的值（即break）赋值成 "zero" ，并且作为返回值。
+            												;并且提前返回。
+            [else (* (car ls) (f (cdr ls)))]))))))		;hxzon：递归调用f，将列表元素相乘。没有用到break，所以相乘结果作为返回值。
 
 (product '(1 2 3 4 5))  => 120
 
@@ -102,7 +103,7 @@ Rewrite the following expression in CPS to avoid using call/cc.
 但如果不改变原来实现的方式，也就是用map函数和CPS来实现的话就会相对麻烦，
 如果对CPS和Continuation理解不透彻的话会非常别扭，而且难以理解。
 
-Kent在 书中也给了提示：
+Kent在书中也给了提示：
 让我们看一下map1的实现，也就是说我们要实现一个可以传递 continuation 的map，
 然后在转换函数中选择不同的continuation来完成异常情况的检查与退出。
 

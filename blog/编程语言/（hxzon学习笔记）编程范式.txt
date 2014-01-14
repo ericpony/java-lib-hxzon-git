@@ -10,7 +10,7 @@
 
 逻辑编程。
 
-模板编程（C++）。
+模板编程（C++）。类似java中的泛型编程。
 
 ----
 reactive programming ，响应式编程。
@@ -25,6 +25,13 @@ actor 。
 =======
 非确定性计算。
 
+(amb e1 e2 e3 ...)
+上述表达式的返回值可能是e1，e2，e3... 中的某一个。
+(amb) 表示“失败”。
+
+一个amb表示一个选择点。
+非确定性求值器在遇到失败时，会自动尝试下一个返回值，
+当前选择点可能的返回值用尽时，会退到上一个选择点。
 
 =======
 continuation ，续延。
@@ -66,7 +73,7 @@ that will add 1 to whatever is used to fill its hole.
 
 把上面那个表达式写成这样： 
 
-(+ x (call/cc (lambda (k) (k (* y z))))) 
+(+ x (call/cc (lambda (k) (k (* y z))))) 	;hxzon：将 (* y z) 绑定到 k ，并且立即返回 k 。
 
 执行结果是一样的，那个k参数就代表获得的continuation。
 
@@ -94,4 +101,7 @@ python yield 。
 虽然执行流程仍按函数的流程执行，但每执行到一个 yield 语句就会中断，并返回一个迭代值，
 下次执行时从 yield 的下一个语句继续执行。
 看起来就好像一个函数在正常执行的过程中被 yield 中断了数次，每次中断都会通过 yield 返回当前的迭代值。
+
+=======
+monad
 
