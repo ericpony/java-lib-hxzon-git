@@ -1,0 +1,37 @@
+﻿Shake：所有的程序都可以是Clojure函数
+
+Posted on 2012/09/21 by nsun
+http://blog.clojure.cn/?p=20
+
+你也许听说了最近一个很酷的python库，叫做sh。
+他提供了一种便捷的方式在python中调用子进程。
+所有的程序都可以从sh这个命名空间下import，并作为python函数执行，参数和选项作为函数的参数传入。
+
+不过我认为在clojure里，同样的事情可以变得更酷。
+我们可以动态地为所有程序都创建一个引用（便于自动提示等）。
+还可以有一套更漂亮的DSL，避免把所有的参数都当成字符串（每次输入引号太麻烦）。
+比如，他应该像这个样子：
+
+(ls)
+(uname -a)
+(ip -4 addr)
+
+于是我做了这个库，名叫shake，正好也是这个样子。
+当你载入`shake.core`这个命名空间时，
+所有PATH下的可执行程序都被索引，转变成clojure里可引用的var。
+
+(use 'shake.core)
+(uname -a) ;; 返回一个 java.lang.Process，你可以操作他的in/out/err，等待退出
+ 
+;; 如果你只想看输出
+(alter-var-root *print-outpt* (fn [_] true))
+(uname -a)
+;; 打印输出 ...
+
+实现这个库有很多有趣的问题：
+首先，为了能让-a这样的符号可用，我们得把程序写成宏；
+其次，还得找到一种通过字符串作为名字动态创建var的方法。
+好在这些Clojure都可以做到！
+如果你感兴趣，可以去了解他的源码。
+https://github.com/sunng87/shake/
+
