@@ -31,5 +31,67 @@ The Reasoned Schemer
 https://github.com/mark-watson/Java-AI-Book-Code
 
 ----
-5，
+5，Conceptual Mathematics: A First Introduction to Categories
 
+=====
+Clojure Cookbook
+Clojure for Domain-specific Languages
+Clojure High Performance Programming
+Web Development with Clojure
+
+Dependency Injection with AngularJS
+
+Ext JS Data-driven Application Design
+
+Grails 2：A Quick-Start Guide
+
+Hadoop Cluster Deployment
+Java EE 7 First Look
+jQuery 2.0 Animation Techniques Beginner's Guide
+jQuery UI 1.10：The User Interface Library for jQuery
+Laravel Application Development Blueprints
+Lean Enterprise
+Learning Android Canvas
+Learning Android, 2nd Edition
+Learning jQuery Deferreds
+Learning Laravel 4 Application Development
+Learning Python Design Patterns
+Mastering HTML5 Forms
+Mastering Node.js
+Mastering Sublime Text
+Mobile First Bootstrap
+Node.js the Right Way
+
+Perl One-Liners
+Persistence in PHP with Doctrine ORM
+Python Data Visualization Cookbook
+Python High Performance Programming
+
+Real World OCaml
+
+Responsive Web Design with jQuery
+Sencha Touch 2 Mobile JavaScript Framework
+
+Seven Web Frameworks in Seven Weeks
+
+
+WordPress Web Application Development
+
+====
+1.Scala in Action
+
+2.Scala in Depth
+
+3.Functional Programming in Scala
+
+4.Akka in Action
+
+5.Netty in Action
+
+6.Lift in Action
+
+7.Play for Scala
+
+8.Scalatra in Action
+
+9.SBT in Action
