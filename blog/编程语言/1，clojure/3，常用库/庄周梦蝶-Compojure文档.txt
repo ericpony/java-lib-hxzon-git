@@ -1,0 +1,221 @@
+﻿庄周梦蝶-Compojure文档
+http://wiki.clojure.cn/index.php?title=Compojure%E6%96%87%E6%A1%A3
+
+（2014.1.14）
+====
+目录：
+
+1 简介
+2 开始入门
+
+3 Route细节
+3.1 匹配HTTP方法
+3.2 匹配URI
+3.3 解构请求
+3.4 返回一个Response
+3.5 嵌套Route
+
+4 解构语法
+4.1 普通的Clojure解构
+4.2 Compojure特有的解构
+
+====
+简介
+
+Compojure是Clojure上最流行的Web MVC框架。
+本文是Compojure wiki上的主要几个文档的翻译，原文链接 wiki。
+https://github.com/weavejester/compojure/wiki
+
+译者：dennis (killme2008@gmail.com, website)
+http://fnil.net/
+
+====
+开始入门
+
+最简单地入门compojure的方式是使用http://github.com/technomancy/leiningen, 它是标准的clojure构建工具。
+如果你还没有安装，请先下载并安装Leiningen。
+
+如果你仍然在使用Leiningen1，首先你需要跑一下下列命令:
+
+lein plugin install lein-newnew 0.2.6
+lein plugin install compojure/lein-template 0.2.0
+
+如果你正在使用Leiningen 2 preview版本，请不要跑上面的命令。
+这些插件会在你需要使用到的时候自动加载进来。
+
+接下来，使用compojure模板创建一个新项目:
+
+lein new compojure hello-world
+
+这将创建一个包含最小web应用的项目骨架。
+
+现在你可以进入项目目录，并使用Leiningen启动一个开发服务器：
+
+cd hello-world
+lein ring server
+
+开发服务器将找到一个空闲的端口并为你启动浏览器。
+如果你修改了源代码，它会自动重新为你加载。
+
+====
+Route细节
+
+Compojure的Route看起来是这个样子的：
+
+(GET "/user/:id" [id]
+  (str "<h1>Hello user " id "</h1>"))
+
+Route返回Ring的handler函数。
+除了它们的语法之外，没有任何魔术在里面。
+它们只是提供了定义处理HTTP请求函数的一种简洁方式。
+
+----
+匹配HTTP方法
+
+让我们过一遍来阐明这个语法。第一个symbol是：
+
+GET
+
+这是Compojure提供的很多宏当中的一个。
+这个宏会测试HTTP请求方法，如果HTTP方法不是"GET"，这个函数（译者注：指的是handler函数）返回nil。
+
+其他你可以用到的宏还有POST, PUT, DELETE和HEAD。
+如果你想匹配任何HTTP方法，可以使用ANY宏。
+
+----
+匹配URI
+
+接下来的部分是:
+
+"/user/:id"
+
+这是一个Clout定义的使用routing语法的字符串。
+这跟Ruby on Rails和Sinatra里用到的routing语法很相似。
+
+它会匹配请求的URI，:id部分匹配任何 "/"之后的子路径或者"."，然后将匹配的结果放入"id"参数。
+
+如果我们想更特殊一点的，我们还可以为参数提供一个自定义的正则表达式：
+
+["/user/:id", :id #"[0-9]+"]
+
+类似HTTP方法，如果URI不匹配预定义的路径，则route函数将返回nil。
+
+----
+解构请求
+
+当HTTP方法和URI都匹配之后：
+
+[id]
+
+宏的第二个参数提供了获取请求map信息的一种途径。
+这可以是一个你想要的参数vector，也可以是一个完整的Clojure解构式（destructuring form)。
+
+换句话说，上面的语法将符号id绑定到请求map里的"id"参数，
+在这里是由Clout的route字符串占据的。
+我们也可以使用一个标准的Clojure解构式:
+
+ {{id "id"} :params}
+
+这样提供了更多的控制，但是简洁程度就比不上vector语法。
+
+----
+返回一个Response
+
+当HTTP请求被匹配并解构之后，route剩下的部分就会被包装在一个隐式的do块里（译者注：类似let宏），就跟普通函数一样：
+
+(str "<h1>Hello user " id "</h1>"))
+
+返回值会被智能处理。这里返回的是一个字符串，将被转换为标准的应答：
+
+{:status 200
+ :headers {"Content-Type" "text/html"}
+ :body "<h1>Hello user 1</h1>"}
+
+compojure.response/render 多重函数可以将不同类型（字符串、map、文件等）处理转换成一个合适的应答。
+你可以重载它(overriden）来提供私有类型的自定义渲染。
+
+----
+嵌套Route
+
+Route可以使用context宏来嵌套起来：
+
+(defroutes main-routes
+  (context "/api" [] api-routes)
+  other-routes)
+
+(defroutes api-routes
+  (GET "/something" [] ...))   ; matches /api/something
+
+====
+解构语法
+
+Compojure提供两种解构：
+
+Clojure式的, 正如你在let special form中使用的, 以及
+Compojure特有的方式，被设计用来解析请求map:
+查询字符串（和表单）参数，以及
+URL路径部分（译者注：称为route参数）
+
+----
+普通的Clojure解构
+
+如果你提供一个map或者符号，Clojure的解构语法将被作用在Ring的请求map上。
+例如，下面是你使用Clojure语法将一个特定参数绑定到一个变量上面：
+
+(GET "/:foo" {{foo :foo} :params}
+  (str "Foo = " foo))
+
+----
+Compojure特有的解构
+
+因为普通的解构显得非常繁琐累赘，Compojure为解构提供了一种更特别的方式。
+如果你提供的是一个vector，Compojure将使用自有的解构语法。
+上面的例子可以被简洁地改写为:
+
+(GET "/:foo" [foo]
+  (str "Foo = " foo))
+
+Compojure的参数解构语法拥有三种功能。
+首先是直接绑定同名符号的参数。举例来说，假设我们有下面的请求map：
+
+{:request-method :get
+ :uri "/foobar"
+ :headers {}
+ :params {:x "foo", :y "bar", :z "baz", :w "qux"}}
+
+那么我们将可以使用一个符号组成的vector来绑定每个参数：
+
+[x y z]
+x -> "foo"
+y -> "bar"
+z -> "baz"
+
+没有分配的参数，可以使用"&"符号紧接着一个变量名来绑定:
+
+[x y & z]
+x -> "foo"
+y -> "bar"
+z -> {:z "baz", :w "qux"}
+
+这个行为跟正常Clojure绑定中的"&"行为是相似的。
+不同点在于Clojure绑定是获取list没有绑定剩下的部分，而我们则是获取map没有绑定的剩余部分。
+
+最后，我们可以使用:as关键字将整个请求map赋给一个符号：
+
+[x y :as r]
+x -> "foo"
+y -> "bar"
+r -> {:request-method :get
+      :uri "/foobar"
+      :headers {}
+      :params {:x "foo", :y "bar", :z "baz", :w "qux"}}
+
+你也可以将一个Clojure的解构map绑定到:as关键字：
+
+[x y :as {u :uri}]
+x -> "foo"
+y -> "bar"
+u -> "/foobar"}
+
+
+本页面最后修改于2013年1月7日 (星期一) 09:28。

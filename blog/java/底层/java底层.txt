@@ -1,0 +1,12 @@
+﻿java底层
+
+Java垃圾回收精粹 — Part4
+http://www.importnew.com/8352.html
+
+成为JavaGC专家Part I — 深入浅出Java垃圾回收机制
+http://www.importnew.com/1993.html
+
+在运行期通过反射了解JVM内部机制
+http://www.importnew.com/8631.html
+
+

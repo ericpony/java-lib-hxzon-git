@@ -1,0 +1,103 @@
+﻿危险代码：如何使用Unsafe操作内存中的Java类和对象—Part1
+http://www.importnew.com/7844.html
+
+让我们开始展示内存中Java类和对象结构
+
+你可曾好奇过Java内存管理核心构件？你是否问过自己某些奇怪的问题，比如：
+
+一个类在内存中占据多少空间？
+我的对象在内存中消耗了多少空间？
+对象的属性在内存中是如何被布局的？
+
+如果这些问题听起来很熟悉，那么你就想到了点子上。
+对于像我们这样的在RebelLabs的Java极客来说，这些难解的谜题已经在我们脑海中缠绕了很长时间：
+如果你对探究类检测器感兴趣，想知道如何布局让所有的类更容易地从内存中取到指定变量，
+或是想在系统运行时侵入内存中的这些字段。
+这就意味着你能切实改变内存中的数据甚至是代码！
+
+其它可能勾起你兴趣的知识点有，“堆外缓存”和“高性能序列化”的实现。
+这是一对构建在对象缓存结构上很好的实例，揭示了获取类和实例内存地址的方法，
+缓存中类和实例的布局以及关于对象成员变量布局的详细解释。
+我们希望尽可能简单地阐释这些内容，
+但是尽管如此，这篇文章并不适合Java初学者，它要求具备对Java编程原理有一定的了解。
+
+注意：下面关于类和对象的布局所写的内容特指Java SE 7，
+所以不推荐使用者想当然地认为这些适用于过去或将来的Java版本。
+方便起见，我们在GitHub项目上发布了这篇文章的示例代码，可以在这里找到 
+https://github.com/serkan-ozal/ocean-of-memories/tree/master/src/main/java/com/zeroturnaround/rebellabs/oceanofmemories/article1。
+
+在Java中最直接的内存操作方法是什么？
+
+Java最初被设计为一种安全的受控环境。
+尽管如此，Java HotSpot还是包含了一个“后门”，
+提供了一些可以直接操控内存和线程的低层次操作。
+这个后门类——sun.misc.Unsafe——被JDK广泛用于自己的包中，如java.nio和java.util.concurrent。
+但是丝毫不建议在生产环境中使用这个后门。
+因为这个API十分不安全、不轻便、而且不稳定。
+这个不安全的类提供了一个观察HotSpot JVM内部结构并且可以对其进行修改。
+有时它可以被用来在不适用C++调试的情况下学习虚拟机内部结构，有时也可以被拿来做性能监控和开发工具。
+
+为何变得不安全
+
+sun.misc.Unsafe这个类是如此地不安全，以至于JDK开发者增加了很多特殊限制来访问它。
+它的构造器是私有的，工厂方法getUnsafe()的调用器只能被Bootloader加载。
+如你在下面代码片段的第8行所见，这个家伙甚至没有被任何类加载器加载，所以它的类加载器是null。
+它会抛出SecurityException 异常来阻止侵入者。
+
+
+public final class Unsafe {
+   ...
+   private Unsafe() {}
+   private static final Unsafe theUnsafe = new Unsafe();
+   ...
+   public static Unsafe getUnsafe() {
+      Class cc = sun.reflect.Reflection.getCallerClass(2);
+      if (cc.getClassLoader() != null)
+          throw new SecurityException("Unsafe");
+      return theUnsafe;
+   }
+   ...
+}
+
+
+幸运的是这里有一个Unsafe的变量可以被用来取得Unsafe的实例。
+我们可以轻松地编写一个复制方法通过反射来实现，如下所示：
+（http://highlyscalable.wordpress.com/2012/02/02/direct-memory-access-in-java/）
+
+
+public static Unsafe getUnsafe() {
+   try {
+           Field f = Unsafe.class.getDeclaredField("theUnsafe");
+           f.setAccessible(true);
+           return (Unsafe)f.get(null);
+   } catch (Exception e) { 
+       /* ... */
+   }
+}
+
+Unsafe一些有用的特性
+
+虚拟机“集约化”（VM intrinsification）：
+如用于无锁Hash表中的CAS（比较和交换）。
+再比如compareAndSwapInt这个方法用JNI调用，包含了对CAS有特殊引导的本地代码。
+在这里你能读到更多关于CAS的信息：http://en.wikipedia.org/wiki/Compare-and-swap。
+
+主机虚拟机（译注：主机虚拟机主要用来管理其他虚拟机。
+而虚拟平台我们看到只有guest VM）
+的sun.misc.Unsafe功能能够被用于未初始化的对象分配内存（用allocateInstance方法），
+然后将构造器调用解释为其他方法的调用。
+
+你可以从本地内存地址中追踪到这些数据。
+使用java.lang.Unsafe类获取内存地址是可能的。
+而且可以通过unsafe方法直接操作这些变量！
+使用allocateMemory方法，内存可以被分配到堆外。
+例如当allocateDirect方法被调用时DirectByteBuffer构造器内部会使用allocateMemory。
+arrayBaseOffset和arrayIndexScale方法可以被用于开发arraylets，
+一种用来将大数组分解为小对象、限制扫描的实时消耗或者在大对象上做更新和移动。
+
+在下一篇中，由于可以在类中获取内存地址，我们将给出一些使用“Unsafe”的实例。
+ 
+  
+原文链接： zeroturnaround 翻译： ImportNew.com - 吴际
+译文链接： http://www.importnew.com/7844.html
+

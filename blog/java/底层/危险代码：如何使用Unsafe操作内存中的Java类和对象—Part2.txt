@@ -1,0 +1,153 @@
+﻿危险代码：如何使用Unsafe操作内存中的Java类和对象—Part2
+
+
+普通对象指针和压缩普通对象指针
+
+堆中的Java对象使用普通对象指针（OOP）来表示的。
+OOP是指向Java堆内部某一内存地址的管理指针，在JVM处理器的虚地址空间中是一块单独的连续地址区域。
+
+OOP通常和机器指针大小相同，在一个LP64的系统中就是64比特。
+在一个ILP32系统中，堆最大尺寸比40亿字节稍微少一点，足以满足大多数应用了。
+
+译注：32位环境涉及”ILP32″数据模型，是因为C数据类型为32位的int、long、指针。
+而64位环境使用不同的数据模型，此时的long和指针已为64位，故称作”LP64″数据模型。
+
+Java堆中的管理指针指向8字节对齐对象
+（https://wikis.oracle.com/display/HotSpotInternals/CompressedOops ）。
+在大多数情况下，压缩普通对象指针代表了JVM中从64比特的堆基地址偏移32比特的对象管理指针。
+因为它们都是对象偏移而不是字节偏移，所以可以用于寻址40亿对象或者320亿字节的堆大小。
+使用时，必须乘以8并且加上Java堆的基地址去定位对象的位置。
+使用压缩普通对象指针的对象大小和ILP32系统差不多。
+
+在Java v6u23及以后的版本中，支持并且默认启用压缩普通对象指针。
+在Java v7中，当没有指定”-Xmx”时，64比特
+JVM处理器默认使用压缩普通对象指针；
+指定”-Xmx”时小于320亿字节。
+在6u23版本之前的JDK 6，在Java命令中使用”-XX:+UseCompressedOops”标志启用这一特性
+（http://docs.oracle.com/javase/7/docs/technotes/guides/vm/performance-enhancements-7.html ）。
+
+在我们的示例中，通过“-XX:-UseCompressedOops” 关闭了压缩普通对象指针功能，所以64bit的指针大小就是8字节。
+
+关于示例类的一些事
+
+在这篇文章中，我们将使用一个示例类（SampleClass）展示对象地址恢复、列出字段布局等。
+这是一个简单类，包含了三个基本数据类型并且继承了SampleBaseClass，用来展示继承的内存布局。
+示例类的定义如下，示例代码可以在GitHub上找到：
+
+
+public final class SampleClass extends SampleBaseClass {
+ 
+    private final static byte b = 100;
+ 
+    private int i = 5;
+    private long l = 10;
+ 
+    public SampleClass() {
+ 
+    }
+ 
+    public SampleClass(int i, long l) {
+        this.i = i;
+        this.l = l;
+    }
+ 
+    public int getI() {
+        return i;
+    }
+ 
+    public void setI(int i) {
+        this.i = i;
+    }
+ 
+    public long getL() {
+        return l;
+    }
+ 
+    public void setL(long l) {
+        this.l = l;
+    }
+ 
+    public static byte getB() {
+        return b;
+    }
+}
+
+public class SampleBaseClass {
+ 
+    protected short s = 20;
+}
+
+要得到Java类的内存地址没有简便方法。
+为了得到地址，必须使用一些技巧并且做一些牺牲！
+本文会介绍两种获得Java类内存地址的办法。
+
+方法一
+
+在JVM中，每个对象都一个指向类的指针。
+但是只指向具体类，不支持接口或抽象类。
+如果我们得到一个对象的内存地址，就可以很容易地找到类的地址。
+这种方法对于那些可以创建实例的类来说非常有用。
+但是接口或抽象类不能使用这种方法。
+http://hg.openjdk.java.net/jdk7/hotspot/hotspot/file/9b0ca45cd756/src/share/vm/oops/oop.hpp
+
+For 32 bit JVM:
+	_mark	: 4 byte constant
+	_klass	: 4 byte pointer to class 
+
+For 64 bit JVM:
+	_mark	: 8 byte constant
+	_klass	: 8 byte pointer to class
+
+For 64 bit JVM with compressed-oops:
+	_mark	: 8 byte constant
+	_klass	: 4 byte pointer to class
+
+内存中对象的第二个字段（对32位JVM偏移是4，64位JVM偏移是8）指向了内存中的类定义。
+你可以使用“sun.misc.Unsafe” 类得到此偏移的内存值。
+这里用到的是在上一篇中提到的SampleClass。
+
+For 32 bit JVM:
+	SampleClass sampleClassObject = new SampleClass();
+	int addressOfSampleClass = unsafe.getInt(sampleClassObject, 4L);
+
+For 64 bit JVM:
+	SampleClass sampleClassObject = new SampleClass();
+	long addressOfSampleClass = unsafe.getLong(sampleClassObject, 8L);
+
+For 64 bit JVM with compressed-oops:
+	SampleClass sampleClassObject = new SampleClass();
+	long addressOfSampleClass = unsafe.getInt(sampleClassObject, 8L);
+
+方法2
+
+使用这种方法，可以得到任何类的内存地址（包括接口、注解、抽象类和枚举）。
+Java7中类定义的内存地址结构如下：
+32位JVM的地址偏移从第4到80字节，64位JVM的地址偏移从8字节到160字节，
+压缩普通对象指针的地址偏移从第4到84字节。
+
+没有预先定义好的偏移，但是在类文件解析器中作为“隐藏”字段给出了注释
+（这里实际上有3个字段：class, arrayClass, resolvedConstructor）。
+因为在java.lang.Class中有18个非静态引用字段，他们只是恰好表示了这段偏移。
+
+更多信息可以参见ClassFileParser::java_lang_Class_fix_pre() 和JavaClasses::check_offsets()。
+文档地址：
+http://hg.openjdk.java.net/jdk7/hotspot/hotspot/file/9b0ca45cd756/src/share/vm/classfile/ .
+
+获取内存地址的示例代码如下：
+
+For 32 bit JVM:
+	int addressOfSampleClass = unsafe.getInt(SampleClass.class, 80L);
+
+For 64 bit JVM:
+	long addressOfSampleClass = unsafe.getLong(SampleClass.class, 160L);
+
+For 64 bit JVM with compressed-oops:
+	long addressOfSampleClass = unsafe.getInt(SampleClass.class, 84L);
+
+下一篇会讲解如何得到内存对象地址，敬请期待。
+
+ 
+  
+原文链接： zeroturnaround 翻译： ImportNew.com - 吴功伟
+译文链接： http://www.importnew.com/8488.html
+
