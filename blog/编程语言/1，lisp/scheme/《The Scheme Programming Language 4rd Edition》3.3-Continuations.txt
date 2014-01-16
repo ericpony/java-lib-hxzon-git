@@ -2,6 +2,11 @@
 
 翻译 by hxzon
 
+hxzon摘要：
+
+1，断点库。
+2，多任务。
+
 ====
 Section 3.3. Continuations
 
@@ -129,10 +134,10 @@ returns to the continuation while control remains within the procedure passed to
 
 ----
 The following example uses the continuation after this procedure has already returned.
-下面的例子，在过程已返回后使用续延。
+下面的例子，在过程已返回后使用续延。（hxzon：何以见得“已返回后”？）
 
-(let ([x (call/cc (lambda (k) k))])
-  (x (lambda (ignore) "hi"))) 	; "hi"
+(let ( [x   (call/cc (lambda (k) k) )  ] )
+  (x  (lambda (ignore) "hi")  )) 	; "hi"		;给 x 传递一个匿名函数。
 
 The continuation captured by this invocation of call/cc may be described as 
 "Take the value, bind it to x, and apply the value of x to the value of (lambda (ignore) "hi")." 
@@ -148,40 +153,44 @@ The procedure ignores its argument and returns "hi".
 The following variation of the example above 
 is probably the most confusing Scheme program of its size; 
 it might be easy to guess what it returns, but it takes some thought to figure out why.
+上面的例子很容易猜到它的返回值，但需要一些思考才能理解为何如此。
 
-(((call/cc (lambda (k) k)) (lambda (x) x)) "HEY!") 	; "HEY!"
+(   (   (call/cc (lambda (k) k))    ;捕获到一个续延，这个续延会返回续延自己本身。
+        (lambda (x) x)  )       ;给上面的续延传递一个匿名函数。
+    "HEY!") 	; "HEY!"
 
 The value of the call/cc is its own continuation, as in the preceding example.
-call/cc 的值是它拥有的续延。 
+上面例子中， call/cc 的值是它拥有的续延。 
 This is applied to the identity procedure (lambda (x) x), 
 so the call/cc returns a second time with this value.
 这个续延被应用到过程 identity ，即  (lambda (x) x)  ，所以 call/cc 再一次返回这个值。
 Then, the identity procedure is applied to itself, yielding the identity procedure.
-过程 
+给这个过程 传递它自己作为参数，所以又返回自己。 
 This is finally applied to "HEY!", yielding "HEY!".
+最后，这个过程传递 "HEY!" 作为它的参数，所以返回 "HEY!" 。
 
 ----
 Continuations used in this manner are not always so puzzling. 
 Consider the following definition of factorial that 
 saves the continuation at the base of the recursion before returning 1,
 by assigning the top-level variable retry.
-在返回1之前，保存这个续延到全局变量 retry 。 
+下面的阶乘函数，
+在返回1之前，保存一个续延到全局变量 retry 。 
 
 (define retry #f) 
 
-;阶乘：
-
+;阶乘函数：
 (define factorial
   (lambda (x)
     (if (= x 0)
-        (call/cc (lambda (k) (set! retry k) 1))		;当 x 为 0 时，将续延赋值给 retry 。
-        (* x (factorial (- x 1))))))
+        (call/cc (lambda (k) (set! retry k) 1)  )		;当 x 为 0 时（即终止时），将续延赋值给 retry 。
+        (* x (factorial (- x 1)))  )))
 
 With this definition, factorial works as we expect factorial to work, 
 except it has the side effect of assigning retry.
 
 (factorial 4) 	; 24 ;1*2*3*4
-(retry 1) 	; 24
+(retry 1) 	; 24    ;为何这个续延会将值乘以传给续延的参数？
 (retry 2) 	; 48
 
 The continuation bound to retry might be described as 
@@ -190,7 +199,8 @@ The continuation bound to retry might be described as
 
 If we pass the continuation a different value, i.e., not 1, 
 we will cause the base value to be something other than 1 and hence change the end result.
-使得基础值不再是1，所以最终值改变。
+如果我们给这个续延传递不同的值，不再是1，
+会使得基础值不再是1，最终得到不同的结果。
 
 (retry 2) 	; 48
 (retry 5) 	; 120
@@ -212,34 +222,39 @@ Since it is nonpreemptive, it requires that each process voluntarily "pause" fro
 in order to allow the others to run.
 因为它是非抢占式的，所以需要每个进程自己暂停，使得其它代码可以运行。
 
+;定义任务队列。
 (define lwp-list '())
 
+;往队列中添加任务。
 (define lwp
   (lambda (thunk)
     (set! lwp-list (append lwp-list (list thunk))))) 
 
+;从队列中取出头部并运行。
 (define start
   (lambda ()
     (let ([p (car lwp-list)])
       (set! lwp-list (cdr lwp-list))
       (p))))
 
+;关键。
 (define pause
   (lambda ()
     (call/cc
       (lambda (k)
-        (lwp (lambda () (k #f)))
-        (start)))))
+        (lwp (lambda () (k #f)))    ;给队列中添加一个任务（匿名函数），这个任务会将续延赋值成逻辑假。
+        (start)))  ))
 
 The following light-weight processes cooperate to print an infinite sequence of lines containing "hey!".
 下面的程序将打印出无限的行序列。
 
-(lwp (lambda () (let f () (pause) (display "h") (f))))
+(lwp (lambda () ;添加任务
+        (let f () (pause) (display "h") (f))))
 (lwp (lambda () (let f () (pause) (display "e") (f))))
 (lwp (lambda () (let f () (pause) (display "y") (f))))
 (lwp (lambda () (let f () (pause) (display "!") (f))))
 (lwp (lambda () (let f () (pause) (newline) (f))))
-(start) 	
+(start)
 ; hey!
 ; hey!
 ; hey!
