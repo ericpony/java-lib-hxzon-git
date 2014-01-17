@@ -34,6 +34,9 @@ Brackets are often used in place of parentheses to delimit the bindings of a let
         (cons (car (cdr list1))
               (car (cdr list2))))) <graphic> ((a . d) b . e)
 
+定义本地函数：
+(let f (p1 p2) body1 body2 ...)
+
 --
 let*，后续的局部变量可以引用前边的局部变量。
 

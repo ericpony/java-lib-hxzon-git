@@ -249,7 +249,8 @@ The following light-weight processes cooperate to print an infinite sequence of 
 下面的程序将打印出无限的行序列。
 
 (lwp (lambda () ;添加任务
-        (let f () (pause) (display "h") (f))))
+        (let f () 	;定义内部函数f，方便自引用
+        	(pause) (display "h") (f))))
 (lwp (lambda () (let f () (pause) (display "e") (f))))
 (lwp (lambda () (let f () (pause) (display "y") (f))))
 (lwp (lambda () (let f () (pause) (display "!") (f))))
