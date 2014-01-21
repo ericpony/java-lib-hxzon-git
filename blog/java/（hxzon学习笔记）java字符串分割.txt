@@ -51,3 +51,9 @@ public class TestStringSplit
 3,de|
 4,-f|
 5,g|
+
+=====
+按换行符分割
+
+"a\nb\nc\n".split("\\\n");
+
