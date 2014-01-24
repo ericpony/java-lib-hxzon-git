@@ -15,6 +15,7 @@ Testing with AngularJS 52
 Karma  52
 Unit Tests 54
 End-to-End/Integration Tests  55
+端到端集成测试。
 Compilation 57
 Other Awesome Tools  59
 Debugging  59
@@ -30,6 +31,7 @@ Integrating AngularJS with RequireJS  67
 
 ====
 Developing in AngularJS
+
 By now we have delved a little bit into the cogs that make up AngularJS. We now know
 how to get data from the user into our application, how to display text, and how to do
 some funky stuff with validation, filtering, and even changing the DOM. But how do
