@@ -1,0 +1,587 @@
+﻿《angularjs》第7章-其他注意点
+
+注释 by hxzon
+====
+目录：
+
+$location 137
+HTML5 Mode and Hashbang Mode  140
+AngularJS Module Methods 142
+Where’s the Main Method? 142
+Loading and Dependencies  143
+Convenience Methods 144
+Communicating Between Scopes with $on, $emit, and $broadcast  146
+Cookies  148
+Internationalization and Localization 148
+What Can I Do in AngularJS?  149
+How Do I Get It All Working?  149
+Common Gotchas 150
+Sanitizing HTML & the Sanitize Module 150
+Linky  152
+
+====
+Other Concerns
+In this chapter, we will take a look at some other useful features that are present in
+AngularJS, but weren’t covered at all or in depth in the chapters and examples so far.
+$location
+Up to now, you have seen quite a few examples of the $locationservice in AngularJS.
+Most of them would have been fleeting glances—an access here, set there. In this section,
+we will dive into what exactly the $location service in AngularJS is for, and when you
+should and shouldn’t use it.
+The $location  service is a wrapper around the window.location  that is present in any
+browser. So why would you want to use it instead of working directly with window.lo
+cation?
+Goodbye global state
+window.locationis a prime example of global state (actually, both window and
+document objects in the browser are prime examples). The minute you have global
+state in your application, testing, maintaining and working with it becomes a hassle
+(if not now, then definitely in the long run). The $location service hides this nas‐
+tiness (what we call global state), and allows you to test the browser’s location details
+by injecting mocks during your unit tests.
+API
+window.locationgives you total access to the contents of the browser location.
+That is,  window.locationgives you the string while  $locationgives you nice,
+jQuery-like setters and getters to work with it in a clean way.
+
+AngularJS integration
+If you use  $location, you can use it however you want. But with  window.loca
+tion, you would have to be responsible for notifying AngularJS of changes, and
+listen to changes as well.
+HTML5 integration
+The $location service is smart enough to realize when HTML5 APIs are available
+within a browser and use them. If they’re not available, it will fall back to the default
+usage.
+So when should you use the $locationservice? Any time you want to react to a change
+in the URL (that is not covered by the  $routes, which you should primarily use for
+working with URL-based views), as well as effect a change in the current URL in the
+browser.
+Let’s consider a small example of how you would use the $locationservice in a realworld application. Consider a case where we have a  datepicker, and when a date is
+selected, the app navigates to a certain URL. Let us take a look at how that might look:
+// Assume that the datepicker calls $scope.dateSelected with the date
+$scope.dateSelected = function(dateTxt) {
+$location.path('/filteredResults?startDate=' + dateTxt);
+// If this were being done in the callback for
+// an external library, like jQuery, then we would have to
+$scope.$apply();
+};
+To $apply, or Not to $apply?
+There is confusion amongst AngularJS developers about when  $scope.$apply()  should
+be called and when it shouldn’t. Recommendations and rumors on the Internet are
+rampant. This section will make it crystal clear.
+But first, let us try to put $applyin a simpler form.
+Scope.$apply  is like a lazy worker. It is told to do a lot of work, and it is responsible for
+making sure that the bindings are updated and the view reflects all those changes. But
+rather than doing this work all the time, it does it only when it feels it has enough work
+to be done. In all other cases, it just nods, and notes the work for later. It only actually
+does the work when you get its attention and tell it explicitly to work. AngularJS does
+this internally at regular intervals within its lifecycle, but if the call comes from outside
+(say a jQuery UI event),  scope.$applyjust takes note, but does nothing. That is why
+we have to call scope.$applyto tell it, “Hey! You need to do this right now, and not
+wait!”
+Here are four quick tips about when (and how) to call $apply.
+
+• DO NOTcall it all the time. Calling  $applywhen AngularJS is happily ticking away
+(in its  $digestcycle, as we call it) will cause an exception. So “better safe than sorry”
+is not the approach you want to use.
+• DO CALL it when controls outside of AngularJS (DOM events, external callbacks
+such as jQuery UI controls, and so on) are calling AngularJS functions. At that
+point, you want to tell AngularJS to update itself (the models, the views, and so on),
+and $applydoes just that.
+• Whenever possible, execute your code or function by passing it to $apply, rather
+than executing the function and then calling  $apply(). For example, execute the
+following code:
+$scope.$apply(function() {
+$scope.variable1 = 'some value';
+executeSomeAction();
+});
+instead of the following:
+$scope.variable1 = 'some value';
+executeSomeAction();
+$scope.$apply();
+While both of these will have the same effect, they differ in one significant way.
+The first will capture any errors that happen when executeSomeActionis called, while
+the latter will quietly ignore any such errors. You will get error notifications from An‐
+gularJS only when you do the first.
+• Consider using something like safeApply:
+$scope.safeApply = function(fn) {
+var phase = this.$root.$$phase;
+if(phase == '$apply' || phase == '$digest') {
+if(fn && (typeof(fn) === 'function')) {
+fn();
+}
+} else {
+this.$apply(fn);
+}
+};
+You can monkey patch this into the topmost scope or the rootscope, and then use the
+$scope.$safeApply  function everywhere. This has been under discussion, and hope‐
+fully in a future release, this will be the default behavior.
+
+What are those other methods also available on the $locationobject?  T able 7-1  contains
+a quick summary for you to use in a bind.
+Let us take a look at how the $location service would behave, if the URL in the browser
+was http://www.host.com/base/index.html#!/path?param1=value1#hashValue.
+Table 7-1. Functions on the $location service
+Getter Function Getter Value Setter Function
+absUrl() http://www.host.com/base/index.html#!/path?param1=value1#hashValue N/A
+hash() hashValue hash('newHash')
+host() www.host.com N/A
+path() /path path('/newPath')
+protocol() http N/A
+search() {'a’: ‘b'} search({'c’: ‘def'})
+url() /path?param1=value1?hashValue url('/newPath?p2=v2')
+The Setter Function column in T able 7-1 has some sample values that denote the type
+of object the setter function expects.
+Note that the search()setter has a few modes of operation:
+• Calling search(searchObj)with an object<string, string>basically denotes
+all the parameters and their values
+• Calling search(string) will set the URL params as q=Stringdirectly in the URL
+• Calling search(param, value)with a string and value sets (or calling with null
+removes) a particular search parameter in the URL
+Using any one of the setters does not mean that window.location will get changed in‐
+stantly! The $locationservice plays well with the Angular lifecycle, so all changes to
+the location will accumulate and get applied together at the end of the cycle. So feel free
+to make those changes, one after the other, without fear that the user will see a URL that
+keeps flickering and changing underneath him.
+HTML5 Mode and Hashbang Mode
+The $location service can be configured using the $locationProvider (which can be
+injected, just like everything else in AngularJS). Of particular interest are two properties
+on this provider, which are:
+html5Mode
+A boolean value which dictates whether the $locationservice works in HTML5
+mode or not
+
+hashPrefix
+A string value (actually a single character) that is used as the prefix for Hashbang
+URLs (in Hashbang mode or legacy browsers in HTML5 mode). By default it is
+empty, so Angular’s hash is just ‘’. If the hashPrefix is set to ‘!’, then Angular uses
+what we call Hashbang URLs (! followed by the url).
+You might ask, just what are these modes? Well, pretend that you have this super
+awesome website at www.superawesomewebsite.comthat uses AngularJS.
+Let’s say you have a particular route (with some parameters and a hash), such as /
+foo?bar=123#baz.
+In normal Hashbang mode (with the hashPrefix set to ‘!’), or in legacy browsers
+without HTML5 mode support, your URL would look something like:
+http://www.superawesomewebsite.com/#!/foo?bar=123#baz
+While in HTML5 mode, the URL would simply look like this:
+http://www.superawesomewebsite.com/foo?bar=123#baz
+In both cases,  location.path()would be /foo,  location.search()  would be
+bar=123, and location.hash()  would be baz. So if that is the case, why wouldn’t
+you want to use the HTML5 mode?
+The Hashbang approach works seamlessly across all browsers, and requires the least
+amount of configuration. You just need to set the  hashBangprefix (! by default) and
+you are good to go.
+The HTML5 mode, on the other hand, talks to the browser URL through the use
+of HTML5 History API. The  $locationservice is smart enough to figure out
+whether HTML5 mode is supported or not, and fall back to the Hashbang approach
+if necessary, so you don’t need to worry about additional work. But you do have to
+take care of the following:
+Server-side configuration
+Because HTML5 links look like any other URL on your application, you need to
+take care on the server side to route all links within your app to your main HTML
+(most likely, the  index.html). For example, if your app is the landing page for  su‐
+perawesomewebsite.com, and you have a route /amazing?who=me in your app, then
+the URL that the browser would show is  http://www.superawesomewebsite.com/
+amazing?who=me+.
+When you browse through your app, this will be fine, as the HTML5 History API
+kicks in and takes care of things. But if you try to browse directly to this URL, your
+server will look at you as if you have gone crazy, as there is no such known resource
+on its side. So you would have to ensure that all requests to /amazingget redirected
+to /index.html#!/amazing.
+
+AngularJS will kick in from that point onward and take care of things. It will detect
+changes to the path and redirect to the correct AngularJS routes that were defined.
+Link rewriting
+You can easily specify URLs as follows:
+<a href="/some?foo=bar">link</a>
+Depending on whether you are using HTML5 mode or not, AngularJS will take
+care to redirect to  /some?foo=baror  index.html#!/some?foo=bar, respectively. No
+additional steps are required on your part. Awesome, isn’t it?
+But the following types of links will not be rewritten, and the browser will perform
+a full reload on the page:
+a. Links that contain a target elementsuch as the following:
+<a href="/some/link" target="_self">link</a>
+b. Absolute links going to a different domain:
+<a href="http://www.angularjs.org">link</a>
+This is different because it is an absolute URL, while the previous example used
+the existing base URL.
+c. Links starting with a different base path when one is already defined:
+<a href="/some-other-base/link">link</a>
+Relative Links
+Be sure to check all relative links, images, scripts, and so on. You must either specify
+the URL base in the head of your main HTML file (<base href="/my-base">), or
+you must use absolute URLs (starting with /) everywhere because relative URLs will
+be resolved to absolute URLs using the initial absolute URL of the document, which
+is often different from the root of the application.
+Running Angular apps with the History API enabled from document root is
+strongly encouraged, as it takes care of all relative link issues.
+AngularJS Module Methods
+The AngularJS Module is responsible for defining how your application is bootstrapped.
+It also declaratively defines the pieces of your application. Let us take a look at how it
+accomplishes this.
+Where’s the Main Method?
+Those of you coming from a programming language like Java or even Python might be
+wondering, where is that main method in AngularJS? You know, the one that bootstraps
+
+everything, and is the first thing to get executed? The one that functions in JavaScript
+and instantiates and wires everything together, then tells your application to go run?
+AngularJS doesn’t have that. What it has instead is the concept of modules. Modules
+allow us to declaratively specify our application’s dependencies, and how the wiring and
+bootstrapping happens. The reason for this kind of approach is manifold:
+1. It is declarative. That means it is written in a way that is easier to write and under‐
+stand. It reads like English!
+2. It is  modular. It forces you to think about how you define your components and
+dependencies, and makes them explicit.
+3. It allows for  easy testing. In your unit tests, you can selectively pull in modules, and
+avoid the untestable portions of your code. And in your scenario tests, you can load
+additional modules, which can make working with some components easier.
+Let us first take a look at how you would use a module that you have defined, then take
+a look at how we would declare one.
+Say we have a module, in fact, the module for our application, called “MyAwesomeApp.”
+In my HTML, I could just add the following to the <html>tag (or technically, any other
+tag):
+<html ng-app="MyAwesomeApp">
+The ng-app  directive tells AngularJS to bootstrap your application using the MyAwe‐
+someApp module.
+So how would that module be defined? Well, for one, we recommend that you have
+separate modules for your services, directives, and filters. Your main module could then
+just declare the other modules as a dependency (just like we did in Chapter 4with the
+RequireJS example).
+This makes it easier to manage your modules, as they are nice complete chunks of code.
+Each module has one and only one responsibility. This also allows your tests to load
+only the modules they care about, and thus reduces the amount of initialization that
+needs to happen. The tests can be small and focused.
+Loading and Dependencies
+Module loading happens in two distinct phases, and the functions reflect them. These
+are the Config and the Run blocks (or phases):
+The Config block
+AngularJS hooks up and registers all the providers in this phase. Because of this,
+only providers and constants can be injected into Config blocks. Services that may
+or may not have been initialized cannot be injected.
+
+The Run block
+Run blocks are used to kickstart your application, and start executing after the
+injector is finished creating. To prevent further system configuration from hap‐
+pening from this point onwards, only instances and constants can be injected into
+Run blocks. The Run block is the closest you are going to find to a main method in
+AngularJS.
+Convenience Methods
+What can you do with a module? We can instantiate controllers, directives, filters, and
+services, but the module class allows you to do more, as you can see in Table 7-2:
+Table 7-2. Module configuration methods
+API Method Description
+config(configFn) Use this method to register work that needs to be done when the module is
+loading.
+constant(name, object) This happens first, so you can declare all your constants app-wide, and have
+them available at all configuration (the first method in this list) and instance
+methods (all methods from here on, like controller, service, and so on).
+controller(name, constructor) We have seen a lot of examples of this; it basically sets up a controller for use.
+directive(name, directiveFactory) As discussed in Chapter 6, this allows you to create directives within your
+app.
+filter(name, filterFactory) Allows you to create named AngularJS filters, as discussed in previous
+chapters.
+run(initializationFn) Use this method when you want to perform work that needs to happen once
+the injector is set up, right before your application is available to the user.
+value(name, object) Allows values to be injected across the application.
+service(name, serviceFactory) Covered in the next section.
+factory(name, factoryFn) Covered in the next section.
+provider(name, providerFn) Covered in the next section.
+You might realize that we are missing the details of three particular API calls—Factory,
+Provider , and Service—from the preceding table. There is a reason for that: it is quite
+easy to confuse the usage between the three, so we will dive into a small example that
+should better illustrate when (and how!) to use each one.
+The Factory
+The Factory API call is used whenever we have a class or object that needs some
+amount of logic or parameters before it can be initialized. A Factory is a function
+that is responsible for creating a certain value (or object). Let us take the example
+of a greeter function that needs to be initialized with its salutation:
+function Greeter(salutation) {
+this.greet = function(name) {
+
+return salutation + ' ' + name;
+};
+}
+The greeter factory would look something like:
+myApp.factory('greeter', function(salut) {
+return new Greeter(salut);
+});
+and it would be called as:
+var myGreeter = greeter('Halo');
+The Service
+What about services? Well, the difference between a Factory and a Service is that
+the Factory invokes the function passed to it and returns a result. The Service in‐
+vokes “new” on the constructor method passed to it and returns the result.
+So the preceding greeter Factory could be replaced with a greeter Service as follows:
+myApp.service('greeter', Greeter);
+Every time I asked for a greeter, AngularJS would call the new  Greeter()and return
+that.
+The Provider
+This is the most complicated (and thus most configurable, obviously) of the lot.
+The Provider combines both the Factory and the Service, and also throws in the
+benefit of being able to configure the Provider function before the injection system
+is fully in place (in the config blocks, that is).
+Let’s see how a modified greeter Service using the Provider might look:
+myApp.provider('greeter', function() {
+var salutation = 'Hello';
+this.setSalutation = function(s) {
+salutation = s;
+}
+function Greeter(a) {
+this.greet = function() {
+return salutation + ' ' + a;
+}
+}
+this.$get = function(a) {
+return new Greeter(a);
+};
+});
+This allows us to set the salutation at runtime (for example, based on the language
+of the user).
+
+var myApp = angular.module(myApp, []).config(function(greeterProvider) {
+greeterProvider.setSalutation('Namaste');
+});
+AngularJS would internally call  $getwhenever someone asked for an instance of the
+greeter object.
+Warning!
+There is a slight, but significant difference between using:
+angular.module('MyApp', [...])
+and:
+angular.module('MyApp')
+The difference is that the first creates a new Angular module, pulling in the module
+dependencies listed in the square brackets ([…]). The second uses the existing module
+that has already been defined by the first call.
+So you should make sure that you use the following code only once in your entire
+application:
+angular.module('MyApp', [...]) // Or MyModule, if you are modularizing your app
+If you do not plan to save it to a variable and refer to it across your application, then
+use angular.module(MyApp) in the rest of the files to ensure you get a handle to the
+correct AngularJS module. Everything on the module must be defined by accessing
+the variable, or be added on the spot where the module has been defined.
+Communicating Between Scopes with $on, $emit, and
+$broadcast
+AngularJS scopes have a very hierarchical and nested structure. There is one main
+$rootScope(per Angular app or ng-app, that is), which all other scopes either inherit,
+or are nested under. Quite often, you will find that scopes don’t share variables or do
+not prototypically inherit from one another.
+In such a case, how do you communicate between scopes? One option is creating a
+service that is a singleton in the scope of the app, and processing all inter-scope com‐
+munication through that service.
+There is another option in AngularJS: communicating through events on the scope.
+There are some restrictions; for example, you cannot generally broadcast an event to all
+watching scopes. You have to be selective in whether you are communicating to your
+parents or to your children.
+But before we discuss that, how do you listen to these events? Here is an example where
+our scope on any Star System is waiting and watching for an event we call “planetDes‐
+troyed.”
+
+scope.$on('planetDestroyed', function(event, galaxy, planet) {
+// Custom event, so what planet was destroyed
+scope.alertNearbyPlanets(galaxy, planet);
+});
+Where do these additional arguments to the event listener come from? Let’s take a look
+at how an individual planet could communicate with its parent Star System.
+scope.$emit('planetDestroyed’, scope.myGalaxy, scope.myPlanet);
+The additional arguments to $emitare passed on as function parameters to the listener
+functions. Also, $emit  communicates only upwards from its current scope, so the poor
+denizens of the planet (if they had a scope to themselves) would not be notified if their
+planet was being destroyed.
+Similarly, if a Galaxy wanted to communicate downwards to its child, the Star System
+scope, then it could communicate as follows:
+scope.$emit('selfDestructSystem', targetSystem);
+Then all Star Systems listening for the event could look at the target system, and decide
+if they should self-destruct, using these commands:
+scope.$on('selfDestructSystem', function(event, targetSystem) {
+if (scope.mySystem === targetSystem) {
+scope.selfDestruct();  // Go Ka-boom!!
+}
+});
+Of course, as the event propagates all the way up (or down), it might become necessary
+at a certain level or scope to say, “Enough! You shall not PASS!” or to prevent what the
+event does by default. The event object passed to the listener has functions to handle all
+of the above, and more, so let us take a quick look at what you can get up to with the
+event object in Table 7-3.
+Table 7-3. Event object properties and methods
+Property of event Purpose
+event.targetScope The scope which emitted or broadcasted the event originally
+event.currentScope The scope currently handling the event
+event.name The name of the event
+event.stopPropagation() A function which will prevent further event propagation (this is available only for events
+that were $emitted
+event.preventDefault() This actually doesn’t do anything but set defaultPreventedto true. It is up to the
+implementer of the listeners to check on defaultPreventedbefore taking action
+event.defaultPrevented true if preventDefaultwas called
+
+Cookies
+Before long, you will encounter a situation in your application (provided it is sufficiently
+large and complex) where you need to store some kind of state across users’ sessions on
+the client side. You might remember (or have nightmares) about working with plaintext cookies through the document.cookieinterface.
+Thankfully, many years have passed since then, and HTML5 APIs are available in almost
+all the modern browsers that are currently out there. Moreover, AngularJS provides you
+with a nice $cookieand  $cookieStoreAPI to work with cookies. Both services play
+nice with HTML5 cookies, in that they use HTML5 APIs when available, and default to
+working with document.cookies when they are not. Either way, you get to use the same
+API calls.
+Let’s take a look at the $cookiesservice first. $cookies is simply an object. It has keys
+and values. Adding a key and its corresponding value to the object adds the information
+to the cookie, and removing it from the object deletes that particular cookie. It’s as simple
+as that.
+But most of the time, you would not want to work directly at the  $cookieslevel. Working
+directly at the cookies level would mean doing string manipulation and parsing your‐
+self, and converting data to and from objects. For those cases, we have the  $cookieS
+tore, which provides a programmatic way of writing and removing cookies. So what
+would a Search Controller that remembers the last five search results using the $cook
+ieStorelook like?
+function SearchController($scope, $cookieStore) {
+$scope.search = function(text) {
+// Do the search here
+…
+// Get the past results, or initialize an empty array if nothing found
+var pastSearches = $cookieStore.get('myapp.past.searches') || [];
+if (pastSearches.length > 5) {
+pastSearches = pastSearches.splice(0);
+}
+pastSearches.push(text);
+$cookieStore.put('myapp.past.searches', pastSearches);
+};
+}
+Internationalization and Localization
+You might have heard people throw about both terms when it comes to supporting your
+application in different languages. But there is a slight difference between the two. Con‐
+sider a simple application that is a portal into your bank balance. Every time you come
+into the application, it displays one and only one thing:
+
+Greetings! The balance in your account as of 10/25/2012 is $XX,XXX.
+Now, obviously, the preceding code is targeted at an American audience. But what if we
+wanted this application to be available in the UK as well (just so that the language itself
+doesn’t change)? Britain uses a different date format and currency symbol, but you don’t
+want your code to undergo a change every time you need the application to support a
+new locale (in this case, en_USand  en_UK). This process of abstracting out the date/time
+format, as well as the currency symbol, from your coding logic is known as  Interna‐
+tionalization(or i18n—the 18 denoting the number of letters between i and n in the
+word).
+What if we wanted to support the application in Hindi? Or Russian? In addition to the
+date format and the currency symbol (and formatting), even the strings used in the UI
+would have to change. This process of providing translations and localized strings for
+the abstracted bits in various locales is known as Localization(or L10n—with a capital
+L to differentiate between i and l).
+What Can I Do in AngularJS?
+AngularJS supports i18n/L10n for the following filters out of the box:
+• currency
+• date/time
+• number
+There is also pluralization support (for English as well as i18n/L10n) with the ngPlur
+alizedirective.
+All of this pluralization support is handled and managed by the $locale  service, which
+manages the locale-specific rule sets. The $localeservice works off of locale IDs, which
+generally consist of two parts: the country code and the language code. For example,
+en_USand en_UK, denote English used in the US and the UK, respectively. Specifying a
+country code is optional, just specifying “en” is a valid locale code.
+How Do I Get It All Working?
+Getting L10n and i18n working in AngularJS is a three-step process:
+Index.html changes
+AngularJS requires you to have a separate  index.htmlfor each supported locale.
+Your server also needs to know which index.html it has to provide, depending on
+the user’s locale preferences (this could also be triggered from a client-side change,
+when the user changes his locale).
+
+Creating localized rule sets
+The next step is creating an  angular.jsfile for each supported locale, like
+(angular_en-US.jsand  angular_zh-CN.js). This involves concatenating the
+localizationrules for each particular language (the default files for the preceding
+two locales would be  angular-locale_en-US.jsand angular-locale_zh-CN.js) at the
+end of the  angular.jsor the  angular.min.jsfile. So your  angular_en-US.js  would
+contain the contents of  angular.jsfirst, followed by the contents of the  angularlocale_en-US.js.
+Sourcing the localized rule sets
+The final step involves ensuring that your localized  index.htmlrefers to the localized
+rule set instead of the original  angular.jsfile. So  index_en-US.html  should use
+angular-en_US.jsand not angular.js.
+What about my UI strings, you ask? AngularJS currently doesn’t have its own fullfledged translation APIs yet, so you will have to come up with your own techniques and
+scripts to get the UI strings translated. This could be something that parses your HTML
+for strings, and is then fed to a translator to churn out an HTML for each language, or
+something much more complex and specific based on your need.
+Common Gotchas
+Translation Length
+You design your UI so that it shows June 24, 1988 in a div that has been painstakingly
+sized to fit it just right. And then you open your UI in Spanish. 24 de junio de 1988
+just doesn’t fit in that same space anymore…
+When internationalizing your apps, keep in mind that the lengths of your strings
+might change drastically from language to language. Design your CSS accordingly,
+and do thorough testing across the various languages. (Don’t forget that right to left
+languages also exist!)
+Timezones
+The AngularJS date/time filter picks up the timezone settings from the browser. So
+depending on the timezone of the computer, different people might see different
+information. Neither JS nor AngularJS have any built-in support to display time
+with a timezone specified by the developer.
+Sanitizing HTML & the Sanitize Module
+AngularJS takes its security seriously, and tries to make all efforts to ensure that most
+attack vectors are minimized. One of the attack vectors revolves around the injection
+of unsafe HTML content into your webpage and using that to trigger a cross-site or
+injection attack.
+
+Consider the example where we have a variable on the scope called myUnsafeHTMLCon
+tent. OnMouseOver modifies the contents of the element to “PWN3D!” if the HTML is
+used as is:
+$scope.myUnsafeHTMLContent = '<p style="color:blue">an html' +
+'<em onmouseover="this.textContent = 'PWN3D!'">click here</em>' +
+'snippet</p>';
+The default behavior in AngularJS, when you have some HTML content in a variable
+and try to bind to it, would result in AngularJS escaping your content and printing it as
+is. So the HTML content ends up getting treated as pure text.
+Therefore:
+<div ng-bind='myUnsafeHTMLContent'></div>
+will result in:
+<p style="color:blue">an html
+<em onmouseover="this.textContent='PWN3D!'">click here</em>
+snippet</p>
+getting rendered as text on your web page.
+But what if you wanted to render the contents of myUnsafeHTMLContentsas HTML in
+your AngularJS app? In such a case, AngularJS has additional directives (and a service,
+$sanitize, to boot) to allow you to render the HTML in both a safe and unsafe manner.
+Let us first take the example where you want to be safe (as you normally should be!),
+and render the HTML, taking care to get rid of most possible attack vectors in the HTML.
+You would use the ng-bind-htmldirective in such a case.
+The ng-bind-html,  ng-bind-html-unsafe, and  linkyfilter all are in
+the  ngSanitizemodule. Y ou will need to include  angular-sanitize.js
+(or  .min.js) in your script dependencies, and then add a module de‐
+pendency to ngSanitize, before any of these work.
+So what happens when we use the ng-bind-html directive on the same myUnsafeHTML
+Content, like so?
+<div ng-bind-html="myUnsafeHTMLContent"></div>
+The output in such a case would be the following:
+an html _click here_ snippet
+The important things to note are that the style tag (with color blue), and the onmouse
+overhandler on the <em>tag are both removed by AngularJS. They are deemed unsafe,
+and thus dropped.
+
+Finally, if you decide that you really want the contents of myUnsafeHTMLContent  ren‐
+dered as is, either because you really trust the source of the content, or for some other
+reason, then you can use the ng-bind-html-unsafedirective:
+<div ng-bind-html-unsafe="myUnsafeHTMLContent"></div>
+The output in such a case would be the following:
+an html _click here_ snippet
+The color of the text is blue (as per the style attached to the p  tag), and the click here
+does have an onmouseover registered on it. So the minute your mouse strays anywhere
+near the click here text, the output would change to:
+an html PWN3D! snippet
+As you can see, this is quite unsafe in reality, so be absolutely certain that this is what
+you want when you decide to use the ng-bind-html-unsafedirective. Someone could
+just as easily read the user’s information and send it to his or her servers.
+Linky
+The linky filter is also present in the ngSanitize module, and basically allows you to
+add it to HTML content that is being rendered and convert links that are present in the
+HTML to anchor tags. It is quite simple to use, so let us take a look at an example:
+$scope.contents = 'Text with links: http://angularjs.org/ & mailto:us@there.org';
+Now, if you use the following binding:
+<div ng-bind-html="contents"></div>
+this would result in the contents of the HTML getting printed as:
+Text with links: http://angularjs.org/ & mailto:us@there.org
+Now let’s take a look at what happens when we use the linkyfilter:
+<div ng-bind-html="contents | linky"></div>
+The linkyfilter goes through the text contents and adds  <a>tags to all URLs and  mailto
+links it finds, thus providing HTML content that the user can interact with:
+Text with links: http://angularjs.org/ & us@there.org
+
+
+

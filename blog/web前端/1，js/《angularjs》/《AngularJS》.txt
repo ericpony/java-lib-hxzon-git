@@ -305,3 +305,38 @@ AngularJS 中的文件上传
 
 索引
 
+====
+About the Authors
+
+Brad Greenworks at Google as an engineering manager. In addition to the AngularJS
+project, Brad also directs Accessibility and Support Engineering. Prior to Google, Brad
+worked on the early mobile web at AvantGo, founded and sold startups, and spent a few
+hard years toiling as a caterer. Brad’s first job out of school was as a lackey to Steve Jobs
+at NeXT Computer, writing demo software and designing Jobs’ slide presentations. Brad
+lives in Mountain View, CA, with his wife and two children.
+Shyam Seshadri  is the owner and CEO of Fundoo Solutions, where he splits his time
+between working on innovative and exciting new products for the Indian market, and
+consulting about and running workshops on AngularJS. Prior to Fundoo Solutions,
+Shyam completed his MBA from the prestigious Indian School of Business in Hydera‐
+bad. Shyam’s first job out of college was with Google, where he worked on multiple
+projects, including Google Feedback (AngularJS’s first customer!), and various internal
+tools and projects. Shyam currently operates from his office in Navi Mumbai, India.
+
+Colophon
+
+The animal on the cover of AngularJS  is a thornback cowfish (Ostraciidae). This fish of
+many names—thornback, thornback cow, backspine cowfish, shortspined cowfish,
+blue-spotted cowfish—is usually found on rocky reefs or sandy slopes in a tangle of
+sponge and weeds in the Western Indo-Pacific region. They feed primarily on worms
+and other invertebrates.
+These boxfish can grow up to 15 centimeters long and anywhere between 3 to 50 meters
+wide. Members of the boxfish family are recognizable by the hexagonal pattern on their
+skin. Their bodies are shaped like a boxy triangle from which their fins, tail, eyes, and
+mouth protrude, allowing them to swim with a rowing motion. As they age, their shapes
+change from more rounded to more square-shaped, and their brighter colors dim.
+The thornback cowfish protects itself by secreting cationic surfactants through their
+skin, which is triggered by stress. The toxins, usually secreted in the form of a mucus,
+dissolve into the environment and irritate fish in the surrounding area.
+The cover image is from Johnson’s Natural History. The cover font is Adobe ITC Ga‐
+ramond. The text font is Adobe Minion Pro; the heading font is Adobe Myriad Con‐
+densed; and the code font is Dalton Maag’s Ubuntu Mono.
