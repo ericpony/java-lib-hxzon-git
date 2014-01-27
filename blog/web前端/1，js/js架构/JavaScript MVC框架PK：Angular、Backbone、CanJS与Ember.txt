@@ -35,6 +35,7 @@ http://www.ituring.com.cn/article/38394
 双向绑定（two way binding）	是	-	-	是
 部分视图（partial view）	是	-	是	是
 筛选列表视图（filtered list view）	是	-	是	是
+
 可观察对象：可以被监听是否发生变化的对象。
 路由：把变化通过浏览器URL的参数反映出来，并监听这些变化以便执行相应的操作。
 视图绑定：在视图中使用可观察对象，让视图随着可观察对象的变化而自动刷新。

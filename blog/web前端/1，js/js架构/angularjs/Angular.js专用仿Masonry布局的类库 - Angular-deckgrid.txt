@@ -1,0 +1,67 @@
+﻿Angular.js专用仿Masonry布局的类库 - Angular-deckgrid
+
+http://www.gbtags.com/gb/share/2711.htm
+
+如果你现在选择使用angular.js作为你的开发框架的话，
+实现类似masonry的网格布局效果将会变得更加简单，
+今天介绍的轻量级类库Angular-deckgrid能够帮助你快速的生成类似的魔术布局效果。
+
+
+
+安装非常简单，如下：
+
+一. 安装
+
+1. bower install --save angular-deckgrid
+
+2. 添加代码到你的HTML
+
+<script src="<your-bower-components>/angular-deckgrid/angular-deckgrid.js"></script>
+
+3. 添加到你的angular模块中：
+
+angular.module('your.module', [
+    'akoenig.deckgrid'
+]);
+
+二. 代码使用
+
+定义声明：
+
+<div deckgrid source="photos" cardTemplate="templates/deckgrid-card.html" class="deckgrid"></div>
+
+定义数据结构：
+
+$scope.photos = [
+    id: 'p1', 'title': 'A nice day!', src: "http://lorempixel.com/300/400/",
+    id: 'p2', 'title': 'Puh!', src: "http://lorempixel.com/300/400/sports",
+    id: 'p3', 'title': 'What a club!', src: "http://lorempixel.com/300/400/nightlife"
+];
+
+定义cardtemplate：
+
+<div class="a-card">
+    <h1>{{card.title}}</h1>
+ 
+    <img src="" data-ng-src="{{card.src}}">
+</div>
+
+为了更好的设计响应式的页面，你可以选择使用如下来代码来定义不同设备或者显示器上的展示行为：
+
+@media screen and (max-width: 480px){
+    .deckgrid[deckgrid]::before {
+        content: '1 .column.column-1-1';
+    }
+ 
+    .deckgrid .column-1-1 {
+        width: 100%;
+    }
+}
+
+全部搞定！查看具体的演示效果，请点击如下地址！
+相信如果你需要在angular.js中生成瀑布流效果的话，这个轻量级的模块是个不错选择！
+
+下载：https://github.com/akoenig/angular-deckgrid
+
+演示：http://akoenig.github.io/angular-deckgrid
+
