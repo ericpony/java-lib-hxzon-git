@@ -154,10 +154,13 @@ in this book.
 
 ====
 Creating an Ember model/object (Simple)
+数据模型。
 
 An object or a model is a way to manage data in a structured way. In other words, they are 
 a way of representing persistent states in your application. In Ember.js, almost every object 
-is derived from the Ember.Object class. Since most objects will be derived from the same 
+is derived from the Ember.Object class. 
+都是继承自 Ember.Object 类。
+Since most objects will be derived from the same 
 base object, they will end up sharing properties with each other. This allows the observation 
 and binding to properties of other objects. That being said, we can see where some of 
 the powerful features of Ember, such as computed properties and bindings, come from.
@@ -167,193 +170,234 @@ How to do it...
 We will create a basic model object and then create a subclass of this object.
 
 1.  In your models folder, go ahead and create the following file called movie.js.
+
 MovieTracker.Movie = Ember.Object.extend({
-id: null,
-title: null,
-watched: false,
-rating: 0
+	id: null,
+	title: null,
+	watched: false,
+	rating: 0
 });
 
 2.  In index.htmladd the following line:
+
 <script src="js/models/movie.js"></script>
+
 3.  We can now test out our model by creating a new movie object in the browser's 
 JavaScript console and printing out the title. Copy and paste the following code in 
-your browser's console. You should see the string The Action Moviebeing printed 
+your browser's console. You should see the string The Action Movie being printed 
 out to the console.
+
 var actionMovie = MovieTracker.Movie.create({
-title: "The Action Movie"
+	title: "The Action Movie"
 });
+
 actionMovie.get("title");
-4.  We can also extend the descendants of the Ember.Objectclass to create our 
+
+4.  We can also extend the descendants of the Ember.Object class to create our 
 own class. In movie.js, we can append the following code:
+
 MovieTracker.ActionMovie = MovieTracker.Movie.extend({
-genre: "action"
+	genre: "action"
 });
+
 How it works...
+
 We define our models and then create new objects based on those models. In the previous 
 example, we created an object in our application called Movie, which has an ID, a title 
 (if it has been watched), and its rating.
-Our ActionMoviewill have the same properties as Movie, but will add one extra property. 
-The genreproperty will define what genre the movie falls under. Go ahead and copy and 
+
+Our ActionMovie will have the same properties as Movie, but will add one extra property.
+ 
+The genre property will define what genre the movie falls under. Go ahead and copy and 
 paste the following code into your browser's console:
+
 var actionMovie = MovieTracker.ActionMovie.create({
-title: "An Action Movie",
+	title: "An Action Movie",
 });
 
 actionMovie.get("genre");
-The preceding code should print out actionto the console. It creates a new ActionMovie
+
+The preceding code should print out action to the console. It creates a new ActionMovie
 object, which inherits the genreproperty.
+
 The get and set methods
-You should always use the Ember getand setmethods when 
+读写器。
+
+You should always use the Ember get and set methods when 
 accessing model properties. This ensures that Ember's bindings and 
-observers associated with the getand setmethods can keep the 
+observers associated with the get and set methods can keep the 
 data in sync throughout your application.
 
 ====
 Enhancing an Ember object (Simple)
+
 Now that we have our basic Ember objects, we can begin to make them more powerful. The 
 Ember.js documentation promotes three features. Two of these features deal with models. 
+
 One of them is auto-updating templates and the other two are bindings and computed 
-properties. In this recipe, we are only concerned with bindings and computed properties.
+properties. 
+三种功能，自动更新模板，绑定，计算得到的属性值。
+In this recipe, we are only concerned with bindings and computed properties.
+本节只讲解“绑定”和“计算得到的属性值”。
+
 How to do it...
+
 Now that we have some basic Ember objects defined in our application, we can go ahead 
 and add more advanced functionality to them.
+
 1.  We can represent actors in our application using bindings, so create a new file in 
-the modelsfolder called actor.jsand paste the following code:
+the models folder called actor.js and paste the following code:
+
 MovieTracker.Actor = Ember.Object.extend({
-filmBinding: 'MovieTracker.Movie.title'
+	filmBinding: 'MovieTracker.Movie.title'
 });
+
 2.  In index.htmladd the following line:
+
 <script src="js/models/actor.js"></script>
 
 How it works...
+
 Bindings are used to maintain synchronization of properties between two different objects.
+
 Computed property functions act like properties of our model. They also work with bindings. 
 Computed properties are used to build new properties by combining other properties. They 
 should not contain any application behavior. In most cases, multiple calls to one computed 
 property should always return the same value.
+
 An observer will trigger when the observed property changes and is especially useful when 
 you need to perform some action after a binding has synchronized.
+
 You will notice there is a property named filmBinding. When Ember.js sees a model 
 property ending with the string Binding, Ember will automatically create a bound property 
 for you (in this case it is called film).
+属性名如果以 Binding 为后缀，Ember会自动创建一个绑定属性。
+
 There's more...
+
 Computed properties, mixins, and observers give us different options for interacting with 
 data in our application.
-Computed properties
-Computed properties allow us to create functions within our models.
-MovieTracker.Movie = Ember.Object.extend({
-id: null,
-title: null,
-watched: false,
-rating: 0,
-titleAndRating: function() {
-return this.get('title') + ' has a rating of ' + 
-this.get('rating');
-}.property()
-});
-Here, we add a function called titleAndRatingthat will combine the title and rating of our 
-movie into one string. Computed properties often have dependencies on other properties. In the 
-example we created, we can tell Ember that our titleAndRatingfunction depends on the 
-title and the rating of the movie by adding those parameters within the property parentheses.
-MovieTracker.Movie = Ember.Object.extend({
-id: null,
-title: null,
-watched: false,
-rating: 0,
 
-titleAndRating: function() {
-return this.get('title') + ' has a rating of ' + 
-this.get('rating');
-}.property('title', 'rating')
+Computed properties
+
+Computed properties allow us to create functions within our models.
+
+MovieTracker.Movie = Ember.Object.extend({
+	id: null,
+	title: null,
+	watched: false,
+	rating: 0,
+	titleAndRating: function() {
+		return this.get('title') + ' has a rating of ' + 
+			this.get('rating');
+	}.property()
 });
+
+Here, we add a function called titleAndRating that will combine the title and rating of our 
+movie into one string. Computed properties often have dependencies on other properties. In the 
+example we created, we can tell Ember that our titleAndRating function depends on the 
+title and the rating of the movie by adding those parameters within the property parentheses.
+
+MovieTracker.Movie = Ember.Object.extend({
+	id: null,
+	title: null,
+	watched: false,
+	rating: 0,
+
+	titleAndRating: function() {
+		return this.get('title') + ' has a rating of ' + 
+		this.get('rating');
+	}.property('title', 'rating')
+});
+
+告知函数依赖哪些属性。
+
 If we want to test this out, we can attempt to get the title and the rating of a movie we create. 
 Copy and paste the following code into the console:
+
 var comedyMovie = MovieTracker.Movie.create({
-title: 'A Comedy Movie',
-rating: 5
+	title: 'A Comedy Movie',
+	rating: 5
 });
+
 comedyMovie.get('titleAndRating');
-The preceding code should display A Comedy Movie has a rating of 5in the console.
+
+The preceding code should display A Comedy Movie has a rating of 5 in the console.
+
 Mixins
+混入。
+
 Another useful part of Ember.js is something called mixins. A mixin is an object that defines a 
 set of functions relating to a type. In our case, we can copy and paste the following code into 
 the top of movie.js.
+
 WatchedMixin = Ember.Mixin.create({
-isWatched: function() {
-var title = this.get('title'),
-watched = this.get('watched');
-return('Has ' + title + ' been watched? ' + watched);
-}
+	isWatched: function() {
+		var title = this.get('title'),
+		watched = this.get('watched');
+		return('Has ' + title + ' been watched? ' + watched);
+	}
 });
-We can then add the mixin into our Movieobject by passing it as the first argument to 
+
+We can then add the mixin into our Movie object by passing it as the first argument to 
 .extendor .create.
+
 MovieTracker.Movie = 
-Ember.Object.extend(MovieTracker.WatchedMixin, {
-id: null,
-title: null,
-watched: false,
+	Ember.Object.extend(MovieTracker.WatchedMixin, {
+		id: null,
+		title: null,
+		watched: false,
+
 In the future, mixins should probably be contained in their own file, as 
 you will most likely be using them for multiple objects.
 
 We can then copy and paste the following into the console to demonstrate our mixin:
+
 var watchedMovie = MovieTracker.Movie.create({
-title: 'A Watched Movie',
-rating: 5,
-watched: true
+	title: 'A Watched Movie',
+	rating: 5,
+	watched: true
 });
+
 watchedMovie.isWatched();
+
 The preceding code should print out Has A Watched Movie been watched? true. We created 
-a Watchedmixin object that contains a function that can be added to any Ember object. The 
+a Watched mixin object that contains a function that can be added to any Ember object. The 
 extended object will then have these functions accessible to it.
+
 Observers
+观察器。
+
 Ember.js can also make use of something called observers. We can change our Ember Movie
 object to include an observer.
+
 MovieTracker.Movie = Ember.Object.extend(MovieTracker.WatchedMixin,{
-id: null,
-title: null,
-watched: false,
-rating: 0,
-titleAndRating: function() {
-return this.get('title') + ' has a rating of ' + 
-this.get('rating');
-}.property('title', 'rating'),
-titleChanged: function() {
-console.log('Title changed!');
-}.observes('title')
+	id: null,
+	title: null,
+	watched: false,
+	rating: 0,
+	titleAndRating: function() {
+		return this.get('title') + ' has a rating of ' + 
+			this.get('rating');
+	}.property('title', 'rating'),
+	titleChanged: function() {
+		console.log('Title changed!');
+	}.observes('title')
 });
-Refresh the page to load the new changes, then recreate our comedy movie with the 
-following code:
+
+Refresh the page to load the new changes, then recreate our comedy movie with the following code:
+
 var comedyMovie = MovieTracker.Movie.create({
-title: 'A Comedy Movie',
-rating: 5
+	title: 'A Comedy Movie',
+	rating: 5
 });
+
 If we were to change the title with something like:
+
 comedyMovie.set('title', 'Comedy Movie 2');
-ThenTitle changed!would be displayed as an output to the console.
+
+Then Title changed! would be displayed as an output to the console.
 
 We added an observer to the title, so whenever the title changes, the corresponding 
 function (titleChanged) is triggered.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

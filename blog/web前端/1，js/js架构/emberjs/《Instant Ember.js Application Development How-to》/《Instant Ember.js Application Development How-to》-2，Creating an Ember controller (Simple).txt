@@ -3,71 +3,89 @@
 
 ====
 Creating an Ember controller (Simple)
+控制器。
 
 A controller is an object capable of storing the application state. Application views connect to 
 controllers and translate the current state of the controller into HTML. Another way of thinking 
 of controllers is that they act as a direct representation of models for your views and can send 
 CRUD commands to the models on behalf of the views.
+
 How to do it...
+
 We can now create a controller for a part of our application.
+
 1.  Add the following controller into application.jslocated in the 
-controllersfolder:
+controllers folder:
+
 MovieTracker.moviesController = Ember.ArrayController.create({
-content: [],
-init: function(){
-this._super();
-var list = [
-MovieTracker.Movie.create({
-title: 'Movie 1',
-rating: 4
-}),
-MovieTracker.Movie.create({
-title: 'Movie 2',
-rating: 5
-})];
-this.set('content', list);
-}
+	content: [],
+	init: function(){
+		this._super();
+		var list = [
+			MovieTracker.Movie.create({
+				title: 'Movie 1',
+				rating: 4
+			}),
+			MovieTracker.Movie.create({
+				title: 'Movie 2',
+				rating: 5
+		})];
+		this.set('content', list);
+	}
 });
+
 2.  We can also create a controller that will allow us to keep track of a movie that has 
 been selected by the user in our application.
-MovieTracker.selectedMovieController = 
-Ember.ObjectController.create({
-selectedMovie: [],
-select: function(item) {
-this.set('selectedMovie', item);
 
-},
-toggleWatched: function() {
-this.selectedMovie.toggleProperty('watched');
-}
+MovieTracker.selectedMovieController = 
+	Ember.ObjectController.create({
+		selectedMovie: [],
+		select: function(item) {
+			this.set('selectedMovie', item);
+		},
+		toggleWatched: function() {
+			this.selectedMovie.toggleProperty('watched');
+		}
 });
+
 How it works...
+
 In Ember.js, controllers are split into three different categories:
+
 f ArrayController
 f ObjectController
 f Controller
-ArrayControlleris used for managing a collection of objects, that is, a collection of 
-movies and actors. Each ArrayControlleruses a contentproperty to store its data. 
+
+ArrayController is used for managing a collection of objects, that is, a collection of 
+movies and actors. Each ArrayController uses a content property to store its data. 
 Properties and methods in this controller will have a proxy that will allow access to its 
 contentproperty. In moviesController, we create an empty content array and then 
-populate it with some example data. The this._super()call lets you access the init
+populate it with some example data. 
+The this._super() call lets you access the init
 function of the parent class that you are overriding.
+
 ObjectControlleris essentially the same as ArrayController, except that it is used 
 for one object as opposed to a collection. For our application, we are going to need a 
 controller for changing a movie to watchedwhen the user clicks on a corresponding button 
 for this action. In selectedMovieController, we are only concerned with one specific 
-Movieobject. The function inside this controller will change the watchedproperty of the 
+Movie object. The function inside this controller will change the watched property of the 
 associated movie to true if it was false previously and vice versa.
-The Controllerclass in Ember is used when you have a controller that is not a proxy. 
+
+The Controller class in Ember is used when you have a controller that is not a proxy. 
 In other words, the controller does not take care of an object or an array.
-If we look back at the code in our application.jswithin the controllersfolder, we 
+If we look back at the code in our application.js within the controllers folder, we 
 added the following:
+
 MovieTracker.ApplicationController = Ember.Controller.extend();
+
 This line does not need any arrays or objects contained within it, so we simply assign it 
-the Controllerclass. This controller handles the controls at the application level.
+the Controller class. This controller handles the controls at the application level.
+
 We can paste the following line into the browser's console to check that moviesController
 is in proper working order:
+
 MovieTracker.moviesController.get('length');
+
 The preceding line should print out 2to the console.
 
 ====
@@ -78,27 +96,38 @@ render HTML elements. Handlebars is the default engine for Ember.js. Handlebars 
 extension of the mustache templating engine. At runtime, Ember.js will compile all 
 Handlebar templates. A Handlebars expression takes the form of {{contents}}.
 Apart from plain HTML, templates embed:
+
 f Expressions: An expression takes data from a controller, view, or context and places 
 it into HTML and automatically keeps the data in sync.
+
 f Outlets: Outlets are placeholders for other templates. The router places different 
 templates in your outlets as your application state changes. Handlebars has the 
 {{outlet}}helper for doing this.
+
 f Views: Views handle user events.
+
 How to do it...
+
 Handlebars are HTML templates with embedded Handlebars expressions. These templates 
 go within the <script>tags so that your browser can recognize them.
+
 1.  In index.html, add the following within the <body>tags.
+
 <script type="text/x-handlebars" data-templatename="movie_title">
 <h2>{{title}}</h2>
 </script>
+
 2.  Global paths can also be defined in your templates. We can change the template 
 as shown in the following code snippet:
+
 <script type="text/x-handlebars" data-templatename="movie_title">
 <h2>{{MovieTracker.selectedMovieController.title}}</h2>
 </script>
+
 3.  Handlebars include conditional expressions. A common use for this is when you 
 want to display part of a template only if a property exists. The template can be 
 further modified as follows:
+
 {{#if movie}}
 <h2>{{movie.title}}</h2>
 {{else}}
@@ -106,22 +135,29 @@ further modified as follows:
 {{/if}}
 
 4.  We can also render a template only if the value is false, undefined, null, and so on.
+
 {{#unless hasBeenWatched}}
 <h2>You should watch this movie!</h2>
 {{/if}}
+
 5.  The default context for our template blocks is Ember.Viewassociated with the 
 block. The context is the object where properties are looked upon. If we want 
 to invoke a template with a context other than Ember.View, we can use the 
-{{#with}}helper.
+{{#with}} helper.
+
 {{#with movie}}
 <h2>{{title}}</h2>
 {{/with}}
+
 6.  At some point in our application, we will most likely want to bind HTML attributes into 
 our templates. Common use cases are when you want an srcattribute for an image 
 and/or when you want an hrefattribute for a link.
+
 <a {{bindAttr href="url"}}>More Details</a>
+
 7.  We can add a child view to a parent by using the {{view}}helper. This helper takes 
 in a path to a viewclass.
+
 MovieTracker.ActorView = Ember.View.extend({
 templateName: 'actor'
 mainActor: "John Smith"
@@ -133,11 +169,13 @@ mainActor: "John Smith"
 <script type="text/x-handlebars" data-templatename="actor">
 {{view.mainActor}}
 </script>
+
 8.  You can also use view templates inline. You can think of this as assigning views 
 to portions of a page. It allows you to encapsulate event handling for one part of 
 a page. We can rewrite the previously mentioned code as the following:
+
 MovieTracker.ActorView = Ember.View.extend({
-mainActor: "John Smith"
+	mainActor: "John Smith"
 });
 {{#with movie}}
 <h2>{{title}}</h2>
@@ -147,6 +185,7 @@ mainActor: "John Smith"
 {{/with}}
 
 How it works...
+
 All the features previously described are binding-aware. This means that as values in your 
 templates change, the HTML will be updated automatically. If you do not want a value to 
 automatically update, you can use the unbound view helper.
@@ -158,6 +197,7 @@ is capitalized. This is why your Ember.Applicationname should start with a capit
 The #symbol within {{}}means that it is a block expression. These expressions require a 
 closing expression (such as {{/if}}in the previous example). If the movieproperty is not 
 false, undefined, or null, then it will display the movie title.
+
 {{#with movie}}
 <h2>{{title}}</h2>
 {{/with}}
@@ -187,6 +227,7 @@ title from context: {{title}}
 
 ====
 Creating an Ember view (Simple)
+
 Views will help you to translate low-level browser events into semantic events. These semantic 
 events will allow the Ember router to adjust your application into the proper state. Views can 
 be created and destroyed at render time as well as during the run loop of your application. 
