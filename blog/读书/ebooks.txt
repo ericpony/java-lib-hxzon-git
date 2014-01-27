@@ -1,0 +1,97 @@
+﻿----
+1，Java Persistence with Hibernate
+
+
+----
+2，Programming Languages and Lambda Calculi
+https://dl.dropbox.com/u/392085/PLLC.pdf
+
+专门讲语义的书很少，现在推荐一本我觉得深入浅出的：《Programming Languages and Lambda Calculi》。只需要看完前半部分（Part I 和 II，100来页）就可以了。这书好在什么地方呢？它是从非常简单的布尔表达式（而不是 lambda calculus）开始讲解什么是递归定义，什么是解释，什么是 Church-Rosser，什么是上下文 (evaluation context)。在让你理解了这种简单语言的语义，有了足够的信心之后，才告诉你更多的东西。比如 lambda calculus 和 CEK，SECD 等抽象机 (abstract machine)。理解了这些概念之后，你就会发现所有的程序语言都可以比较容易的理解了。
+
+--
+The Role of the Study of Programming Languages in the Education of a Programmer
+http://www.cs.indiana.edu/~dfried/dfried/dfried/mex.pdf
+--
+A Little Java, A Few Patterns
+--
+The Little Schemer
+--
+The Little Prover
+--
+The Reasoned Schemer
+
+
+----
+3，Event.Processing.in.Action.2010
+事件处理实战
+
+
+----
+4，Practical Artificial Intelligence Programming with Java
+https://github.com/mark-watson/Java-AI-Book-Code
+
+----
+5，Conceptual Mathematics: A First Introduction to Categories
+
+=====
+Clojure Cookbook
+Clojure for Domain-specific Languages
+Clojure High Performance Programming
+Web Development with Clojure
+
+Dependency Injection with AngularJS
+
+Ext JS Data-driven Application Design
+
+Grails 2：A Quick-Start Guide
+
+Hadoop Cluster Deployment
+Java EE 7 First Look
+jQuery 2.0 Animation Techniques Beginner's Guide
+jQuery UI 1.10：The User Interface Library for jQuery
+Laravel Application Development Blueprints
+Lean Enterprise
+Learning Android Canvas
+Learning Android, 2nd Edition
+Learning jQuery Deferreds
+Learning Laravel 4 Application Development
+Learning Python Design Patterns
+Mastering HTML5 Forms
+Mastering Node.js
+Mastering Sublime Text
+Mobile First Bootstrap
+Node.js the Right Way
+
+Perl One-Liners
+Persistence in PHP with Doctrine ORM
+Python Data Visualization Cookbook
+Python High Performance Programming
+
+Real World OCaml
+
+Responsive Web Design with jQuery
+Sencha Touch 2 Mobile JavaScript Framework
+
+Seven Web Frameworks in Seven Weeks
+
+
+WordPress Web Application Development
+
+====
+1.Scala in Action
+
+2.Scala in Depth
+
+3.Functional Programming in Scala
+
+4.Akka in Action
+
+5.Netty in Action
+
+6.Lift in Action
+
+7.Play for Scala
+
+8.Scalatra in Action
+
+9.SBT in Action

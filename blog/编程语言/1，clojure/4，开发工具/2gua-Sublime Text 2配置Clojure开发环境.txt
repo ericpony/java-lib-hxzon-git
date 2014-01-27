@@ -1,0 +1,115 @@
+﻿2gua-Sublime Text 2配置Clojure开发环境
+ 2gua
+
+趁着刚才在摆弄Sublime Text 2，索性把Sublime Text 2的Clojure开发环境也一并处理了！
+
+首先，在Sublime Text 2的Package Install里，把Clojure有关的包都安装了；
+
+到这里下载leiningen安装文件：https://github.com/technomancy/leiningen ；
+Windows可执行安装文件也可以到这里下载：http://leiningen-win-installer.djpowell.net/ ；
+
+运行安装程序，过程中要下载相关文件，有可能要FQ；
+
+安装好了leiningen，就可以在Sublime Text 2里通过Ctrl+F12，c，s组合键打开Clojure REPL了。
+注意：Sublime Text 2要先安装SublimeREPL包，具体可参见我上一篇博文：
+「O'Reilly书籍推荐、Python以及Sublime Text」；
+http://zhuanlan.zhihu.com/guagua/19655542
+
+其他一些参考资源：https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md，
+https://github.com/technomancy/leiningen/wiki/Plugins 。
+
+不得不说，Sublime Text对Clojure的支持程度，离对Python的支持程度还是有一定差距的，但已经可以用好了。
+
+先来个Clojure的“Hello, World”程序吧：
+
+(def hello (fn [] "Hello world"))
+
+(defn helloU [name]
+    (println "Hello," name))
+
+========
+========
+另外，顺带增强配置了一下Sublime Text 2，增加了一些插件：
+
+All Autocomplete
+SublimeCodeIntel
+SideBarEnhancements
+SublimeREPL
+Markdown Preview
+PlainTasks
+Terminal
+Emmet
+Pylinter
+其中SublimeREPL的配置增加了快捷键：
+
+在Preferences |-> Key-Bindings User方括号内添加：
+
+    {"keys":["f5"],
+    "caption": "SublimeREPL: Python - RUN current file",
+    "command": "run_existing_window_command", "args":
+    {
+        "id": "repl_python_run",
+        "file": "config/Python/Main.sublime-menu"
+    }},
+    {"keys":["f6"],
+    "caption": "SublimeREPL: Python",
+    "command": "run_existing_window_command", "args":
+    {
+        "id": "repl_python",
+        "file": "config/Python/Main.sublime-menu"
+    }}
+
+同样感谢Sublime Text，非常强大。有了Python和Sublime Text，码农世界充满了极客的乐趣......
+
+======
+======
+Sublime Text 2删除行尾空格
+2gua
+
+编写Python或Ruby代码的时候，比较在意行末空格，
+估计是代码洁癖、强迫症使然，看到多余的行末空格就浑身不自在。
+Sublime Text 2神器要解决这个问题简直就是小意思，
+在Settings - User中添加以下设置行：
+
+"trim_trailing_white_space_on_save": true
+只要保存，就自动清除所有行末空格。
+
+=====
+=====
+Sublime Text 2的Emmet插件安装
+2gua
+
+你想敲个“a”就生成一个链接标签吗？
+Emmet就是干这个的（原名叫Zen Coding），
+Sublime Text 2配上这个插件，写HTML就可以做到“键码如飞”了。
+
+Ctrl+Shift+P打开“Command Palette...”
+
+
+输入“install”，打开“Install Package”
+
+
+选择“Emmet”插件，安装之，看左下角状态栏的安装信息。如果安装不成功，可以去这里
+（https://github.com/sergeche/emmet-sublime#readme）
+下载Emmet插件手动安装，通过“Browse Packages...”菜单项打开包目录，
+把Emmet插件安装包解压到此即可。
+
+
+重启Sublime，注意Emmet会安装PyV8，需要一定时间，见到PyV8错误提示稍安勿躁，需等待一小会儿。
+状态栏会有相应提示。如果安装失败，可以手动安装，手动安装参见这里。
+https://github.com/emmetio/pyv8-binaries
+
+接下来就可以试试Emmet的威力了：
+
+建一个HTML文件：
+
+输入html:5，按Tab或Ctrl+E键，看看发生了什么；
+输入a，同样按Tab或Ctrl+E键，看看发生了什么；
+输入div+p+bq......
+
+咋样？很爽吧？^_^
+部分快捷方式参考这里 https://github.com/sergeche/emmet-sublime#available-actions
+具体的使用请参考：这里、这里！
+http://docs.emmet.io/
+http://docs.emmet.io/abbreviations/syntax/
+

@@ -1,0 +1,737 @@
+﻿《angularjs》第2章-解剖angularjs应用续
+
+注释by hxzon
+
+====
+目录：
+
+Invoking Angular
+启动angular。
+Model View Controller
+Templates and Data Binding
+模板和数据绑定。
+
+（续）
+Organizing Dependencies with Modules
+用模块组织依赖。
+Formatting Data with Filters
+使用过滤器格式化数据。
+Changing Views with Routes and $location
+用路由来更换视图。
+Talking to Servers
+与服务端通信。
+Changing the DOM with Directives
+用指令更换dom 。
+Validating User Input
+验证用户输入。
+Moving On
+
+=====
+Organizing Dependencies with Modules
+用模块组织依赖。
+
+In any non-trivial application, figuring out how to organize the functionality of your
+code into areas of responsibility is often a hard task. We’ve seen how controllers give us
+a place to put the code that exposes the right data and functions to the view template.
+
+But what about the rest of the code we need to support our applications? The most
+obvious place to put this would be in functions on the controllers. 
+
+This works fine for small apps and the examples that we’ve seen so far, but it quickly
+becomes unmanageable in real apps. The controllers would become a dumping ground
+for everything and anything we need to do. They’d be hard to understand and likely
+hard to change. 
+
+Enter modules. They provide a way to group dependencies for a functional area within
+your application, and a mechanism to automatically resolve dependencies (also known
+as dependency injection). Generically, we call these dependencies services, as they 
+provide specific services to our application.
+
+For example, if in our shopping website a controller needs to get a list of items for sale
+from the server, we’d want some object—let’s call it Items—to take care of getting the
+items from the server. The Items  object, in turn, needs some way to communicate with
+the database on the server over XHR or WebSockets.
+
+Doing this without modules looks something like this:
+
+function ItemsViewController($scope) {
+	// make request to server
+	…
+	// parse response into Item objects
+	…
+	// set Items array on $scope so the view can display it
+	...
+}
+
+While this would certainly work, it has a number of potential problems.
+• If some other controller also needs to get  Items from the server, we now have to
+replicate this code. This makes maintenance a burden, as now if we make schema
+or other changes, we have to update that code in several places.
+如果其它控制器也需要从服务端获取物品，需要重复写代码。
+
+• With other factors like server authentication, parsing complexity, and so on, it is
+difficult to reason about the boundaries of responsibility for this controller object,
+and reading the code is harder.
+
+• To unit test this bit of code, we’d either need to actually have a server running, or
+monkey patch XMLHttpRequest to return mock data. Having to run the server will
+make tests very slow, it’s a pain to set up, and it usually introduces flakiness into
+tests. The monkey patching route solves the speed and flakiness problems, but it
+means you have to remember to un-patch any patched objects between tests, and
+it brings additional complexity and brittleness by forcing you to specify the exact
+on-the-wire format for your data (and in having to update the tests whenever this
+format changes).
+难以单元测试。
+
+With modules, and the dependency injection we get from them, we can write our 
+controller much more simply, like this:
+使用模块。依赖注入。
+
+function ShoppingController($scope, Items) {
+	$scope.items = Items.query();
+}
+
+You’re probably now asking yourself, “Sure, that looks cool, but where does Items  come
+from?” The preceding code assumes that we’ve defined Items as a service.
+
+Services are singleton (single-instance) objects that carry out the tasks necessary to
+support your application’s functionality. Angular comes with many services like $location, 
+for interacting with the browser’s location, $route, for switching views based on
+location (URL) changes, and $http, for communicating with servers.
+angular提供了许多服务，例如 $location （获得浏览器网址），
+$route （根据url切换视图），$http （与服务端通信）。
+
+You can, and should, create your own services to do all of the tasks unique to your
+application. Services can be shared across any controllers that need them. As such,
+they’re a good mechanism to use when you need to communicate across controllers and
+share state. Angular’s bundled services start with a  $, so while you can name them
+anything you like, its a good idea to avoid starting them with $ to avoid naming collisions.
+angular提供的服务都以美元符号开头。
+
+You define services with the module object’s API. There are three functions for creating
+generic services, with different levels of complexity and ability:
+提供了三个方法来创建服务。
+
+Function Defines
+
+--
+provider(name, Object OR constructor() )
+
+A configurable service with complex creation logic. If you pass an Object, it should have a
+function named $get that returns an instance of the service. Otherwise, Angular assumes you’ve
+passed a constructor that, when called, creates the instance.
+可配置的服务。
+如果传递object对象，需要含有 $get 方法，用来返回服务的实例。
+否则，将视为构造函数，用来创建新的服务实例。
+
+--
+factory(name, $getFunction() )
+
+A non-configurable service with complex creation logic. You specify a function that, when
+called, returns the service instance. You could think of this as  provider(name, { $get:
+$getFunction() } ).
+不可配置的服务。
+
+--
+service(name, constructor() )
+A non-configurable service with simple creation logic. Like the constructor option with provider,
+Angular calls it to create the service instance.
+不可配置的服务，且只有简单的创建逻辑。
+
+
+We’ll look at the configuration option for provider()  later, but let’s discuss an example
+with factory() for our preceding Items example. We can write the service like this:
+
+// Create a module to support our shopping views
+var shoppingModule = angular.module('ShoppingModule', []);
+
+// Set up the service factory to create our Items interface to the
+// server-side database
+shoppingModule.factory('Items', function() {
+	var items = {};
+	items.query = function() {
+		// In real apps, we'd pull this data from the server...
+		return [
+			{title: 'Paint pots', description: 'Pots full of paint', price: 3.95},
+			{title: 'Polka dots', description: 'Dots with polka, price: 2.95},
+			{title: 'Pebbles', description: 'Just little rocks', price: 6.95}
+		];
+	};
+	return items;
+});
+
+
+When Angular creates the ShoppingController, it will pass in  $scope  and the new
+Items service that we’ve just defined. This is done by parameter name matching. 
+这是通过参数名匹配的。
+That is, Angular looks at the function signature for our  ShoppingController  class, and
+notices that it is asking for an  Items object. Since we’ve defined Items as a service, it
+knows where to get it.
+The result of looking up these dependencies as strings means that the arguments of
+injectable functions like controller constructors are order-independent. 
+
+So instead of this:
+
+function ShoppingController($scope, Items) {...}
+
+we can write this:
+
+function ShoppingController(Items, $scope) {...}
+
+and it all still functions as we intended.
+
+To get this to work with our template, we need to tell the ng-app directive the name of
+our module, like the following:
+使用ng-app指令 指明哪个模块。
+
+<html ng-app='ShoppingModule'>
+
+To complete the example, we could implement the rest of the template as:
+
+<body ng-controller="ShoppingController">
+<h1>Shop!</h1>
+<table>
+<td>{{item.title}}</td>
+<td>{{item.description}}</td>
+<td>{{item.price | currency}}</td>
+</tr>
+</table>
+</div>
+
+with a resulting app that looks like Figure 2-2.
+Figure 2-2. Shop items
+
+How Many Modules Do I Need?
+
+As services themselves can have dependencies, the Module API lets you define 
+dependencies for your dependencies.
+
+In most applications, it will work well enough to create a single module for all the code
+you create and put all of your dependencies in it. If you use services or directives from
+third-party libraries, they’ll come with their own modules. As your app depends on
+them, you’d refer to them as dependencies of your application’s module.
+来自其它库的模块。
+
+For instance, if you include the (fictitious) modules SnazzyUIWidgets and SuperDataSync, 
+your application’s module declaration would look like this:
+
+var appMod = angular.module('app', ['SnazzyUIWidgets', 'SuperDataSync'];
+
+====
+Formatting Data with Filters
+使用过滤器格式化数据。
+
+Filters allow you to declare how to transform data for display to the user within an
+interpolation in your template. The syntax for using filters is:
+过滤器语法：
+
+{{ expression | filterName : parameter1 : ...parameterN }}
+
+管道符，过滤器名，冒号，过滤器参数1，冒号，过滤器参数2。
+
+where expression is any Angular expression, filterName  is the name of the filter you
+want to use, and the parameters to the filter are separated by colons. The parameters
+themselves can be any valid Angular expression.
+
+
+Angular comes with several filters, like currency, which we’ve seen:
+币值过滤器：
+
+{{12.9 | currency}}
+
+This bit of code will display the following:
+$12.90
+
+We put this declaration in the view (rather than in the controller or model) because the
+dollar sign in front of the number is only important to humans, and not to the logic we
+use to process the number.
+
+Other filters that come with Angular include date, number, uppercase, and more.
+还有其它过滤器：日期，数值，大写等。
+
+Filters can also be chained with additional pipe symbols in the binding. 
+过滤器可以串联使用，通过管道符。
+
+For example,
+we can format the previous example for no digits after the decimal by adding the number
+filter, which takes the number of decimals to round to as a parameter. So: 
+
+{{12.9 | currency | number:0 }}
+
+displays:
+$13
+
+You’re not limited to the bundled filters, and it is simple to write your own. If we wanted
+to create a filter that title-cased strings for our headings, for example, we could do so as
+follows:
+定义自己的过滤器：
+
+var homeModule = angular.module('HomeModule', []);
+
+homeModule.filter('titleCase', function() {
+	//参数为原始数据，返回值为输出。
+	var titleCaseFilter = function(input) {
+		var words = input.split(' ');
+		for (var i = 0; i < words.length; i++) {
+			words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
+		}
+		return words.join(' ');
+	};
+	return titleCaseFilter;
+});
+
+With a template like this:
+
+<body ng-app='HomeModule' ng-controller="HomeController">
+<h1>{{pageHeading | titleCase}}</h1>
+</body>
+
+and inserting the pageHeading as a model variable via a controller:
+
+function HomeController($scope) {
+	$scope.pageHeading = 'behold the majesty of your page title';
+}
+
+we would see something resembling Figure 2-3.
+Figure 2-3. Title case filter
+
+====
+Changing Views with Routes and $location
+通过路由更换视图。
+
+Though AJAX apps are technically single-page apps (in the sense that they only load an
+HTML page on the first request, and then just update areas within the DOM thereafter),
+we usually have multiple sub-page views that we show or hide from the user, as appropriate.
+
+We can use Angular’s  $route service to manage this scenario for us. Routes let you
+specify that, for a given URL that the browser points to, Angular should load and display
+a template, and instantiate a controller to provide context for the template.
+对于给定的url，angular加载和展示模板，初始化控制器。
+
+You create routes in your application by calling functions on the  $routeProvider  service
+as a configuration block. It goes something like this pseudo-code:
+
+var someModule = angular.module('someModule', [...module dependencies...])
+
+//配置路由
+someModule.config(function($routeProvider) {
+	$routeProvider.
+	when('url', {controller:aController, templateUrl:'/path/to/tempate'}).
+	when(...other mappings for your app...).
+	…
+	otherwise(...what to do if nothing else matches...);
+)};
+
+
+The preceding code says that when the browser’s URL changes to the specified URL,
+Angular will load the template in /path/to/template, and associate the root element of
+this template with aController(as if we’d typed ng-controller=aController).
+
+The otherwise()  call in the last line tells the route where to go if nothing else matches.
+
+邮箱示例：
+Let’s put it to use. We’re building an email app that will easily win out over Gmail,
+Hotmail, and all the others. We’ll call it…A-Mail. 
+
+For now, let’s start simply. We’ll have
+a first view that displays a list of email messages with a date, title, and the sender. When
+you click a message, it should show you a new view with the body of that message.
+
+Due to browser security restrictions, if you’re trying the code out yourself, 
+you’ll need to serve it from a web server instead of just  file://. If you
+have python installed, you could serve it by executing 
+python -m SimpleHTTPServer 8888 from your working directory.
+
+For the main template, we’ll do something a bit different. Instead of putting everything
+in the first page loaded, we’ll just create a layout template that we’ll put our views into.
+创建布局模板。
+
+We’ll place everything that persists from view to view, like our menus, here. In this case,
+we’ll just display a heading with the name of our app. We’ll then use the  ng-view  directive
+to tell Angular where we want our views to appear.
+通过 ng-view 指令 指明视图在布局中的位置。
+
+index.html
+
+<html ng-app="AMail">
+<head>
+<script src="src/angular.js"></script>
+<script src="src/controllers.js"></script>
+</head>
+<body>
+<h1>A-Mail</h1>
+<div ng-view></div>
+</body>
+</html>
+
+As our view templates will be inserted into the shell we just created, we can write them
+as partial HTML documents. For the email list, we’ll use ng-repeat to iterate through
+a list of messages and render them into a table.
+
+list.html
+
+<table>
+<tr>
+<td><strong>Sender</strong></td>
+<td><strong>Subject</strong></td>
+<td><strong>Date</strong></td>
+
+</tr>
+<tr ng-repeat='message in messages'>
+<td>{{message.sender}}</td>
+<td><a href='#/view/{{message.id}}'>{{message.subject}}</td>
+<td>{{message.date}}</td>
+</tr>
+</table>
+
+Notice here that we’re going to let the user navigate to a particular message by clicking
+on the subject. We’ve data bound the URL to message.id, so clicking on a message with
+id=1 will take the user to  /#/view/1. 
+We’ll use this navigation-by-url, also known as deeplinking, 
+in the message detail view’s controller, to make a particular message available
+to the detail view.
+
+To create this message detail view, we’ll create a template that displays properties from
+a single message object.
+
+detail.html
+
+<div><strong>Subject:</strong>{{message.subject}}</div>
+<div><strong>Sender:</strong>{{message.sender}}</div>
+<div><strong>Date:</strong>{{message.date}}</div>
+<div>
+<strong>To:</strong>
+<span ng-repeat='recipient in message.recipients'>{{recipient}} </span>
+<div>{{message.message}}</div>
+<a href='#/'>Back to message list</a>
+
+
+Now, to associate these templates with some controllers, we’ll configure the $routeProvider 
+with the URLs that invoke our controllers and templates.
+
+controllers.js
+
+// Create a module for our core AMail services
+var aMailServices = angular.module('AMail', []);
+// Set up our mappings between URLs, templates, and controllers
+function emailRouteConfig($routeProvider) {
+	$routeProvider.
+	when('/', {
+		controller: ListController,
+		templateUrl: 'list.html'
+	}).
+	// Notice that for the detail view, we specify a parameterized URL component
+	// by placing a colon in front of the id
+	when('/view/:id', {
+		controller: DetailController,
+		templateUrl: 'detail.html'
+	}).
+	otherwise({
+		redirectTo: '/'
+	});
+}
+// Set up our route so the AMail service can find it
+aMailServices.config(emailRouteConfig);
+// Some fake emails
+messages = [{
+	id: 0, sender: 'jean@somecompany.com', subject: 'Hi there, old friend',
+	date: 'Dec 7, 2013 12:32:00', recipients: ['greg@somecompany.com'],
+	message: 'Hey, we should get together for lunch sometime and catch up.'
+	+'There are many things we should collaborate on this year.'
+	}, {
+	id: 1,  sender: 'maria@somecompany.com',
+	subject: 'Where did you leave my laptop?',
+	date: 'Dec 7, 2013 8:15:12', recipients: ['greg@somecompany.com'],
+	message: 'I thought you were going to put it in my desk drawer.'
+	+'But it does not seem to be there.'
+	}, {
+	id: 2, sender: 'bill@somecompany.com', subject: 'Lost python',
+	date: 'Dec 6, 2013 20:35:02', recipients: ['greg@somecompany.com'],
+	message: "Nobody panic, but my pet python is missing from her cage.'
+	+'She doesn't move too fast, so just call me if you see her."
+	}, ];
+
+// Publish our messages for the list template
+function ListController($scope) {
+	$scope.messages = messages;
+}
+
+// Get the message id from the route (parsed from the URL) and use it to
+// find the right message object.
+function DetailController($scope, $routeParams) {
+	$scope.message = messages[$routeParams.id];
+}
+
+We’ve created the basic structure for an app with many views. We switch views by
+changing the URL. This means that the forward and back buttons just workfor users.
+通过更改url来切换视图，这使得浏览器的前进和后退按钮有用。
+
+Users are able to bookmark and email links to views within the app, even though there
+is only one real HTML page.
+
+====
+Talking to Servers
+与服务端通信。
+
+Okay, enough messing around. Real apps generally talk to real servers. Mobile apps and
+the emerging Chrome desktop apps may be exceptions, but for everything else, whether
+you want persistence in the cloud or real-time interactions with other users, you 
+probably want your app to talk to a server.
+
+For this, Angular provides a service called $http. It has an extensive list of abstractions
+that make it easier to talk to servers. It supports vanilla HTTP, JSONP, and CORS. 
+$http 服务。
+
+It includes security provisions to protect from both JSON vulnerabilities and XSRF. It lets
+you easily transform the request and response data, and it even implements simple
+caching.
+它也实现了简单的缓存。
+
+Let’s say we want to retrieve products for our shopping site from a server instead of from
+our silly in-memory mocks. Writing the server bits is beyond the scope of this book, so
+let’s just imagine that we’ve created a service that will return a list of products as JSON
+when you make a query to /products.
+
+Given a response that looks like this:
+响应信息的格式：
+
+[
+{
+"id": 0,
+"title": "Paint pots",
+"description": "Pots full of paint",
+"price": 3.95
+},
+{
+"id": 1,
+"title": "Polka dots",
+"description": "Dots with that polka groove",
+"price": 12.95
+},
+{
+"id": 2,
+"title": "Pebbles",
+"description": "Just little rocks, really",
+"price": 6.95
+}
+...etc...
+]
+
+we could write the query like so:
+
+function ShoppingController($scope, $http) {
+	$http.get('/products').success(function(data, status, headers, config) {
+													$scope.items = data;
+												});
+}
+
+and use it in a template like this:
+
+<body ng-controller="ShoppingController">
+<h1>Shop!</h1>
+<table>
+<tr ng-repeat="item in items">
+<td>{{item.title}}</td>
+<td>{{item.description}}</td>
+<td>{{item.price | currency}}</td>
+</tr>
+</table>
+
+</div>
+</body>
+
+As we learned previously, we would be better off in the long run by delegating the work
+of talking to the server to a service that could be shared across controllers. We’ll take a
+look at this structure and the full range of $http functions in Chapter 5.
+在第5章会对 $http 做更详细的介绍。
+
+====
+Changing the DOM with Directives
+通过指令更换dom 。
+
+Directives extend HTML syntax, and are the way to associate behavior and DOM 
+transformations with custom elements and attributes. 
+Through them, you can create reusable
+UI components, configure your application, and do almost anything else you can 
+imagine wanting to do in your UI template.
+
+You can write apps with the built-in directives that come with Angular, but you’ll likely
+run into situations where you want to write your own. You’ll know it’s time to break
+into directives when you want to deal with browser events or modify the DOM in a way
+that isn’t already supported by the built-in directives. 
+This code of yours belongs in a
+directive that you write, and not in a controller, service, or any other place in your app.
+
+As with services, you define directives through the module object’s API by calling its
+directive() function, where  directiveFunction is a factory function that defines
+your directive’s features.
+
+自定义指令：
+
+var appModule = angular.module('appModule', [...]);
+
+appModule.directive('directiveName', directiveFunction);
+
+Writing the directive factory function is a deep area, and we’ve dedicated an entire
+chapter to it in this book. To whet your appetite, though, let’s look at a simple example.
+
+简单的示例：自动获得焦点。
+HTML5 has a great new attribute called autofocus that will place keyboard focus on an
+input element. You’d use it to let the user start interacting with the element via his
+keyboard without having to click on it first. 
+This is great, as it lets you declaratively
+specify what you want the browser to do without having to write any JavaScript. But
+what if you wanted to place focus on some non-input element, like a link or any div?
+如果你希望焦点落到非输入控件，例如链接或div。
+
+And what if you wanted it to work on non-HTML5 browsers as well? We could do it
+with a directive.
+
+var appModule = angular.module('app', []);
+
+appModule.directive('ngbkFocus', function() {
+	return {
+		link: function(scope, element, attrs, controller) {
+			element[0].focus();
+		}
+	};
+});
+
+
+Here, we’re returning the directive configuration object with its link function specified.
+这里返回一个指令配置对象，含有link方法。
+
+The link function gets a reference to the enclosing scope, the DOM element it lives on,
+an array of any attributes passed to the directive, and the controller on the DOM element,
+if it exists. Here, we only need to get at the element and call its focus() method.
+link方法会获得 $scope对象，所在dom元素，传给指令的参数，所在的控制器。
+
+We can then use it in an example like so:
+
+index.html
+
+<html lang='en' ng-app='app'>
+...include angular and other scripts...
+<body ng-controller="SomeController">
+<button ng-click="clickUnfocused()">
+Not focused
+</button>
+<button ngbk-focus ng-click="clickFocused()">
+I'm very focused!
+</button>
+<div>{{message.text}}</div>
+</body>
+</html>
+
+controllers.js
+
+function SomeController($scope) {
+	$scope.message = { text: 'nothing clicked yet' };
+	$scope.clickUnfocused = function() {
+		$scope.message.text = 'unfocused button clicked';
+	};
+	$scope.clickFocused = function {
+		$scope.message.text = 'focus button clicked';
+	}
+}
+
+var appModule = angular.module('app', ['directives']);
+
+When the page loads, the user will see the button labeled “I’m very focused!” with the
+focus highlight. Hitting the spacebar or the enter key will cause a click and invoke the
+ng-click, which will set the div text to ‘focus button clicked’. Opening this example in
+a browser, we’d see something that looks like Figure 2-4.
+Figure 2-4. Focus directive
+
+====
+Validating User Input
+验证用户输入。
+
+Angular automatically augments  <form>elements with several nice features suitable for
+single-page applications. One of these nice features is that Angular lets you declare valid
+states for inputs within the form and allow submission only when the entire set of
+elements is valid.
+
+For example, if we’re creating a signup form where we require entering a name and
+email, but have an optional age field, we can validate several user entries before they are
+submitted to the server. Loading the example that follows into a browser will display
+what is shown in Figure 2-5.
+Figure 2-5. Form validation
+
+We’d want to make sure the user had entered text in the name fields, that he had entered
+a properly formed email address, and that if he entered an age, it was valid.
+
+We can do this all in the template, using Angular’s extensions to <form>  and the various
+input elements, like this:
+通过html本身的属性，和一些专用的校验指令。
+
+<h1>Sign Up</h1>
+<form name='addUserForm'>
+<div>First name: <input ng-model='user.first' required></div>
+<div>Last name: <input ng-model='user.last' required></div>
+<div>Email: <input type='email' ng-model='user.email' required></div>
+<div>Age: <input type='number'
+	ng-model='user.age'
+	ng-maxlength='3'
+	ng-minlength='1'></div>
+<div><button>Submit</button></div>
+</form>
+
+Notice that we’re using the required attribute and input types for email and number
+from HTML5 to do our validation on some of the fields. This works great with Angular,
+and in older non-HTML5 browsers, Angular will polyfill these with directives that 
+perform the same jobs.
+
+We can then add a controller to this to handle the submission by changing the form to
+reference it.
+
+<form name='addUserForm' ng-controller="AddUserController">
+
+Inside the controller, we can access the validation state of the form through a property
+called $valid. Angular will set this to true when all the inputs in the form are valid. We
+can use this  $valid property to do nifty things such as disabling the Submit button
+when the form isn’t completed yet.
+$valid 当表单里的所有控件状态都有效时，form的这个状态会为 true 。
+
+We can prevent form submission in an invalid state by adding  ng-disabled to the
+Submit button:
+通过 ng-disabled 指令来阻止表单提交。
+
+<button ng-disabled='!addUserForm.$valid'>Submit</button>
+
+Finally, we might want the controller to tell the user she’s been successfully added. Our
+final template would look like:
+
+<h1>Sign Up</h1>
+<form name='addUserForm' ng-controller="AddUserController">
+<div ng-show='message'>{{message}}</div>
+<div>First name: <input name='firstName' ng-model='user.first' required></div>
+<div>Last name: <input ng-model='user.last' required></div>
+<div>Email: <input type='email' ng-model='user.email' required></div>
+<div>Age: <input type='number'
+	ng-model='user.age'
+	ng-maxlength='3'
+	ng-min='1'></div>
+<div><button ng-click='addUser()'
+ng-disabled='!addUserForm.$valid'>Submit</button>
+</ng-form>
+
+with controller:
+
+function AddUserController($scope) {
+	$scope.message = '';
+	$scope.addUser = function () {
+		// TODO for the reader: actually save user to database...
+		$scope.message = 'Thanks, ' + $scope.user.first + ', we added you!';
+	};
+}
+
+====
+Moving On
+
+In the last two chapters, we looked at all the most commonly used features in the Angular
+framework. For each feature discussed, there are many additional details we have yet to
+cover. In the next chapter, we’ll get you going by examining a typical development
+workflow.
+下一章，我们将带你体验典型的开发流程。
+

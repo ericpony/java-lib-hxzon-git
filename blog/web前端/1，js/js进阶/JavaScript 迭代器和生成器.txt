@@ -1,0 +1,301 @@
+﻿JavaScript 迭代器和生成器
+By Damon Zhao  1月 20 2014 更新日期:1月 20 2014
+http://se77en.cc/2014/01/20/iterators-and-generators-translation/
+
+文章目录
+
+1. 迭代器和生成器
+1.1. 迭代器
+1.2. 声明自定义迭代器
+1.3. 生成器：一种更好的方式来构建迭代器
+1.4. 生成器高级特性
+1.5. 生成器表达式
+
+====
+迭代器和生成器
+
+翻译自 MDN 官方文档，原文地址：Iterators and Generators
+
+处理集合里的每一项是一个非常普通的操作，JavaScript提供了许多方法来迭代一个集合，
+从简单的for和for each循环到 map()，filter() 和 array comprehensions(数组推导式)。
+在JavaScript 1.7中，迭代器和生成器在JavaScript核心语法中带来了新的迭代机制，
+而且还提供了定制 for...in 和 for each 循环行为的机制。
+
+====
+迭代器
+
+迭代器是一个每次访问集合序列中一个元素的对象，并跟踪该序列中迭代的当前位置。
+在JavaScript中迭代器是一个对象，这个对象提供了一个 next() 方法，next() 方法返回序列中的下一个元素。
+当序列中所有元素都遍历完成时，该方法抛出 StopIteration 异常。
+
+迭代器对象一旦被建立，就可以通过显式的重复调用next()，或者使用JavaScript的 for...in 和 for each 循环隐式调用。
+
+简单的对对象和数组进行迭代的迭代器可以使用 Iterator() 被创建：
+
+    var lang = { name: 'JavaScript', birthYear: 1995 };
+    var it = Iterator(lang);
+
+一旦初始化完成，next() 方法可以被调用来依次访问对象的键值对:
+
+    var pair = it.next(); //键值对是["name", "JavaScript"]
+    pair = it.next(); //键值对是["birthday", 1995]
+    pair = it.next(); //一个 `StopIteration` 异常被抛出
+
+for...in 循环可以被用来替换显式的调用 next() 方法。
+当 StopIteration 异常被抛出时，循环会自动终止。
+
+    var it = Iterator(lang);
+    for (var pair in it)
+      print(pair); //每次输出 it 中的一个 [key, value] 键值对
+
+如果你只想迭代对象的 key 值，可以往 Iterator() 函数中传入第二个参数，值为 true：
+
+    var it = Iterator(lang, true);
+    for (var key in it)
+      print(key); //每次输出 key 值
+
+使用 Iterator() 访问对象的一个好处是，被添加到 Object.prototype 的自定义属性不会被包含在序列对象中。
+
+Iterator() 同样可以被作用在数组上：
+
+    var langs = ['JavaScript', 'Python', 'Haskell'];
+    var it = Iterator(langs);
+    for (var pair in it)
+      print(pair); //每次迭代输出 [index, language] 键值对
+
+就像遍历对象一样，把 true 当做第二个参数传入遍历的结果将会是数组索引：
+
+    var langs = ['JavaScript', 'Python', 'Haskell'];
+    var it = Iterator(langs, true);
+    for (var i in it)
+      print(i); //输出 0，然后是 1，然后是 2
+
+使用 let 关键字可以在循环内部分别分配索引和值给块变量，还可以解构赋值(Destructuring Assignment)：
+
+    var langs = ['JavaScript', 'Python', 'Haskell'];
+    var it = Iterators(langs);
+    for (let [i, lang] in it)
+      print(i + ': ' + lang); //输出 "0: JavaScript" 等
+
+====
+声明自定义迭代器
+
+一些代表元素集合的对象应该用一种指定的方式来迭代。
+
+迭代一个表示范围(Range)的对象应该一个接一个的返回这个范围包含的数字；
+一个树的叶子节点可以使用深度优先或者广度优先访问到；
+迭代一个代表数据库查询结果的对象应该一行一行的返回，即使整个结果集尚未全部加载到一个单一数组；
+作用在一个无限数学序列(像斐波那契序列)上的迭代器应该在不创建无限长度数据结构的前提下一个接一个的返回结果；
+JavaScript 允许你写自定义迭代逻辑的代码，并把它作用在一个对象上。
+
+我们创建一个简单的 Range 对象，包含低和高两个值。
+
+    function Range(low, high){
+      this.low = low;
+      this.high = high;
+    }
+
+现在我们创建一个自定义迭代器，它返回一个包含范围内所有整数的序列。
+迭代器接口需要我们提供一个 next() 方法用来返回序列中的下一个元素或者是抛出 StopIteration 异常。
+
+    function RangeIterator(range){
+      this.range = range;
+      this.current = this.range.low;
+    }
+    RangeIterator.prototype.next = function(){
+      if (this.current > this.range.high)
+        throw StopIteration;
+      else
+        return this.current++;
+    };
+
+我们的 RangeIterator 通过 range 实例来实例化，同时维持一个 current 属性来跟踪当前序列的位置。
+
+最后，为了让 RangeIterator 可以和 Range 结合起来，我们需要为 Range 添加一个特殊的 __iterator__ 方法。
+当我们试图去迭代一个 Range 时，它将被调用，而且应该返回一个实现了迭代逻辑的 RangeIterator 实例。
+
+    Range.prototype.__iterator__ = function(){
+      return new RangeIterator(this);
+    };
+
+完成我们的自定义迭代器后，我们就可以迭代一个范围实例：
+
+    var range = new Range(3, 5);
+    for (var i in range)
+      print(i); //输出 3，然后 4，然后 5
+
+====
+生成器：一种更好的方式来构建迭代器
+
+虽然自定义的迭代器是一种很有用的工具，但是创建它们的时候要仔细规划，因为需要显式的维护它们的内部状态。 
+生成器提供了很强大的功能：它允许你定义一个包含自有迭代算法的函数， 同时它可以自动维护自己的状态。
+
+生成器是可以作为迭代器工厂的特殊函数。
+如果一个函数包含了一个或多个 yield 表达式，那么就称它为生成器(译者注：Node.js 还需要在函数名前加 * 来表示)。
+
+注意：只有 HTML 中被包含在 <script type="application/javascript;version=1.7">
+ (或者更高版本)中的代码块才可以使用 yield 关键字。
+ XUL (XML User Interface Language) 脚本标签不需要指定这个特殊的代码块也可以访问这些特性。
+
+当一个生成器函数被调用时，函数体不会即刻执行，它会返回一个 generator-iterator 对象。
+每次调用 generator-iterator 的 next() 方法，函数体就会执行到下一个 yield 表达式，然后返回它的结果。
+当函数结束或者碰到 return 语句，一个 StopIteration 异常会被抛出。
+
+用一个例子来更好的说明：
+
+    function simpleGenerator(){
+      yield "first";
+      yield "second";
+      yield "third";
+      for (var i = 0; i < 3; i++)
+        yield i;
+    }
+    
+    var g = simpleGenerator();
+    print(g.next()); //输出 "first"
+    print(g.next()); //输出 "second"
+    print(g.next()); //输出 "third"
+    print(g.next()); //输出 0
+    print(g.next()); //输出 1
+    print(g.next()); //输出 2
+    print(g.next()); //抛出 StopIteration 异常
+
+生成器函数可以被一个类直接的当做 __iterator__ 方法使用，在需要自定义迭代器的地方可以有效的减少代码量。
+我们使用生成器重写一下 Range ：
+
+    function Range(low, high){
+      this.low = low;
+      this.high = high;
+    }
+    Range.prototype.__iterator__ = function(){
+      for (var i = this.low; i <= this.high; i++)
+        yield i;
+    };
+    var range = new Range(3, 5);
+    for (var i in range)
+      print(i); //输出 3，然后 4，然后 5
+
+不是所有的生成器都会终止，你可以创建一个代表无限序列的生成器。
+下面的生成器实现一个斐波那契序列，就是每一个元素都是前面两个的和：
+
+    function fibonacci(){
+      var fn1 = 1;
+      var fn2 = 1;
+      while (1) {
+        var current = fn2;
+        fn2 = fn1;
+        fn1 = fn1 + current;
+        yield current;
+      }
+    }
+    
+    var sequence = fibonacci();
+    print(sequence.next()); // 1
+    print(sequence.next()); // 1
+    print(sequence.next()); // 2
+    print(sequence.next()); // 3
+    print(sequence.next()); // 5
+    print(sequence.next()); // 8
+    print(sequence.next()); // 13
+
+生成器函数可以带有参数，并且会在第一次调用函数时使用这些参数。
+生成器可以被终止(引起它抛出 StopIteration 异常)通过使用 return 语句。
+下面的 fibonacci() 变体带有一个可选的 limit 参数，当条件被触发时终止函数。
+
+    function fibonacci(limit){
+      var fn1 = 1;
+      var fn2 = 1;
+      while(1){
+        var current = fn2;
+        fn2 = fn1;
+        fn1 = fn1 + current;
+        if (limit && current > limit)
+          return;
+        yield current;
+      }
+    }
+
+====
+生成器高级特性
+
+生成器可以根据需求计算yield返回值，这使得它可以表示以前昂贵的序列计算需求，甚至是上面所示的无限序列。
+
+除了 next() 方法，generator-iterator 对象还有一个 send() 方法，该方法可以修改生成器的内部状态。
+传给 send() 的值将会被当做最后一个 yield 表达式的结果，并且会暂停生成器。
+在你使用 send() 方法传一个指定值前，你必须至少调用一次 next() 来启动生成器。
+
+下面的斐波那契生成器使用 send() 方法来重启序列：
+
+    function fibonacci(){
+      var fn1 = 1;
+      var fn2 = 1;
+      while (1) {
+        var current = fn2;
+        fn2 = fn1;
+        fn1 = fn1 + current;
+        var reset = yield current;
+        if (reset) {
+          fn1 = 1;
+          fn2 = 1;
+        }
+      }
+    }
+    
+    var sequence = fibonacci();
+    print(sequence.next());     //1
+    print(sequence.next());     //1
+    print(sequence.next());     //2
+    print(sequence.next());     //3
+    print(sequence.next());     //5
+    print(sequence.next());     //8
+    print(sequence.next());     //13
+    print(sequence.send(true)); //1
+    print(sequence.next());     //1
+    print(sequence.next());     //2
+    print(sequence.next());     //3
+
+注意：有意思的一点是，调用 send(undefined) 和调用 next() 是完全同等的。
+不过，当调用 send() 方法启动一个新的生成器时，
+除了 undefined 其它的值都会抛出一个 TypeError 异常。
+
+你可以调用 throw 方法并且传递一个它应该抛出的异常值来强制生成器抛出一个异常。
+此异常将从当前上下文抛出并暂停生成器，类似当前的 yield 执行，只不过换成了 throw value 语句。
+
+如果在抛出异常的处理过程中没有遇到 yield ，该异常将会被传递直到调用 throw() 方法，
+并且随后调用 next() 将会导致 StopIteration 异常被抛出。
+
+生成器拥有一个 close() 方法来强制生成器结束。结束一个生成器会产生如下影响：
+
+所有生成器中有效的 finally 字句将会执行；
+如果 finally 字句抛出了除 StopIteration 以外的任何异常，该异常将会被传递到 close() 方法的调用者；
+生成器会终止；
+生成器表达式。
+
+数组推导式的一个明显缺点是，它们会导致整个数组在内存中构造。
+当输入到推导式的本身是个小数组时它的开销是微不足道的
+--但是，当输入数组很大或者创建一个新的昂贵(或者是无限的)数组生成器时就可能出现问题。
+
+生成器允许对序列延迟计算(lazy computation)，在需要时按需计算元素。
+生成器表达式在句法上几乎和数组推导式相同
+--它用圆括号来代替方括号(而且用 for...in 代替 for each...in)
+--但是它创建一个生成器而不是数组，这样就可以延迟计算。
+你可以把它想象成创建生成器的简短语法。
+
+假设我们有一个迭代器 it 来迭代一个巨大的整数序列。
+我们需要创建一个新的迭代器来迭代偶数。
+一个数组推导式将会在内存中创建整个包含所有偶数的数组：
+
+    var doubles = [i * 2 for (i in it)];
+
+而生成器表达式将会创建一个新的迭代器，并且在需要的时候按需来计算偶数值：
+
+    var it2 = (i * 2 for (i in it));
+    print(it2.next());  //第一个 it 里面的偶数
+    print(it2.next());  //第二个 it 里面的偶数
+
+当一个生成器被用做函数的参数，圆括号被用做函数调用，意味着最外层的圆括号可以被省略：
+
+    var result = doSomething(i * 2 for (i in it));
+
+Pacman 主题已华丽更新，再次推荐！
+

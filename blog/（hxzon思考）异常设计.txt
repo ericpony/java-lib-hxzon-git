@@ -1,0 +1,96 @@
+﻿（hxzon思考）异常设计
+
+by hxzon
+=======
+AppRuntimeException extends RuntimeException
+应用所识别出的异常
+
+ClientRuntimeException extends AppRuntimeException
+可对用户显示的异常
+
+InternalRuntimeException extends AppRuntimeException
+不可对用户显示的异常
+
+rethrow
+重新抛出的异常
+
+error
+新生成的异常
+
+====
+
+public class AppRuntimeException extends RuntimeException
+{
+	private static final long serialVersionUID = 950013706503904204L;
+
+	protected AppRuntimeException(String message)
+	{
+		super(message);
+	}
+
+	protected AppRuntimeException(String message, Throwable cause)
+	{
+		super(message, cause);
+	}
+
+	public static AppRuntimeException rethrowInternal(Throwable cause)
+	{
+		return rethrowInternal(null, cause);
+	}
+
+	public static AppRuntimeException rethrowInternal(String message, Throwable cause)
+	{
+		// if (cause instanceof AppRuntimeException)
+		// {
+		// errorCode += (":" + cause.getMessage());
+		// }
+		if (message == null && cause instanceof AppRuntimeException)
+		{
+			return (AppRuntimeException) cause;
+		}
+		return new InternalRuntimeException(message, cause);
+	}
+
+	public static AppRuntimeException errorInternal(String message)
+	{
+		return new InternalRuntimeException(message, null);
+	}
+
+	public static AppRuntimeException errorToClient(String message)
+	{
+		return new ClientRuntimeException(message);
+	}
+
+	public static AppRuntimeException rethowToClient(String message, Throwable cause)
+	{
+		return new ClientRuntimeException(message, cause);
+	}
+
+	// 携带可显示给最终用户的信息
+	public static class ClientRuntimeException extends AppRuntimeException
+	{
+		private static final long serialVersionUID = 2010247104673727882L;
+
+		protected ClientRuntimeException(String message)
+		{
+			this(message, null);
+		}
+
+		protected ClientRuntimeException(String message, Throwable cause)
+		{
+			super(MessageBundles.getBundle().getString(message), cause);
+		}
+	}
+
+	// 应用异常
+	public static class InternalRuntimeException extends AppRuntimeException
+	{
+		private static final long serialVersionUID = 2010247104673727882L;
+
+		protected InternalRuntimeException(String message, Throwable cause)
+		{
+			super(message, cause);
+		}
+	}
+}
+

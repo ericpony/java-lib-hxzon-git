@@ -1,0 +1,734 @@
+﻿《angularjs》第5章-与服务端通信
+
+注释 by hxzon
+
+====
+目录：
+
+5. Communicating with Servers  101
+
+Communicating Over $http 101
+Configuring Your Request Further 103
+Setting HTTP Headers  104
+Caching Responses 105
+Transformations on Requests and Responses 106
+Unit Testing  107
+Working with RESTful Resources  108
+The Declaration 111
+Custom Methods 111
+No Callbacks! (Unless You Really Want Them) 112
+Simplified Server-Side Operations  112
+Unit Test the ngResource  112
+The $q and the Promise 113
+Response Interception 115
+Security Considerations 115
+JSON Vulnerability  116
+XSRF  116
+
+====
+Communicating with Servers
+
+Up to this point, we have mostly seen how your AngularJS application should be laid
+out, how the different AngularJS pieces fit together and work, and a bit on how 
+templating in AngularJS works. Together, this allows you to build some sleek, sexy apps,
+but they are restricted mostly to the client side. We saw a little bit of the server-side
+communication with the $http service back in Chapter 2, but in this chapter, we’ll dig
+a little bit deeper into how you would use it in a real-world application.
+
+In this chapter, we will talk about how AngularJS allows you to communicate with your
+server, both at the lowest levels of abstraction and with the nice wrappers that it provides.
+
+Furthermore, we will go into how AngularJS can help you speed up your application
+with its built-in caching mechanism. 
+内建的缓存机制。
+If you want to develop a realtime application with
+AngularJS using SocketIO, there is an example in Chapter 8 of a possible way to wrap
+SocketIO as a directive and use it, so we won’t cover that here.
+第8章讲解如何将 SocketIO 变成一个指令。
+
+====
+Communicating Over $http
+
+The traditional way of making a request to the server from AJAX applications (using
+XMLHttpRequests) involves getting a handle on the  XMLHttpRequest  object, making the
+request, reading the response, checking the error codes, and finally processing the server
+response. It goes something like this:
+
+var xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange = function() {
+	if (xmlhttp.readystate == 4 && xmlhttp.status == 200) {
+		var response = xmlhttp.responseText;
+	} else if (xmlhttp.status == 400) { // or really anything in the 4 series
+		// Handle error gracefully
+	}
+};
+
+// Setup connection
+xmlhttp.open(“GET”, “http://myserver/api”, true);
+// Make the request
+xmlhttp.send();
+
+This is a lot of work for such a simple, common, and often repeated task. If you want
+to do it repeatedly, you will likely end up creating wrappers or using a library.
+
+The AngularJS XHR API follows what is commonly known as the Promise interface.
+As XHRs are asynchronous method calls, the response from the server will come back
+at an unknown future date and time (hopefully almost immediately!). The Promise
+interface guarantees how such responses will be dealt with, and allows consumers of the
+Promise to use them in a predictable manner.
+提供了“承诺”接口。
+
+Suppose we wanted to fetch a user’s information from our server. If the API is available
+at /api/user, and accepts the id as a URL parameter, then our XHR request using Angular’s 
+core $http service would look something like the following:
+
+$http.get('api/user', {params: {id: '5'}
+}).success(function(data, status, headers, config) {
+	// Do something successful.
+}).error(function(data, status, headers, config) {
+	// Handle the error
+});
+
+If you are from the jQuery world, you should notice how similarly AngularJS and jQuery
+interact with asynchronous requests.
+
+The $http.get method we used in the preceding example is just one of the many convenience 
+methods that the core  $http AngularJS service provides. Similarly, if you
+wanted to make a POST request using AngularJS with the same URL parameters and
+some POST data, you would do so as follows:
+
+var postData = {text: 'long blob of text'};
+// The next line gets appended to the URL as params
+// so it would become a post request to /api/user?id=5
+var config = {params: {id: '5'}};
+$http.post('api/user', postData, config
+).success(function(data, status, headers, config) {
+	// Do something successful
+}).error(function(data, status, headers, config) {
+	// Handle the error
+});
+
+Similar convenience methods are provided for most of the common request types, including:
+
+• GET
+• HEAD
+• POST
+• DELETE
+• PUT
+• JSONP
+
+====
+Configuring Your Request Further
+更多的http请求配置。
+
+At times, the standard request options provided out of the box are not enough. This
+could be because you want to:
+
+• Add some authorization headers for your request
+• Change how caching is handled for the request
+• Transform the request going out, or the response coming in, in certain set ways
+
+In such cases, you can configure your request further through the optional configuration
+object passed to the requests. In the prior example, we used the config object to specify
+optional URL parameters. But even the GET and POST methods we showed there are
+convenience methods. The barebones method call would look something like:
+
+$http(config)
+
+What follows is a basic pseudo-code template for calling this method:
+
+$http({
+	method: string,
+	url: string,
+	params: object,
+	data: string or object,
+	headers: object,
+	transformRequest: function transform(data, headersGetter) or	an array of functions,
+	transformResponse: function transform(data, headersGetter) or	an array of functions,
+	cache: boolean or Cache object,
+	timeout: number,
+	withCredentials: boolean
+});
+
+The GET, POST, and other convenience methods set the method, so you don’t need to.
+
+The config object gets passed in as the last argument to  $http.get,  $http.post, so you
+can still use it while using any of the convenience methods.
+
+You can change the request being made by passing the config  object set with the following keys:
+
+method
+A string representing the HTTP request type, like GET, or POST
+
+url
+A URL string representing the absolute or relative URL of the resource being requested
+
+--
+params
+An object (a map to be precise) of string-to strings, representing keys and values
+that will be translated to URL parameters. For example:
+
+[{key1: 'value1', key2: 'value2'}]
+
+would be converted to:
+
+?key1=value1&key2=value2
+
+after the URL. If we use an object, instead of a string or a number, for the value, the
+object will be converted to a JSON string.
+
+--
+data
+A string or an object that will be sent as the request message data
+
+timeout
+The time in milliseconds to wait before the request is treated as timed out
+
+There are a few more options that can be configured, which we will explore in more
+depth in the following sections.
+
+====
+Setting HTTP Headers
+设置http请求头部。
+
+AngularJS has default headers which it applies to all outgoing requests, which include
+the following:
+
+1. Accept: application/json, text/plain, /
+2. X-Requested-With: XMLHttpRequest
+
+If there are any special headers you want to set, there are two ways of doing so.
+
+The first way, if you think you are going to apply these headers to each and every out‐
+going request, is to make your special header part of the default headers for AngularJS.
+
+These are set in the $httpProvider.defaults.headersconfiguration object. This step
+is usually done in the  configpart of setting up your app. So if you wanted to enable
+“DO NOT TRACK” for all your GET requests, while removing the Requested-With
+header for all your requests, you could simply do the following:
+全局设置。
+
+angular.module('MyApp',[]).
+config(function($httpProvider) {
+	// Remove the default AngularJS X-Request-With header
+	delete $httpProvider.default.headers.common['X-Requested-With'];
+	// Set DO NOT TRACK for all Get requests
+	$httpProvider.default.headers.get['DNT'] = '1';
+});
+
+局部设置。
+If you want to set the headers for only certain requests, but not as a default, then you
+can pass the header in as part of the config object to $http service. The same custom
+header can be passed to a GET request as part of the second parameter, which also takes
+your URL parameters:
+
+$http.get('api/user', {
+	// Set the Authorization header. In an actual app, you would get the auth
+	// token from a service
+	headers: {'Authorization': 'Basic Qzsda231231'},
+	params: {id: 5}
+}).success(function() { // Handle success });
+
+For a full-fledged example of how to handle authorization within your application, turn
+to the Cheatsheets example in Chapter 8.
+
+====
+Caching Responses
+缓存响应。
+
+AngularJS provides a simple caching system for your HTTP GET requests out of the
+box. It comes disabled for all requests by default, but to enable caching for your requests,
+all you need to do is:
+启用缓存。
+
+$http.get('http://server/myapi', {
+	cache: true
+}).success(function() { // Handle success });
+
+This enables the cache, and AngularJS stores the response from the server. The next
+time a request is made for the same URL, AngularJS returns the response from the cache.
+再次访问相同的url，则不会向服务器请求数据。
+
+The cache is also smart, so even if you make multiple simultaneous requests for the
+same URL, only one request is made to the server and the response is used to fulfill all
+the requests.
+
+However, this might be jarring from a usability standpoint, as a user would first see the
+old results, then the new results would suddenly show up. For example, a user might be
+about to click on an item, and it might change under him.
+
+Note that the response (even if it is being served from the cache), is still asynchronous
+in nature. In other words, expect your code to behave as it did when it first made the
+request.
+
+====
+Transformations on Requests and Responses
+
+AngularJS applies some basic transformations on all requests and responses made
+through its $http service. These include:
+
+Request transformations
+
+If the data property of the requested configobject contains an object, serialize it
+into JSON format.
+
+Response transformations
+If an XSRF prefix is detected, strip it. If a JSON response is detected, deserialize it
+using a JSON parser.
+
+If you don’t want some of the transformations, or want to add your own, then you can
+pass in your functions as part of the  config. These functions get the HTTP request/response body, 
+as well as the headers, and respond with the serialized, modified version.
+
+Set these config functions using the  transformRequest  and transformResponse  keys,
+which are configured using the $httpProvider service in the  config  function of the
+module.
+
+When would we use these? Let us assume that we have a server which is more attuned
+to the jQuery way of doing things. It would expect our POST data to come in the form
+key1=val1&key2=val2(that is, a string), instead of the JSON form of  {key1: val1,
+key2: val2}. 
+
+While we could make this change at every request, or add a  transform
+Requestcall individually, for the purpose of this example, we are going to add a general
+transformRequest, so that for all outgoing calls, this transformation from JSON form
+to a string happens. Here’s how we would do this:
+
+全局请求数据的转换。
+
+var module = angular.module('myApp');
+module.config(function ($httpProvider) {
+		$httpProvider.defaults.transformRequest = function(data) {
+		// We are using jQuery’s param method to convert our
+		// JSON data into the string form
+		return $.param(data);
+	};
+});
+
+====
+Unit Testing
+单元测试。
+
+So far , we have seen how you can use the  $http service and configure it in all the possible
+ways you might want to. But what about writing some unit tests to ensure that it actually
+works?
+
+As we have mentioned repeatedly, AngularJS was designed with testing in mind, so of
+course it has a mocked backend that allows you to test whether the right requests are
+being made, and even to control how and when the response is handled, right from your
+unit test.
+
+Let us explore how you would unit test a controller that makes a request to your server,
+fetches some data from it, and sets it on the scope to be displayed by the view in some
+particular format.
+
+Our NamesListCtrl is a very simple controller that has one purpose for its existence:
+to hit our names API, then store all the names on the scope.
+
+function NamesListCtrl($scope, $http) {
+	$http.get('http://server/names', {params: {filter: ‘none’}}).
+	success(function(data) {
+		$scope.names = data;
+	});
+}
+
+How would we unit test this? In our unit test, we would like to ensure that:
+
+• NamesListCtrl can find all its dependencies (and get them injected correctly).
+• The controller makes the request to fetch the names from the server as soon as it
+loads.
+• The controller correctly saves the response to the names variable on the scope.
+
+While we could construct a controller in our test, and inject a scope and fake HTTP
+service into it, let us instead construct the test the same way AngularJS would in its
+production code. This is the recommended way, despite it looking a bit more 
+complicated. Let’s take a look:
+
+describe('NamesListCtrl', function(){
+	var scope, ctrl, mockBackend;
+	// AngularJS is responsible for injecting these in tests
+	beforeEach(inject(function(_$httpBackend_, $rootScope, $controller) {
+		// This is a fake backend, so that you can control the requests
+		// and responses from the server
+		mockBackend = _$httpBackend_;
+		// We set an expectation before creating our controller,
+
+		// because this call will get triggered when the controller is created
+		mockBackend.expectGET('http://server/names?filter=none').
+		respond(['Brad', 'Shyam']);
+		scope = $rootScope.$new();
+		// Create a controller the same way AngularJS would in production
+		ctrl = $controller(PhoneListCtrl, {$scope: scope});
+}));
+
+it('should fetch names from server on load', function() {
+		// Initially, the request has not returned a response
+		expect(scope.names).toBeUndefined();
+		// Tell the fake backend to return responses to all current requests
+		// that are in flight.
+		mockBackend.flush();
+		// Now names should be set on the scope
+		expect(scope.names).toEqual(['Brad', 'Shyam’]);
+		});
+});
+
+====
+Working with RESTful Resources
+
+The $http service provides a very low-level implementation that allows you to make
+XHR requests, but still gives you a lot of control and flexibility. But in a majority of cases,
+we deal with objects and object models that are encapsulated with certain properties
+and methods, like a person object (with his details), or a credit card object.
+
+In such cases, wouldn’t it be nice if we could create a JS object that understands and
+represents this object model? If we could just edit the properties of this object, say save
+or update, and the state would get persisted on the server?
+
+The $resource allows for this very capability. AngularJS resources allow us to define
+object models, and in a descriptive manner, to specify:
+
+• The server-side URL for the resource
+• The types of parameters that are commonly seen for such requests
+
+• Some additional methods (you automatically get  get,  save,  query,  remove, and
+delete for free) that encapsulate specific functionality and business logic for the
+object model (like charge()for a credit card)
+
+• The expected types of responses (an array or an object)
+• The headers
+
+When Can You Use Angular Resources?
+
+You should only use Angular resources if your server side behaves in a RESTful manner.
+当你的服务器是 restful 风格时，才使用 angular 资源。
+
+For the case of a credit card, which we will be using as an example in this part of the
+chapter that entails:
+
+1. A GET request to /user/123/cardreturns a list of credit cards for U ser 123.
+2. A GET request to /user/123/card/15returns the credit card with ID 15 for U ser 123.
+3. A POST request to /user/123/card with credit card info in the POST data creates a
+new credit card for User 123.
+4. A POST request to  /user/123/card/15with credit card info in the POST data updates
+the credit card for User 123 with ID 15.
+5. A DELETE request to /user/123/card/15  deletes the credit card with ID 15 for User
+123.
+
+In addition to providing objects that allow you to query the server as per your requirements,  
+$resource also allows you to work with the returned objects as if they were
+persisted data models, make changes, and ask them to be persisted.
+
+The ngResource is a separate, optional module. To use it, you need to:
+
+• Include the angular-resource.js in your script files that are sourced.
+• Include  ngResource in your module dependency declaration (such as,  
+angular.module(‘myModule’, [‘ngResource’])).
+
+• Use inject $resource where needed.
+
+
+Before we look at how we would use the ngResource method of creating a resource, let
+us take a look at what it would take to create something similar using the base $http
+service. 
+For our credit card resource, we want to be able to get, query, and save credit
+cards, in addition to being able to “charge” a credit card.
+Here’s one possible implementation:
+示例，信用卡。
+
+myAppModule.factory('CreditCard', ['$http', function($http) {
+var baseUrl = '/user/123/card';
+return {
+get: function(cardId) {
+return $http.get(baseUrl + '/' + cardId);
+},
+save: function(card) {
+var url = card.id ? baseUrl + '/' + card.id : baseUrl;
+return $http.post(url, card);
+
+},
+query: function() {
+return $http.get(baseUrl);
+},
+charge: function(card) {
+return $http.post(baseUrl + '/' + card.id, card, {params: {charge: true}});
+}
+};
+}]);
+
+Instead, you could easily create an Angular service that reflects your resource through‐
+out the app as follows:
+myAppModule.factory('CreditCard', ['$resource', function($resource) {
+return $resource('/user/:userId/card/:cardId',
+{userId: 123, cardId: '@id'},
+{charge: {method:'POST', params:{charge:true}, isArray:false});
+}]);
+Now, whenever we ask for a CreditCardfrom the AngularJS injector, we get an Angular
+resource, which by default gives us a few methods to start off with. Table 5-1lists what
+the methods are, and how they behave, so you know how the server should be config‐
+ured.
+Table 5-1. A credit card resource
+Resource Function Method URL Expected Return
+CreditCard.get({id: 11}) GET /user/123/card/11 Single JSON
+CreditCard.save({}, ccard) POST /user/123/card with post data “ccard” Single JSON
+CreditCard.save({id: 11}, ccard) POST /user/123/card/11 with post data “ccard” Single JSON
+CreditCard.query() GET /user/123/card JSON Array
+CreditCard.remove({id: 11}) DELETE /user/123/card/11 Single JSON
+CreditCard.delete({id: 11}) DELETE /user/123/card/11 Single JSON
+Let’s take the example of a credit card, which should make things clearer.
+// Let us assume that the CreditCard service is injected here
+// We can retrieve a collection from the server which makes the request
+// GET: /user/123/card
+var cards = CreditCard.query();
+// We can get a single card, and work with it from the callback as well
+CreditCard.get({cardId: 456}, function(card) {
+// each item is an instance of CreditCard
+expect(card instanceof CreditCard).toEqual(true);
+card.name = "J. Smith";
+// non-GET methods are mapped onto the instances
+card.$save();
+
+// our custom method is mapped as well.
+card.$charge({amount:9.99});
+// Makes a POST: /user/123/card/456?amount=9.99&charge=true
+// with data {id:456, number:'1234', name:'J. Smith'}
+});
+A lot of things happen in the preceding example, so we’ll call out the important parts
+one by one:
+The Declaration
+Declaring your own $resource is as simple as calling the injected $resourcefunction
+(you know how to inject things by now, right?) with the right parameters.
+The $resource function takes one required argument—the URL at which the resource
+is available—and two optional arguments: default parameters and additional actions
+you want to configure on the resource.
+Notice that the URL parameter is parametrized (the :denotes a parameter. The :user
+Idstates that the userIdparameter will replace the text there, and the :cardIdwill be
+replaced by the value of the cardId parameter). If the parameter is not passed, then it
+will be replaced by an empty string.
+The second parameter takes care of the default parameters to be passed along with each
+request. In this case, we pass in the userIdas a constant 123. The cardIdparameter is
+more interesting. We say cardIdis "@id.” This denotes that if I am using a returned
+object from the server, and I call any method on it (such as  $save), then the  cardId  field
+is to be picked from the idproperty on the object.
+The third argument is other methods we would like to expose on our custom resource.
+We’ll cover this in depth in the following section.
+Custom Methods
+The third argument to the $resource call is optional additional methods you want to
+expose on your resource.
+In this case, we specify a method charge. This can be configured by passing in an object,
+with the key being the method name to be exposed. The configuration needs to specify
+the method type of the request (GET, POST, and so on), the parameters that need to be
+passed as part of that request (charge=true in this case), and if the returned result is an
+array or not (not, in this case). Once that is done, you are free to start calling Credit
+Card.charge()whenever you want (as long as the user has charged in real life, of
+course!).
+
+No Callbacks! (Unless You Really Want Them)
+The third thing to notice is the return type of the resource call. T ake a look at the
+CreditCard.query()call again. You will see that instead of assigning the cards in a
+callback, we are directly assigning them to the card’s variable. With an asynchronous
+server request, will that code even work?
+You would be correct to worry about whether the code will work, but the code is actually
+correct and will work. What’s happening here is that AngularJS assigned a reference (an
+object or an array, depending on the expected return type), which will get populated at
+some point in the future when the server requests returns. In the meantime, the object
+will remain empty.
+Since the most common flow with AngularJS apps is to fetch data from the server, assign
+it to a variable, and display it in the template, this shortcut is nice. In your controller
+code, all you have to do is make the server-side call, assign the return value to the right
+scope variable, and let the template worry about rendering it when it returns.
+This approach will not work for you if you have some business logic you want executed
+on the return value. In such a case, you will have to depend on the callback, which is
+used in the CreditCard.get()call.
+Simplified Server-Side Operations
+Regardless of whether you use the shortcut return type or the callback, there are some
+other points you should note about the returned object.
+The return value is not a plain old JS object, but in fact a “resource” type object. This
+means that in addition to the value returned by the server, it has some additional be‐
+havior attached to it (the $save()and $charge()in this case). This allows you to per‐
+form server-side operations with ease, for example by fetching data, making some
+changes, and persisting the changes to the server (the most common behavior in any
+CRUD app).
+Unit Test the ngResource
+The  ngResourceis an encapsulation, and uses the  $httpcore AngularJS at its base. Thus,
+you already know how to unit test it. Nothing really changes from the unit testing
+example we saw for $http. You only need to know the final request that is expected to
+be made by the resource, tell the fake $httpservice about it, and everything else should
+be exactly the same. Let’s take a look at a test for our preceding code: 
+describe('Credit Card Resource', function(){
+var scope, ctrl, mockBackend;
+beforeEach(inject(function(_$httpBackend_, $rootScope, $controller) {
+mockBackend = _$httpBackend_;
+
+scope = $rootScope.$new();
+// Assume that CreditCard resource is used by the controller
+ctrl = $controller(CreditCardCtrl, {$scope: scope});
+}));
+it('should fetched list of credit cards', function() {
+// Set expectation for CreditCard.query() call
+mockBackend.expectGET('/user/123/card').
+respond([{id: '234', number: '11112222'}]);
+ctrl.fetchAllCards();
+// Initially, the request has not returned a response
+expect(scope.cards).toBeUndefined();
+// Tell the fake backend to return responses to all current requests
+// that are in flight.
+mockBackend.flush();
+// Now cards should be set on the scope
+expect(scope.cards).toEqualData([{id: '234', number: '11112222'}]);
+});
+});
+This test should look extremely similar to the simple  $http  unit test, except for one
+minor difference. Notice how in our expectation, instead of using the simple “equals”
+method, we are using a special toEqualData call. This expectation is smart enough to
+ignore the additional methods that the ngResourceadds to an object.
+The $q and the Promise
+So far, we have seen how AngularJS implements its asynchronous, deferred API. The
+Promise proposal is the basis for how AngularJS structures its API. At its base, the
+Promise proposal dictates the following for asynchronous requests:
+• Async requests return a promise instead of a return value.
+• The Promise has a thenfunction, which takes two arguments, a function to handle
+the “resolved” or “success” event, and a function to handle the “rejected” or the
+“failure” event. These functions are called with the result, or the reason for the
+rejection.
+• It is guaranteed that one of the two callbacks will be called, as soon as the result is
+available.
+While most deferred/Q implementations follow this kind of approach, AngularJS’ im‐
+plementation is special for the following reasons:
+
+• The $qis AngularJS aware, and thus is integrated with the scope model. This allows
+for faster propagation of resolution and less flicker/updates in the UI
+• AngularJS templates also recognize the $q promises, and thus they can be treated
+as the resultant value themselves instead of a promise, which will be notified of the
+result.
+• A smaller footprint, as AngularJS implements only the basic, most important func‐
+tionality needed for common async tasks.
+Y ou might ask the question: why would you want to do something so crazy? Let’s take
+a look at a standard problem you might run into with asynchronous functions:
+fetchUser(function(user) {
+fetchUserPermissions(user, function(permissions) {
+fetchUserListData(user, permissions, function(list) {
+// Do something with the list of data that you want to display
+});
+});
+});
+This is the dreaded pyramid of doom that people complain about when working with
+JavaScript. The asynchronous nature of returns competes with the synchronous needs
+of the program, leading to multiple nested functions, making it that much harder to
+keep track of the current context.
+In addition, there is also the matter of error handling. What is the best way to handle
+errors? Do you do it in each step? That also gets messy.
+To fix this, the Promise proposal offers the concept of then, which takes the functions
+to execute in case of a success, on one hand, and error on the other, each of which can
+also be chained. So the preceding example, with the Promise API (AngularJS’ imple‐
+mentation, at least), could be flattened to:
+var deferred = $q.defer();
+var fetchUser = function() {
+// After async calls, call deferred.resolve with the response value
+deferred.resolve(user);
+// In case of error, call
+deferred.reject(‘Reason for failure’);
+}
+// Similarly, fetchUserPermissions and fetchUserListData are handled
+deferred.promise.then(fetchUser)
+.then(fetchUserPermissions)
+.then(fetchUserListData)
+.then(function(list) {
+// Do something with the list of data
+}, function(errorReason) {
+
+// Handle error in any of the steps here in a single stop
+});
+The whole pyramid is flattened nicely, and provides scope for chaining, as well as a
+single point of error handling. You can use the same code in your application for han‐
+dling asynchronous calls by including the $q AngularJS service. This mechanism also
+allows us to do something very cool: response interception!
+Response Interception
+We have covered making calls to the server, handling responses, wrapping the responses
+nicely in abstractions, and dealing with asynchronous calls. But in any real world ap‐
+plication, you would end up having to do some common operations for each server call
+you made, tasks such as error handling, authentication, and other security considera‐
+tions like pruning the data.
+With a solid understanding of the $qAPI, we can now set about doing all of the above
+using Response Interceptors. Response Interceptors allow you (as the name would
+suggest) to intercept responses before they make it to the application, and apply your
+transformations, error handling, and everything else, including the kitchen sink.
+Let us take an example which intercepts the responses and does some minor data trans‐
+formation.
+// register the interceptor as a service
+myModule.factory('myInterceptor', function($q, notifyService, errorLog) {
+return function(promise) {
+return promise.then(function(response) {
+// Do nothing
+return response;
+}, function(response) {
+// My notify service updates the UI with the error message
+notifyService(response);
+// Also log it in the console for debug purposes
+errorLog(response);
+return $q.reject(response);
+});
+}
+});
+// Ensure that the interceptor we created is part of the interceptor chain
+$httpProvider.responseInterceptors.push('myInterceptor');
+Security Considerations
+Now, when working with web applications, security is a huge concern and should be
+kept at the top of one’s mind. AngularJS does provide some assistance when it comes
+to two common attack vectors, which we will cover in the following sections.
+
+JSON Vulnerability
+There is a very subtle JSON vulnerability which is exposed when a GET request is made
+to retrieve JSON information as an array (especially if the information is sensitive and
+requires login credentials or authentication to access). 
+The vulnerability involves a malicious site which uses a <SCRIPT>tag to make a request
+for the same information. Because you are still logged in, the malicious site uses your
+credential to request the JSON information, and gets it.
+You might wonder how, because that information is still on your client, and the server
+cannot get a handle on that information. And usually, JSON objects returned as a result
+of sourcing a script will cause an error, though arrays are an exception.
+But here’s where the vulnerability kicks in: in JavaScript, it is possible to rewrite or redeclare built-in objects. In this vulnerability, the array constructor gets redefined, and
+in this redefinition, the malicious website can get a handle on the data, and send it to
+its own server.
+There are two ways to prevent this vulnerability: always ensure that sensitive informa‐
+tion is sent by JSON as a response to POST requests only, and return an object, or an
+invalid JSON expression as your result, then have some client-side logic to convert it
+into the actual data.
+AngularJS allows you to prevent this vulnerability in both of these ways. In your appli‐
+cation, you can (and should!) choose to retrieve JSON information through POST re‐
+quests only.
+Furthermore, you can configure your server to prefix:
+")]}',\n"
+before all your JSON responses. Thus, a normal response of:
+[‘one’, ‘two’]
+would be returned as:
+)]}',
+['one', 'two']
+AngularJS will automatically strip this prefix and only then process the JSON.
+XSRF
+XSRF (Cross-Site Request Forgery) attacks usually have the following characteristics:
+• They involve sites that rely on authentication or a user’s identity.
+• They exploit the fact that the user remains logged in and authenticated to the site
+with the vulnerability .
+
+• They make spurious HTTP/XHR requests that have (often harmful) side effects.
+Consider the following example of an XSRF attack:
+• User A is logged into his bank account (http://www.examplebank.com)
+• User B realizes this, and gets User A to visit User B’s home page
+• The home page has a specially crafted image link which triggers the XSRF attack
+<img src="http://www.examplebank.com/xfer?from=UserA&amount=10000&to=UserB">
+If U ser A’s bank keeps the authentication information in a cookie, and it hasn’t expired,
+then when User A opens User B’s website, it would trigger an unauthorized transfer
+from User A to User B.
+So how does AngularJS help prevent this? It provides a two-step mechanism to prevent
+XSRF vulnerabilities.
+On the client side, when performing XHR requests, the $httpservice reads a token from
+a cookie called XSRF-TOKEN and sets it as an HTTP header X-XSRF-TOKEN. Since
+only your requests from your domain could have read and set the token, you can be
+assured that the XHR came from your domain.
+This also requires a slight modification of your server code, so that it sets a readable
+session cookie called XSRF-TOKEN on the first HTTP GET request. Subsequent re‐
+quests to the server can verify that the value in the HTTP header matches the XSRF
+token set in the first request. Of course the token must be unique to every user, and
+must be verifiable by the server (to prevent the JavaScript from making up its own
+tokens).
+

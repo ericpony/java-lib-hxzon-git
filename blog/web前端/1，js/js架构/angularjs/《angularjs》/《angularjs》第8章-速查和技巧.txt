@@ -1,0 +1,933 @@
+﻿《angularjs》第8章-速查和技巧
+
+注释 by hxzon
+====
+目录：
+
+Wrapping a jQuery Datepicker 153
+ng-model  155
+Binding select 155
+Calling select  155
+The Rest of the Example 156
+The Teams List App: Filtering and Controller Communication 157
+The Search Box 161
+The Combo Boxes 161
+The Check Box  161
+The Repeater  161
+File Upload in AngularJS 162
+Using Socket.IO  164
+A Simple Pagination Service  167
+Working with Servers and Login 171
+Conclusion  174
+
+====
+Cheatsheet and Recipes
+
+By now , we have covered pretty much all the different parts of the Angular, including
+directives, services, controllers, resources, and so much more. But even we know that
+sometimes just reading about it isn’t enough. And sometimes we don’t care about how
+any of that works, we just want to know how to do that one thing with AngularJS?
+In this chapter, we take a stab at giving complete coding samples (with little bits of info
+and pointers to explain what is happening) for some common problems we tackle in
+most web apps. They are in no particular order, so feel free to jump to whichever ones
+you care about, or go through them in order. You are the boss!
+The examples covered in this chapter include:
+1. Wrapping a jQuery Datepicker
+2. The Teams List App: Filtering and Controller Communication
+3. File Upload in AngularJS
+4. Using socket.IO
+5. A Simple Pagination Service
+6. Working with Servers
+Wrapping a jQuery Datepicker
+This example can be found in chapter8/datepickeron our GitHub page.
+Even before we jump into the code, we have to decide how our component is going to
+look and work. Let’s say we want to define our datepicker in HTML as follows:
+<input datepicker ng-model="currentDate" select="updateMyText(date)"></input>
+
+That is, we want to modify the Input field by adding an attribute datepicker, and adding
+some more functionality to it (like data binding with the model and the ability to be
+notified when a date is selected). So how would we go about it?
+We will re-use existing functionality, the jQuery UI’s datepicker, instead of building a
+datepicker from scratch. We just need to hook it up to AngularJS and latch onto the
+hooks it provides:
+angular.module('myApp.directives', [])
+.directive('datepicker', function() {
+return {
+// Enforce the angularJS default of restricting the directive to
+// attributes only
+restrict: 'A',
+// Always use along with an ng-model
+require: '?ngModel',
+scope: {
+// This method needs to be defined and
+// passed in to the directive from the view controller
+select: '&'  // Bind the select function we refer to the
+// right scope
+},
+link: function(scope, element, attrs, ngModel) {
+if (!ngModel) return;
+var optionsObj = {};
+optionsObj.dateFormat = 'mm/dd/yy';
+var updateModel = function(dateTxt) {
+scope.$apply(function () {
+// Call the internal AngularJS helper to
+// update the two-way binding
+ngModel.$setViewValue(dateTxt);
+});
+};
+optionsObj.onSelect = function(dateTxt, picker) {
+updateModel(dateTxt);
+if (scope.select) {
+scope.$apply(function() {
+scope.select({date: dateTxt});
+});
+}
+};
+ngModel.$render = function() {
+// Use the AngularJS internal 'binding-specific' variable
+element.datepicker('setDate', ngModel.$viewValue || '');
+};
+element.datepicker(optionsObj);
+}
+
+};
+});
+Most of the code is pretty straightforward, but let us walk through some of the more
+important bits:
+ng-model
+We get an ng-model attribute passed into the linking function of the directive. The ngmodel(which is mandatory for the directive to function because of the  require  attribute
+inside the directive definition) allows us to define how the attribute and object linked
+to the ng-model behave in the context of the directive. There are two things you need
+to pay attention to:
+ngModel.$setViewValue(dateTxt)
+This is called when something external to AngularJS (in this case, the onSelectof
+the jQuery UI datepicker) happens. This lets AngularJS know that it has to update
+the model. This is usually called when a DOM event happens.
+ngModel.$render
+This is the other part to the ng-model. This tells Angular how to update the view
+when the model changes. In our case, we just pass on to the jQuery UI that the
+datepicker value has changed.
+Binding select
+Instead of using the attribute value and evaluating it as a string against the scope (in
+which case, nested functions and objects won’t be accessible), we use function binding
+(the “&” scope binding). This creates a new function on the scope called select, which
+takes one argument—an object. Each key in this object must match an argument speci‐
+fied in the HTML where the directive is used. The value for that key will be the value
+passed to the function as that argument. The added advantage is that this decouples the
+controller implementation from having to know anything about the DOM or the di‐
+rective. The  callbackfunction just performs its behavior given certain arguments, and
+does not need to know about the binding or the updates.
+Calling select
+Notice that we pass in an  optionsObjto the datepicker, with an  onSelect  function.
+jQuery UI is responsible for calling the onSelect function, which will usually happen
+outside of AngularJS’ execution context. Of course, when functions like onSelectare
+called, AngularJS has no clue. It is up to us to let AngularJS know that it needs to act on
+stuff. How do we do that? By using scope.$apply.
+
+Now we could just as easily do the $setViewValue and call the scope.select outside
+scope.$apply, and then just call  scope.$apply(). But then any exceptions that happen
+in either of these two steps are silently dropped. If they happen within a  scope.$ap
+plyfunction, then they are captured by AngularJS.
+The Rest of the Example
+To complete the example, let us take a look at our controller code, and then the HTML
+to get it working:
+var app = angular.module('myApp', ['myApp.directives']);
+app.controller('MainCtrl', function($scope) {
+$scope.myText = 'Not Selected';
+$scope.currentDate = '';
+$scope.updateMyText = function(date) {
+$scope.myText = 'Selected';
+};
+});
+Pretty simple stuff. We declare a controller, set some scope variables, and then create a
+scope method (updateMyText) that we will later use for binding to the  on-select  event
+of the datepicker. On to the HTML next:
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head lang="en">
+<meta charset="utf-8">
+<title>AngularJS Datepicker</title>
+<script
+src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js">
+</script>
+<script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js">
+</script>
+<script
+src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/
+angular.min.js">
+</script>
+<link rel="stylesheet"
+href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css">
+<script src="datepicker.js"></script>
+<script src="app.js"></script>
+</head>
+<body ng-controller="MainCtrl">
+<input id="dateField"
+datepicker
+ng-model="$parent.currentDate"
+select="updateMyText(date)">
+
+<br/>
+{{myText}} - {{currentDate}}
+</body>
+</html>
+Notice how the select attribute is specified. There is no value “date” on the scope. But
+because of the way we have set up our function binding in the directive, AngularJS now
+knows that the function will take an argument, whose name will be “date.” This is what
+we specified as an object when the onSelectof the datepicker is called.
+For the  ng-model, we specify  $parent.currentDateinstead of  currentDate. Why? Because
+our directive creates an isolated scope so that we can have the  selectfunction bound.
+This makes it so that the currentDate  is no longer linked by ng-model  even if we set it.
+So we have to explicitly tell AngularJS that the currentDate it needs to refer to is not
+in the isolated scope, but in its parent scope.
+With this, when you load it up in your browser, you would see a text box that, when
+clicked, exposes the jQuery UI datepicker. On select, it updates the text on the screen
+from “Not Selected” to “Selected,” and your date. The date in the input field is also
+updated.
+The Teams List App: Filtering and Controller
+Communication
+In this example, we tackle multiple things at the same time, but there are two major
+takeaways: 
+1. How do you use filters—especially in a clean, simple way—with repeaters?
+2. How do you communicate between controllers that do not share an inheritance
+relation?
+The app itself is quite simple. There is data, which is a list of teams from various sport,
+such as basketball, football (the NFL kind, not the soccer kind), and hockey. For each
+of these teams, we have the name, the city, the sport, and whether the team is featured
+or not.
+What we want to do is display this list, and also display filters on the left that immediately
+update the list as you modify them. We are going to have two controllers: one for storing
+the data, and the other to work with the filters. And we are going to use a service to
+communicate the changes to the filter between the ListCtrland the FilterCtrl.
+Let us take a look at the service first, which is going to drive the application:
+angular.module('myApp.services', []).
+factory('filterService', function() {
+
+return {
+activeFilters: {},
+searchText: ''
+};
+});
+Whoa. That’s it, you ask? Yes. What we are doing here is leveraging the fact that Angu‐
+larJS services are singleton (that’s singleton with a small “s”—singleton within the scope,
+but not globally visible or accessible). When we declare the filterService, we are guar‐
+anteed to have only one instance of the filterServicefor the entire myApp.
+We then end up using the filterService as a communication channel between the Fil
+terCtrland the ListCtrl, as both can bind to it and access stuff as it is updated. Both
+of these controllers are actually dead simple, as they do nothing but simple assignment:
+var app = angular.module('myApp', ['myApp.services']);
+app.controller('ListCtrl', function($scope, filterService) {
+$scope.filterService = filterService;
+$scope.teamsList = [{
+id: 1, name: 'Dallas Mavericks', sport: 'Basketball',
+city: 'Dallas', featured: true
+}, {
+id: 2, name: 'Dallas Cowboys', sport: 'Football',
+city: 'Dallas', featured: false
+}, {
+id: 3, name: 'New York Knicks', sport: 'Basketball',
+city: 'New York', featured: false
+}, {
+id: 4, name: 'Brooklyn Nets', sport: 'Basketball',
+city: 'New York', featured: false
+}, {
+id: 5, name: 'New York Jets', sport: 'Football',
+city: 'New York', featured: false
+}, {
+id: 6, name: 'New York Giants', sport: 'Football',
+city: 'New York', featured: true
+}, {
+id: 7, name: 'Los Angeles Lakers', sport: 'Basketball',
+city: 'Los Angeles', featured: true
+}, {
+id: 8, name: 'Los Angeles Clippers', sport: 'Basketball',
+city: 'Los Angeles', featured: false
+}, {
+id: 9, name: 'Dallas Stars', sport: 'Hockey',
+city: 'Dallas', featured: false
+}, {
+id: 10, name: 'Boston Bruins', sport: 'Hockey',
+city: 'Boston', featured: true
+}
+];
+});
+
+app.controller('FilterCtrl', function($scope, filterService) {
+$scope.filterService = filterService;
+});
+Y ou might be wondering, where is the complexity? AngularJS does make it this easy. All
+we have left to do is to pull this all together in the template:
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head lang="en">
+<meta charset="utf-8">
+<title>Teams List App</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js">
+</script>
+<script
+src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js">
+</script>
+<link rel="stylesheet"
+href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.1.1/
+css/bootstrap.min.css">
+<script
+src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.1.1/
+bootstrap.min.js">
+</script>
+<script src="services.js"></script>
+<script src="app.js"></script>
+</head>
+<body>
+<div class="row-fluid">
+<div class="span3" ng-controller="FilterCtrl">
+<form class="form-horizontal">
+<div class="controls-row">
+<label for="searchTextBox" class="control-label">Search:</label>
+<div class="controls">
+<input type="text"
+id="searchTextBox"
+ng-model="filterService.searchText">
+</div>
+</div>
+<div class="controls-row">
+<label for="sportComboBox" class="control-label">Sport:</label>
+<div class="controls">
+<select id="sportComboBox"
+ng-model="filterService.activeFilters.sport">
+<option ng-repeat="sport in ['Basketball', 'Hockey', 'Football']">
+{{sport}}
+</option>
+</select>
+
+</div>
+</div>
+<div class="controls-row">
+<label for="cityComboBox" class="control-label">City:</label>
+<div class="controls">
+<select id="cityComboBox"
+ng-model="filterService.activeFilters.city">
+<option ng-repeat="city in ['Dallas', 'Los Angeles',
+'Boston', 'New York']">
+{{city}}
+</option>
+</select>
+</div>
+</div>
+<div class="controls-row">
+<label class="control-label">Featured:</label>
+<div class="controls">
+<input type="checkbox"
+ng-model="filterService.activeFilters.featured"
+ng-false-value="" />
+</div>
+</div>
+</form>
+</div>
+<div class="offset1 span8" ng-controller="ListCtrl">
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Sport</th>
+<th>City</th>
+<th>Featured</th>
+</tr>
+</thead>
+<tbody id="teamListTable">
+<tr ng-repeat="team in teamsList | filter:filterService.activeFilters |
+filter:filterService.searchText">
+<td>{{team.name}}</td>
+<td>{{team.sport}}</td>
+<td>{{team.city}}</td>
+<td>{{team.featured}}</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</body>
+</html>
+
+There are really only four items of interest in this entire HTML template. Everything
+else you have seen a few dozen times by now (even these items have been there in some
+form or another). Let us go over them one by one.
+The Search Box
+The search box just binds to the filterService.searchTextfield using an ng-model.
+In and of itself, it is nothing noteworthy, but the way this is later used in the filter makes
+this step essential.
+The Combo Boxes
+There are two combo boxes, even though we have only highlighted the first. Both of
+them work the same way. They are both bound to  filterService.activeFil
+ters.sportsor city (depending on the box), which basically sets the sports (or city)
+property on the filters object in the filtersService.
+The Check Box
+The check box binds to filterService.activeFilters.featured. The thing to note
+is that when featured is checked, we want to show only those teams with  featured =
+true. When it is unchecked, we want to show teams with  featured = trueand  fea
+tured = false. For this, we use the  ng-false-value=""  directive to say that the fea
+turedfilter should be cleared when the checkbox is unchecked.
+The Repeater
+Let us take a look at the ng-repeatstatement one more time: 
+"team in teamsList | filter:filterService.activeFilters |
+filter:filterService.searchText"
+The first part is the same as always. It is the two new filters that make all the difference.
+The first filter tells AngularJS to filter the list using  filterService.activeFilters.
+This basically takes each property in the object filters and ensures that each item in the
+repeater matches corresponding properties in the filter. So if  activeFilters[city]  =
+Dallas, then only those items in the repeater with city= Dallas will be selected. If there
+are multiple filters, then all of them would have to match.
+The second filter is a textual match filter. It basically selects only those items that have
+the value of filterService.searchText  present in any of their values. So it will do a
+match across cities, team names, sports, and featured.
+
+File Upload in AngularJS
+Another common use case we have seen is to support uploading of files from within an
+AngularJS app. While it is possible to support this by building on the existing input type
+“file” that is present in HTML, for the purpose of this example, we are going to extend
+existing solutions for file upload. A great one is  BlueImp’s File Upload, which uses jQuery
+and jQueryUI (or Bootstrap). Their API is dead simple, which also makes our directive
+super easy.
+So let us start with the directive declaration:
+angular.module('myApp.directives', [])
+.directive('fileupload', function() {
+return {
+restrict: 'A',
+scope: {
+done: '&',
+progress: '&'
+},
+link: function(scope, element, attrs) {
+var optionsObj = {
+dataType: 'json'
+};
+if (scope.done) {
+optionsObj.done = function() {
+scope.$apply(function() {
+scope.done({e: e, data: data});
+});
+};
+}
+if (scope.progress) {
+optionsObj.progress = function(e, data) {
+scope.$apply(function() {
+scope.progress({e: e, data: data});
+});
+}
+}
+// the above could easily be done in a loop, to cover
+// all API's that Fileupload provides
+element.fileupload(optionsObj);
+}
+};
+});
+
+This code allows us to define our directive in a very simple manner, as well as add hooks
+for  onDoneand onProgress. W e use function binding so that AngularJS always calls the
+right methods and uses the right scope.
+This is done by the isolated scope declaration, which has two bindings: one for  pro
+gressand one for  done. This creates a function which takes a single argument (an object)
+on the scope. For instance, scope.done takes an object as an argument. This object has
+two keys,  eand  data. These are passed along as arguments to the original function,
+which we will see in the next section.
+Let’s take a look at our HTML to see how we would use this:
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head lang="en">
+<meta charset="utf-8">
+<title>File Upload with AngularJS</title>
+<!-- Because we are loading jQuery before AngularJS,
+Angular will use the jQuery library instead of
+its own jQueryLite implementation -->
+<script
+src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js">
+</script>
+<script
+src="http://raw.github.com/blueimp/jQuery-File-Upload/master/js/vendor/
+jquery.ui.widget.js">
+</script>
+<script
+src="http://raw.github.com/blueimp/jQuery-File-Upload/master/js/
+jquery.iframe-transport.js">
+</script>
+<script
+src="http://raw.github.com/blueimp/jQuery-File-Upload/master/js/
+jquery.fileupload.js">
+</script>
+<script
+src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js">
+</script>
+<script src="app.js"></script>
+</head>
+<body ng-controller="MainCtrl">
+File Upload:
+<!-- We will define uploadFinished in MainCtrl and attach
+it to the scope, so that it is available here -->
+<input id="testUpload"
+type="file"
+fileupload
+name="files[]"
+data-url="/server/uploadFile"
+multiple
+done="uploadFinished(e, data)">
+</body>
+</html>
+Our inputtag just has the following additions:
+fileupload
+This marks the inputtag as a file upload element.
+data-url
+This is used by the FileUpload plug-in to decide where to upload the file to. In our
+example, we assume there is a server API waiting at /server/uploadFileto process
+the data it sends.
+multiple
+The multiple attribute tells the directive (and the fileupload widget) to allow it
+to select multiple files at once. We get this for free from the plug-in without needing
+to write a single additional line of code. Again, this is a built-in plug-in bonus.
+done
+This is the AngularJS function to call when the plug-in finishes uploading the se‐
+lected file. We could add similar ones for  progressif we wanted to. This also speci‐
+fies the two arguments that our directive calls.
+So what does the controller backing this look like? Pretty much what you would expect
+it to look like:
+var app = angular.module('myApp', ['myApp.directives']);
+app.controller('MainCtrl', function($scope) {
+$scope.uploadFinished = function(e, data) {
+console.log('We just finished uploading this baby...');
+};
+});
+And with that, we have a simple, working, reusable file upload directive.
+Using Socket.IO
+A common requirement for the web nowadays is real-time web applications, which
+need to be updated as soon as the data on the server is updated. Previously used tech‐
+niques such as polling have been found lacking, and sometimes we just want to open a
+socket to our client and communicate.
+Socket.IOis a brilliant library that allows you to do just that, and uses a dead simple,
+event-based API to allow you to develop real-time web apps. We are going to develop
+
+a real-time, anonymous broadcast system (think Twitter, without usernames) that
+allowsusers to broadcast a message to all Socket.IO’s users and see all the messages.
+Nothing will be stored, so all messages will only be alive for as long as a given user is
+active, but that will be sufficient to demonstrate how nicely Socket.IO can integrate into
+AngularJS.
+Right off, we are going to wrap Socket.IO into a nice AngularJS service. By doing so, we
+can ensure that:
+• Socket.IO events are noticed and handled within the AngularJS lifecycle
+• It becomes easy to test the integration later
+var app = angular.module('myApp', []);
+// We define the socket service as a factory so that it
+// is instantiated only once, and thus acts as a singleton
+// for the scope of the application.
+app.factory('socket', function ($rootScope) {
+var socket = io.connect('http://localhost:8080');
+return {
+on: function (eventName, callback) {
+socket.on(eventName, function () {
+var args = arguments;
+$rootScope.$apply(function () {
+callback.apply(socket, args);
+});
+});
+},
+emit: function (eventName, data, callback) {
+socket.emit(eventName, data, function () {
+var args = arguments;
+$rootScope.$apply(function () {
+if (callback) {
+callback.apply(socket, args);
+}
+});
+})
+}
+};
+});
+We are just wrapping the two functions we care about, which are the  on event  and
+broadcast eventmethods of the Socket.IO API. There are a bunch more, and they can
+be wrapped in a similar manner.
+We are going to have a simple index.html, which shows a textbox with a send button
+and a list of messages. In this example, we do not keep track of who sends the messages
+or when they are sent.
+
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head lang="en">
+<meta charset="utf-8">
+<title>Anonymous Broadcaster</title>
+<script src="/socket.io/socket.io.js">
+</script>
+<script
+src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js">
+</script>
+<script src="app.js"></script>
+</head>
+<body ng-controller="MainCtrl">
+<input type="text" ng-model="message">
+<button ng-click="broadcast()">Broadcast</button>
+<ul>
+<li ng-repeat="msg in messages">{{msg}}</li>
+</ul>
+</body>
+</html>
+Let’s go to our  MainCtrl (this is part of app.js), which is where we pull this all together:
+function MainCtrl($scope, socket) {
+$scope.message = '';
+$scope.messages = [];
+// When we see a new msg event from the server
+socket.on('new:msg', function (message) {
+$scope.messages.push(message);
+});
+// Tell the server there is a new message
+$scope.broadcast = function() {
+socket.emit('broadcast:msg', {message: $scope.message});
+$scope.messages.push($scope.message);
+$scope.message = '';
+};
+}
+The controller itself is quite simple. It listens for events on the socket connection, and
+whenever the user presses the broadcast button, lets the server know that there is a new
+message. It also adds it to the message list to display immediately to the user.
+Then we have the final piece, the server. This is a NodeJS server that knows how to serve
+the app code, and also simultaneously create a Socket.IO server.
+var app = require('express')()
+, server = require('http').createServer(app)
+
+, io = require('socket.io').listen(server);
+server.listen(8080);
+app.get('/', function (req, res) {
+res.sendfile(__dirname + '/index.html');
+});
+app.get('/app.js', function(req, res) {
+res.sendfile(__dirname + '/app.js');
+});
+io.sockets.on('connection', function (socket) {
+socket.emit('new:msg', 'Welcome to AnonBoard');
+socket.on('broadcast:msg', function(data) {
+// Tell all the other clients (except self) about the new message
+socket.broadcast.emit('new:msg', data.message);
+});
+});
+Y ou could easily expand this later to handle more messages and more intricate struc‐
+tures, but this example lays the foundation on which you can implement socket con‐
+nections between your client and server.
+The app is very simple. It does not do any validation (whether the messages are empty),
+but it does have the HTML sanitization that AngularJS provides by default. It does not
+handle complex messages, but it does offer a fully working end-to-end Socket.IO im‐
+plementation integrated into AngularJS that you can now build your work off of.
+A Simple Pagination Service
+A very common use case for most web apps is to display a list of items. More often than
+not, we have more data than can be reasonably displayed on a single page. In such a
+case, we want to display the data in a paginated manner, with an ability to move to the
+next and previous pages. Since this is a common requirement throughout the app, it
+makes sense to extract this functionality into a common, reusable Paginator service.
+Our Paginator service (a very simple implementation) is going to allow users of the
+service to tell the service how to fetch the data, given an offset and limit, as well as the
+page size. It will internally handle all the logic of figuring out which items to fetch, which
+page is next, whether there is a next page, and so on.
+This service could be extended further to cache items within the service, but that is left
+as an exercise for the user. All our example will entail is storing the  currentPageI
+temsfield in a cache, retrieving it from there if it is available, and going to the  fetch
+Functionotherwise.
+
+Let’s take a look at the service implementation:
+angular.module(‘services’, []).factory('Paginator', function() {
+// Despite being a factory, the user of the service gets a new
+// Paginator every time he calls the service. This is because
+// we return a function that provides an object when executed
+return function(fetchFunction, pageSize) {
+var paginator = {
+hasNextVar: false,
+next: function() {
+if (this.hasNextVar) {
+this.currentOffset += pageSize;
+this._load();
+}
+},
+_load: function() {
+var self = this;
+fetchFunction(this.currentOffset, pageSize + 1, function(items) {
+self.currentPageItems = items.slice(0, pageSize);
+self.hasNextVar = items.length === pageSize + 1;
+});
+},
+hasNext: function() {
+return this.hasNextVar;
+},
+previous: function() {
+if(this.hasPrevious()) {
+this.currentOffset -= pageSize;
+this._load();
+}
+},
+hasPrevious: function() {
+return this.currentOffset !== 0;
+},
+currentPageItems: [],
+currentOffset: 0
+};
+// Load the first page
+paginator._load();
+return paginator;
+};
+});
+The Paginator service expects two arguments when it is called: a fetchfunction, and
+the size of each page. The fetchfunction expects the following signature:
+fetchFunction(offset, limit, callback);
+It will then be called with the correct offset and limit by the Paginator whenever it needs
+to fetch and display a certain page. Internal to the function, it can either slice the data
+
+from a large array, or go to the server and make a call to fetch the data. When the data
+is available, the fetchfunction needs to call the callbackfunction with it.
+Let us take a look at the spec for this, to clarify how we could use it when we have a large
+array with too many items returned to us. Note that this is a unit test. Because of the
+way it is implemented, we can test the service independent of any controller or XHR
+requests.
+describe('Paginator Service', function() {
+beforeEach(module('services'));
+var paginator;
+var items = [1, 2, 3, 4, 5, 6];
+var fetchFn = function(offset, limit, callback) {
+callback(items.slice(offset, offset + limit));
+};
+beforeEach(inject(function(Paginator) {
+paginator = Paginator(fetchFn, 3);
+}));
+it('should show items on the first page', function() {
+expect(paginator.currentPageItems).toEqual([1, 2, 3]);
+expect(paginator.hasNext()).toBeTruthy();
+expect(paginator.hasPrevious()).toBeFalsy();
+});
+it('should go to the next page', function() {
+paginator.next();
+expect(paginator.currentPageItems).toEqual([4, 5, 6]);
+expect(paginator.hasNext()).toBeFalsy();
+expect(paginator.hasPrevious()).toBeTruthy();
+});
+it('should go to previous page', function() {
+paginator.next();
+expect(paginator.currentPageItems).toEqual([4, 5, 6]);
+paginator.previous();
+expect(paginator.currentPageItems).toEqual([1, 2, 3]);
+});
+it('should not go next from last page', function() {
+paginator.next();
+expect(paginator.currentPageItems).toEqual([4, 5, 6]);
+paginator.next();
+expect(paginator.currentPageItems).toEqual([4, 5, 6]);
+});
+it('should not go back from first page', function() {
+paginator.previous();
+
+expect(paginator.currentPageItems).toEqual([1, 2, 3]);
+});
+});
+The Paginator exposes currentPageItems on itself, which can then be bound from the
+templates on a  repeater(or however else you want to display them). The hasNext()
+and  hasPrevious()can be used to figure out when to show the Next and Previous Page
+links, and on click, it just needs to call next()or previous(), respectively.
+How would you use this with something that needs to fetch data from the server for
+each page? Here is what a possible controller that fetches search results from the server
+one page at a time could look like:
+var app = angular.module('myApp', ['myApp.services']);
+app.controller('MainCtrl', ['$scope', '$http', 'Paginator',
+function($scope, $http, Paginator) {
+$scope.query = 'Testing';
+var fetchFunction = function(offset, limit, callback) {
+$http.get('/search',
+{params: {query: $scope.query, offset: offset, limit: limit}})
+.success(callback);
+};
+$scope.searchPaginator = Paginator(fetchFunction, 10);
+}]);
+The HTML page could use the Pagination service as follows:
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head lang="en">
+<meta charset="utf-8">
+<title>Pagination Service</title>
+<script
+src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js">
+</script>
+<script src="pagination.js"></script>
+<script src="app.js"></script>
+</head>
+<body ng-controller="MainCtrl">
+<input type="text" ng-model="query">
+<ul>
+<li ng-repeat="item in searchPaginator.currentPageItems">
+{{item}}
+</li>
+</ul>
+<a href=""
+ng-click="searchPaginator.previous()"
+
+ng-show="searchPaginator.hasPrevious()">&lt;&lt;Prev</a>
+<a href=""
+ng-click="searchPaginator.next()"
+ng-show="searchPaginator.hasNext()">Next &gt;&gt;</a>
+</body>
+</html>
+Working with Servers and Login
+One final example will actually cover a multitude of scenarios, most or all of them linked
+with the $httpresource. In our experience, the $httpservice is one of the core services
+in AngularJS. But it can be extended to do a lot of the common requirements of a web
+app, including:
+• Having a common error-handling point
+• Handling authorization and login redirects
+• Working with servers that don’t understand or speak JSON
+• Talking with external services (outside the same origin) via JSONP
+So in this (slightly contrived) example, we will have the skeleton of a full-fledged app
+that will:
+1. Show all unrecoverable errors (Non 401s) in a butterbardirective that gets shown
+on all screens only when an error exists.
+2. Have an ErrorService which will be used for communicating between the direc‐
+tive, the view, and the controllers.
+3. Fire an event (event:loginRequired) whenever the server responds with a 401.
+This will then get handled by a root controller that oversees the entire application.
+4. Handle requests that need to be made to the server with some authorization headers
+that are specific to the current user.
+We will not go over the entire application (the routes, the templates, and so on), as most
+of those are fairly straightforward. We will highlight only the pieces that are relevant (so
+you can copy and paste that into your codebase and get started right away). These will
+be fully functional. If you want to revisit defining Services and Factories, jump to
+Chapter 7. If you want to take a look at how to work with servers, you can refer to
+Chapter 5.
+Let us first take a look at the Error service:
+var servicesModule = angular.module('myApp.services', []);
+servicesModule.factory('errorService', function() {
+
+return {
+errorMessage: null,
+setError: function(msg) {
+this.errorMessage = msg;
+},
+clear: function() {
+this.errorMessage = null;
+}
+};
+});
+Our error messagedirective, which is actually independent of the Error service, would
+just look for an alert message attribute, and then bind to it. It would conditionally show
+itself when the alert message is present.
+// USAGE: <div alert-bar alertMessage="myMessageVar"></div>
+angular.module('myApp.directives', []).
+directive('alertBar', ['$parse', function($parse) {
+return {
+restrict: 'A',
+template: '<div class="alert alert-error alert-bar"' +
+'ng-show="errorMessage">' +
+'<button type="button" class="close" ng-click="hideAlert()">' +
+'x</button>' +
+'{{errorMessage}}</div>',
+link: function(scope, elem, attrs) {
+var alertMessageAttr = attrs['alertmessage'];
+scope.errorMessage = null;
+scope.$watch(alertMessageAttr, function(newVal) {
+scope.errorMessage = newVal;
+});
+scope.hideAlert = function() {
+scope.errorMessage = null;
+// Also clear the error message on the bound variable.
+// Do this so that if the same error happens again
+// the alert bar will be shown again next time.
+$parse(alertMessageAttr).assign(scope, null);
+};
+}
+};
+}]);
+We would then add the alert bar to the HTML as follows:
+<div alert-bar alertmessage="errorService.errorMessage"></div>
+We need to ensure that the  ErrorServiceis saved on the scope of the controller as
+“errorService” before we add the preceding HTML. That is, if RootControllerwas the
+controller responsible for having the AlertBar, then:
+
+app.controller('RootController',
+['$scope', 'ErrorService', function($scope, ErrorService) {
+$scope.errorService = ErrorService;
+});
+That gives us a decent framework to show and hide errors and alerts. Now let us see
+how we can tackle the various status codes that the server can throw at us, through the
+use of an interceptor:
+servicesModule.config(function ($httpProvider) {
+$httpProvider.responseInterceptors.push('errorHttpInterceptor');
+});
+// register the interceptor as a service
+// intercepts ALL angular ajax HTTP calls
+servicesModule.factory('errorHttpInterceptor',
+function ($q, $location, ErrorService, $rootScope) {
+return function (promise) {
+return promise.then(function (response) {
+return response;
+}, function (response) {
+if (response.status === 401) {
+$rootScope.$broadcast('event:loginRequired');
+} else if (response.status >= 400 && response.status < 500) {
+ErrorService.setError('Server was unable to find' +
+' what you were looking for... Sorry!!');
+}
+return $q.reject(response);
+});
+};
+});
+Now all that needs to happen is for some controller somewhere to listen for a loginRe
+quiredevent, and redirect to the login page (or do something more complex, like display
+a modal dialog with login options).
+$scope.$on('event:loginRequired', function() {
+$location.path('/login');
+});
+That just leaves requests that will need authorization. Let us just say that all requests
+that require authorization will need a header—“Authorization”—which will have a value
+that is specific for the current user that is logged in. Since this will change every time,
+we cannot use default transformRequests, as those are config level changes. We will
+instead wrap the $httpservice, and create our own AuthHttpservice.
+We will also have an Authentication service that is responsible for storing the user’s auth
+information (fetched however you want, normally as part of the login process). The
+AuthHttpservice will refer to this Authentication service and add the necessary headers
+to authorize the requests.
+
+// This factory is only evaluated once, and authHttp is memorized. That is,
+// future requests to authHttp service return the same instance of authHttp
+servicesModule.factory('authHttp', function($http, Authentication) {
+var authHttp = {};
+// Append the right header to the request
+var extendHeaders = function(config) {
+config.headers = config.headers || {};
+config.headers['Authorization'] = Authentication.getTokenType() +
+' ' + Authentication.getAccessToken();
+};
+// Do this for each $http call
+angular.forEach(['get', 'delete', 'head', 'jsonp'], function(name) {
+authHttp[name] = function(url, config) {
+config = config || {};
+extendHeaders(config);
+return $http[name](url, config);
+};
+});
+angular.forEach(['post', 'put'], function(name) {
+authHttp[name] = function(url, data, config) {
+config = config || {};
+extendHeaders(config);
+return $http[name](url, data, config);
+};
+});
+return authHttp;
+});
+Any request that requires authorization will be made via  authHttp.get()  instead of
+$http.get(). As long as the Authentication service is set with the right information,
+your calls will fly through with ease. We use a service for Authentication as well, so that
+the information is available throughout the app, without having to refetch it every time
+the route changes.
+That pretty much covers all the pieces we would need for this application. You should
+be able to just copy the code right out of here, paste into your application, and make it
+work for you. Good luck!
+Conclusion
+While this brings us to the end of our book, we are nowhere near close to covering
+everything about AngularJS. Our aim with this book was to provide a solid foundation
+from which one can begin her explorations and become comfortable with developing
+in AngularJS. To this extent, we covered all the basics (and some advanced topics), while
+providing as many examples as we could along the way.
+
+Are we done? No. There is still a great amount to learn about how AngularJS operates
+under the covers. W e didn’t touch upon creating complex, interdependent directives,
+for example. There is so much more out there, that three or even four books wouldn’t
+be enough. But we hope that this book gives you the confidence to be able to tackle
+much more complex requirements head on.
+We had a great time writing this book, and hope to see some amazing applications
+written in AngularJS out on the Internet.

@@ -1,4 +1,4 @@
-（hxzon）clojure知识点及学习资料
+﻿（hxzon）clojure知识点及学习资料
 
 by hxzon
 =========
@@ -397,4 +397,8 @@ http://clojurequartz.info
 
 webservices 
 http://clojure-liberator.github.com
+
+Nginx-Clojure
+Let You Deploy Clojure Web App on Nginx Without Any Java Web Server
+
 

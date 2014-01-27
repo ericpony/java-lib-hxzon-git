@@ -1,0 +1,75 @@
+﻿（hxzon学习笔记）js-angularjs
+
+1，ng开头的属性为angularjs指令（directive），可自定义指令。
+
+2，ng-app用来指定angularjs接管的范围，angularjs会扫描该区域，读取ng开头的属性完成配置。
+
+ng-app="xxx"表示xxx模块，通常在app.js文件中用如下方式定义模块：
+
+var todomvc = angular.module('todomvc', []);
+
+3，ng-controller属性指定控制器。
+
+定义某模块的控制器如下：
+<script>
+
+var myAppModule = angular.module('myApp', []);
+
+myAppModule.controller('TextController',
+	function($scope) {
+		var someText = {};
+		someText.message = 'You have started your journey.';
+		$scope.someText = someText;
+	});
+
+</script>
+
+
+4，ng-repeat用于循环。
+
+5，ng-model指定模型。
+
+6，ng-click，ng-change用来指定事件调用的方法。
+ng-show用来控制显示或隐藏。
+
+7，<p>{{greeting}}</p>
+也可用<p ng-bind="greeting"></p>表示。
+
+可在属性值中使用。
+<li class='menu-disabled-{{isDisabled}}' ng-click='stun()'>Stun</li>
+
+因为浏览器同时加载图片，所以angularjs没有机会处理src属性，所以你必须使用ng-src来代替。
+如
+<img src="/images/cats/{{favoriteCat}}">
+
+写出：
+<img ng-src="/images/cats/{{favoriteCat}}">
+
+同理，需使用ng-href指令。
+<a ng-href="/shop/category={{numberOfBalloons}}">some text</a>
+
+8，$scope 用来发布模型数据。
+
+$scope.$watch用来监视模型数据的变化。
+
+var dereg = $scope.$watch('someModel.someProperty', callbackOnChange());
+
+9，控制器本身也有管理范围。
+
+<div class="navbar" ng-controller="NavController">
+…
+<li class="menu-item" ng-click="doSomething()">Something</li>
+…
+</div>
+<div class="contentArea" ng-controller="ContentAreaController">
+…
+<div ng-click="doSomething()">...</div>
+…
+</div>
+
+function NavController($scope) {
+    $scope.doSomething = doA;
+}
+function ContentAreaController($scope) {
+    $scope.doSomething = doB;
+}

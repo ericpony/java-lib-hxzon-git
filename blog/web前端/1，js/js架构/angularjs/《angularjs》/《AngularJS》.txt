@@ -1,0 +1,342 @@
+﻿AngularJS
+By Brad Green, Shyam Seshadri
+Publisher: O'Reilly Media
+Released: April 2013
+Pages: 196
+=================
+Chapter 1 Introduction to AngularJS
+
+Concepts
+An Example: Shopping Cart
+Up Next
+
+Chapter 2 Anatomy of an AngularJS Application
+
+Invoking Angular
+Model View Controller
+Templates and Data Binding
+Organizing Dependencies with Modules
+Formatting Data with Filters
+Changing Views with Routes and $location
+Talking to Servers
+Changing the DOM with Directives
+Validating User Input
+Moving On
+
+Chapter 3 Developing in AngularJS
+
+Project Organization
+Tools
+Running Your Application
+Testing with AngularJS
+Unit Tests
+End-to-End/Integration Tests
+Compilation
+Other Awesome Tools
+Yeoman: Optimizing Your Workflow
+Integrating AngularJS with RequireJS
+
+Chapter 4 Analyzing an AngularJS App
+
+The Application
+Relationship Between Model, Controller, and Template
+The Model
+Controllers, Directives, and Services, Oh My!
+The Templates
+The Tests
+
+Chapter 5 Communicating with Servers
+
+Communicating Over $http
+Unit Testing
+Working with RESTful Resources
+The $q and the Promise
+Response Interception
+Security Considerations
+
+Chapter 6 Directives
+
+Directives and HTML Validation
+API Overview
+Moving On
+
+Chapter 7 Other Concerns
+
+$location
+AngularJS Module Methods
+Communicating Between Scopes with $on, $emit, and $broadcast
+Cookies
+Internationalization and Localization
+Sanitizing HTML & the Sanitize Module
+
+Chapter 8 Cheatsheet and Recipes
+
+Wrapping a jQuery Datepicker
+The Teams List App: Filtering and Controller Communication
+File Upload in AngularJS
+Using Socket.IO
+A Simple Pagination Service
+Working with Servers and Login
+Conclusion
+
+Index
+Colophon
+
+=====
+=====
+用AngularJS开发下一代Web应用
+
+出版社: 电子工业出版社; 第1版 (2013年10月1日)
+平装: 187页
+语种： 简体中文
+开本: 16
+
+编辑推荐
+
+我们都希望开发更小型、更轻量的Web应用，让创建应用更加容易，
+并且当项目变大时仍然易于测试、扩展和维护。
+这本手册将为你介绍AngularJS，它是一个开源的JavaScript框架，
+它使用MVC架构、数据绑定、客户端模板以及依赖注入等技术，从而为构建Web应用创建急需的结构。
+
+本书的作者是两位在Google负责AngularJS框架的工程师，
+他们将引领读者概览整个框架的核心特性，并构建一款可运行的AngularJS应用，
+内容涵盖布局、测试、编译及调试整个过程。
+通过这个过程，你将会学到AngularJS是怎样降低Web应用复杂性的。
+
+■ 深入理解Angular的构件，学习它们是如何协同工作的。
+■ 使用MVC模式分离控制逻辑、数据以及渲染职责，从而获得最大程度的灵活性。
+■ 利用客户端模板在浏览器中装配你的完整应用。
+■ 利用AngularJS的指令，用声明式语法来扩展HTML。
+■ 使用$http服务与服务器交互并实现简单的缓存。
+■ 利用依赖注入改进重构、测试以及多种环境下的设计。
+■ 获得Web应用中常见问题的代码示例。
+
+作者简介
+
+Brad Green是Google公司AngularJS项目的技术经理。他同时还直接负责可访问性和技术支持方面的工作。
+
+Shyam Seshadri是Fundoo Solutions公司的老板兼CEO，同时经营AngularJS商店，并且致力于为印度市场提供创造性和有趣的产品。
+
+序言
+
+关于Angular 的起源，我可以追溯到2009 年的Google Feedback 项目。
+当时，对于项目的开发速度以及如何编写可测试代码的问题，我们已经经受了几个月的折磨。
+6 个月时，我们开发了差不多17000 行前端代码。
+这时候，团队中的一个成员Misko Hevery 做出了一个大胆的宣言：
+利用他自己业余时间所开发的一个开源库，他可以在两周之内把目前所有东西重写一遍。
+我当时想，两周的时间并不会给我们造成太大的影响，同时我们也接受了Misko 努力构建一些东西的想法。
+然而Misko 最终还是估算错了时间，他用了三个星期。
+但是，我们所有人还是被他深深地震撼了，
+更让我们感到震撼的是，他所开发的新应用的代码量从原来的17000 行压缩到了1500 行。
+看起来，Misko 的东西值得深入推广。
+Misko 和我决定，围绕他所提倡的理念组建一个团队，这个简单的理念就是：简化对web 开发者的经验要求。
+
+Shyam Seshadri，也就是本书的合著者，后来继续领导GoogleFeedback 团队开发了第一款搭载Angular 的应用。
+从那时起，我们在大家的指导下继续开发Angular。
+给予我们指导的人有的来自Google自己的团队，也有来自全球的数以百计的开源贡献者。
+数千名开发者在他们的日常工作中依赖Angular，并且发展成了一个优质的支持者网络。
+我们也非常期望能够接受你的指导。
+
+====
+目录
+
+前言 
+
+第1 章 AngularJS 简介 
+
+一些概念 
+客户端模板 
+Model View Controller（MVC） 
+数据绑定 
+依赖注入 
+指令 
+实例：购物车 
+接下来 
+
+
+第2 章 AngularJS 应用骨架 
+
+调用Angular 
+加载脚本 
+使用ng—app 声明Angular 的边界 
+
+Model View Controller 
+
+模板和数据绑定 
+显示文本 
+表单输入 
+浅谈非入侵式JavaScript 
+列表、表格以及其他迭代型元素 
+隐藏和显示 
+CSS 类和样式 
+反思src 和href 属性 
+表达式 
+区分UI 和控制器的职责 
+利用$scope 暴露模型数据 
+使用$watch 监控数据模型的变化 
+watch（） 中的性能注意事项 
+
+使用Module（模块）组织依赖关系 
+我需要多少个模块呢 
+
+使用过滤器格式化数据 
+使用路由和$location 切换视图 
+index.html 
+list.html 
+detail.html 
+controllers.js 
+与服务器交互 43 
+使用指令修改DOM 45 
+index.html 46 
+controllers.js 
+校验用户输入 
+继续前进 
+
+
+第3 章 使用AngularJS 进行开发 
+
+项目结构 
+工具 
+各种IDE 
+运行你的应用 
+使用Yeoman 
+不使用Yeoman 
+AngularJS 下的测试 
+Karma 
+单元测试 
+端到端／ 集成测试 
+编译 
+其他好用的工具 
+调试 
+Batarang 
+Yeoman ：优化你的工作流程 
+安装Yeoman 
+运行服务器 
+添加新的路由、视图和控制器 
+关于测试 
+构建项目 
+与RequireJS 集成 
+
+
+第4 章 一款AngularJS 应用剖析 
+
+应用 
+模型、控制器和模板之间的关系 
+模型 
+控制器、指令及服务 
+服务 
+指令 
+控制器 
+模板 
+测试 
+单元测试 
+场景测试 
+
+第5 章 与服务器交互 
+
+利用$http 进行通信 
+进一步配置请求 
+设置HTTP 头 
+缓存响应 
+转换请求和响应 
+单元测试 
+使用RESTful 资源 
+声明 
+自定义方法 
+别用回调！（除非你真的需要它们） 
+简化服务端操作 
+ngResource 单元测试 
+$q 和Promise 
+拦截响应 
+安全性措施 
+JSON 漏洞 
+XSRF 
+
+
+第6 章 指令 
+
+指令和HTML 校验 
+API 概览 
+为你的指令命名 
+用来定义指令的对象 
+内嵌 
+compile 和link 函数 
+作用域 
+操作DOM 元素 
+控制器 
+继续前进 
+
+
+第7 章 其他注意点 
+
+$location 
+HTML5 模式和Hashbang 模式 
+AngularJS Module 类的方法 
+Main 方法在哪里 
+加载和依赖 
+快捷方法 
+使用$on、$emit 和$broadcast 在作用域之间进行交互 
+Cookies 
+国际化和本地化 
+在AngularJS 里面应该怎么做 
+怎样才能让一切运行起来呢 
+常见问题 
+HTML 无害化和Sanitize 模块 
+Linky 
+
+
+第8 章 速查和技巧 
+
+封装jQuery Datepicker 
+ng—model 
+绑定select 
+调用select 
+例子中的其他内容 
+Teams List 应用：过滤器和控制器的交互 
+搜索框 
+下拉框 
+复选框 
+迭代器 
+AngularJS 中的文件上传 
+使用Socket.IO 
+简单的分页服务 
+与服务端协作及登录 
+结论 
+
+索引
+
+====
+About the Authors
+
+Brad Greenworks at Google as an engineering manager. In addition to the AngularJS
+project, Brad also directs Accessibility and Support Engineering. Prior to Google, Brad
+worked on the early mobile web at AvantGo, founded and sold startups, and spent a few
+hard years toiling as a caterer. Brad’s first job out of school was as a lackey to Steve Jobs
+at NeXT Computer, writing demo software and designing Jobs’ slide presentations. Brad
+lives in Mountain View, CA, with his wife and two children.
+Shyam Seshadri  is the owner and CEO of Fundoo Solutions, where he splits his time
+between working on innovative and exciting new products for the Indian market, and
+consulting about and running workshops on AngularJS. Prior to Fundoo Solutions,
+Shyam completed his MBA from the prestigious Indian School of Business in Hydera‐
+bad. Shyam’s first job out of college was with Google, where he worked on multiple
+projects, including Google Feedback (AngularJS’s first customer!), and various internal
+tools and projects. Shyam currently operates from his office in Navi Mumbai, India.
+
+Colophon
+
+The animal on the cover of AngularJS  is a thornback cowfish (Ostraciidae). This fish of
+many names—thornback, thornback cow, backspine cowfish, shortspined cowfish,
+blue-spotted cowfish—is usually found on rocky reefs or sandy slopes in a tangle of
+sponge and weeds in the Western Indo-Pacific region. They feed primarily on worms
+and other invertebrates.
+These boxfish can grow up to 15 centimeters long and anywhere between 3 to 50 meters
+wide. Members of the boxfish family are recognizable by the hexagonal pattern on their
+skin. Their bodies are shaped like a boxy triangle from which their fins, tail, eyes, and
+mouth protrude, allowing them to swim with a rowing motion. As they age, their shapes
+change from more rounded to more square-shaped, and their brighter colors dim.
+The thornback cowfish protects itself by secreting cationic surfactants through their
+skin, which is triggered by stress. The toxins, usually secreted in the form of a mucus,
+dissolve into the environment and irritate fish in the surrounding area.
+The cover image is from Johnson’s Natural History. The cover font is Adobe ITC Ga‐
+ramond. The text font is Adobe Minion Pro; the heading font is Adobe Myriad Con‐
+densed; and the code font is Dalton Maag’s Ubuntu Mono.

@@ -6,12 +6,20 @@ Section 3.4. Continuation Passing Style
 
 As we discussed in the preceding section, 
 a continuation waits for the value of each expression. 
+如前章所述，“续延”等待每个表达式的值。
+
 In particular, a continuation is associated with each procedure call. 
+需注意的是，一个续延和每个过程调用相关联。
+
 When one procedure invokes another via a nontail call, 
 the called procedure receives an implicit continuation that 
 is responsible for completing what is left of the calling procedure's body 
 plus returning to the calling procedure's continuation. 
+当一个过程通过非尾调用来调用另一个过程，
+被调用的那个过程会收到一个隐式的续延，
+这个续延完成发起调用的过程的其余部分，加上发起调用的过程的续延。（？附带返回发起调用的过程的续延？）
 If the call is a tail call, the called procedure simply receives the continuation of the calling procedure.
+如果是尾调用，被调用的过程则简单的收到发起调用的过程的续延。
 
 We can make the continuations explicit by encapsulating "what to do" 
 in an explicit procedural argument passed along on each call. 
@@ -65,12 +73,18 @@ because the procedure that implements the continuation can take any number of ar
 (car&cdr '(a b c a d) memv) 		; (a d)
 
 (This can be done with multiple values as well; see Section 5.8.) 
+
 CPS also allows a procedure to take separate "success" and "failure" continuations, 
 which may accept different numbers of arguments. 
+CPS允许一个过程携带分开的“成功”和“失败”的续延，
+它们可以接受不同的参数个数。
+
 An example is integer-divide below, 
 which passes the quotient and remainder of its first two arguments to its third, 
 unless the second argument (the divisor) is zero, 
 in which case it passes an error message to its fourth argument.
+下面的例子，整数除法。
+当y是0时，调用failure，否则调用success，并把商和余数传递给它。
 
 (define integer-divide
   (lambda (x y success failure)
@@ -88,15 +102,23 @@ returns the quotient of its two arguments, truncated toward zero.
 
 Explicit success and failure continuations can sometimes help 
 to avoid the extra communication necessary to separate successful execution of a procedure from unsuccessful execution. 
+
 Furthermore, it is possible to have multiple success or failure continuations for different flavors of success or failure, 
 each possibly taking different numbers and types of arguments. 
+
 See Sections 12.10 and 12.11 for extended examples that employ continuation-passing style.
 
 At this point you might be wondering about the relationship between CPS and the continuations captured via call/cc. 
+也许你会好奇CPS和 call/cc 捕获到的续延的关系。
 It turns out that any program that uses call/cc can be rewritten in CPS without call/cc, 
 but a total rewrite of the program (sometimes including even system-defined primitives) might be necessary. 
-Try to convert the product example on page 75 into CPS before looking at the version below.
+所有的 call/cc 都可以写成 CPS ，不需要 call/cc 。
+但有时需要完全重写，需要使用系统定义的原语。
 
+Try to convert the product example on page 75 into CPS before looking at the version below.
+尝试把75页的乘积函数改写成 CPS 。
+
+;乘积函数，遇到0时立即退出。
 (define product
   (lambda (ls k)
     (let ([break k])

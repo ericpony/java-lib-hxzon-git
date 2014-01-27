@@ -1,0 +1,403 @@
+﻿《Instant Ember.js Application Development How-to》-Setting up Ember.js (Simple)
+
+注释by hxzon
+
+====
+Welcome to Instant Ember.js Application Development How-to. This book will walk you 
+through building the frontend structure for a sample application using Ember.js. You will 
+learn how Ember implements the MVC architecture, and key parts of the Ember API will 
+be explained as well.
+
+====
+Setting up Ember.js (Simple)
+
+A good place to start experimenting with Ember.js is the official starter kit created by the 
+developers of Ember.js. This starter kit will provide you with the framework that you need 
+to get up and running with Ember.js quickly. We can use this starter kit on a Windows, Mac 
+OS X, or Linux operating system. A backend for Ember.js is definitely a possibility. The most 
+commonly used backend for Ember, Rails, has gems to add Ember.js support. Node.js and 
+Django have adapters to incorporate Ember.js as well. For the purposes of this book, we will 
+sacrifice proper application architecture in the interest of time.
+
+Getting ready
+
+The browser used for the purposes of this book will be Google Chrome. Any text editor for 
+editing our JavaScript and HTML files will work in this case. Ember provides a starter kit 
+that will help us create our sample application.
+
+Download the latest starter kit from https://github.com/emberjs/starter-kit/downloads
+or use the starter-kit.zip file provided. Currently, the latest released 
+version of Ember.js is 1.0.0-pre.2. Any version of this level and above should work.
+
+1.  Once downloaded, unzip it to wherever you like. The folder that should be created is 
+named starter-kit.
+2.  Navigate inside that folder and you should, at the minimum, see the subfolders css
+and jsas well as the file index.html.
+3.  Go to the jsdirectory and create folders called views, models, and controllers.
+
+How to do it...
+
+We can now make modifications to the existing files and add new ones as needed to build out 
+our application foundation.
+
+1.  We can begin by sorting out our app.js file in the js folder to get rid of the code that 
+will be put into separate files later on. Go ahead and copy and paste the following 
+code into app.js:
+创建应用。
+
+var MovieTracker = Ember.Application.create();
+
+Downloading the example code
+
+You can download the example code files for all Packt books you have 
+purchased from your account at http://www.PacktPub.com. 
+
+If you purchased this book elsewhere, you can visit http://www.PacktPub.com/supportand 
+register to have the files e-mailed 
+directly to you.
+
+2.  Inside the controllers folder, we can add a file called application.js with 
+the following lines:
+控制器。
+
+MovieTracker.ApplicationController = Ember.Controller.extend();
+
+3.  In your index.html file, include the following line:
+<script src="js/controllers/application.js"></script>
+
+4.  Now that we have a good starting point in app.js, we can create a simple router.
+创建简单的路由。 
+Create a new file called router.js. In this file, we can copy and paste the 
+following code:
+
+MovieTracker.Router = Ember.Router.extend({
+	root: Ember.Route.extend({
+		index: Ember.Route.extend({
+			route: '/'
+		})
+	})
+});
+
+5.  In your index.html file, include the following line:
+<script src="js/router.js"></script>
+
+6.  The last thing we need to do is create some sort of view for our application. You 
+can copy and paste the following code into a new file called application.js 
+inside the views folder:
+视图。
+
+MovieTracker.ApplicationView = Ember.View.extend({
+	templateName: 'application'
+});
+
+In index.html add this line:
+<script src="js/views/application.js"></script>
+
+7.  Also add the following Handlebars template after your <body>tag in index.html:
+
+<script type="text/x-handlebars" data-templatename="application"> </script>
+
+How it works...
+
+The css folder contains the stylesheet of the application we are going to create. This 
+stylesheet contains HTML 5 Boilerplateto normalize styles regardless of what browser 
+you are using.
+
+The js folder contains a subfolder named libs and the app.js file. libs is for storing any 
+external libraries that you will want to include into your application. app.js is the JavaScript 
+file that contains your Ember application structure.
+
+index.html is a basic HTML index file that will display information in the user's browser. 
+We will be using this file as the index page of the sample application that we will be creating.
+
+We create a namespace called MovieTracker where we can access any necessary 
+Ember.js components. 
+创建命名空间。
+Initialize() will instantiate all the controllers currently available 
+with the namespace.
+Initialize() 会初始化当前命名空间下的所有控制器。 
+After that is done, it injects all the controllers onto a router.
+它将所有的控制器注入到路由中。
+We then set ApplicationController as the rendering context of our views. Your 
+application must have ApplicationController, otherwise your application will not be 
+capable of rendering dynamic templates.
+
+Router in Ember is a subclass of the Ember StateManager. The Ember StateManager
+tracks the current active state and triggers callbacks when states have changed. 
+路由在 ember 中是状态管理机的一个子类。
+This router will help you match the URL to an application state and detects the browser URL at application 
+load time. The router is responsible for updating the URL as the application's state changes.
+
+When Ember parses the URL to determine the state, it attempts to find Ember.Route that 
+matches this state. Our router must contain root and index. You can think of root as a 
+general container for routes. It is a set of routes.
+路由必须含有 root 和 index 这两个状态。
+
+index can be renamed if you wish. If we load a page with the URL following /, Ember will 
+match it to root.index and will transition your application to the root state and then the 
+index state within root.
+
+An Ember view is responsible for structuring the page through the view's associated template. 
+The view is also responsible for registering and responding to user events.
+ApplicationView we are creating is required for any Ember application. The view we 
+created is associated with our ApplicationController as well. The templateName
+variable is the name we use in our index.html file. The templateName variable can be 
+changed to anything you wish.
+
+We then reference this templateName variable in our view.
+The sample application we will be making throughout the book is a 
+movie tracker. It will allow you to store and organize the movies you have 
+watched and want to watch. This application has a simple concept, and 
+will allow you to further extend it once you are done following the recipes 
+in this book.
+本书使用“影片跟踪”作为示例。
+
+====
+Creating an Ember model/object (Simple)
+数据模型。
+
+An object or a model is a way to manage data in a structured way. In other words, they are 
+a way of representing persistent states in your application. In Ember.js, almost every object 
+is derived from the Ember.Object class. 
+都是继承自 Ember.Object 类。
+Since most objects will be derived from the same 
+base object, they will end up sharing properties with each other. This allows the observation 
+and binding to properties of other objects. That being said, we can see where some of 
+the powerful features of Ember, such as computed properties and bindings, come from.
+
+How to do it...
+
+We will create a basic model object and then create a subclass of this object.
+
+1.  In your models folder, go ahead and create the following file called movie.js.
+
+MovieTracker.Movie = Ember.Object.extend({
+	id: null,
+	title: null,
+	watched: false,
+	rating: 0
+});
+
+2.  In index.htmladd the following line:
+
+<script src="js/models/movie.js"></script>
+
+3.  We can now test out our model by creating a new movie object in the browser's 
+JavaScript console and printing out the title. Copy and paste the following code in 
+your browser's console. You should see the string The Action Movie being printed 
+out to the console.
+
+var actionMovie = MovieTracker.Movie.create({
+	title: "The Action Movie"
+});
+
+actionMovie.get("title");
+
+4.  We can also extend the descendants of the Ember.Object class to create our 
+own class. In movie.js, we can append the following code:
+
+MovieTracker.ActionMovie = MovieTracker.Movie.extend({
+	genre: "action"
+});
+
+How it works...
+
+We define our models and then create new objects based on those models. In the previous 
+example, we created an object in our application called Movie, which has an ID, a title 
+(if it has been watched), and its rating.
+
+Our ActionMovie will have the same properties as Movie, but will add one extra property.
+ 
+The genre property will define what genre the movie falls under. Go ahead and copy and 
+paste the following code into your browser's console:
+
+var actionMovie = MovieTracker.ActionMovie.create({
+	title: "An Action Movie",
+});
+
+actionMovie.get("genre");
+
+The preceding code should print out action to the console. It creates a new ActionMovie
+object, which inherits the genreproperty.
+
+The get and set methods
+读写器。
+
+You should always use the Ember get and set methods when 
+accessing model properties. This ensures that Ember's bindings and 
+observers associated with the get and set methods can keep the 
+data in sync throughout your application.
+
+====
+Enhancing an Ember object (Simple)
+
+Now that we have our basic Ember objects, we can begin to make them more powerful. The 
+Ember.js documentation promotes three features. Two of these features deal with models. 
+
+One of them is auto-updating templates and the other two are bindings and computed 
+properties. 
+三种功能，自动更新模板，绑定，计算得到的属性值。
+In this recipe, we are only concerned with bindings and computed properties.
+本节只讲解“绑定”和“计算得到的属性值”。
+
+How to do it...
+
+Now that we have some basic Ember objects defined in our application, we can go ahead 
+and add more advanced functionality to them.
+
+1.  We can represent actors in our application using bindings, so create a new file in 
+the models folder called actor.js and paste the following code:
+
+MovieTracker.Actor = Ember.Object.extend({
+	filmBinding: 'MovieTracker.Movie.title'
+});
+
+2.  In index.htmladd the following line:
+
+<script src="js/models/actor.js"></script>
+
+How it works...
+
+Bindings are used to maintain synchronization of properties between two different objects.
+
+Computed property functions act like properties of our model. They also work with bindings. 
+Computed properties are used to build new properties by combining other properties. They 
+should not contain any application behavior. In most cases, multiple calls to one computed 
+property should always return the same value.
+
+An observer will trigger when the observed property changes and is especially useful when 
+you need to perform some action after a binding has synchronized.
+
+You will notice there is a property named filmBinding. When Ember.js sees a model 
+property ending with the string Binding, Ember will automatically create a bound property 
+for you (in this case it is called film).
+属性名如果以 Binding 为后缀，Ember会自动创建一个绑定属性。
+
+There's more...
+
+Computed properties, mixins, and observers give us different options for interacting with 
+data in our application.
+
+Computed properties
+
+Computed properties allow us to create functions within our models.
+
+MovieTracker.Movie = Ember.Object.extend({
+	id: null,
+	title: null,
+	watched: false,
+	rating: 0,
+	titleAndRating: function() {
+		return this.get('title') + ' has a rating of ' + 
+			this.get('rating');
+	}.property()
+});
+
+Here, we add a function called titleAndRating that will combine the title and rating of our 
+movie into one string. Computed properties often have dependencies on other properties. In the 
+example we created, we can tell Ember that our titleAndRating function depends on the 
+title and the rating of the movie by adding those parameters within the property parentheses.
+
+MovieTracker.Movie = Ember.Object.extend({
+	id: null,
+	title: null,
+	watched: false,
+	rating: 0,
+
+	titleAndRating: function() {
+		return this.get('title') + ' has a rating of ' + 
+		this.get('rating');
+	}.property('title', 'rating')
+});
+
+告知函数依赖哪些属性。
+
+If we want to test this out, we can attempt to get the title and the rating of a movie we create. 
+Copy and paste the following code into the console:
+
+var comedyMovie = MovieTracker.Movie.create({
+	title: 'A Comedy Movie',
+	rating: 5
+});
+
+comedyMovie.get('titleAndRating');
+
+The preceding code should display A Comedy Movie has a rating of 5 in the console.
+
+Mixins
+混入。
+
+Another useful part of Ember.js is something called mixins. A mixin is an object that defines a 
+set of functions relating to a type. In our case, we can copy and paste the following code into 
+the top of movie.js.
+
+WatchedMixin = Ember.Mixin.create({
+	isWatched: function() {
+		var title = this.get('title'),
+		watched = this.get('watched');
+		return('Has ' + title + ' been watched? ' + watched);
+	}
+});
+
+We can then add the mixin into our Movie object by passing it as the first argument to 
+.extendor .create.
+
+MovieTracker.Movie = 
+	Ember.Object.extend(MovieTracker.WatchedMixin, {
+		id: null,
+		title: null,
+		watched: false,
+
+In the future, mixins should probably be contained in their own file, as 
+you will most likely be using them for multiple objects.
+
+We can then copy and paste the following into the console to demonstrate our mixin:
+
+var watchedMovie = MovieTracker.Movie.create({
+	title: 'A Watched Movie',
+	rating: 5,
+	watched: true
+});
+
+watchedMovie.isWatched();
+
+The preceding code should print out Has A Watched Movie been watched? true. We created 
+a Watched mixin object that contains a function that can be added to any Ember object. The 
+extended object will then have these functions accessible to it.
+
+Observers
+观察器。
+
+Ember.js can also make use of something called observers. We can change our Ember Movie
+object to include an observer.
+
+MovieTracker.Movie = Ember.Object.extend(MovieTracker.WatchedMixin,{
+	id: null,
+	title: null,
+	watched: false,
+	rating: 0,
+	titleAndRating: function() {
+		return this.get('title') + ' has a rating of ' + 
+			this.get('rating');
+	}.property('title', 'rating'),
+	titleChanged: function() {
+		console.log('Title changed!');
+	}.observes('title')
+});
+
+Refresh the page to load the new changes, then recreate our comedy movie with the following code:
+
+var comedyMovie = MovieTracker.Movie.create({
+	title: 'A Comedy Movie',
+	rating: 5
+});
+
+If we were to change the title with something like:
+
+comedyMovie.set('title', 'Comedy Movie 2');
+
+Then Title changed! would be displayed as an output to the console.
+
+We added an observer to the title, so whenever the title changes, the corresponding 
+function (titleChanged) is triggered.
+

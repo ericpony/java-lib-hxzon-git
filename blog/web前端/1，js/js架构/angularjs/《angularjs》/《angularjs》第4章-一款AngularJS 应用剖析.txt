@@ -1,0 +1,910 @@
+﻿《angularjs》第4章-一款AngularJS 应用剖析
+
+注释 by hxzon
+====
+目录：
+
+The Application 77
+iv  |  Table of Contents
+Relationship Between Model, Controller, and Template 78
+The Model 79
+Controllers, Directives, and Services, Oh My! 80
+Services  80
+Directives  84
+Controllers 85
+The Templates 89
+The Tests 95
+Unit Tests 96
+Scenario Tests 99
+
+====
+Analyzing an AngularJS App
+We talked about some of the commonly used features of AngularJS in Chapter 2, and
+then dived into how your development should be structured in Chapter 3. Rather than
+continuing with similarly deep dives into individual features, Chapter 4  will look at a
+small, real-life application. We will get a feel for how all the pieces that we have been
+talking about (with toy examples) actually come together to form a real, working ap‐
+plication.
+Rather than putting the entire application front and center, we will introduce one por‐
+tion of it at a time, then talk about the interesting and relevant parts, slowly building up
+to the entire application by the end of this chapter.
+The Application
+GutHub is a simple recipe management application, which we designed both to store
+our super tasty recipes and to show off various pieces of an AngularJS application. The
+application:
+• has a two-column layout.
+• has a navigation bar on the left.
+• allows you to create a new recipe.
+• allows you to browse the list of existing recipes.
+The main view is on the right, which gets changed—depending on the URL—to either
+the list of recipes, the details of a single recipe, or an editable form to add to or edit
+existing recipes. We can see a screenshot of the application in Figure 4-1.
+
+Figure 4-1. GutHub: A simple recipe management application
+This entire application is available on our GitHub repo in chapter4/guthub.
+Relationship Between Model, Controller, and Template
+Before we dive into the application, let us spend a paragraph or two talking about how
+the three pieces of our application work together, and how to think about each of them.
+The model is the truth. Just repeat that sentence a few times. Your entire application is
+driven off the model—what views are displayed, what to display in the views, what gets
+saved, everything! So spend some extra time thinking about your model, what the at‐
+tributes of your object are going to be, and how you are going to retrieve it from the
+server and save it. The view will get updated automatically through the use of data
+bindings, so the focus should always be on the model.
+The  controllerholds the business logic: how you retrieve your model, what kinds of
+operations you perform on it, what kind of information your view needs from the model,
+and how you transform the model to get what you want. The responsibility of validation,
+making server calls, bootstrapping your view with the right data, and mostly everything
+in between belongs on your controller.
+Finally, the templaterepresents how your model will be displayed, and how the user will
+interact with your application. It should mostly be restricted to the following:
+• Displaying your model
+• Defining the ways the user can interact with your application (clicks, input fields,
+and so on)
+
+• Styling the app, and figuring out how and when some elements are displayed (show
+or hide, hover , and so on)
+• Filtering and formatting your data (both input and output)
+Realize that the template in Angular is not necessarily the view part of the Model View
+Controller design paradigm. Instead, the view is the compiled version of the template
+that gets executed. It is a combination of the template and the model.
+What should not go into the template is any kind of business logic or behavior; this
+information should be restricted to the controller. Keeping the template simple allows
+a proper separation of concerns, and also ensures that you can get the most code under
+test using only unit tests. Templates will have to be tested with scenario tests.
+But, you might ask, where does DOM manipulation go? DOM manipulation doesn’t
+really go into the controllers or the template. It goes into AngularJS directives (but can
+sometimes be used via services, which house DOM manipulation to avoid duplication
+of code). We’ll cover an example of that in our GutHub example as well.
+Without further ado, let’s dive right in.
+The Model
+We are going to keep the model dead simple for this application. There are recipes.
+They’re about the only model object in this entire application. Everything else builds
+off of it.
+Each recipe has the following properties:
+• An ID if it is persisted to our server
+• A name
+• A short description
+• Cooking instructions
+• Whether it is a featured recipe or not
+• An array of ingredients, each with an amount, a unit, and a name
+That’s it. Dead simple. Everything in the app is based around this simple model. Here’s
+a sample recipe for you to devour (the same one referenced in Figure 4-1):
+{
+"id": "1",
+"title": "Cookies",
+"description": "Delicious, crisp on the outside, chewy" +
+" on the outside, oozing with chocolatey goodness " +
+"cookies. The best kind",
+"ingredients": [
+
+{
+"amount": "1",
+"amountUnits": "packet",
+"ingredientName": "Chips Ahoy"
+}
+],
+"instructions": "1. Go buy a packet of Chips Ahoy\n" +
+"2. Heat it up in an oven\n" +
+"3. Enjoy warm cookies\n" +
+"4. Learn how to bake cookies from somewhere else"
+}
+We will go on to see how more complicated UI features can be built around this simple
+model.
+Controllers, Directives, and Services, Oh My!
+Now we finally get to sink our teeth into the meat of this delicious application. First, we
+will look at the directives and services code and talk a little bit about what it is doing,
+then we’ll take a look at the multiple controllers needed for this application.
+Services
+// This file is app/scripts/services/services.js
+var services = angular.module('guthub.services', ['ngResource']);
+services.factory('Recipe', ['$resource',
+function($resource) {
+return $resource('/recipes/:id', {id: '@id'});
+}]);
+services.factory('MultiRecipeLoader', ['Recipe', '$q',
+function(Recipe, $q) {
+return function() {
+var delay = $q.defer();
+Recipe.query(function(recipes) {
+delay.resolve(recipes);
+}, function() {
+delay.reject('Unable to fetch recipes');
+});
+return delay.promise;
+};
+}]);
+services.factory('RecipeLoader', ['Recipe', '$route', '$q',
+function(Recipe, $route, $q) {
+return function() {
+var delay = $q.defer();
+Recipe.get({id: $route.current.params.recipeId}, function(recipe) {
+delay.resolve(recipe);
+
+}, function() {
+delay.reject('Unable to fetch recipe '  + $route.current.params.recipeId);
+});
+return delay.promise;
+};
+}]);
+Let’s take a look at our services first. We touched upon services in “Organizing Depen‐
+dencies with Modules” on page 33. Here, we’ll dig a little bit deeper.
+In this file, we instantiate three AngularJS services.
+There is a recipe service, which returns what we call an Angular Resource. These are
+RESTful resources, which point at a RESTful server. The Angular Resource encapsulates
+the lower level $httpservice, so that you can just deal with objects in your code.
+With just that single line of code—return $resource—(and of course, a dependency
+on the  guthub.servicesmodule), we can now put recipeas an argument in any of
+our controllers, and it will be injected into the controller. Furthermore, each  recipe
+object has the following methods built in:
+• Recipe.get()
+• Recipe.save()
+• Recipe.query()
+• Recipe.remove()
+• Recipe.delete()
+If you are going to use  Recipe.delete, and want your application to
+work in IE, you will have to call it like so: Recipe[delete](). This is
+because deleteis a keyword in IE.
+Of the the previous methods, all but query work with a single recipe; query() returns
+an array of recipes by default.
+The line of code that declares the resource—return $resource—also does a few more
+nice things for us:
+1. Notice the :id in the URL specified for the RESTful resource. It basically says that
+when you make any query (say, Recipe.get()), if you pass in an object with an id
+field, then the value of that field will be added to the end of the URL.
+That is, calling Recipe.get({id: 15})will make a call to /recipe/15.
+
+2. What about that second object? The {id: @id}? W ell, as they say, a line of code is
+worth a thousand explanations, so let’s take a simple example.
+Say we have a recipeobject, which has the necessary information already stored
+within it, including an id.
+Then, we can save it by simply doing the following:
+// Assuming existingRecipeObj has all the necessary fields,
+// including id (say 13)
+var recipe = new Recipe(existingRecipeObj);
+recipe.$save();
+This will make a POST request to /recipe/13.
+The @id tells it to pick the id field from its object and use that as the idparameter.
+It’s an added convenience that can save a few lines of code.
+There are two other services in apps/scripts/services/services.js. Both of them are Load‐
+ers; one loads a single recipe (RecipeLoader), and the other loads all recipes (MultiRe
+cipeLoader). These are used when we hook up our routes. At their cores, both of them
+behave very similarly. The flow of both these services is as follows:
+1. Create a $q deferred object (these are AngularJS promises, used for chaining asyn‐
+chronous functions).
+2. Make a call to the server.
+3. Resolve the deferred object when the server returns the value.
+4. Return the promise that will be used by the routing mechanism of AngularJS.
+Promises in an AngularJS land
+A promise is an interface that deals with objects that are returned or get filled in at a
+future point in time (basically, asynchronous actions). At its core, a promise is an object
+with a then()function.
+To showcase the advantages, let us take an example where we need to fetch the current
+profile of a user:
+var currentProfile = null;
+var username = 'something';
+fetchServerConfig(function(serverConfig) {
+fetchUserProfiles(serverConfig.USER_PROFILES, username,
+function(profiles) {
+currentProfile = profiles.currentProfile;
+
+});
+});
+There are a few problems with this approach:
+1. The resultant code is an indentation nightmare, especially if you have to chain
+multiple calls.
+2. Errors reported in between callbacks and functions have a tendency to be lost,
+unless you handle them manually at each step.
+3. You have to encapsulate the logic of what you want to do with currentProfile in
+the innermost callback, either directly, or through a separate function.
+Promises solve these issues. Before we go into the how, let’s take a look at the same
+problem implemented with promises:
+var currentProfile =
+fetchServerConfig().then(function(serverConfig) {
+return fetchUserProfiles(serverConfig.USER_PROFILES, username);
+}).then(function(profiles) {
+return profiles.currentProfile;
+}, function(error) {
+// Handle errors in either fetchServerConfig or
+// fetchUserProfiles here
+});
+Notice the advantages:
+1. You can chain function calls, so you don’t get into an indentation nightmare.
+2. You are assured that the previous function call is finished before the next function
+in the chain is called.
+3. Each then()  call takes two arguments (both functions). The first one is the success
+callback and the second one is the error handler.
+4. In case of errors in the chain, the error will get propagated through to the rest of
+the error handlers. So any error in any of the callbacks can be handled in the end.
+What about resolveand  reject, you ask? Well,  deferredin AngularJS is a way of
+creating promises. Calling resolve  on it fulfills the promise (calls the success handler),
+while calling rejecton it calls the error handler of the promise.
+We’ll come back to this again when we hook up our routes.
+
+Directives
+We can now move to the directives we will be using in our application. There will be
+two directives in the app:
+butterbar
+This directive will be shown and hidden when the routes change and while the page
+is still loading information. It will hook into the route-changing mechanism and
+automatically hide and show whatever is within its tag ,based on the state of the
+page.
+focus
+The focus  directive is used to ensure that specific input fields (or elements) have
+the focus.
+Let’s look at the code:
+// This file is app/scripts/directives/directives.js
+var directives = angular.module('guthub.directives', []);
+directives.directive('butterbar', ['$rootScope',
+function($rootScope) {
+return {
+link: function(scope, element, attrs) {
+element.addClass('hide');
+$rootScope.$on('$routeChangeStart', function() {
+element.removeClass('hide');
+});
+$rootScope.$on('$routeChangeSuccess', function() {
+element.addClass('hide');
+});
+}
+};
+}]);
+directives.directive('focus',
+function() {
+return {
+link: function(scope, element, attrs) {
+element[0].focus();
+}
+};
+});
+The preceding directive returns an object with a single property,  link. We will dive
+deeper into how you can create your own directives in Chapter 6, but for now, all you
+need to know is the following:
+
+1. Directives go through a two-step process. In the first step (the compile phase), all
+directives attached to a DOM element are found, and then processed. Any DOM
+manipulation also happens during the compile step. At the end of this phase, a
+linking function is produced.
+2. In the second step, the link phase (the phase we used previously), the preceding
+DOM template produced is linked to the scope. Also, any watchers or listeners are
+added as needed, resulting in a live binding between the  scope  and the element.
+Thus, anything related to the scopehappens in the linking phase.
+So what’s happening in our directive? Let’s take a look, shall we?
+The butterbardirective can be used as follows:
+<div butterbar>My loading text...</div>
+It basically hides the element right up front, then adds two watches on the root scope.
+Every time a route change begins, it shows the element (by changing its class), and every
+time the route has successfully finished changing, it hides the butterbaragain.
+Another interesting thing to note is how we inject the $rootScope  into the directive.
+All directives directly hook into the AngularJS dependency injection system, so you can
+inject your services and whatever else you need into them.
+The final thing of note is the API for working with the element. jQuery veterans will be
+glad to know that it follows a jQuery-like syntax (addClass, removeClass). AngularJS
+implements a subset of the calls of jQuery so that jQuery is an optional dependency for
+any AngularJS project. In case you do end up using the full jQuery library in your project,
+you should know that AngularJS uses that instead of the jQlite implementation it has
+built-in.
+The second directive (focus) is much simpler. It just calls the focus() method on the
+current element. You can call it by adding the  focusattribute on any input element, like
+so:
+<input type="text" focus></input>
+When the page loads, that element immediately gets the focus.
+Controllers
+With directives and services covered, we can finally get into the controllers, of which
+we have five. All these controllers are located in a single file (app/scripts/controllers/
+controllers.js), but we’ll go over them one at a time. Let’s go over the first controller,
+which is the List Controller, responsible for displaying the list of all recipes in the system.
+app.controller('ListCtrl', ['$scope', 'recipes',
+function($scope, recipes) {
+
+$scope.recipes = recipes;
+}]);
+Notice one very important thing with the List Controller: in the constructor, it does no
+work of going to the server and fetching the recipes. Instead, it is handed a list of recipes
+already fetched. You might wonder how that’s done. We’ll answer that in the routing
+section of the chapter, but it has to do with the  MultiRecipeLoaderservice we saw
+previously. Just keep that in the back of your mind.
+With the List Controller under our belts, the other controllers are pretty similar in
+nature, but we will still cover them one by one to point out the interesting aspects:
+app.controller('ViewCtrl', ['$scope', '$location', 'recipe',
+function($scope, $location, recipe) {
+$scope.recipe = recipe;
+$scope.edit = function() {
+$location.path('/edit/' + recipe.id);
+};
+}]);
+The interesting aspect about the View Controller is the edit function it exposes on the
+scope. Instead of showing and hiding fields or something similar, this controller relies
+on AngularJS to do the heavy lifting (as should you!). The  editfunction simply changes
+the URL to the edit equivalent for the recipe, and lo and behold, AngularJS does the
+rest. AngularJS recognizes that the URL has changed and loads the corresponding view
+(which is the same recipe in edit mode). Voila!
+Next, let’s take a look at the Edit Controller:
+app.controller('EditCtrl', ['$scope', '$location', 'recipe',
+function($scope, $location, recipe) {
+$scope.recipe = recipe;
+$scope.save = function() {
+$scope.recipe.$save(function(recipe) {
+$location.path('/view/' + recipe.id);
+});
+};
+$scope.remove = function() {
+delete $scope.recipe;
+$location.path('/');
+};
+}]);
+What’s new here are the saveand remove methods that the Edit Controller exposes on
+the scope.
+The save function on the scope does what you would expect it to. It saves the current
+recipe, and once it is done saving, redirects the user to the view screen with the same
+
+recipe. The callback function is useful in these scenarios to execute or perform some
+action once you are done.
+There are two ways we could have saved the recipe here. One is to do it as shown in the
+code, by executing $scope.recipe.$save(). This is only possible because recipeis a
+resource object that was returned by the RecipeLoaderin the first place.
+Otherwise, the way you would save the recipe would be:
+Recipe.save(recipe);
+The  removefunction is also straightforward, in that it removes the recipe from the
+scope, and redirects users to the main landing page. Note that it doesn’t actually remove
+it from our server, though it shouldn’t be very hard to make that additional call.
+Next, we have the New Controller:
+app.controller('NewCtrl', ['$scope', '$location', 'Recipe',
+function($scope, $location, Recipe) {
+$scope.recipe = new Recipe({
+ingredients: [ {} ]
+});
+$scope.save = function() {
+$scope.recipe.$save(function(recipe) {
+$location.path('/view/' + recipe.id);
+});
+};
+}]);
+The New Controller is almost exactly the same as the Edit Controller. In fact, you could
+look at combining the two into a single controller as an exercise. The only major dif‐
+ference is that the New Controller creates a new recipe (which is a resource, so that it
+has the savefunction) as the first step. Everything else remains unchanged.
+Finally, we have the Ingredients Controller. This is a special controller, but before we
+get into why or how, let’s take a look:
+app.controller('IngredientsCtrl', ['$scope', function($scope) {
+$scope.addIngredient = function() {
+var ingredients = $scope.recipe.ingredients;
+ingredients[ingredients.length] = {};
+};
+$scope.removeIngredient = function(index) {
+$scope.recipe.ingredients.splice(index, 1);
+};
+}]);
+All the other controllers that we saw so far are linked to particular views on the UI. But
+the Ingredients Controller is special. It’s a child controller that is used on the edit pages
+to encapsulate certain functionality that is not needed at the higher level. The interesting
+
+thing to note is that since it is a child controller, it inherits the scope  from the parent
+controller (the Edit/New controllers in this case). Thus, it has access to the
+$scope.recipefrom the parent.
+The controller itself does nothing too interesting or unique. It just adds a new ingredient
+to the array of ingredients present on the recipe, or removes a specific ingredient from
+the list of ingredients on the recipe.
+With that, we finish the last of the controllers. The only JavaScript piece that remains is
+how the routing is set up:
+// This file is app/scripts/controllers/controllers.js
+var app = angular.module('guthub',
+['guthub.directives', 'guthub.services']);
+app.config(['$routeProvider', function($routeProvider) {
+$routeProvider.
+when('/', {
+controller: 'ListCtrl',
+resolve: {
+recipes: function(MultiRecipeLoader) {
+return MultiRecipeLoader();
+}
+},
+templateUrl:'/views/list.html'
+}).when('/edit/:recipeId', {
+controller: 'EditCtrl',
+resolve: {
+recipe: function(RecipeLoader) {
+return RecipeLoader();
+}
+},
+templateUrl:'/views/recipeForm.html'
+}).when('/view/:recipeId', {
+controller: 'ViewCtrl',
+resolve: {
+recipe: function(RecipeLoader) {
+return RecipeLoader();
+}
+},
+templateUrl:'/views/viewRecipe.html'
+}).when('/new', {
+controller: 'NewCtrl',
+templateUrl:'/views/recipeForm.html'
+}).otherwise({redirectTo:'/'});
+}]);
+As promised, we finally reached the point where the resolve functions are used. The
+previous piece of code sets up the Guthub AngularJS module, as well as the routes and
+templates involved in the application.
+
+It hooks up the directives and the services that we created, and then specifies the various
+routes we will have in our application.
+For each route, we specify the URL, the controller that backs it up, the template to load,
+and finally (optionally), a resolveobject.
+This resolve object tells AngularJS that each of these resolve keys needs to be satisfied
+before the route can be displayed to the user. For us, we want to load all the recipes, or
+an individual recipe, and make sure we have the server response before we display the
+page. So we tell the route provider that we have recipes (or a recipe), and then tell it how
+to fetch it.
+This links back to the two services we defined in the first section, the MultiRecipeLoad
+erand the RecipeLoader. If the resolve function returns an AngularJS promise, then
+AngularJS is smart enough to wait for the promise to get resolved before it proceeds.
+That means that it will wait until the server responds.
+The results are then passed into the constructor as arguments (with the names of the
+parameters being the object’s fields).
+Finally, the otherwise function denotes the default URL redirect that needs to happen
+when no routes are matched.
+You might notice that both the Edit and the New controller routes lead
+to the same template URL,  views/recipeForm.html. What’s happening
+here? We reused the edit template. Depending on which controller is
+associated, different elements are shown in the edit recipe template.
+With this done, we can now move on to the templates, how these controllers hook up
+to them, and manage what is shown to the end user.
+The Templates
+Let us start by taking a look at the outermost, main template, which is the index.html.
+This is the base of our single-page application, and all the other views are loaded within
+the context of this template: 
+<!DOCTYPE html>
+<html  lang="en" ng-app="guthub">
+<head>
+<title>GutHub - Create and Share</title>
+<script src="scripts/vendor/angular.min.js"></script>
+<script src="scripts/vendor/angular-resource.min.js"></script>
+<script src="scripts/directives/directives.js"></script>
+<script src="scripts/services/services.js"></script>
+<script src="scripts/controllers/controllers.js"></script>
+
+<link href="styles/bootstrap.css" rel="stylesheet">
+<link href="styles/guthub.css" rel="stylesheet">
+</head>
+<body>
+<header>
+<h1>GutHub</h1>
+</header>
+<div butterbar>Loading...</div>
+<div class="container-fluid">
+<div class="row-fluid">
+<div class="span2">
+<!--Sidebar-->
+<div id="focus"><a href="/#/new">New Recipe</a></div>
+<div><a href="/#/">Recipe List</a></div>
+</div>
+<div class="span10">
+<div ng-view></div>
+</div>
+</div>
+</div>
+</body>
+</html>
+There are five interesting elements to note in the preceding template, most of which
+you already encountered in Chapter 2. Let’s go over them one by one:
+ng-app
+We set the ng-app module to be GutHub. This is the same module name we gave
+in our  angular.modulefunction. This is how AngularJS knows to hook the two
+together.
+scripttag
+This is where AngularJS is loaded for the application. It has to be done before all
+your JS files that use AngularJS are loaded. Ideally, this should be done at the bottom
+of the body.
+Butterbar
+Aha! Our first usage of a custom directive. When we defined our butterbar  di‐
+rective before, we wanted to use it on an element so that it would be shown when
+the routes were changing, and hidden on success. The highlighted element’s text is
+shown (a very boring “Loading…” in this case) as needed.
+Link hrefValues
+The hrefs link to the various pages of our single-page application. Notice how they
+use the # character to ensure that the page doesn’t reload, and are relative to the
+current page. AngularJS watches the URL (as long as the page isn’t reloaded), and
+
+works it magic (or actually, the very boring route management we defined as part
+of our routes) when needed.
+ng-view
+This is where the last piece of magic happens. In our controllers section, we defined
+our routes. As part of that definition, we denoted the URL for each route, the con‐
+troller associated with the route, and a template. When AngularJS detects a route
+change, it loads the template, attaches the controller to it, and replaces the  ngviewwith the contents of the template.
+One thing that is conspicuous in its absence is the ng-controllertag. Most applications
+would have some sort of a MainControllerassociated with the outer template. Its most
+common location would be on the body tag. In this case, we didn’t use it, because the
+entire outer template has no AngularJS content that needs to refer to a scope.
+Now let’s look at the individual templates associated with each controller, starting with
+the “list of recipes” template:
+<!-- File is chapter4/guthub/app/views/list.html -->
+<h3>Recipe List</h3>
+<ul class="recipes">
+<li ng-repeat="recipe in recipes">
+<div><a href="/#/view/{{recipe.id}}">{{recipe.title}}</a></div>
+</li>
+</ul>
+Really, it’s a very boring template. There are only two points of interest here. The first
+one is a very standard usage of the ng-repeat  tag. It picks up all the recipes from the
+scope, and repeats over them.
+The second is the usage of the  ng-hreftag instead of  href. This is purely to avoid having
+a bad link during the time that AngularJS is loading up. The ng-href  ensures that at no
+time is a malformed link presented to the user. Always use this whenever your URLs
+are dynamic instead of static.
+Of course you might wonder: where is the controller? There is no  ng-controller
+defined, and there really was no Main Controller defined. This is where route mapping
+comes into play. If you remember (or peek back a few pages), the /route redirected to
+the list template and had the List Controller associated with it. Thus, when any references
+are made to variables and the like, it is within the scope of the List Controller.
+Now we move on to something with a little bit more meat: the view form.
+<!-- file is chapter4/guthub/app/views/viewRecipe.html -->
+<h2>{{recipe.title}}</h2>
+<div>{{recipe.description}}</div>
+<h3>Ingredients</h3>
+
+<ul class="unstyled">
+<li ng-repeat="ingredient in recipe.ingredients">
+<span>{{ingredient.amount}}</span>
+<span>{{ingredient.amountUnits}}</span>
+<span>{{ingredient.ingredientName}}</span>
+</li>
+</ul>
+<h3>Instructions</h3>
+<div>{{recipe.instructions}}</div>
+<form ng-submit="edit()" class="form-horizontal">
+<div class="form-actions">
+<button class="btn btn-primary">Edit</button>
+</div>
+</form>
+Another nice, small, contained template. We’ll draw your attention to three things,
+though not necessarily in the order they are shown!
+The first is the pretty standard  ng-repeat. The recipes are again in the scope of the View
+Controller, which is loaded by the resolve function before this page is displayed to the
+user. This ensures that the page is not in a broken, unloaded state when the user sees it.
+The next interesting usage is that of ng-showand ng-class  to style the template. The
+ng-showtag has been added to the  <i>tag, which is used to display a starred icon. Now,
+the starred icon is shown only when the recipe is a featured recipe (as denoted by the
+recipe.featuredboolean value). Ideally, to ensure proper spacing, you would have
+another empty spacer icon, with an ng-hide directive on it, with the exact same Angu‐
+larJS expression as shown in the ng-show. That is a very common usage, to display one
+thing and hide another on a given condition.
+The ng-classis used to add a class to the  <h2>tag (“featured” in this case) when the
+recipe is a featured recipe. That adds some special highlighting to make the title stand
+out even more.
+The final thing to note is the ng-submit directive on the form. The directive states that
+the  edit()function on the  scopeis called in case the form is submitted. The form
+submission happens when any button without an explicit function attached (in this case,
+the Edit button) is clicked. Again, AngularJS is smart enough to figure out the scope
+that is being referred to (from the module, the route, and the controller) and call the
+right method at the right time.
+Now we can move on to our final template (and possibly the most complicated one yet),
+the recipe form template. 
+<!-- file is chapter4/guthub/app/views/recipeForm.html -->
+<h2>Edit Recipe</h2>
+<form name="recipeForm" ng-submit="save()" class="form-horizontal">
+
+<div class="control-group">
+<label class="control-label" for="title">Title:</label>
+<div class="controls">
+<input ng-model="recipe.title" class="input-xlarge" id="title" focus>
+</div>
+</div>
+<div class="control-group">
+<label class="control-label" for="description">Description:</label>
+<div class="controls">
+<textarea ng-model="recipe.description"
+class="input-xlarge"
+id="description"></textarea>
+</div>
+</div>
+<div class="control-group">
+<label class="control-label" for="ingredients">Ingredients:</label>
+<div class="controls">
+<ul id="ingredients" class="unstyled" ng-controller="IngredientsCtrl">
+<li ng-repeat="ingredient in recipe.ingredients">
+<input ng-model="ingredient.amount" class="input-mini">
+<input ng-model="ingredient.amountUnits" class="input-small">
+<input ng-model="ingredient.ingredientName">
+<button type="button"
+class="btn btn-mini"
+ng-click="removeIngredient($index)">
+<i class="icon-minus-sign"></i>Delete </button>
+</li>
+<button type="button"
+class="btn btn-mini"
+ng-click="addIngredient()">
+<i class="icon-plus-sign"></i>Add </button>
+</ul>
+</div>
+</div>
+<div class="control-group">
+<label class="control-label" for="instructions">Instructions:</label>
+<div class="controls">
+<textarea ng-model="recipe.instructions"
+class="input-xxlarge"
+id="instructions"></textarea>
+</div>
+</div>
+<div class="form-actions">
+<button class="btn btn-primary">Save</button>
+<button type="button"
+ng-click="remove()"
+ng-show="!recipe.id"
+class="btn">Delete</button>
+
+</div>
+</form>
+Don ’t panic. It looks like a lot of code, and it is a lot of code, but if you actually dig into
+it, it’s not very complicated. In fact, a lot of it is simple, repetitive boilerplate to show
+editable input fields for editing recipes:
+• The focusdirective is added on the very first input field (the  title  input field).
+This ensures that when the user navigates to this page, the title field has focus so
+the user can immediately start typing in the title.
+• The ng-submitdirective is used very similarly to the previous example, so we won’t
+dive into it much, other than to say that it saves the state of the recipe and signals
+the end of the editing process. It hooks up to the save() function in the Edit Con‐
+troller.
+• The ng-modeldirective is used to bind the various input boxes and text areas on
+the field to the model.
+• One of the more interesting aspects on this page, and one we recommend you spend
+some time trying to understand, is the ng-controllertag on the ingredients list
+portion. Let’s take a minute to understand what is happening here.
+We see a list of ingredients being displayed, and the container tag is associated with
+an  ng-controller. That means that the whole  <ul>tag is scoped to the Ingredients
+Controller. But what about the actual controller of this template, the Edit Control‐
+ler? As it turns out, the Ingredients Controller is created as a child controller of the
+Edit Controller, thereby inheriting the scope of Edit Controller. That is why it has
+access to the recipeobject from the Edit Controller.
+In addition, it adds the  addIngredient()method, which is used by the highlighted
+ng-click, which is accessible only within the scope of the  <ul>  tag. Why would
+you want to do this? This is the best way to separate your concerns. Why should
+the Edit Controller have an addIngredients() method, when 99% of the template
+doesn’t care about it? Child and nested controllers are awesome for such precise,
+contained tasks, and allow you to separate your business logic into more manage‐
+able chunks.
+• The other directive that we want to cover in some depth here is the form validation
+controls. It is easy enough in the AngularJS world to set a particular form field “as
+required.” Simply add the required tag to the input (as is the case in the preceding
+code). But now what do you do with it?
+For that, we jump down to the Save button. Notice the ng-disableddirective on
+it, which says  recipeForm.$invalid. The  recipeFormis the name of the form
+which we have declared. AngularJS adds some special variables to it ($valid  and
+$invalidbeing just two) that allow you to control the form elements. AngularJS
+
+looks at all the required elements and updates these special variables accordingly.
+So if our Recipe Title is empty,  recipeForm.$invalidgets set to true (and  $val
+idto false), and our Save button is instantly disabled.
+We can also set the max and min length of an input, as well as a Regex pattern against
+which an input field will be validated. Furthermore, there are advanced usages that can
+be applied to show certain error messages only when specific conditions are met. Let
+us diverge for a bit with a small example:
+<form name="myForm">
+User name: <input type="text"
+name="userName"
+ng-model="user.name"
+ng-minlength="3">
+<span class="error"
+ng-show="myForm.userName.$error.minlength">Too Short!</span>
+</form>
+In the preceding example, we add a requirement that the username be at least three
+characters (through the use of the ng-minlength directive). Now, the form gets popu‐
+lated with each named input in its scope—we have only  userName  in this example—
+each of which will have an $error  object (which will further include what kind of error
+it has or doesn’t have: required, minlength, maxlength, or pattern) and a $validtag
+to signal whether the input itself is valid or not.
+We can use this to selectively show error messages to the user, depending on the type
+of input error he is making, as we do in the previous example.
+Jumping back to our original template—Recipe form template—there is another nice
+usage of the ng-showhighlighted within the ingredients repeater scope. The Add In‐
+gredient button is shown only beside the last ingredient. This is accomplished by calling
+an  ng-showand using the special  $lastvariable that is accessible inside a  repeater
+element scope.
+Finally, we have the last  ng-click, which is attached to the second button, used for
+deleting the recipe. Notice how the button only shows if the recipe is not saved yet.
+While usually it would make more sense to write ng-hide="recipe.id", sometimes it
+makes more semantic sense to say ng-show="!recipe.id". That is, show if the recipe
+doesn’t have an id, rather than hide if the recipe has an id.
+The Tests
+We have been holding off on showing you the tests that go along with the controller,
+but you knew they were coming, didn’t you? In this section, we’ll go over what kinds of
+tests you would write for which parts of the code, and how you would actually write
+them.
+
+Unit Tests
+The first and most important kind of test is the unit test. This tests that the controllers
+(and directives, and services) that you have developed are correctly structured and
+written, and that they do what you would expect them to.
+Before we dive into the individual unit tests, let us take a look at the test harness that
+surrounds all of our controller unit tests: 
+describe('Controllers', function() {
+var $scope, ctrl;
+//you need to indicate your module in a test
+beforeEach(module('guthub'));
+beforeEach(function() {
+this.addMatchers({
+toEqualData: function(expected) {
+return angular.equals(this.actual, expected);
+}
+});
+});
+describe('ListCtrl', function() {....});
+// Other controller describes here as well
+});
+The harness (we are still using Jasmine to write these tests in a behavioral manner) does
+a few things:
+1. Creates a globally (at least for the purpose of this test spec) accessible scope and
+controller, so we don’t worry about creating a new variable for each controller.
+2. Initializes the module that our app uses (GutHub in this case).
+3. Adds a special matcher that we call equalData. This basically allows us to perform
+assertions on resource objects (like recipes) that are returned through the  $re
+sourceservice or RESTfulcalls.
+Remember to add the special matcher called  equalDataany time we
+want to do assertions on ngResourcereturned objects. This is because
+ngResourcereturned objects have additional methods on them that will
+fail normal expect equal calls.
+With that harness in place, let’s take a look at the unit tests for the List Controller:
+describe('ListCtrl', function() {
+var mockBackend, recipe;
+// _$httpBackend_ is the same as $httpBackend. Only written this way to
+// differentiate between injected variables and local variables
+beforeEach(inject(function($rootScope, $controller, _$httpBackend_, Recipe) {
+recipe = Recipe;
+mockBackend = _$httpBackend_;
+$scope = $rootScope.$new();
+ctrl = $controller('ListCtrl', {
+$scope: $scope,
+recipes: [1, 2, 3]
+});
+}));
+it('should have list of recipes', function() {
+expect($scope.recipes).toEqual([1, 2, 3]);
+});
+});
+Remember that the List Controller is one of the simplest controllers we have. The con‐
+structor of the controller just takes in a list of recipes and saves it to the scope. You could
+write a test for it, but it seems kind of silly (we still did it, because tests are awesome!).
+Instead, the more interesting aspect is the MultiRecipeLoaderservice. This is respon‐
+sible for fetching the list of recipes from the server and passing it in as an argument
+(when hooked up correctly via the $routeservice):
+describe('MultiRecipeLoader', function() {
+var mockBackend, recipe, loader;
+// _$httpBackend_ is the same as $httpBackend. Only written this way to
+// differentiate between injected variables and local variables.
+beforeEach(inject(function(_$httpBackend_, Recipe, MultiRecipeLoader) {
+recipe = Recipe;
+mockBackend = _$httpBackend_;
+loader = MultiRecipeLoader;
+}));
+it('should load list of recipes', function() {
+mockBackend.expectGET('/recipes').respond([{id: 1}, {id: 2}]);
+var recipes;
+var promise = loader();
+promise.then(function(rec) {
+recipes = rec;
+});
+expect(recipes).toBeUndefined();
+mockBackend.flush();
+expect(recipes).toEqualData([{id: 1}, {id: 2}]);
+});
+});
+// Other controller describes here as well
+
+We test the MultiRecipeLoader by hooking up a mock HttpBackendin our test. This
+comes from the  angular-mocks.jsfile that is included when these tests are run. Just
+injecting it into your  beforeEachmethod is enough for you to start setting expectations
+on it. In our second, more meaningful test, we set an expectation for a server GETcall
+to  recipes, which will return a simple array of objects. We then use our new custom
+matcher to ensure that this is exactly what was returned. Note the call to flush()  on
+the mock backend, which tells the mock backend to now return response from the
+server. You can use this mechanism to test control flow and see how your application
+handles before and after the server returns a response.
+We will skip View Controller, as it is almost exactly like the List Controller except for
+the addition of an edit() method on the scope. This is pretty simple to test, as you can
+inject the $locationinto your test and check its value.
+Let us now jump to the Edit Controller, which has two points of interest that we should
+be unit testing. The resolvefunction is similar to the one we saw before, and can be
+tested the same way. Instead, we now want to see how we can test the save()and the
+remove()methods. Let’s take a look at the tests for those (assuming our harnesses from
+the previous example):
+describe('EditController', function() {
+var mockBackend, location;
+beforeEach(inject(function($rootScope,
+$controller,
+_$httpBackend_,
+$location,
+Recipe) {
+mockBackend = _$httpBackend_;
+location = $location;
+$scope = $rootScope.$new();
+ctrl = $controller('EditCtrl', {
+$scope: $scope,
+$location: $location,
+recipe: new Recipe({id: 1, title: 'Recipe'})
+});
+}));
+it('should save the recipe', function() {
+mockBackend.expectPOST('/recipes/1',
+{id: 1, title: 'Recipe'}).respond({id: 2});
+// Set it to something else to ensure it is changed during the test
+location.path('test');
+$scope.save();
+expect(location.path()).toEqual('/test');
+mockBackend.flush();
+
+expect(location.path()).toEqual('/view/2');
+});
+it('should remove the recipe', function() {
+expect($scope.recipe).toBeTruthy();
+location.path('test');
+$scope.remove();
+expect($scope.recipe).toBeUndefined();
+expect(location.path()).toEqual('/');
+});
+});
+In the first test, we test the  save()function. In particular , we ensure that saving first
+makes a POST request to the server with our object, and then, once the server responds,
+the location is changed to the newly persisted object’s view recipe page.
+The second test is even simpler. We simply check to ensure that calling remove()  on the
+scope removes the current recipe, then redirects the user to the main landing page. This
+can be easily done by injecting the $location  service into our test, and working with
+it.
+The rest of the unit tests for the controllers follow very similar patterns, so we can skip
+over them. At their base, such unit tests rely on a few things:
+• Ensuring that the controller (or more likely, the scope) reaches the correct state at
+the end of the initialization
+• Confirming that the correct server calls are made, and that the right state is achieved
+by the scope during the server call and after it is completed (by using our mocked
+out backend in the unit tests)
+• Leveraging the AngularJS dependency injection framework to get a handle on the
+elements and objects that the controller works with to ensure that the controller is
+getting set to the correct state
+Scenario Tests
+Once we are happy with our unit tests, we might be tempted to just lean back, smoke a
+cigar, and call it a day. But the work of an AngularJS developer isn’t done until he has
+run his scenario tests. While unit tests assure us that every small piece of JS code is
+working as intended, we also want to ensure that the template loads, that it is hooked
+up correctly to the controllers, and that clicking around in the template does the right
+thing.
+
+This is exactly what a scenario test in AngularJS does for you. It allows you to:
+• Load your application
+• Browse to a certain page
+• Click around and enter text willy-nilly
+• Ensure that the right things happen
+So how would a scenario test for our “list of recipes” page work? Well, first of all, before
+we get started on the actual test, we need to do some groundwork.
+For the scenario test to work, we will need a working web server that is ready to accept
+requests from the GutHub application, and will allow storing and getting a list of recipes
+from it. Feel free to change the code to use an in-memory list of recipes (removing the
+recipe $resource and changing it to just a JSON object dump), or to reuse and modify
+the web server we showed you in the previous chapter, or to use Yeoman!
+Once we have a server up and running, and serving our application, we can then write
+and run the following test:
+describe('GutHub App', function() {
+it('should show a list of recipes', function() {
+browser().navigateTo('/index.html');
+// Our Default GutHub recipes list has two recipes
+expect(repeater('.recipes li').count()).toEqual(2);
+});
+});
+

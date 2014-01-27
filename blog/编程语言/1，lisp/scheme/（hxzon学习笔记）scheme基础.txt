@@ -20,8 +20,24 @@ lambda，创建一个过程。类似 clojure 中的 fn 。
 
 ----
 let，后续的局部变量不能引用前边的局部变量。
-let可以靠 lambda 来实现。
+let可以靠 lambda 来实现，即 let 是 lambda 的语法糖。
 
+(let ( (var expr) ... ) 
+    body1 body2 ...)
+
+Brackets are often used in place of parentheses to delimit the bindings of a let expression.
+可以使用方括号替换绑定表达式中的“名值对”括号。
+
+(let (  [list1 '(a b c)]    [list2 '(d e f)]  )
+  (cons (cons (car list1)
+              (car list2))
+        (cons (car (cdr list1))
+              (car (cdr list2))))) <graphic> ((a . d) b . e)
+
+定义本地函数：
+(let f (p1 p2) body1 body2 ...)
+
+--
 let*，后续的局部变量可以引用前边的局部变量。
 
 (let ((x 1)
@@ -32,7 +48,8 @@ let*，后续的局部变量可以引用前边的局部变量。
        (y x))	;这里 y 的值是前面的局部变量 x 的值。
   (+ x y))
 
-fluid-let ，即 clojure 中的 binding 。）
+--
+fluid-let ，即 clojure 中的 binding 。
 
 ----
 letrec，内部递归定义。

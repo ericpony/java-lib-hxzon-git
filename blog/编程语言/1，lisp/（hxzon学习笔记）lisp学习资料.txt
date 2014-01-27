@@ -38,6 +38,9 @@ http://www.ccs.neu.edu/home/matthias/HtDP2e/
 《Structure and Interpretation of Computer Programs》
 简称 SICP ，可以启发思想，尤其是函数式编程入门。
 http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-001-structure-and-interpretation-of-computer-programs-spring-2005/video-lectures/
+http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-4.html
+SICP 解题集— SICP 解题集
+http://sicp.readthedocs.org/
 
 《The Little Schemer》
 http://www.ccs.neu.edu/home/matthias/BTLS/

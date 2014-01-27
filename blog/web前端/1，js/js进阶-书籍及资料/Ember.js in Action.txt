@@ -1,0 +1,54 @@
+﻿Ember.js in Action
+http://www.manning.com/skeie/
+
+http://www.manning-source.com/books/skeie/Ember.js-in-Action-Source.zip
+https://github.com/joachimhs/Ember.js-in-Action-Source/
+
+====
+EARLY ACCESS EDITION
+
+Joachim Haagen Skeie
+
+MEAP Began: February 2013 
+Softbound print: February 2014 (est.) | 325 pages 
+ISBN: 9781617291456 
+
+=====
+Table of Contents
+
+PART 1. THE EMBER.JS FUNDAMENTALS 
+  1 Powering your next ambitious web application - FREE 
+  2 The Ember.js Way - AVAILABLE 
+  3 Putting everything together using Ember.js Router - AVAILABLE 
+  4 Automatically updating templates with Handlebars.js - AVAILABLE 
+
+PART 2. BUILDING AMBITIOUS WEB APPS FOR THE REAL WORLD 
+  5 Bringing home the bacon - Interfacing with the server side using Ember Data - AVAILABLE 
+  6 Interfacing with the server side without using Ember Data - AVAILABLE 
+  7 Writing custom components - AVAILABLE 
+  8 Ember.js - Testing your Ember.js Application - AVAILABLE 
+
+PART 3. ADVANCED EMBER.JS TOPICS 
+  9 Authentication through a third-party authentication system—Mozilla Persona - AVAILABLE 
+  10 The Ember.js Run Loop—Backburner.js - AVAILABLE 
+  11 Packaging and Deployment - AVAILABLE
+
+====
+DESCRIPTION
+
+Modern web applications look and perform like desktop apps. They're secure, scalable, and fast. They provide rich UIs that adapt seamlessly to mobile environments. In a word, they're ambitious. Ember.js is a JavaScript-driven framework designed to help you build ambitious web applications. By automatically incorporating the idioms and best practices that define all modern web apps, Ember helps you focus on the unique aspects of your project. Ember's APIs are easy to understand and use, and it's designed from the ground up with developer productivity in mind.
+
+Ember.js in Action is a crisp tutorial that introduces the Ember.js framework and shows you how to build production-quality web applications. You'll begin with the basic architecture: client- and server-side MVC, integrating Ember.js with your favorite backend, handling data, and more. You'll explore the amazing Handelbars templating engine that automatically updates your apps when the data behind them changes. Along the way, you'll develop a complete Ember.js application and learn how to deploy, administer, and update it efficiently.
+
+WHAT'S INSIDE
+
+Covers Ember.js 1.0
+Working with Ember Data
+Mastering Handlebars templates
+Advanced JavaScript techniques
+This book assumes basic proficiency with JavaScript. No prior experience with Ember.js is required.
+
+ABOUT THE AUTHOR
+
+Joachim Haagen Skeie is an experienced web application developer and the author of EurekaJ, an Open Source Application Monitoring tool built using Ember.js.
+

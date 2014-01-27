@@ -9,6 +9,8 @@ by hxzon
 4.3.2 非确定性程序的实例 
 4.3.3 实现arab求值器
 
+http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-28.html
+
 ======
 给求值器添加一种支持自动搜索的功能。
 
@@ -88,6 +90,29 @@ by hxzon
 
 如果希望得到下一个成功执行的值，那就可以要求解释器回溯（try-again），让它试着产生第二个没有失败的运行。
 
+;;; Amb-Eval input:
+(prime-sum-pair '(1 3 5 8) '(20 35 110))
+;;; Starting a new problem
+;;; Amb-Eval value:
+(3 20)
+;;; Amb-Eval input:
+try-again
+;;; Amb-Eval value:
+(3 110)
+;;; Amb-Eval input:
+try-again
+;;; Amb-Eval value:
+(8 35)
+;;; Amb-Eval input:
+try-again
+;;; There are no more values of
+(prime-sum-pair (quote (1 3 5 8)) (quote (20 35 110)))
+;;; Amb-Eval input:
+(prime-sum-pair '(19 27 30) '(11 36 58))
+;;; Starting a new problem
+;;; Amb-Eval value:
+(30 11)
+
 ====
 4.3.2，非确定性程序的示例
 
@@ -125,7 +150,116 @@ by hxzon
 ----
 -2，自然语言的语法分析
 
-（暂略）
+(define nouns '(noun student professor cat class))
+(define verbs '(verb studies lectures eats sleeps))
+(define articles '(article the a))
+
+(sentence (noun-phrase (article the) (noun cat))
+          (verb eats))
+
+(define (parse-sentence)
+  (list 'sentence
+         (parse-noun-phrase)
+         (parse-word verbs)))
+
+(define (parse-noun-phrase)
+  (list 'noun-phrase
+        (parse-word articles)
+        (parse-word nouns)))
+
+(define (parse-word word-list)
+  (require (not (null? *unparsed*)))
+  (require (memq (car *unparsed*) (cdr word-list)))
+  (let ((found-word (car *unparsed*)))
+    (set! *unparsed* (cdr *unparsed*))
+    (list (car word-list) found-word)))
+
+(define *unparsed* '())
+(define (parse input)
+  (set! *unparsed* input)
+  (let ((sent (parse-sentence)))
+    (require (null? *unparsed*))
+    sent))
+
+;;; Amb-Eval input:
+(parse '(the cat eats))
+;;; Starting a new problem
+;;; Amb-Eval value:
+(sentence (noun-phrase (article the) (noun cat)) (verb eats))
+
+(define prepositions '(prep for to in by with))
+
+(define (parse-prepositional-phrase)
+  (list 'prep-phrase
+        (parse-word prepositions)
+        (parse-noun-phrase)))
+
+(define (parse-sentence)
+  (list 'sentence
+         (parse-noun-phrase)
+         (parse-verb-phrase)))
+(define (parse-verb-phrase)
+  (define (maybe-extend verb-phrase)
+    (amb verb-phrase
+         (maybe-extend (list 'verb-phrase
+                             verb-phrase
+                             (parse-prepositional-phrase)))))
+  (maybe-extend (parse-word verbs)))
+
+(define (parse-simple-noun-phrase)
+  (list 'simple-noun-phrase
+        (parse-word articles)
+        (parse-word nouns)))
+(define (parse-noun-phrase)
+  (define (maybe-extend noun-phrase)
+    (amb noun-phrase
+         (maybe-extend (list 'noun-phrase
+                             noun-phrase
+                             (parse-prepositional-phrase)))))
+  (maybe-extend (parse-simple-noun-phrase)))
+
+(sentence
+ (noun-phrase
+  (simple-noun-phrase (article the) (noun student))
+  (prep-phrase (prep with)
+               (simple-noun-phrase
+                (article the) (noun cat))))
+ (verb-phrase
+  (verb sleeps)
+  (prep-phrase (prep in)
+               (simple-noun-phrase
+                (article the) (noun class)))))
+
+(sentence
+ (simple-noun-phrase (article the) (noun professor))
+ (verb-phrase
+  (verb-phrase
+   (verb lectures)
+   (prep-phrase (prep to)
+                (simple-noun-phrase
+                 (article the) (noun student))))
+  (prep-phrase (prep with)
+               (simple-noun-phrase
+                (article the) (noun cat)))))
+
+(sentence
+ (simple-noun-phrase (article the) (noun professor))
+ (verb-phrase
+  (verb lectures)
+  (prep-phrase (prep to)
+               (noun-phrase
+                (simple-noun-phrase
+                 (article the) (noun student))
+                (prep-phrase (prep with)
+                             (simple-noun-phrase
+                              (article the) (noun cat)))))))
+
+
+
+
+
+
+
 
 
 ====

@@ -1,0 +1,1266 @@
+﻿《angularjs》第2章-解剖angularjs应用
+
+注释by hxzon
+
+目录：
+
+Invoking Angular
+启动angular。
+Model View Controller
+
+Templates and Data Binding
+模板和数据绑定。
+
+（续）
+Organizing Dependencies with Modules
+用模块组织依赖。
+Formatting Data with Filters
+使用过滤器格式化数据。
+Changing Views with Routes and $location
+用路由来更换视图。
+Talking to Servers
+与服务端通信。
+Changing the DOM with Directives
+用指令更换dom 。
+Validating User Input
+验证用户输入。
+Moving On
+
+====
+模板和数据绑定 
+
+显示文本 
+表单输入 
+非入侵式JavaScript 
+列表、表格以及其他迭代型元素 
+隐藏和显示 
+CSS 类和样式 
+src 和href 属性的问题 
+表达式 
+区分UI 和控制器的职责 
+利用$scope 暴露模型数据 
+使用$watch 监控数据模型的变化 
+watch（） 中的性能注意事项 
+
+
+====
+Anatomy of an AngularJS Application
+（Anatomy，解剖学。）
+
+Unlike typical libraries where you pick and choose functions as you like, everything in
+Angular is designed to be used as a collaborative suite. In this chapter we’ll cover all of
+the basic building blocks in Angular so you can understand how they fit together. Many
+of these blocks will be covered in more detail in later chapters.
+
+====
+Invoking Angular
+启用angular
+
+Any application must do two things to start Angular:
+1. Load the angular.js library
+2. Tell Angular which part of the DOM it should manage with the ng-appdirective
+
+Loading the Script
+
+Loading the library is straightforward and follows the same rules as any other JavaScript
+library. You can load the script from Google’s content delivery network (CDN), like so:
+
+<script
+src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.4/angular.min.js">
+</script>
+
+Using Google’s CDN is recommended. Google’s servers are fast, and the script is cache‐
+able across applications. That is, if your user has multiple apps that use Angular, she’ll
+have to download only it once. Also, if the user has visited other sites that use the Google
+CDN link for Angular, she won’t need to download it again when visiting your site.
+If you prefer to host locally (or anywhere else), you can do that too. Just specify the
+correct location in the src.
+
+Declaring Angular’s Boundaries with ng-app
+用ng-app指令声明angular的作用范围。
+
+The ng-app directive lets you tell Angular which part of your page it should expect to
+manage. If you’re building an all-Angular application, you should include  ng-app  as
+part of the <html>tag, like so:
+
+<html ng-app>
+…
+</html>
+
+This tells Angular to manage all DOM elements in the page.
+If you’ve got an existing app where some other technology expects to manage the DOM,
+such as Java or Rails, you can tell Angular to manage only a part of the page by placing
+it on some element like a <div>within the page.
+
+<html>
+…
+<div ng-app>
+…
+</div>
+…
+</html>
+
+====
+Model View Controller
+
+In Chapter 1, we mentioned that Angular supports the Model View Controller style of
+application design. Though you have a lot of flexibility in designing your Angular app,
+you will always have some flavor of:
+
+• A model containing data that represents the current state of your application.
+• Views that display this data.
+• Controllers that manage the relationship between your model and your views.
+
+You’ll create your model using object attributes, or even just primitive types containing
+your data. There’s nothing special about model variables. If you want to display some
+text to the user, you could have a string, like so:
+
+var someText = 'You have started your journey.';
+
+You create your views by writing a template as an HTML page and merging it with data
+from your model. As we’ve seen, you can insert a placeholder in the DOM and set its
+text like this:
+
+<p>{{someText}}</p>
+
+We call this double-curly syntax interpolation, as it inserts new content into an existing
+template.
+“插值”语法。
+
+The controllers are classes or types you write to tell Angular which objects or primitives
+make up your model by assigning them to the $scope object passed into your controller:
+
+function TextController($scope) {
+	$scope.someText = someText;
+}
+
+Bringing it all together, we have:
+
+<html ng-app>
+<body ng-controller="TextController">
+<p>{{someText}}</p>
+<script
+src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.1/angular.min.js">
+</script>
+
+<script>
+
+function TextController($scope) {
+	$scope.someText = 'You have started your journey.';
+}
+</script>
+</body>
+</html>
+
+Loading this in a browser, you would see:
+You have started your journey.
+
+Though this primitive-style model works in simple cases, for most applications you’ll
+want to create a model object to contain your data. 
+尽量使用对象类型而不是原始类型。
+We’ll create a messages model object
+and use it to store our someText. So instead of:
+
+var someText = 'You have started your journey.';
+
+you would write:
+
+var messages = {};
+messages.someText = 'You have started your journey.';
+
+function TextController($scope) {
+	$scope.messages = messages;
+}
+
+and use it in your template as:
+
+<p>{{messages.someText}}</p>
+
+As we’ll see later when we discuss the $scope object, creating a model object like this
+will prevent unexpected behavior that could be caused by the prototypal inheritance in
+$scope objects.
+
+While we’re discussing practices that will save you in the long run, in the previous
+example, we’ve created TextController  in the global  scope. While this is fine for 
+examples, the right way to define a controller is as part of something called a module,
+which provides a namespace for related parts of your application. 
+模块，提供一个命名空间，用来组织相关的部分。
+The updated code would look like the following:
+
+<html ng-app='myApp'>
+<body ng-controller='TextController'>
+<p>{{someText.message}}</p>
+<script
+src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.1/angular.min.js">
+</script>
+<script>
+var myAppModule = angular.module('myApp', []);
+
+myAppModule.controller('TextController',
+	function($scope) {
+		var someText = {};
+		someText.message = 'You have started your journey.';
+		$scope.someText = someText;
+	});
+</script>
+</body>
+</html>
+
+In this version, we told our ng-app element about the name of our module, myApp. We
+then called the Angular object to create a module named  myApp  and pass our controller’s
+function to a call to that module’s controller function.
+
+We’ll get to all the whys and hows of modules in a bit. For now, just remember that
+keeping things out of the global namespace is a good thing and that modules are the
+mechanism we use to do so.
+
+====
+Templates and Data Binding
+模板和数据绑定。
+
+Templates in Angular applications are just HTML documents that we load from the
+server or define in a <script>tag like any other static resource. You define your UI in
+the template, using standard HTML plus Angular directives where you need UI components.
+
+Once in the web browser, Angular expands these templates into your full application
+by merging your template with data. We saw an example of this in Chapter 1 when we
+displayed a list of items in the shopping cart:
+
+<div ng-repeat="item in items">
+<span>{{item.title}}</span>
+...
+</div>
+
+Here, it stamps out a copy of the outer <div>, and everything inside it, once for every
+element in the items array.
+
+So where does this data come from? In our shopping cart example, we just defined it in
+an array in our code. This works great for when you’re starting to build a UI and just
+want to test out how it will work. Most apps, however, will use some persistent data
+source on the server. Your app in the browser connects to your server and requests
+whatever it needs for the page the user is on, and Angular merges it with your template.
+
+The basic startup flow looks like this:
+1. A user requests the first page of your application.
+2. The user’s browser makes an HTTP connection to your server and loads the  
+index.html page containing your template.
+3. Angular loads into the page, waits for the page to be fully loaded, and then looks
+for ng-app to define its template boundaries.
+4. Angular traverses the template and looks for directives and bindings. 
+angular遍历模板，查找指令和数据绑定。
+This results in registration of listeners and DOM manipulation, 
+as well as fetching initial data from the server. 
+The end result of this work is that the app is bootstrapped and the
+template is converted into view as a DOM.
+5. You connect to your server to load additional data you need to show the user as
+needed.
+
+Steps 1 through 3 are standard for every Angular app. It’s in steps 4 and 5 that you have
+choices. These steps can happen synchronously or asynchronously. 
+前3个步骤是标准固定的。第4和5步骤，你可以选择同步方式或异步方式。
+For performance,
+the data your app needs to display to the user on the first view can come down with the
+HTML template to avoid multiple requests.
+By structuring your application with Angular, your application’s templates are kept 
+separate from the data that populates them. The result of this is that these templates are
+now cacheable. Only new data need come down to the browser after the first load. Just
+as with JavaScript, images, CSS, and other resources, caching these templates can give
+your application even better performance.
+
+==
+Displaying Text
+显示文本。
+
+You can display and update text anywhere in your UI using the ng-bind  directive. It has
+two equivalent forms. One we’ve seen with double-curly braces:
+可以使用ng-bind指令，它有两种等价形式。
+
+<p>{{greeting}}</p>
+
+Then there’s an attribute-based directive called ng-bind:
+<p ng-bind="greeting"></p>
+
+Both are equivalent in their output. If the model variable greeting is set to “Hi there,”
+Angular will generate the HTML:
+<p>Hi there</p>
+
+And the browser will display “Hi there”.
+So why would you use one form over the other? We created the double-curly 
+interpolation syntax to read more naturally and require less typing. 
+我们提供“插值”语法是为了直观。
+While both forms produce
+equivalent output, with the double-curly syntax, on the very first page load of your
+application’s  index.html, there’s a chance that your user will see the un-rendered template
+before Angular has a chance to replace the curlies with your data. Subsequent views
+won’t suffer from this.
+使用插值语法，用户有可能看到第一个页面的模板，如果angular来不及处理页面。
+之后的页面不会有这种情况。
+
+The reason is that the browser loads the HTML page, renders it, and only then does
+Angular get a chance to interpret it as you intended.
+这是因为浏览器先加载页面，渲染它，然后angular才开始处理页面。
+
+The good news is that you can still use {{ }} in the majority of your templates. For the
+data binding you do in your index.html page, however, use ng-bind instead. That way,
+your users will see nothing until the data has loaded.
+好消息是你仍然可以使用插值语法。
+但是第一个页面，改用ng-bind指令，这样用户就不会看到第一个页面的模板。
+
+==
+Form Inputs
+表单输入。
+
+Working with form elements in Angular is simple. As we’ve seen in several examples,
+you can use the  ng-model attribute to bind elements to your model properties. This
+works with all the standard form elements like text inputs, radio buttons, checkboxes,
+and so on. We can bind a checkbox to a property like so:
+
+<form ng-controller="SomeController">
+	<input type="checkbox" ng-model="youCheckedIt">
+</form>
+
+This means that:
+1. When the user checks the box, a property called youCheckedIt on the  
+SomeController’ s  $scope will become true. 
+Unchecking the box makes youCheckedIt  false.
+用户点击选择框时，对应的属性会变为true或false。
+
+2. If you set  $scope.youCheckedIt to true in  SomeController, the box becomes
+checked in the UI. Setting it to false unchecks the box.
+设置属性时，选择框也会相应变化。
+
+Now let’s say we actually want to take action when the user does something. For input
+elements, you use the ng-change attribute to specify a controller method that should be
+called whenever the user changes the input’s value.
+使用ng-change指令，来注册监听函数。
+ 
+Let’s do a simple calculator to help
+startup owners understand how much money they need to get going:
+
+<form ng-controller="StartUpController">
+Starting: <input ng-change="computeNeeded()"
+				ng-model="funding.startingEstimate">
+Recommendation: {{funding.needed}}
+</form>
+
+For our simplistic example, let’s just set the output to be ten times the user’s estimate.
+We’ll also set a default value of zero to start:
+
+function StartUpController($scope) {
+	$scope.funding = { startingEstimate: 0 };
+	$scope.computeNeeded = function() {
+		$scope.needed = $scope.startingEstimate * 10;
+	};
+}
+在 $scope 中定义函数。
+
+There is, however, a potential problem with the strategy in the preceding code. The issue
+is that we’re only recomputing the needed amount when users type in the input field.
+This works fine if this input field is only ever updated when users type in this particular
+input. 
+假如用户输入不是唯一的更新源？
+But what if other inputs bind to this property in the model? What if it gets updated
+when data comes in from the server?
+假如属性来自其它输入，假如来自服务端？
+
+To update the field no matter how it gets updated, we want to use a $scope  function
+called $watch(). 
+使用 $scope 中的 $watch() 函数。
+
+We’ll talk about watch in detail later in this chapter. 
+本章稍后会讲解 watch 函数。
+The basics are that
+you can call $watch() with an expression to observe and a callback that gets invoked
+whenever that expression changes.
+
+In this case, we want to watch funding.startingEstimateand call computeNeeded()
+whenever it changes. We could then rewrite the StartUpControllerto use this technique:
+
+function StartUpController($scope) {
+	$scope.funding = { startingEstimate: 0 };
+	computeNeeded = function() {
+		$scope.funding.needed = $scope.funding.startingEstimate * 10;
+	};
+	$scope.$watch('funding.startingEstimate', computeNeeded);
+}
+（hxzon：响应式编程。
+每当funding.startingEstimate 被更新，computeNeeded都会被调用。）
+
+Note that the expression to watch is in quotes. Yes, it is a string. This string is evaluated
+as something called an Angular expression. Expressions can do simple operations and
+have access to the properties in the $scope object.
+表达式写在字符串中，可以访问 $scope中的属性。 
+We’ll cover expressions more later in this chapter.
+
+You could also watch the return value of a function, but it won’t work to watch the
+property funding.startingEstimateas this evaluates to zero, its initial value, and that
+zero never changes.
+可以对函数的返回值进行监听。
+？但当funding.startingEstimateas 为0时，即它的初始值时，监听不会工作。
+
+Then, because our funding.needed  will automatically update whenever 
+funding.startingEstimatechanges, we can write a simpler template, like so:
+
+<form ng-controller="StartUpController">
+Starting: <input ng-model="funding.startingEstimate">
+Recommendation: {{funding.needed}}
+</form>
+
+There are some cases where you don’t want to take action on every change; instead, you
+want to wait until the user tells you he’s ready. Examples might be completing a purchase
+or sending a chat message.
+不想每次一有改变就触发，而是等到用户确认它已完成，例如支付或发送聊天信息。
+
+If you have a form that groups inputs, you can use the ng-submit directive on the form
+itself to specify a function to call when the form submits. 
+使用ng-submit指令来注册提交函数。
+
+We can extend our previous
+example to let the user request funding for her startup by clicking a button: 
+
+<form ng-submit="requestFunding()" ng-controller="StartUpController">
+	Starting: <input ng-change="computeNeeded()" ng-model="startingEstimate">
+	Recommendation: {{needed}}
+	<button>Fund my startup!</button>
+</form>
+
+function StartUpController($scope) {
+	$scope.computeNeeded = function() {
+		$scope.needed = $scope.startingEstimate * 10;
+	};
+	$scope.requestFunding = function() {
+		window.alert("Sorry, please get more customers first.");
+	};
+}
+
+The ng-submit directive also automatically prevents the browser from doing its default
+POST action when it tries to submit the form.
+
+To handle other event cases, like when you want to provide interactions that don’t submit
+a form, Angular provides event-handling directives that resemble the browser’s native
+event attributes. For onclick, you’d use ng-click. For ondblclick, use ng-dblclick,
+and so on.
+
+We can try this out by extending our startup calculator one last time with a reset button
+that will reset the input value to zero: 
+
+<form ng-submit="requestFunding()" ng-controller="StartUpController">
+	Starting: <input ng-change="computeNeeded()" ng-model="startingEstimate">
+	Recommendation: {{needed}}
+	<button>Fund my startup!</button>
+	<button ng-click="reset()">Reset</button>
+</form>
+
+function StartUpController($scope) {
+	$scope.computeNeeded = function() {
+		$scope.needed = $scope.startingEstimate * 10;
+	};
+	$scope.requestFunding = function() {
+		window.alert("Sorry, please get more customers first.");
+	};
+	$scope.reset = function() {
+		$scope.startingEstimate = 0;
+	};
+}
+
+==
+A Few Words on Unobtrusive JavaScript
+
+At some point in your JavaScript development career, someone probably told you that
+you should be writing “unobtrusive JavaScript,” and that using click, mousedown, and
+other such inline event handlers in your HTML was a bad idea. He was right.
+使用html的click等属性，是不被推荐的。
+
+The idea of unobtrusive JavaScript has been interpreted many ways, but the rationale
+for this style of coding is something along the following lines:
+
+1. Not everyone’s browser supports JavaScript. Let everyone see all of your content
+and use your app without needing to execute code in the browser.
+2. Some folks use browsers that work differently. Visually impaired folks who use
+screen-readers and some mobile phone users can ’t use sites with JavaScript.
+3. Javascript works differently across different platforms. IE is usually the culprit here.
+You need to put in different event-handling code depending on the browser.
+4. These event handlers reference functions in the global namespace. It will cause you
+headaches when you try to integrate other libraries with functions of the same
+names.
+这些事件处理器引用全局函数，难以和其它库一起使用。
+
+5. These event handlers combine structure and behavior. This makes your code more
+difficult to maintain, extend, and understand.
+
+In most ways, life was better when you wrote JavaScript in this style. One thing that was
+not better, however, was code complexity and readability. Instead of declaring your event
+handler actions with the element they act on, you usually had to assign IDs to these
+elements, get a reference to the element, and set up event handlers with callbacks. 
+给元素添加id，然后引用这个元素，添加事件处理器。
+You could invent a structure to only create these associations in well-known locations, but
+most apps ended up with these handler setups littered all over.
+
+In Angular, we decided to reexamine the problem.
+
+The world has changed since these concepts were born. Point #1 is no longer true for
+any interesting population. If you’re running a browser without JavaScript, you’re 
+relegated to sites created in the 1990s. 
+第1点的情况已经不存在了，现在的浏览器都支持javascript。
+As for point #2, modern screen-readers have caught
+up. With proper use of ARIA semantic tags, you can make very rich UIs easily accessible.
+Mobile phones now run JavaScript on par with desktop machines.
+第1点，现代读屏器也支持javascript。
+So now the question is: could we solve #3 and #4 while regaining the readability and
+simplicity of the inline technique?
+As previously mentioned, for most inline event handlers, Angular has an equivalent in
+the form of ng-eventhandler="expression"where eventhandler would be replaced
+by click, mousedown, change, and so on. If you want to get notified when a user clicks
+on an element, you simply use the ng-click directive like this:
+<div ng-click="doSomething()">...</div>
+
+Is your brain saying “No, no, no! Bad, bad, bad!”? The good news is that you can relax.
+These directives differ from their event handler predecessors in that they:
+这些指令和事件处理器不同：
+• Behave the same in every browser. Angular takes care of the differences for you.
+它们的行为在不同的浏览器中是一致的。
+• Do not operate on the global namespace. The expressions you specify can only
+access functions and data that is in the scope of the element’s controller.
+它们不是在全局命名空间下。它们位于控制器中。
+
+This last point may sound a little cryptic, so let’s look at an example. In a typical app,
+you would create a nav bar and a content area that changes as you select different menu
+options from the nav. We could write the skeleton for it, like so:
+导航栏示例：
+
+<div class="navbar" ng-controller="NavController">
+…
+<li class="menu-item" ng-click="doSomething()">Something</li>
+…
+</div>
+<div class="contentArea" ng-controller="ContentAreaController">
+…
+<div ng-click="doSomething()">...</div>
+…
+</div>
+
+Here both the <li>in the navbar and the  <div>in the content area call a function called
+doSomething() when a user clicks on them. As the developer, you set up the function
+that these calls refer to in your controller code. They could be the same function or
+different ones:
+
+function NavController($scope) {
+	$scope.doSomething = doA;
+}
+function ContentAreaController($scope) {
+	$scope.doSomething = doB;
+}
+
+Here, doA() and doB() functions can be the same or different, as you define them.
+
+We’re now left with point #5, combining structure and behavior. 
+我们还剩下第5点，将结构和行为组合在一起。
+This is a hand-wavy
+argument, as you can’t point to any concrete negative outcomes, but it’s very similar to
+a real problem we had in mind, combining responsibilities of the presentation and your
+application logic. This certainly does have the negative side effects that folks talk about
+when describing the issue labeled as structure/behavior.
+
+There’s a simple acid test we can use to figure out if our system suffers from this coupling:
+can we create a unit test for our app logic that doesn’t require the DOM to be present?
+是否可以脱离dom，对应用逻辑进行测试？
+In Angular, yes we can write controllers containing our business logic without having
+references to the DOM.The problem was never in the event handlers, but rather in the
+way we needed to write JavaScript previously. Notice that in all the controllers we’ve
+written so far, here and elsewhere in this book, there are no references to the DOM or
+DOM events anywhere. 
+我们的控制器没有引用任何dom元素，也没使用任何dom事件。
+You can easily create these controllers without the DOM. All
+of the work of locating elements and handling events happens within Angular.
+引用元素和事件处理，都是angular完成的。
+This matters first when writing unit tests. If you need the DOM, you have to create it
+in your test setup, adding to your test complexity. There’s more maintenance because
+when your page changes, you need to change the DOM for your tests. Finally, DOM
+access is slow. Slow tests mean slow feedback and eventually slow releases. Angular
+controller tests have none of these problems.
+
+So there you go. You can happily use declarative event handlers with simplicity and
+readability, without the guilt of violating best practices.
+
+==
+Lists, Tables, and Other Repeated Elements
+列表，表格，和其它重复元素。
+
+Possibly the most useful Angular directive,  ng-repeat creates a copy of a set of elements
+once for every item in a collection. You should use it everywhere you want to create lists
+of things.
+使用ng-repeat指令处理集合。
+
+Let’s say we’re writing a student roster application for teachers. We’d likely get the student
+data from a server, but for this example let’s just define it as a model in JavaScript:
+
+var students = [{name:'Mary Contrary', id:'1'},
+	{name:'Jack Sprat', id:'2'},
+	{name:'Jill Hill', id:'3'}];
+	function StudentListController($scope) {
+		$scope.students = students;
+	}
+
+To display this list of students, we can do something like the following:
+
+<ul ng-controller=''>
+<li ng-repeat='student in students'>
+<a href='/student/view/{{student.id}}'>{{student.name}}</a>
+</li>
+</ul>
+
+The ng-repeat  will make a copy of all of the HTML inside the tag, including the tag it’s
+placed on. With this, we would see:
+
+• Mary Contrary
+• Jack Sprat
+
+• Jill Hill
+…linking to /student/view/1, /student/view/2, and /student/view/3, respectively .
+
+As we’ve seen before, changing the student’s array will automatically change 
+the rendered list. If we were to do something like inserting a new student into the list:
+
+var students = [{name:'Mary Contrary', id:'1'},
+	{name:'Jack Sprat', id:'2'},
+	{name:'Jill Hill', id:'3'}];
+function StudentListController($scope) {
+	$scope.students = students;
+	$scope.insertTom = function () {
+		$scope.students.splice(1, 0, {name:'Tom Thumb', id:'4'});
+	};
+}
+
+and adding a button to invoke it in the template:
+
+<ul ng-controller=''>
+<li ng-repeat='student in students'>
+<a href='/student/view/{{student.id}}'>{{student.name}}</a>
+</li>
+</ul>
+<button ng-click="insertTom()">Insert</button>
+
+we now see:
+
+• Mary Contrary
+• Tom Thumb
+• Jack Sprat
+• Jill Hill
+
+The ng-repeat directive also gives you references to the index of the current element
+via $index, and booleans that tell you if you’re on the first element, somewhere in the
+middle, or the last element of the collection with $first, $middle, and $last.
+提供了$index,$first,$middle,$last来获取元素的索引，是否是第一个元素，是否是中间的元素，是否是最后一个元素。
+
+You might imagine using the $index to label rows in a table. Given a template like this:
+
+<table ng-controller='AlbumController'>
+<tr ng-repeat='track in album'>
+<td>{{$index + 1}}</td>
+<td>{{track.name}}</td>
+<td>{{track.duration}}</td>
+</tr>
+</table>
+
+and this controller:
+
+var album = [{name:'Southwest Serenade', duration: '2:34'},
+	{name:'Northern Light Waltz', duration: '3:21'},
+	{name:'Eastern Tango', duration: '17:45'}];
+function AlbumController($scope) {
+	$scope.album = album;
+}
+
+We get the following:
+1 Southwest Serenade 2:34
+2 Northern Light Waltz 3:21
+3 Eastern Tango 17:45
+
+==
+Hiding and Showing
+显示和隐藏。
+
+For menus, context-sensitive tools, and many other cases, showing and hiding elements
+is a key feature. As with everything else in Angular, we drive UI changes based on change
+in a model, and reflect that change into the UI through directives.
+
+Here, it’s ng-show and ng-hide that do our work. They provide equivalent but inverse
+functionality for showing and hiding based on the expression you pass to them. 
+使用 ng-show 和 ng-hide 指令，它们基于  display:block 和 display:none 。
+That is,  ng-show  will show its element when its expression is true and hide it when false. The
+ng-hide hides when true and shows when false. You should use whichever makes more
+sense to express your intention.
+
+These directives work by setting the element styles to  display:block to show and
+display:none to hide as appropriate. Let’s take a fictitious example where we’re building
+the control panel for a Death Ray.
+
+<div ng-controller='DeathrayMenuController'>
+<button ng-click='toggleMenu()'>Toggle Menu</button>
+<ul ng-show='menuState.show'>
+<li ng-click='stun()'>Stun</li>
+<li ng-click='disintegrate()'>Disintegrate</li>
+<li ng-click='erase()'>Erase from history</li>
+</ul>
+<div/>
+
+function DeathrayMenuController($scope) {
+	$scope.menuState.show = false;
+	$scope.toggleMenu = function() {
+		$scope.menuState.show = !$scope.menuState.show;
+	};
+	// death ray functions left as exercise to reader
+}
+
+==
+CSS Classes and Styles
+css类和样式。
+
+It may be obvious by now that you can dynamically set classes and styles in your 
+application just by data binding them using the {{ }}interpolation notation. You can even
+compose partial class name matches in your templates. If, for example, you want to
+conditionally disable some menus, you might do something like the following to visually
+indicate it to your user:
+ 
+Given this CSS:
+
+.menu-disabled-true {
+	color: gray;
+}
+
+you could show the stun function of your DeathRayas disabled with this template:
+
+<div ng-controller='DeathrayMenuController'>
+<ul>
+<li class='menu-disabled-{{isDisabled}}' ng-click='stun()'>Stun</li>
+...
+</ul>
+<div/>
+
+在css属性值中使用插值语法。
+where you’d set the isDisabled property via your controller as appropriate:
+
+function DeathrayMenuController($scope) {
+	$scope.isDisabled = false;
+	$scope.stun = function() {
+		// stun the target, then disable menu to allow regeneration
+		$scope.isDisabled = 'true';
+	};
+}
+
+The class on the  stun menu item will be set to  menu-disabled-  plus the value of
+$scope.isDisabled. As this is initially false, the result will be  menu-disabled-false.
+
+As there’s no CSS rule that matches, there will be no effect. When  $scope.isDisabledis 
+set to true, the CSS rule becomes  menu-disabled-true, which invokes the rule
+to make the text gray.
+
+This technique works equally well when combining inline styles with interpolation, such
+as with style="{{some expression}}".
+在style中同样可以使用插值。
+
+While kind of clever, this technique has the drawback of using a level of indirection in
+composing your class names. While you can easily understand it in this small example,
+it can quickly become unmanageable having to read both your template and JavaScript
+to correctly create your CSS.
+但使用插值，会难以阅读。
+所以提供了 ng-class 和 ng-style 指令。
+Because of this, Angular provides the ng-class and ng-style directives. Each of them
+takes an expression. The result of evaluating this expression can be one of the following:
+
+• A string representing space-delimited class names
+一个字符串，用空格分隔的css类名。
+• An array of class names
+一个css类名的数组。
+• A map of class names to boolean values
+一个css类名到布尔值的映射。
+
+Let’s imagine that you want to display errors and warnings to your users in a standard
+location in the application’s header. Using the ng-class directive, you could do some‐
+thing like this:
+
+.error {
+	background-color: red;
+}
+.warning {
+	background-color: yellow;
+}
+
+<div ng-controller='HeaderController'>
+...
+<div ng-class='{error: isError, warning: isWarning}'>{{messageText}}</div>
+…
+<button ng-click='showError()'>Simulate Error</button>
+<button ng-click='showWarning()'>Simulate Warning</button>
+</div>
+
+function HeaderController($scope) {
+	$scope.isError = false;
+	$scope.isWarning = false;
+	$scope.showError = function() {
+		$scope.messageText = 'This is an error!';
+		$scope.isError = true;
+	$scope.isWarning = false;
+	};
+	$scope.showWarning = function() {
+		$scope.messageText = 'Just a warning. Please carry on.';
+		$scope.isWarning = true;
+		$scope.isError = false;
+	};
+}
+
+You can even do nifty things like highlighting a selected row in a table. Let’s say we’re
+building a restaurant directory and we want to highlight a row that the user clicks on.
+In our CSS, we set up the style for a highlighted row:
+
+.selected {
+	background-color: lightgreen;
+}
+
+In the template, we set ng-class to {selected: $index==selectedRow}. 
+如果行为当前页面，就会添加 selected 类。
+This has the
+effect of setting the selected class when our model property called  selectedRow  matches
+the  ng-repeat’s  $index. We’ll also set up an  ng-click to notify our controller as to
+which row the user clicks: 
+
+<table ng-controller='RestaurantTableController'>
+<tr ng-repeat='restaurant in directory' ng-click='selectRestaurant($index)'
+	ng-class='{selected: $index==selectedRow}'>
+<td>{{restaurant.name}}</td>
+<td>{{restaurant.cuisine}}</td>
+</tr>
+</table>
+
+In our JavaScript, we just set up some dummy restaurants and create the  selectRow function:
+
+function RestaurantTableController($scope) {
+	$scope.directory = [{name:'The Handsome Heifer', cuisine:'BBQ'},
+		{name:'Green's Green Greens', cuisine:'Salads'},
+		{name:'House of Fine Fish', cuisine:'Seafood'}];
+	$scope.selectRestaurant = function(row) {
+		$scope.selectedRow = row;
+	};
+}
+
+==
+Considerations for src and href Attributes
+src和href属性的问题。
+
+When data binding to an <img>or <a>tag, the obvious path of using {{ }} in the src or
+href attributes won’t work well. 
+在src和href中，无法使用插值语法。
+Because browsers are aggressive about loading images
+parallel to other content, Angular doesn’t get a chance to intercept data binding requests.
+因为浏览器会加载src和href所指向的网址，在angular处理它们的值之前。
+
+While the obvious syntax for an <img>might be:
+<img src="/images/cats/{{favoriteCat}}">
+Instead, you should use the ng-src attribute and write your template as:
+<img ng-src="/images/cats/{{favoriteCat}}">
+
+Similarly, for the <a>tag, you should use ng-href:
+<a ng-href="/shop/category={{numberOfBalloons}}">some text</a>
+
+==
+Expressions
+表达式。
+
+The goal behind the expressions that you use in templates is to let you be as clever as
+you need to be to create hooks between your template, your application logic, and your
+data, but at the same time prevent application logic from sneaking into the template.
+
+Until this point, we’ve been mostly using references to data primitives as the expressions
+passed to Angular directives. But these expressions can do much more. You can do
+表达式里可以使用基本算术，比较，布尔运算，位操作。
+
+simple math (+, -, /, *, %), 
+make comparisons (==, !=, >, <, >=, ⇐), 
+perform boolean logic (&&, ||, !) 
+and bitwise operations (\^, &, |). 
+
+You can call functions you expose on
+$scope in your controller and you can reference arrays and object notation ([ ], { }, .).
+在表达式中也可以使用 $scope 下的函数，可以使用数组字面量和对象字面量。
+
+All of these are valid examples of expressions:
+
+<div ng-controller='SomeController'>
+<div>{{recompute() / 10}}</div>
+<ul ng-repeat='thing in things'>
+<li ng-class='{highlight: $index % 4 >= threshold($index)}'>
+{{otherFunction($index)}}
+</li>
+</ul>
+</div>
+
+The first expression here, recompute() / 10, while valid, is a good example of putting
+logic in the template, and should be avoided. Keeping a separation of responsibilities
+between your view and controllers ensures that they’re easy to reason and easy to test.
+
+While you can do quite a lot with expressions, they are computed with a custom parser
+that’s part of Angular. They are not evaluated using JavaScript’s  eval(), 
+and are considerably more restrictive.
+它们不是用javascript的 eval函数计算的。
+
+Instead, they are evaluated using a custom parser that comes with Angular. 
+它们使用angular的解析器。
+In it, you
+won’t find looping constructs (for, while, and so on), flow-of-control operators (if-else,
+throw) or operators that modify data (++, --). 
+所以，没有循环结构，没有流程控制，异常，没有修改数据的操作符。
+
+When you need these types of operations,
+do them in your controller or via a directive.
+如果需要这些操作，在控制器中，或者通过指令。
+
+Though expressions are more restrictive than JavaScript in many ways, they are more
+forgiving to undefinedand null. Instead of throwing a NullPointerExceptionerror,
+templates will simply render nothing. 
+遇到null的时候，不会抛出空指针异常，而是不渲染任何东西。
+This allows you to safely use model values that
+haven’t been set yet, and have them appear in the UI as soon as they get populated.
+
+==
+Separating UI Responsibilities with Controllers
+用控制器分离界面的响应行为。
+
+Controllers have three responsibilities in your app:
+
+• Set up the initial state in your application’s model
+设置模型的初始状态。
+• Expose model and functions to the view (UI template) through $scope
+通过 $scope 对象向视图暴露数据模型和函数。
+• Watch other parts of the model for changes and take action
+监听模型的其它部分，更新和执行操作。
+
+We’ve seen many examples of the first two in this chapter already. We’ll get to that last
+one in a bit. The conceptual purpose of controllers, however, is to provide the code or
+logic to execute the user’s wishes as they interact with the view.
+
+To keep your controllers small and manageable, our recommendation is that you create
+one controller per functional area in your view. That is, if you have a menu, create a
+MenuController. If you have a navigational breadcrumb, write a BreadcrumbControl
+ler, and so on.
+为界面中的每个独立的功能点建一个控制器。
+
+You’re probably starting to get the picture, but to be explicit, controllers are tied to a
+specific piece of the DOM that they’re in charge of managing. The two main ways of
+associating a controller with a DOM node are specifying it in the template by declaring
+it in an ng-controller attribute, and associating it with a dynamically loadable DOM
+template fragment, called a view, through a route.
+
+We’ll talk about views and routes later in this chapter.
+本章稍后会讨论视图和路由。
+If you have complex sections of your UI, you can keep your code simple and maintainable, 
+by creating nested controllers that can share model and functions through an
+inheritance tree. Nesting controllers is simple; you do it by simply assigning a controller
+to a DOM element that is inside another one, like so:
+控制器可以嵌套使用，如下。
+
+<div ng-controller="ParentController">
+	<div ng-controller="ChildController">...</div>
+</div>
+
+Though we express this as nested controllers, the actual nesting happens in scopes. The
+$scope passed to a nested controller prototypically inherits from its parent controller’s
+$scope. 
+内层的 $scope 会继承 外层的 $scope ，所以可以使用外层的数据。
+In this case, this means that the $scope  passed to ChildController will have
+access to all the properties of the $scope passed to ParentController.
+
+==
+Publishing Model Data with Scopes
+通过 $scope 对象发布数据。
+
+The $scope object passed to our controllers is the mechanism we use to expose model
+data to views. You may have other data in your application, but Angular only considers
+it part of the model when it can reach these properties through a scope. 
+You can think
+of scopes as a context that you use to make changes to your model observable.
+你可以将 $scope 视为上下文。
+We’ve seen many examples of setting up scopes explicitly, as in  $scope.count = 5.
+There are also some indirect ways to set up the model from the template itself. You can
+do so in the following ways:
+还有其它方式来设置数据值。
+
+1. Through an expression. Since expressions execute in the context of the controller’s
+scope associated with their element, setting properties in expressions is the same
+as setting a property of the controller’s scope. That is, doing this:
+通过表达式。在表达式中，可以设置属性值。
+
+<button ng-click='count=3'>Set count to three</button>
+
+has the same effect as doing this:
+<div ng-controller='CountController'>
+<button ng-click='setCount()'>Set count to three</button>
+</div>
+
+with your CountController defined as:
+
+function CountController($scope) {
+	$scope.setCount = function() {
+		$scope.count=3;
+	}
+}
+
+2. Using ng-model on a form input. 
+在表单控件中使用 ng-model 指令。
+As with expressions, the model specified as the
+argument for  ng-model also works within the scope of the enclosing controller. The
+one addition is that this creates a bi-directional data binding between the form field
+state and your specified model.
+ng-model还创建了控件与属性值的双向绑定。
+
+==
+Observing Model Changes with $watch
+使用 $watch 函数观察数据变化。
+
+Possibly the most used of all scope functions is $watch, which notifies you when parts
+of your model change. You can watch individual object properties and computed results
+(functions), really anything that could be accessed as a property or computed as a 
+JavaScript function. The function’s signature is:
+
+函数签名：
+$watch(watchFn, watchAction, deepWatch)
+
+The details of each parameter are as follows:
+
+watchFn
+This parameter is a string with an Angular expression or a function that returns
+the current value of the model that you want to watch. 
+这个参数是一个字符串，内容是一个表达式，或者你要观察它的返回值的一个函数。
+This expression will be
+evaluated multiple times, so you need to make sure that it has no side effects. 
+表达式会被计算多次，所以需要注意没有副作用。
+That is, it can be called multiple times without changing state. For the same reason, watch
+expressions should be computationally cheap. 
+表达式也不能执行高昂的操作。
+If you’ve passed in an Angular expression in a string, 
+it will be evaluated against objects available to the scope it’s called on.
+
+watchAction
+This is the function or expression to be called when the watchFn changes. 
+这个参数是一个函数或表达式，当 watchFn 更新时，会调用这个函数或表达式。
+In the
+function form, it receives the new and old values of watchFn as well as a reference
+to the scope. Its signature is function(newValue, oldValue, scope).
+如果它是一个函数，函数签名带有新值，旧值，以及 scope 对象。
+
+deepWatch
+If set to true, this optional boolean parameter tells Angular to examine each 
+property within the watched object for changes. 
+这是一个布尔值，当它为真时，会检查被观察对象的每个属性是否有变更。
+You’d use this if you wanted to watch
+individual elements in an array or properties in an object instead of just a simple
+value. 
+这可以用来观察数组，或一个对象的所有属性，而不是数组或对象本身。
+As Angular needs to walk the array or object, this can be computationally
+expensive if the collection is large.
+
+The $watch  function returns a function that will de-register the listener when you no
+longer want to receive change notifications.
+$watch 函数返回一个函数，可以用来取消观察。
+
+If we wanted to watch a property and then later de-register it, we would use the following:
+
+...
+var dereg = $scope.$watch('someModel.someProperty', callbackOnChange());
+…
+dereg();
+
+购物车示例：
+Let’s revisit our shopping cart scenario from Chapter 1 for a full example. Let’s say that
+we want to apply a $10 discount when the customer adds more than $100 worth of
+merchandise to her cart. For a template, we’ll use:
+
+<div ng-controller="CartController">
+<div ng-repeat="item in items">
+<span>{{item.title}}</span>
+<input ng-model="item.quantity">
+<span>{{item.price | currency}}</span>
+<span>{{item.price * item.quantity | currency}}</span>
+</div>
+<div>Total: {{totalCart() | currency}}</div>
+<div>Discount: {{bill.discount | currency}}</div>
+<div>Subtotal: {{subtotal() | currency}}</div>
+</div>
+
+With a CartController, it would look like the following:
+
+function CartController($scope) {
+	$scope.bill = {};
+	$scope.items = [
+		{title: 'Paint pots', quantity: 8, price: 3.95},
+		{title: 'Polka dots', quantity: 17, price: 12.95},
+		{title: 'Pebbles', quantity: 5, price: 6.95}
+	];
+	$scope.totalCart = function() {
+		var total = 0;
+		for (var i = 0, len = $scope.items.length; i < len; i++) {
+				total = total + $scope.items[i].price * $scope.items[i].quantity;
+		}
+		return total;
+	}
+	$scope.subtotal = function() {
+		return $scope.totalCart() - $scope.discount;
+	};
+	function calculateDiscount(newValue, oldValue, scope) {
+		$scope.bill.discount = newValue > 100 ? 10 : 0;
+	}
+	$scope.$watch($scope.totalCart, calculateDiscount);
+}
+
+Notice that at the bottom of  CartController, we ’ve set up a watch on the value of
+totalCart() which we use to sum up the total price for this purchase. 
+对 totalCart 这个函数的返回值进行观察。
+Whenever this
+value changes, the watch will call calculateDiscount(), and we get to set the discount
+to an appropriate value. If the total is $100, we’ll set the discount to $10. Otherwise, the
+discount will be $0.
+
+You can see how this example would look to a user in Figure 2-1.
+Figure 2-1. Shopping cart with discount
+
+==
+Performance Considerations in watch()
+观察器的性能。
+
+The preceding example executes correctly, but there is a potential problem with performance. 
+Though it isn’t obvious, if you put a debugger breakpoint in  totalCart(),
+you’d see that it gets called six times to render this page. 
+在渲染这个页面时，totalCart() 被调用了六次。
+
+Though you’d never notice it
+in this application, in more complex apps, running it six times could be an issue.
+
+Why six? Three of them we can trace pretty easily, as it runs one time each in:
+其中三次：
+
+• The template as {{totalCart() | currency}}
+• The subtotal() function
+• The $watch() function
+
+
+Then Angular runs all of these again, bringing us to six. 
+angular又再次执行一遍，所以总共六次。
+
+Angular does this to verify that
+transitive changes in your model have fully propagated and your model has  settled.
+（propagated，传播。）
+（settled，稳定。）
+angular这么做，是为了检查数据模型是否已经稳定。
+
+Angular does this checking by making a copy of all watched properties and comparing
+them to the current value to see if they’ve changed. 
+angular通过复制被观察值来判断值是否变化。
+In fact, Angular may run this up to
+ten times to ensure full propagation. If changes are still occurring after ten iterations,
+Angular exits with an error. If that occurs, you probably have a dependency loop that
+you’ll need to fix. 
+
+Though you currently need to worry about this, by the time you’ve finished this book
+it may be a non-issue. While Angular has had to implement data binding in JavaScript,
+we’ve been working with the TC39 folks on a low-level native implementation called
+Object.observe(). With this in place, Angular will automatically use  Object.observe()
+wherever present to give you native-speed data binding.
+angular会自动使用 Object.observe() 方法。
+
+As you’ll see in the next chapter, Angular has a nice Chrome debugging extension called
+Batarang that will automatically highlight expensive data bindings for you.
+
+Now that we know about this issue, there are a few ways we can solve it. One way would
+be to create a  $watch on changes to the items array and just recalculate the total, discount,
+and subtotal as properties on the $scope.
+
+To do this, we’d update the template to use these properties:
+
+<div>Total: {{bill.total | currency}}</div>
+<div>Discount: {{bill.discount | currency}}</div>
+<div>Subtotal: {{bill.subtotal | currency}}</div>
+
+Then, in JavaScript, we’d watch the items array, and call a function to calculate the totals
+on any change to that array, like so:
+
+function CartController($scope) {
+	$scope.bill = {};
+	$scope.items = [
+		{title: 'Paint pots', quantity: 8, price: 3.95},
+		{title: 'Polka dots', quantity: 17, price: 12.95},
+		{title: 'Pebbles', quantity: 5, price: 6.95}
+	];
+	var calculateTotals = function() {
+		var total = 0;
+		for (var i = 0, len = $scope.items.length; i < len; i++) {
+			total = total + $scope.items[i].price * $scope.items[i].quantity;
+		}
+		$scope.bill.totalCart = total;
+		$scope.bill.discount = total > 100 ? 10 : 0;
+		$scope.bill.subtotal = total - $scope.bill.discount;
+	};
+	$scope.$watch('items', calculateTotals, true);
+}
+
+Notice here that the  $watch specified  items as a string. This is possible because the
+$watch function can take either a function (as we did previously) or a string. If a string
+is passed to the $watch function, then it will be evaluated as an expression in the scope
+of the $scope it’s called on.
+
+This strategy might work well for your app. However, since we’re watching the items
+array, Angular will have to make a copy of it to compare it for us. 
+$watch 会复制这个数组。
+For a large list of items,
+it may perform better if we just recalculate the bill properties every time Angular 
+evaluates the page. We can do this by creating a $watch with only a watchFn that will 
+recalculate our properties like this:
+通过改用函数来避免这个问题。
+
+$scope.$watch(function() {
+	var total = 0;
+
+	for (var i = 0; i < $scope.items.length; i++) {
+		total = total + $scope.items[i].price * $scope.items[i].quantity;
+	}
+	$scope.bill.totalCart = total;
+	$scope.bill.discount = total > 100 ? 10 : 0;
+	$scope.bill.subtotal = total - $scope.bill.discount;
+});
+
+Watching multiple things
+观察多个值。
+
+What if you want to watch multiple properties or objects and execute a function 
+whenever any of them change? 
+观察多个值，只要其中一个发生变化，变触发函数。
+
+You’d have two basic options:
+ 
+• Put them into an array or object and pass in deepWatch as true.
+将它们放入一个数组或对象中，并且启用 deepWatch 。
+
+• Watch a concatenated value of the properties.
+观察它们的拼接值。
+
+In the first case, if you’ve got an object with two properties a and b in your scope, and
+want to execute the callMe() function on change, you could watch both of them, like
+so:
+
+$scope.$watch('things.a + things.b', callMe(...));
+
+（hxzon：不是观察总值。？）
+
+Of course, a and b could be on different objects, and you could make the list as long as
+you like. If the list is long, you would likely write a function that returns the concatenated
+value rather than relying on an expression for the logic.
+
+In the second case, you might want to watch all the properties on the things object. In
+this case, you could do this:
+
+$scope.$watch('things', callMe(...), true);
+
+Here, passing in  true as the third parameter asks Angular to walk the properties of
+things and call callMe() on a change to any of them. This works equally well on an
+array as it does here on an object.
+
+
+

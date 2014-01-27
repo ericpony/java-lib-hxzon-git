@@ -1,0 +1,147 @@
+﻿前端框架文章
+
+by hxzon
+
+----
+1，JavaScript MVC框架PK：Angular、Backbone、CanJS与Ember
+
+http://www.ituring.com.cn/article/38394
+原文地址：http://sporto.github.io/blog/2013/04/12/comparison-angular-backbone-can-ember/
+原文作者：Sebastian Porto @Twitter
+本文译者：@李松峰
+
+
+----
+2，JavaScript宝座：七大框架论剑
+
+http://www.ituring.com.cn/article/details/8108
+
+原文链接：Rich JavaScript Applications – the Seven Frameworks　作者：Steven Sanderson
+http://blog.stevensanderson.com/2012/08/01/rich-javascript-applications-the-seven-frameworks-throne-of-js-2012/
+翻译：@李松峰
+
+
+----
+3，JavaScript MVC丛林里的旅行  
+
+http://anotherwayaround.blog.163.com/blog/static/19006622020127121234412/
+
+2012-08-12 17:59:47
+
+原文链接：Journey Through The JavaScript MVC Jungle
+http://coding.smashingmagazine.com/2012/07/27/journey-through-the-javascript-mvc-jungle/
+
+除了这篇文章本身，文中推荐的这篇文章也非常好：Learning JavaScript Design Patterns
+http://addyosmani.com/resources/essentialjsdesignpatterns/book/#detailmvcmvp
+
+
+----
+4，http://todomvc.com/
+
+
+----
+35，前端技术（文/李晶）
+http://www.programmer.com.cn/14761/
+https://github.com/JacksonTian/fks
+
+
+----
+28，开源前端框架纵横谈
+http://www.programmer.com.cn/15552/
+
+
+----
+10，The Top 10 Javascript MVC Frameworks Reviewed
+
+http://codebrief.com/2012/01/the-top-10-javascript-mvc-frameworks-reviewed/
+
+
+----
+12，12种JavaScript MVC框架之比较
+
+http://www.infoq.com/cn/news/2012/05/js-mvc-framework
+
+http://www.oschina.net/news/29257/12-javascript-mvc-framework
+
+
+----
+26，A survey of client MVC frameworks
+
+Peter Bell (peter@pbell.com), Senior VP of Engineering, General Assembly
+Date:  12 Jun 2012 
+
+http://www.ibm.com/developerworks/web/library/wa-clientmvc/index.html
+
+
+----
+27，Key Principles of Maintainable JavaScript
+
+Jonathan Creamer on Jun 20th 2012
+http://net.tutsplus.com/tutorials/javascript-ajax/principles-of-maintainable-javascript
+
+
+
+=================================
+29，Javascript模块化编程（一）：模块的写法
+http://www.ruanyifeng.com/blog/2012/10/javascript_module.html
+
+Javascript模块化编程（二）：AMD规范
+http://www.ruanyifeng.com/blog/2012/10/asynchronous_module_definition.html
+
+Javascript模块化编程（三）：require.js的用法
+http://www.ruanyifeng.com/blog/2012/11/require_js.html
+
+
+=======================
+从零开始编写自己的JavaScript框架（一）
+http://www.ituring.com.cn/article/48461
+
+
+从零开始编写自己的JavaScript框架（二）
+http://www.ituring.com.cn/article/48463
+
+
+
+----
+23，Event-Based Programming: What Async Has Over Sync
+
+Jonathan Creamer on Feb 13th 2013
+http://net.tutsplus.com/tutorials/javascript-ajax/event-based-programming-what-async-has-over-sync
+
+Async JavaScript - Build More Responsive Apps with Less Code
+《JavaScript异步编程：设计快速响应的网络应用》
+
+
+----
+24，Twitter发布基于组件的轻量级JavaScript框架——Flight
+
+作者 郑柯 发布于 2013年2月3日
+http://www.infoq.com/cn/news/2013/02/Twitter-Flight-Framework
+
+
+----
+38，Sails 0.8.9:深受Rails启发的实时Node MVC框架
+作者 Tim Heckel ，译者 赵震一 发布于 六月 08, 2013 
+http://www.infoq.com/cn/news/2013/06/Sails-0.8.9-Released
+
+
+
+
+----
+25，Best Practices When Working With JavaScript Templates
+
+Andrew Burgess on Dec 10th 2012
+http://net.tutsplus.com/tutorials/javascript-ajax/best-practices-when-working-with-javascript-templates
+
+Underscore for Simple, Handlebars for Complex
+
+
+----
+30，淘宝玉伯引发Web前后端研发模式讨论
+
+作者 郑柯 发布于 2012年6月6日
+http://www.infoq.com/cn/news/2012/06/web-front-back-development
+
+
+----
+42，
