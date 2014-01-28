@@ -1,157 +1,197 @@
 ﻿《Instant Ember.js Application Development How-to》-Routing for your application (Medium)
 
-
+注释by hxzon
 ====
 Routing for your application (Medium)
+路由。
 
 The router in Ember is responsible for changing the state of your application in response 
 to the user's actions. As mentioned earlier, Ember's router is a subclass of the more general 
 purpose StateManager. States are the main features of an Ember application. Through 
 the use of states, we can answer questions such as:
+
 f Is there a user logged in?
 f What model object is the user currently looking at?
 f Is the user currently editing content on the site?
+
 The state of your application can change when one of the following three reasons occur:
+
 f The user fires an event from one of your views
 f The user loads the page for the first time or changes the URL
 f The data changes, triggering a linked observer and listener
+
 Ember associates a URL for every state in the router.
+每个状态对应一个url。
+
 The preceding diagram shows you the high-level overview of how data flows in your application 
 with the router involved.
 
 Getting ready
+
 As we saw earlier, every Ember application should have a basic router set up. Ember 
 applications without a router are allowed, but not common. Your router should look like 
 the following:
+
 App.Router = Ember.Router.extend({
-root: Ember.Route.extend({
-index: Ember.Route.extend({
-route: '/'
-})
-})
+	root: Ember.Route.extend({
+		index: Ember.Route.extend({
+			route: '/'
+		})
+	})
 });
+
 How to do it...
+
 There are a few different ways you can approach routing in your application. It depends on 
 the type of application you are creating and the complexity of it.
+
 Outlets are sections of your view that change during runtime based on the actions of the user. 
+
 The outlet specifies that the router will make the decision of what to place in that area of the 
 template.
-1.  Handlebars has an {{outlet}}helper that will render a view in response to a state 
+
+1.  Handlebars has an {{outlet}} helper that will render a view in response to a state 
 change. Any template can have any number of outlets as long as you name them 
 (such as {{outlet aName}}). Create an outlet in your routing using the following 
 code:
+
 MovieTracker.Router = Ember.Router.extend({
-root: Ember.Route.extend({
-index: Ember.Route.extend({
-route: '/',
-connectOutlets: function(router){
-router.get('applicationController').connectOutlet
-('details', MovieTracker.moviesController.content);
-}
-})
-})
+	root: Ember.Route.extend({
+		index: Ember.Route.extend({
+			route: '/',
+			connectOutlets: function(router){
+				router.get('applicationController').connectOutlet
+				('details', MovieTracker.moviesController.content);
+			}
+		})
+	})
 });
 
-MovieTracker.DetailsController = 
-Ember.ArrayController.extend();
+MovieTracker.DetailsController = Ember.ArrayController.extend();
+
 MovieTracker.DetailsView = Ember.View.extend({
-templateName: 'details'
+	templateName: 'details'
 });
+
 <script type="text/x-handlebars" data-templatename="application">
 {{outlet}}
 </script>
+
 <script type="text/x-handlebars" data-templatename="details">
 {{#each movie in controller}}
 {{movie.title}}
 {{/each}
 </script>
-2.  The only other thing that is different is the detailstemplate.
+
+2.  The only other thing that is different is the details template.
+
 {{#each movie in controller}}
 {{movie.title}}
 {{/each}}
+
 You can notify your application of a change in state by using state transitions.
+
 3.  We want to make our application capable of transitioning between states. We can 
 take our previous router, and change our routes as shown in the following code:
+
 MovieTracker.Router = Ember.Router.extend({
-root: Ember.Route.extend({
-index: Ember.Route.extend({
-route: '/',
-connectOutlets: function(router){
-router.get('applicationController').connectOutlet
-('details', MovieTracker.moviesController.content);
-}
-})
-})
+	root: Ember.Route.extend({
+		index: Ember.Route.extend({
+			route: '/',
+			connectOutlets: function(router){
+				router.get('applicationController').connectOutlet
+				('details', MovieTracker.moviesController.content);
+			}
+		})
+	})
 });
 
 This code will become as follows:
-MovieTracker.Router = Ember.Router.extend({
-root: Ember.Route.extend({
-index: Ember.Route.extend({
-route: '/',
-redirectsTo: 'movies'
-}),
-movies: Ember.Route.extend({
-route: '/movies',
-showMovie: Ember.Route.transitionTo('movie'),
-connectOutlets: function(router){
-router.get('applicationController').connectOutlet
-('listings', MovieTracker.Movie.find());
-}
-}),
-movie: Ember.Route.extend({
-route: '/movie',
-connectOutlets: function(router, context){
-router.get('applicationController').connectOutlet
-('oneMovie', context);
-}
-})
-})
-})
-How it works...
-Looking from the top to the bottom, you will notice that we added a connectOutletfunction 
-to our index router. connectOutletis a callback that allows us to connect {{outlet}}in 
-templates to specific views based on the state of the application. The first argument shows 
-that we want to connect our ApplicationControllerwith the Details view and controller. 
-The last argument is the data context that we send to the view and controller.
-The connectOutletcall will do the following task:
-f Create a new instance of DetailsView
-f Set the contentproperty of DetailsControllerto the data context argument 
-we pass in (in this case it is a list of movies)
-f Make DetailsControllerthe controller for DetailsView
-f Connect DetailsViewto the outlet in the applicationtemplate
 
-When Ember initializes your application, a single-shared instance of each controller is created. 
+MovieTracker.Router = Ember.Router.extend({
+	root: Ember.Route.extend({
+		index: Ember.Route.extend({
+			route: '/',
+			redirectsTo: 'movies'
+		}),
+		movies: Ember.Route.extend({
+			route: '/movies',
+			showMovie: Ember.Route.transitionTo('movie'),
+			connectOutlets: function(router){
+				router.get('applicationController').connectOutlet
+				('listings', MovieTracker.Movie.find());
+			}
+		}),
+		movie: Ember.Route.extend({
+			route: '/movie',
+			connectOutlets: function(router, context){
+				router.get('applicationController').connectOutlet
+				('oneMovie', context);
+			}
+		})
+	})
+})
+
+How it works...
+
+Looking from the top to the bottom, you will notice that we added a connectOutlet function 
+to our index router. connectOutlet is a callback that allows us to connect {{outlet}} in 
+templates to specific views based on the state of the application. The first argument shows 
+that we want to connect our ApplicationController with the Details view and controller.
+ 
+The last argument is the data context that we send to the view and controller.
+The connectOutlet call will do the following task:
+
+f Create a new instance of DetailsView
+
+f Set the content property of DetailsController to the data context argument 
+we pass in (in this case it is a list of movies)
+
+f Make DetailsController the controller for DetailsView
+
+f Connect DetailsView to the outlet in the application template
+
+When Ember initializes your application, a single-shared instance of each controller is created.
+ 
 With most cases, these instances are accessed from the router so that they are placed as a 
 property of the router. The only difference is that the names of the controllers are converted 
-to lowerCamelCase. In this case, the instance of ApplicationControlleris stored as 
+to lowerCamelCase. In this case, the instance of ApplicationController is stored as 
 applicationController.
-For the template we created, the content of DetailsControlleris passed along (in which 
+
+For the template we created, the content of DetailsController is passed along (in which 
 we have a list of movies).
+
 When using state transitions, the first change is the transition into the movies state by using 
 redirectsTo. This was just done as a preference and there is nothing wrong with staying 
-in the index state. The movies state now contains a showMoviefunction. transitionTo
+in the index state. The movies state now contains a showMovie function. transitionTo
 will do exactly as its name implies, that is, it will transition you from one state to another. The 
-function can be triggered using an actionhelper in the template.
+function can be triggered using an action helper in the template.
+
 <a {{action showMovie movie href=true}}>{{movie.title}}</a>
-The actionhelper goes within the opening tag of an element and takes three arguments. 
-showMovieis the name of the action we want to send to the current state in the router and 
-movieis the context. In our movie route, the connectOutlets: function(router, 
-context)is passed in the router as the first argument and the context from the 
-{{action}}helper as the second argument.
+
+The action helper goes within the opening tag of an element and takes three arguments. 
+showMovie is the name of the action we want to send to the current state in the router and 
+movie is the context. In our movie route, the connectOutlets: function(router, 
+context) is passed in the router as the first argument and the context from the 
+{{action}} helper as the second argument.
+
 If your actionhelper's target does not implement the function you 
 are trying to call, an error will be thrown as follows:
+
 Uncaught TypeError: Cannot call method 'call' of undefined
-With the following line inside the movieroute, we set the contentproperty of the oneMovie
+
+With the following line inside the movie route, we set the content property of the oneMovie
 controller as context:
-router.get('applicationController').connectOutlet('oneMovie', 
-context);
+
+router.get('applicationController').connectOutlet('oneMovie', context);
+
 If your application gets large enough, you should consider breaking 
 up your router into separate files. Each of these files would contain 
 one router per state.
 Our application will enter into the index state the first time the user navigates to it.
 
 There's more...
+
 Having read about views and outlets, you might be wondering when to use what.
 The previous diagram is an example of the views and outlets that may exist in a web 
 application. At the top, the view could represent a navigation bar, which stays mostly static 
@@ -162,36 +202,45 @@ show more details about an item when that item is clicked in the list.
 
 ====
 Common parts of an application (Medium)
+
 Now that we have talked about most of the basics of Ember, we can start to create some 
 basic elements of an application.
+
 How to do it...
+
 As seen earlier, Ember allows us to make a function act like a property when we add 
 .property(). Any parameters of this function will let Ember know that it has to update 
 the value of the property when the specific parameters are updated.
+
 1.  In our moviesController, we are storing all the movie objects that exist in our 
-application. We can add some helper propertiesto this controller.
+application. We can add some helper properties to this controller.
+
 // Controller to store Movie Objects
 MovieTracker.moviesController = 
 Ember.ArrayController.create({
-content: [],
-// Property that adds an item to the array
-addItem: function(item) {
-this.addObject(item);
-},
-// Property that returns the length of the data array
-itemCount: function() {
-return this.get('length');
-}.property('@each'),
-unwatchedCount: function() {
-return this.filterProperty('watched', 
-false).get('length');
-}.property('@each.watched')
+	content: [],
+	// Property that adds an item to the array
+	addItem: function(item) {
+		this.addObject(item);
+	},
+	// Property that returns the length of the data array
+	itemCount: function() {
+		return this.get('length');
+	}.property('@each'),
+	unwatchedCount: function() {
+		return this.filterProperty('watched', 
+		false).get('length');
+	}.property('@each.watched')
 });
+
 2.  If we wanted to reference any of these properties from our template, we can insert 
 some more Handlebars code into our HTML.
+
 {{MovieTracker.moviesController.unwatchedCount}}
+
 3.  We can also create some basic interactions in our application. We can add an anchor 
 that will fire an event.
+
 <script type="text/x-handlebars" data-templatename="action_panel">
 <h2>Actions</h2>
 <a class="btn btn-large action_button" {{action 
@@ -200,43 +249,54 @@ that will fire an event.
 Toggle watched
 </a>
 </script>
-4.  We can then create a selectedMovieControllercontroller as follows:
+
+4.  We can then create a selectedMovieController controller as follows:
+
 MovieTracker.selectedMovieController = 
 Ember.ObjectController.create({
-selectedMovie: [],
-select: function(item) {
-this.set('selectedMovie', item);
-},
-toggleWatched: function() {
-this.selectedMovie.toggleProperty('watched');
-}
+	selectedMovie: [],
+	select: function(item) {
+		this.set('selectedMovie', item);
+	},
+	toggleWatched: function() {
+		this.selectedMovie.toggleProperty('watched');
+	}
 });
 
 5.  We also need to add a relevant view.
+
 MovieTracker.MovieListingsView = Ember.View.extend({
-click: function(event) {
-var content = this.get('content');
-MovieTracker.selectedMovieController.select(content);
-}
+	click: function(event) {
+		var content = this.get('content');
+		MovieTracker.selectedMovieController.select(content);
+	}
 });
+
 6.  We can now create a view that will render the previous template and receive the 
 toggleWatchedevent.
+
 MovieTracker.ActionPanelView = Ember.View.extend({
-templateName: 'action_panel',
-toggleWatched: function(event) {
-MovieTracker.selectedMovieController.toggleWatched();
-}
+	templateName: 'action_panel',
+	toggleWatched: function(event) {
+		MovieTracker.selectedMovieController.toggleWatched();
+	}
 });
+
 How it works...
-The @eachspecial key will trigger if:
+
+The @each special key will trigger if:
+
 f Any property changes in any of the movie objects within the content array
 f An item is added to or removed from the content array
 f The content array is set to a different array
 f {{MovieTracker.moviesController.unwatchedCount}}
+
 This code block will give us unwatchedCount, the number of movie objects with 
-the watchedproperty set to false.
-We create an event using the {{action}}helper that will call a toggleWatchedfunction 
-in our view to toggle the watchedproperty of a movie object.
+the watched property set to false.
+
+We create an event using the {{action}} helper that will call a toggleWatched function 
+in our view to toggle the watched property of a movie object.
+
 <script type="text/x-handlebars" data-template-name="action_panel">
 <h2>Actions</h2>
 <a class="btn btn-large action_button" {{action 
@@ -248,29 +308,36 @@ Toggle watched
 
 In order to render the current movie, we need some sort of way to keep track of the currently 
 selected movie in our application.
+
 MovieTracker.selectedMovieController = Ember.ObjectController.create({
-selectedMovie: [],
-select: function(item) {
-this.set('selectedMovie', item);
-},
-toggleWatched: function() {
-this.selectedMovie.toggleProperty('watched');
-}
+	selectedMovie: [],
+	select: function(item) {
+		this.set('selectedMovie', item);
+	},
+	toggleWatched: function() {
+		this.selectedMovie.toggleProperty('watched');
+	}
 });
-In this block of code we store a selected movie into an array. We create a selectfunction 
-that will store the selected movie. The toggleWatchedfunction will toggle the watched
-property of the selectedMovieobject.
+
+In this block of code we store a selected movie into an array. We create a select function 
+that will store the selected movie. The toggleWatched function will toggle the watched
+property of the selectedMovie object.
+
 Whenever we click on one of our movie listings, the click event will be registered 
-in the MovieListingsViewview and we can send the clicked object to our 
-selectedMovieController. We have now successfully connected our {{action}}in 
+in the MovieListingsView view and we can send the clicked object to our 
+selectedMovieController. We have now successfully connected our {{action}} in 
 our template to selectedMovieController.
+
 You will see many different ways of creating parts of your application when looking at 
-other tutorials and resources for Ember. There is no one correctway. It all depends on your 
+other tutorials and resources for Ember. There is no one correct way. It all depends on your 
 application and what makes sense to you. All the sample codes have been provided for you. 
 There are parts of the application that you can go on and continue finishing, such as:
+
 f Making some of the expanded templates in index.htmlinto reusable templates
+
 f Finding ways to change the ratings of movies (watch out here because rating is 
 defined as a number in the model)
+
 f Navigating through the movie list using the button on the left-hand side and the 
 button on the right-hand side in the navigation bar
 
@@ -282,58 +349,74 @@ work when developing real applications. Instead, we can figure out some way to r
 external data.
 
 How to do it...
+
 Static data is fine for a simple application, but eventually we want to implement a way where 
 we can import dynamic data into our application.
+
 1.  We can create a JavaScript file called helpers.js. In it, we will have code as 
 shown in the following snippet:
+
 MovieTracker.GetMovieItems = function() {
+	MovieTracker.moviesController.addItem
+	(MovieTracker.Movie.create({
+		title: 'The Avengers',
+		rating: 4,
+		watched: false
+	}));
+
 MovieTracker.moviesController.addItem
-(MovieTracker.Movie.create({
-title: 'The Avengers',
-rating: 4,
-watched: false
-}));
-MovieTracker.moviesController.addItem
-(MovieTracker.Movie.create({
-title: 'Spiderman',
-rating: 1,
-watched: true
-}));
+	(MovieTracker.Movie.create({
+		title: 'Spiderman',
+		rating: 1,
+		watched: true
+	}));
 };
-2.  App.jsthen has to be modified to call this function when the application starts up.
+
+2.  App.js then has to be modified to call this function when the application starts up.
+
 MovieTracker = Ember.Application.create({
-ready: function() {
-this._super();
-MovieTracker.GetMovieItems();
-}
+	ready: function() {
+		this._super();
+		MovieTracker.GetMovieItems();
+	}
 });
-3.  We can insert a $.ajax()function into our function instead, if we want to grab 
+
+3.  We can insert a $.ajax() function into our function instead, if we want to grab 
 data from another source.
+
 MovieTracker.GetMovieItems = function() {
-$.ajax({
-url: yourURL,
-dataType: 'json',
-success : function(data) {
-// Create an Ember object from your data
-// Use the addItem() we created earlier.
-}
-});
+	$.ajax({
+		url: yourURL,
+		dataType: 'json',
+		success : function(data) {
+			// Create an Ember object from your data
+			// Use the addItem() we created earlier.
+		}
+	});
 };
 
 How it works…
-The GetMovieItems()function creates the new Movieobjects and inserts them into 
+
+The GetMovieItems() function creates the new Movie objects and inserts them into 
 our content array defined in moviesController. This is good because now we have one 
 function that will handle the loading of data into our application.
+
 As you get your data, you have to create an Ember object out of it. Once it is an Ember object, 
 you can add it to a controller. In this case, we added our data to our main data controller, 
 moviesController.
+
 At the time of writing this, the Ember.js team was working on a library called Ember Data. 
 Ember Data helps out with functionality that is needed in a more complex application. In 
 complex applications, you could be loading in models from a JSON API. You then need some 
 way of updating and saving these models as your application changes the contents of them. 
 Ember Data will give you a nice API to handle these calls. It will also help to do the following:
+
 f Provide stateful data syncing
+提供有状态的数据同步。
 f Encode and decode properties
+编码和解码属性。
 f Create communications between transactions, and much more
+创建状态转移之间的通信。
+
 You can read more about it at https://github.com/emberjs/data.
 

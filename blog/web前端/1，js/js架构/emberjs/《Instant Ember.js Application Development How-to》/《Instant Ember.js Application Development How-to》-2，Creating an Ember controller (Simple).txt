@@ -1,5 +1,6 @@
 ﻿《Instant Ember.js Application Development How-to》-Creating an Ember controller (Simple)
 
+注释by hxzon
 
 ====
 Creating an Ember controller (Simple)
@@ -90,6 +91,7 @@ The preceding line should print out 2to the console.
 
 ====
 Handlebar HTML templates (Simple)
+模板。
 
 Handlebars is a logic-less semantic templating engine that will interact with our views to 
 render HTML elements. Handlebars is the default engine for Ember.js. Handlebars is an 
@@ -99,17 +101,21 @@ Apart from plain HTML, templates embed:
 
 f Expressions: An expression takes data from a controller, view, or context and places 
 it into HTML and automatically keeps the data in sync.
+表达式。
 
 f Outlets: Outlets are placeholders for other templates. The router places different 
 templates in your outlets as your application state changes. Handlebars has the 
-{{outlet}}helper for doing this.
+{{outlet}} helper for doing this.
+输出。
 
 f Views: Views handle user events.
+视图，视图处理用户事件。
 
 How to do it...
 
 Handlebars are HTML templates with embedded Handlebars expressions. These templates 
-go within the <script>tags so that your browser can recognize them.
+go within the <script> tags so that your browser can recognize them.
+模板写在script标签中。
 
 1.  In index.html, add the following within the <body>tags.
 
@@ -127,6 +133,7 @@ as shown in the following code snippet:
 3.  Handlebars include conditional expressions. A common use for this is when you 
 want to display part of a template only if a property exists. The template can be 
 further modified as follows:
+条件表达式。
 
 {{#if movie}}
 <h2>{{movie.title}}</h2>
@@ -140,32 +147,36 @@ further modified as follows:
 <h2>You should watch this movie!</h2>
 {{/if}}
 
-5.  The default context for our template blocks is Ember.Viewassociated with the 
+5.  The default context for our template blocks is Ember.View associated with the 
 block. The context is the object where properties are looked upon. If we want 
 to invoke a template with a context other than Ember.View, we can use the 
 {{#with}} helper.
+指定对象上下文。
 
 {{#with movie}}
 <h2>{{title}}</h2>
 {{/with}}
 
 6.  At some point in our application, we will most likely want to bind HTML attributes into 
-our templates. Common use cases are when you want an srcattribute for an image 
-and/or when you want an hrefattribute for a link.
+our templates. Common use cases are when you want an src attribute for an image 
+and/or when you want an href attribute for a link.
+绑定html元素的属性。
 
 <a {{bindAttr href="url"}}>More Details</a>
 
-7.  We can add a child view to a parent by using the {{view}}helper. This helper takes 
-in a path to a viewclass.
+7.  We can add a child view to a parent by using the {{view}} helper. This helper takes 
+in a path to a view class.
 
 MovieTracker.ActorView = Ember.View.extend({
-templateName: 'actor'
-mainActor: "John Smith"
+	templateName: 'actor'
+	mainActor: "John Smith"
 });
+
 {{#with movie}}
 <h2>{{title}}</h2>
 {{view MovieTracker.ActorView}}
 {{/with}}
+
 <script type="text/x-handlebars" data-templatename="actor">
 {{view.mainActor}}
 </script>
@@ -173,10 +184,12 @@ mainActor: "John Smith"
 8.  You can also use view templates inline. You can think of this as assigning views 
 to portions of a page. It allows you to encapsulate event handling for one part of 
 a page. We can rewrite the previously mentioned code as the following:
+内联。
 
 MovieTracker.ActorView = Ember.View.extend({
 	mainActor: "John Smith"
 });
+
 {{#with movie}}
 <h2>{{title}}</h2>
 {{#view MovieTracker.ActorView}}
@@ -189,105 +202,139 @@ How it works...
 All the features previously described are binding-aware. This means that as values in your 
 templates change, the HTML will be updated automatically. If you do not want a value to 
 automatically update, you can use the unbound view helper.
-This basic template has data-template-namethat is typically used as a reference by a 
-view. The {{title}}expression will print the value of the titleproperty that we send to 
+
+This basic template has data-template-name that is typically used as a reference by a 
+view. The {{title}} expression will print the value of the title property that we send to 
 the template using a view.
+
 Ember determines whether a path is global or relative to the view by checking if the first letter 
-is capitalized. This is why your Ember.Applicationname should start with a capital letter.
-The #symbol within {{}}means that it is a block expression. These expressions require a 
-closing expression (such as {{/if}}in the previous example). If the movieproperty is not 
+is capitalized. 
+通过变量名首字母的大小写来判断是全局的还是相对的。
+This is why your Ember.Applicationname should start with a capital letter.
+
+The #symbol within {{}} means that it is a block expression. These expressions require a 
+closing expression (such as {{/if}} in the previous example). If the movie property is not 
 false, undefined, or null, then it will display the movie title.
+块表达式。
 
 {{#with movie}}
 <h2>{{title}}</h2>
 {{/with}}
-We changed the contextof our template block to moviein this block of code, and thus 
+
+We changed the context of our template block to movie in this block of code, and thus 
 we were able to reference the title directly.
+
 <a {{bindAttr href="url"}}>More Details</a>
-When we used bindAttrfor our URL, the template took the urlproperty from the view 
-and inserted it as an hrefattribute.
+
+When we used bindAttr for our URL, the template took the url property from the view 
+and inserted it as an href attribute.
+
 <a href="http://moredetails.com">More Details</a>
-{{view.mainActor}}within the actortemplate would render as John Smith.
-The {{view}}helpers in Handlebars can include optional parameters to help in displaying 
+
+{{view.mainActor}} within the actor template would render as John Smith.
+
+The {{view}} helpers in Handlebars can include optional parameters to help in displaying 
 information.
+
 f class: Used to assign class names.
-f tagName: By default, new instances of Ember.Viewcreate the <div>elements. 
+
+f tagName: By default, new instances of Ember.View create the <div>elements. 
 Use tagNameto override this.
+标签名。
+
 f contentBinding: Binds the specified content as the context of the template block.
 
 As you are developing your templates, remember that Handlebars is capable of rendering the 
 following elements from different parts of your application with different scopes:
+
 f Controller
 f View
 f Context
+
 These parts would look like the following in Handlebars:
+
 title from controller: {{controller.title}}
 title from view: {{view.title}}
 title from context: {{title}}
 
 ====
 Creating an Ember view (Simple)
+视图。
 
 Views will help you to translate low-level browser events into semantic events. These semantic 
-events will allow the Ember router to adjust your application into the proper state. Views can 
-be created and destroyed at render time as well as during the run loop of your application. 
-The Ember.Viewclass includes a variety of properties for creating different types of views. 
+events will allow the Ember router to adjust your application into the proper state. 
+路由到某个状态。
+Views can be created and destroyed at render time as well as during the run loop of your application. 
+The Ember.View class includes a variety of properties for creating different types of views. 
 A few of the common ones that you could use are as follows:
+
 f tagName: The default HTML tag is div, but it can be changed using tagName.
+
 f classNames: Sets the HTML class attribute with the provided array of strings.
+
 f classNameBindings: Sets the HTML class attribute based on an array of properties 
 for the view. These properties can be computed properties, allowing you to perform 
 logic to determine whether class names should be assigned or not.
-f HTML attributes such as hrefcan also be added using the attributeBindings
+
+f HTML attributes such as href can also be added using the attributeBindings
 property.
+
 Views in Ember are more about user interaction and less about markup. As you read on, 
 keep in mind that Ember.js gives you a lot of flexibility in the way you define your templates 
 and views and the interaction between them. For example, you can define the tag name 
 or class names within a view class constructor or you can define them in your Handlebars. 
 As your application grows, you will most likely find better ways of defining classes that are 
 relevant to your needs.
+
 It is up to you the way you want to structure your application depending on what you 
-are doing. If a view mustbe a certain tag, then it should go in the view constructor. If you 
+are doing. If a view must be a certain tag, then it should go in the view constructor. If you 
 find that your views are often set to other tags, then defining tags in your Handlebars 
 saves you from having to make lots of extended view objects.
 
 How to do it...
+
 Views in Ember can be created in many different ways. One way to create your view is to 
 define the view directly in your JavaScript, and then display it on the page using a Handlebars 
 view helper.
-1.  We can create something like this for our MovieTrackerapplication. If you recall 
-from earlier, we created moviesControlleras shown in the following code, but 
+创建视图。
+
+1.  We can create something like this for our MovieTracker application. If you recall 
+from earlier, we created moviesController as shown in the following code, but 
 with changed movie titles:
+
 MovieTracker.moviesController = Ember.ArrayController.create({
-content: [],
-init: function(){
-this._super();
-var list = [
-MovieTracker.Movie.create({
-title:'The Avengers',
-rating: 4
-}),
-MovieTracker.Movie.create({
-title: 'Spiderman',
-rating: 1
-})];
-this.set('content', list);
-}
+	content: [],
+	init: function(){
+		this._super();
+		var list = [
+			MovieTracker.Movie.create({
+				title:'The Avengers',
+				rating: 4
+			}),
+			MovieTracker.Movie.create({
+				title: 'Spiderman',
+				rating: 1
+			})];
+		this.set('content', list);
+		}
 });
-2.  We can now create a view in views/application.jsthat will send the necessary 
+
+2.  We can now create a view in views/application.js that will send the necessary 
 data to Handlebars for rendering.
+
 MovieTracker.MovieListingsView = Ember.View.extend({
-templateName: 'movie_listings',
-controllerBinding: 'MovieTracker.moviesController'
+	templateName: 'movie_listings',
+	controllerBinding: 'MovieTracker.moviesController'
 });
+
 3.  Now that we have our view bound to a controller, we can create the template that will 
-render the data in the view. The following code will go inside index.htmlafter the 
+render the data in the view. The following code will go inside index.html after the 
 main application <script>tags, right before the section where we include all our 
 scripts.
+
 <script type="text/x-handlebars" data-templatename="movie_listings">
 <ul class="movie_listings">
 {{#each movie in content}}
-
 <li>
 <h4>{{movie.title}}</h4>
 <br/>
@@ -296,20 +343,29 @@ scripts.
 {{/each}}
 </ul>
 </script>
+
 How it works...
+
 Views have three main responsibilities. They are as follows:
+
 f Render HTML elements
 f Handle DOM events
 f Trigger actions to change the state of your application
+
 The Handlebars templating engine is used for rendering HTML elements.
+
 this.set('content', list);
-In moviesController, we set the contentkey to our listarray with the preceding 
-command. settakes in the parameters (key, value).
+
+In moviesController, we set the content key to our list array with the preceding 
+command. set takes in the parameters (key, value).
+
 'movie_listings'is the name of the template that we are going to sync our data to. 
-We can bind this view to our moviesControllercontroller.
+We can bind this view to our moviesController controller.
+
 With the following piece of code, we are using the Handlebars notation we learned about 
-earlier. We iterate through the moviesControllercontent object containing a list of 
+earlier. We iterate through the moviesController content object containing a list of 
 movies, and display them as an HTML list.
+
 {{#each movie in content}}
 <li>
 <h4>{{movie.title}}</h4>
@@ -317,55 +373,75 @@ movies, and display them as an HTML list.
 <h4>{{movie.rating}}</h4>
 </li>
 {{/each}}
+
 There's more...
+
 There are multiple ways to handle DOM events. The two main ones are:
+有多种方式处理dom事件。
+
 f Ember-dispatched events
 f Handlebars action helper
 
 For Ember-dispatched events, we can implement a function that will respond to user events 
 such as the following:
+
 MovieTracker.ToggleWatched = Ember.View.extend({
-templateName: 'movie-watched',
-click: function(event){
-alert('I pressed movie-watched!');
-}
+	templateName: 'movie-watched',
+	click: function(event){
+		alert('I pressed movie-watched!');
+	}
 });
-The jQuery.eventobject is passed into our function as an argument.
+
+The jQuery.event object is passed into our function as an argument.
+
 A Handlebars action helper can be used to handle custom events created by you.
+
 <div {{action "mark_watched"}}>
 I have watched this movie
 </div>
-This will call the mark_watchedfunction of the template associated with Ember.View
-when the divtag is clicked. There are various other events that can be linked to the action
+
+This will call the mark_watched function of the template associated with Ember.View
+when the div tag is clicked. There are various other events that can be linked to the action
 helpers as well.
+
 If we wanted to pass a value from the template context to the handler, we could have done 
 something as follows:
+
 {{#each movie in content}}
 <div {{action "mark_watched" movie}}>
 I have watched this movie
 </div>
 {{/each}}
-The preceding code will call the mark_watchedmethod with a jQuery.Eventobject 
+
+The preceding code will call the mark_watched method with a jQuery.Event object 
 containing a movie.
+
 A view that references the properties of a model should be bound to one controller in charge 
 of those properties. You can also bring in data from elsewhere if needed. You can do this by 
-binding one view's controller to another by using the connectControllersfunction.
+binding one view's controller to another by using the connectControllers function.
+
 Absolute paths
+绝对路径。
+
 When dealing with Ember views, an absolute path in a class is a path pointing to a global 
 variable. You may see other examples where the view will contain a contentBinding
 property.
+
 MovieTracker.MovieTrackerView = Ember.View.extend({
-templateName: 'movie_main_details',
-controllerBinding: 'MovieTracker.moviesController',
-contentBinding: 'controller.content' 
+	templateName: 'movie_main_details',
+	controllerBinding: 'MovieTracker.moviesController',
+	contentBinding: 'controller.content' 
 });
 
 This example will still work technically but it does not work when considering a good design. 
-Taking contentBindingout of our view and inserting it into a template instead will solve 
+Taking contentBinding out of our view and inserting it into a template instead will solve 
 this problem.
+
 {{view MovieTracker.MovieTrackerView 
 contentBinding="controller.content"}}
-Moving the contentBindingvariable into the Handlebars template binds the content of 
-the particular view, MovieTrackerView, to the specified controller's contentproperty. 
+
+Moving the contentBinding variable into the Handlebars template binds the content of 
+the particular view, MovieTrackerView, to the specified controller's content property. 
 This promotes reusability in our code and makes testing easier because the view is isolated.
+测试更加容易。
 

@@ -1,0 +1,558 @@
+﻿(譯)深入理解Express.js
+http://xvfeng.me/posts/understanding-expressjs/
+
+22 Dec 2013
+
+====
+本文針對那些對Node.js有一定了解的讀者。
+假設你已經知道如何運行Node代碼，使用npm安裝依賴模塊。
+但我保證，你並不需要是這方面的專家。
+本文針對的是Express 3.2.5版本，以介紹相關概念爲主。
+
+Express.js這麼描述自己："輕量靈活的node.js Web應用框架"。
+它可以幫助你快速搭建web應用。
+如果你使用過Ruby裏的Sinatra，那麼相信你對這個也會很快就能熟悉。
+
+和其他web框架一樣，Express隱藏了代碼背後的祕密，然後告訴你："別擔心，你不用去理解這個部分"。
+它來幫你解決這些問題，所以你不用去爲這個而煩惱，只用將重心集中到代碼上。
+換句話說，它有某些魔法！
+
+Express的wiki裏介紹了一些它的使用者，其中就有很多知名的公司: MySpace, Klout.
+
+但是擁有魔力是需要付出代價的，你可能根本就不知道它的工作原理。
+正如駕駛一輛汽車，我可以很好的駕馭它但是可能不理解爲什麼汽車可以正常工作，但是我最好知道這些東西。
+如果車壞掉怎麼辦？如果你想最大程度的去發揮它的性能？如果你對知識有無限的渴望並想去弄清它？
+
+那麼我麼首先從理解Express的最底層-Node開始。
+
+====
+底層：Node HTTP服務器
+
+Node中有HTTP模塊, 它將搭建一個web服務器的過程抽象出來。你可以這樣使用:
+
+// 引入所需模塊
+var http = require("http");
+
+// 建立服務器
+var app = http.createServer(function(request, response) {
+    response.writeHead(200, {
+        "Content-Type": "text/plain"    
+    });
+    response.end("Hello world!\n");
+});
+
+// 啓動服務器
+app.listen(1337, "localhost");
+console.log("Server running at http://localhost:1337/");
+
+運行這個程序(假設文件名爲 app.js ,運行 node app.js )，你會得到"Hello world!"
+在瀏覽器訪問 localhost:1337 ，你會得到同樣的結果。
+你也可以嘗試訪問其他地址，如 localhost:1337/whatever ，結果仍然會一樣。
+
+分解以上代碼來看。
+
+第一行使用 require 函數引入Node內置模塊 http 。
+然後存入名爲 http 的變量中。
+如果你要了解更多關於require函數的知識，參考Nodejitsu的文檔。
+
+然後我們使用 http.createServer 將服務器保存至 app 變量。
+它將一個函數作爲參數監聽請求。稍後將會詳細介紹它。
+
+最後我們要做的就是告訴服務器監聽來自1337端口的請求，之後輸出結果。然後一切完成。
+
+好的，回到request請求處理函數。這個函數相當重要。
+
+----
+request方法
+
+在開始這個部分之前，我事先聲明這裏所涉及的HTTP相關知識與學習Express本身沒有太大關係。
+如果你感興趣，可以查看HTTP模塊文檔。
+
+任何時候我們向服務器發起請求，request方法將會被調用。
+如果你不信，你可以 console.log 將結果打印出來。
+你會發現每次請求一個頁面時它都會出來。
+
+request 是來自客戶端的請求。
+在很多應用中，你可能會看到它的縮寫 req 。
+仔細看代碼。我們修改代碼如下:
+
+var app = http.createServer(function(request, response) {
+
+    // 創建answer變量
+    var answer = "";
+    answer += "Request URL: " + request.url + "\n";
+    answer += "Request type: " + request.method + "\n";
+    answer += "Request headers: " + JSON.stringify(request.headers) + "\n";
+
+    // 返回結果
+    response.writeHead(200, {"Content-Type": "text/plain" });
+    response.end(answer);
+
+});
+
+重啓服務器並刷新 localhsot:1337 .
+你會發現，每次訪問一個URL，就會發起一次GET請求，並會得到一堆類似用戶代理或者一些其他的更加複雜的HTTP相關信息。
+如果你訪問 localhost:1337/what_is_fraser , 
+你會看到request的地址發生了變化。
+如果你使用不同的瀏覽器訪問，用戶代理也會跟着改變，如果你使用POST請求，request的方法也很改變。
+
+----
+response 是另外一個部分。
+正如 request 被縮寫爲 req ，response 同樣被簡寫爲 res 。
+每次response你都會得到對應的返回結果，之後你便可以通過調用 response.end 來結束。
+實際上最終你還是要執行這個方法的, 甚至在node的文檔裏也是這麼描述的。
+這個方法完成了真正的數據傳輸部分。
+你可以建立一個服務器並不調用 req.end 方法，它就會永遠存在。
+
+在你返回結果之前，你也可以填寫一下header頭部部分。我們的例子裏是這麼寫的:
+
+response.writeHead(200, { "Content-Type": "text/plain" });
+
+這個步驟主要完成兩件事情。
+第一，發送HTTP狀態碼，表示請求成功。
+其次，它設置了返回的頭部信息。
+這裏表示我們要返回的是純文本格式的內容。
+我們也可以返回類似JSON或者HTML格式的內容。
+
+未完待續。。。
+
+// 接上回
+
+看了上面的之後，你可能會立馬開始利用它來寫api了。
+
+var http = require("http");
+
+http.createServer(function(req, res) {
+
+    // Homepage
+    if(req.url == "/") {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end("Welcome to the homepage!");
+    }
+
+    // About page
+    else if (req.url == "/about") {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end("Welcome to the about page!");
+    }
+
+    // 404'd!
+    else {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        res.end("404 error! File not found.");
+    }
+
+}).listen(1337, "localhost");
+
+你可以選擇優化代碼，讓它變得更整潔。
+也可以向npm.org的那幫傢伙一樣用原生的Node來編寫。
+但是你也可以選擇去創建一個框架。這就是Sencha所做的，並把這個框架稱爲 - Connect.
+
+====
+中間件: Connect
+
+Connect ( http://www.senchalabs.org/connect )是Nodejs的中間件。
+可能你現在還並不太理解什麼是中間件(middleware)，別擔心，我馬上會進行詳細解釋。
+
+一段Connect代碼
+
+假如我們想要編寫和上面一樣的代碼，但是這次我們要使用Connect。
+別忘記安裝Connect模塊(npm install)。
+完成之後，代碼看起來非常相似。
+
+// 引入所需模塊
+var connect = require("connect");
+var http = require("http");
+
+// 建立app
+var app = connect();
+
+// 添加中間件
+app.use(function(request, response) {
+    response.writeHead(200, { "Content-Type": "text/plain" });
+    response.end("Hello world!\n");
+});
+
+// 啓動應用
+http.createServer(app).listen(1337);
+
+
+下面分解這段代碼來看。
+
+首先我們分別引入了Connect和Node HTTP模塊。
+
+接下來和之前一樣聲明 app 變量，但是在創建服務器時，我們調用了 connect().這有是如何工作的？
+
+我們添加了一個中間件，實際上就是一個函數。
+傳入 app.use ，幾乎和上面使用request方法寫法一樣。
+實際上代碼是從上面粘貼過來的。
+
+之後我們建立並啓動服務器。 
+http.createServer 接收函數作爲參數。沒錯，app 實際上也是一個函數。
+這是一個Connect提供的函數，它會查找代碼並自上而下執行。
+
+(你可能會看見其他人使用 app.listen(1337), 這實際上只是將 http.createServer 返回一個promise對象。 
+再Connect和Express中都是一樣的原理。)
+
+接下來解釋什麼是中間件(middleware).
+
+什麼是中間件?
+
+首先推薦閱讀Stephen Sugden對於Connect中間件的描述,比我講的更好。
+如果你不喜歡我的解釋，那就去看看。
+
+還記得之前的request方法？每個中間件都是一個handler.依次傳入request, response, next三個參數。
+
+一個最基本的中間件結構如下:
+
+function myFunMiddleware(request, response, next) {
+    // 對request和response作出相應操作
+    // 操作完畢後返回next()即可轉入下個中間件
+    next();
+}
+
+當我們啓動一個服務器，函數開始從頂部一直往下執行。
+如果你想輸出函數的執行過程，添加一下代碼:
+
+var connect = require("connect");
+var http = require("http");
+var app = connect();
+
+// log中間件
+app.use(function(request, response, next) {
+    console.log("In comes a " + request.method + " to " + request.url);
+    next();
+});
+
+// 返回"hello world"
+app.use(function(request, response, next) {
+    response.writeHead(200, { "Content-Type": "text/plain" });
+    response.end("Hello World!\n");
+});
+
+http.createServer(app).listen(1337);
+
+如果你啓動應用並訪問 localhost:1337，你會看到服務器可以log出相關信息。
+
+有一點值得注意，任何可以在Node.js下執行的代碼都可以在中間件執行。
+例如上面我們所使用的 req.method 方法。
+
+你當然可以編寫自己的中間件，但是也不要錯過Connect的一些很cool的第三方中間件。
+下面我們移除自己的log中間件，使用Connect內置方法。
+
+var connect = require("connect");
+var http = require("http");
+var app = connect();
+
+app.use(connect.logger());
+// 一個有趣的事實：connect.logger返回一個函數
+
+app.use(function(request, response) {
+    response.writeHead(200, { "Content-Type": "text/plain" });
+    response.end("Hello world!\n");
+});
+
+http.createServer(app).listen(1337);
+
+跳轉至瀏覽器並訪問 localhost:1337 你會得到同樣的結果。
+
+很快有人就會想使用上面的中間件組合起來創建一個完整應用。代碼如下:
+
+var connect = require("connect");
+var http = require("http");
+var app = connect();
+
+app.use(connect.logger());
+
+// Homepage
+app.use(function(request, response, next) {
+    if (request.url == "/") {
+        response.writeHead(200, { "Content-Type": "text/plain" });
+        response.end("Welcome to the homepage!\n");
+        // The middleware stops here.
+    } else {
+        next();
+    }
+});
+
+// About page
+app.use(function(request, response, next) {
+    if (request.url == "/about") {
+        response.writeHead(200, { "Content-Type": "text/plain" });
+        response.end("Welcome to the about page!\n");
+        // The middleware stops here.
+    } else {
+        next();
+    }
+});
+
+// 404'd!
+app.use(function(request, response) {
+    response.writeHead(404, { "Content-Type": "text/plain" });
+    response.end("404 error!\n");
+});
+
+http.createServer(app).listen(1337);
+
+“這個看起來不太好看!我要自己寫框架！”
+
+某些人看了Connect的代碼之後覺得，“這個代碼可以更簡單”。
+於是他們創造了Express.（事實上他們好像直接盜用了Sinatra.）
+
+====
+最頂層: Express
+
+文章進入第三部分，我們開始真正進入Express.
+
+正如Connect拓展了Node, Express拓展Connect.代碼的開始部分看起來和在Connect中非常類似：
+
+var express = require("express");
+var http = require("http");
+var app = express();
+
+結尾部分也一樣:
+
+http.createServer(app).listen(1337);
+
+中間部分纔是不一樣的地方。
+Connect爲我們提供了中間件，Express則爲我們提供了另外三個優秀的特性： 
+路由分發，請求處理，視圖渲染。
+
+首先從路由開始看。
+
+==
+特性一：路由
+
+路由的功能就是處理不同的請求。
+在上面的很多例子中，我們分別有首頁，關於和404頁面。
+我們是通過 if 來判斷並處理不同請求地址。
+
+但是Express卻可以做的更好。
+Express提供了"routing"這個東西，也就是我們所說的路由。
+我覺得可讀性甚至比純文字還要好。
+
+var express = require("express");
+var http = require("http");
+var app = express();
+
+app.all("*", function(request, response, next) {
+    response.writeHead(404, { "Content-Type": "text/plain" });
+    next();
+});
+
+app.get("/", function(request, response) {
+    response.end("Welcome to the homepage!");
+});
+
+app.get("/about", function(request, response) {
+    response.end("Welcome to the about page!");
+});
+
+app.get("*", function(request, response) {
+    response.end("404!");
+});
+
+http.createServer(app).listen(1337);
+
+簡單的引入相關模塊之後，我們立即調用 app.all處理所有請求。
+寫法看起來也非常像中間件不是嗎？
+
+代碼中的 app.get 就是Express提供的路由系統。
+也可以是 app.post 來處理POST請求，或者是PUT和任何的HTTP請求方式。
+第一個參數是路徑，例如 /about 或者 /。
+第二個參數類似我們之前所見過的請求handler。
+引用Expess文檔的內容:
+
+這些請求handler和中間件一樣，唯一的區別是這些回調函數會調用 next('route') 從而能夠繼續執行剩下的路由回調函數。
+這種機制簡單說來，它們和我們之前提過的中間件是一樣，只不過是一些函數而已。
+
+這些路由也可以更加靈活，看起來是這樣：
+
+app.get("/hello/:who", function(req, res) {
+    res.end("Hello, " + req.params.who + ".");    
+});
+
+重啓服務器並在瀏覽器訪問 localhost:1337/hello/animelover69 你會得到如下信息：
+
+Hello, animelover69.
+
+這些文檔演示了如何使用正則表達式，可以使得路由更加靈活。
+如果只是單從概念理解來講，我說的已經足夠了。
+
+但是還有更加值得我們去關注的。
+
+==
+特性二：請求處理 request handling
+
+Express將你傳入請求的handler傳入request和response對象中。
+原先該有的還在，但是卻加入了更多新的特性。
+API文檔裏有詳細解釋。
+下面讓我們來看一些例子。
+
+其中一個就是 redirect 方法。代碼如下：
+
+response.redirect("/hello/anime");
+response.redirect("http://xvfeng.me");
+response.redirect(301, "http://xvfeng.me"); // HTTP 301 狀態碼
+
+以上代碼既不屬於原生Node代碼也不是來自與Connect，而是Express中自身添加的。
+它加入了一些例如 sendFile，讓你傳輸整個文件等功能：
+
+response.sendFile("/path/to/anime.mp4");
+
+request對象還有一些很cool的屬性，例如 request.ip 可以獲取IP地址, request.files 上傳文件等。
+
+理論上來講，我們要知道的東西也不是太多，Express做的只是拓展了request和response對象而已。
+Express所提供的方法，請參考API文檔.
+
+==
+特性三：視圖
+
+Express可以渲染視圖。代碼如下：
+
+// 啓動Express
+var express = require("express");
+var app = express();
+
+// 設置view目錄
+app.set("views", __dirname + "/views");
+
+// 設置模板引擎
+app.set("view engine", "jade");
+
+開頭部分的代碼和前面基本一樣。
+之後我們指定視圖文件所在目錄。
+然後告訴Express我們要使用 Jade 作爲模板引擎。
+Jade是一種模板語言。稍後將會詳細介紹。
+
+現在我們已經設置好了view.但是如何來使用它呢？
+
+首先我們建立一個名爲 index.jade 的文件並把它放入 views 目錄。代碼如下：
+
+doctype 5
+html
+  body
+    h1 Hello, world!
+    p= message
+
+代碼只是去掉了括號的HTML代碼。
+如果你懂HTML那肯定也看得懂上面的代碼。
+唯一有趣的是最後一樣。 
+message 是一個變量。它是從哪裏來的呢？馬上告訴你。
+
+我們需要從Express中渲染這個視圖。代碼如下：
+
+app.get("/", function(request, response) {
+    response.render("index", { message: "I love anime" });    
+});
+
+Express爲 response 對象添加了一個 render 方法。
+這個方法可以處理很多事情，但最主要的還是加載模板引擎和對應的視圖文件，之後渲染成普通的HTML文檔，例如這裏的 index.jade 。
+
+最後一步(我覺得可能算是第一步)就是安裝Jade，因爲它本身並不是Express的一部分。
+添加至 package.json 文件並使用 npm install 進行安裝。
+
+如果一起設置完畢，你會看到這個頁面。完整代碼.
+
+==
+加分特性： 所有代碼來自於Connect和Node
+
+我需要再次提醒你的是Express建立與Connect和Node之上，
+這意味着所有的Connect中間件均可以在Express中使用。
+這個對與開發來講幫助很大。例如：
+
+var express = require("express");
+var app = express();
+
+app.use(express.logger());  // 繼承自Connect
+
+app.get("/", function(req, res) {
+    res.send("fraser");    
+});
+
+app.listen(1337);
+
+如果說你從這篇文章中學到了一點什麼，就是這一點。
+
+====
+實戰
+
+本文的大部分內容都是理論，但是下面我將教你如何使用它來做一點你想做的東西。
+我不想說的過於具體。
+
+你可以將Express安裝到系統全局，從而可以在命令行使用它。
+它可以幫助你迅速的完成代碼組織並啓動應用。
+使用npm安裝：
+
+# 安裝時可能需要加 `sudo`
+npm install -g express
+
+如果你需要幫助，輸入 express --help 。
+它加入一些可選參數。
+例如，如果你想使用EJS模板引擎，LESS作爲CSS引擎。
+應用的名稱爲"myApp".輸入以下命令：
+
+express --ejs --css less myApp
+
+這裏會自動生成很多文件。
+進入項目目錄，並使用 npm install 安裝依賴包，之後便可以使用 node app 啓動應用！
+我建議你詳細的查看項目結構和代碼。
+它可能還算不上一個真正的應用，但是我覺得它對於初學者來講還是很有幫助的。
+
+項目Github目錄下也有一些很有幫助的文檔。
+
+==
+一些補充
+
+如果你也和我一樣喜歡使用CoffeeScript，好消息是Express完美支持CoffeeScript，你甚至不需要編譯它。
+這樣你只用 coffee app.coffee 即可啓動應用。
+我在我的其他項目中也是這麼做的。
+
+在我看到 app.use(app.router) 的時候我很疑惑： 
+Express不是一直在使用router嗎？
+簡單回答是 app.router 是Express的路由中間件，在你定義路由的時候被直接添加到項目中。
+如果你需要在加載其他文件之前應用，也可以直接引入它。
+關於這麼做的原因，請參考StackOverflow的這個答案.
+
+本文是針對Express 3，而在第四版的規劃中又會有很多大的改動。
+最明顯的是，Experss可能要將會分解成一些小的模塊，並吸收Connect的一些特性。
+這個雖然還在計劃中，但是也值得一看。
+
+如果這個還不能滿足你？你肯定是個變態！
+你很快就會變成像一個癮君子，半睜着眼，耗盡你最後一點精力，寫着苦逼的代碼。
+
+正如Rails成爲使用Ruby建立網頁應用的王者一樣，我覺得Express也會成爲Node中的主流。
+但是和Rails不一樣，Express更加底層。
+似乎還沒有一個真正意義上的高級Node庫。
+我覺得可能會發生改變。
+（譯者註：這點我不同意，Node的很多思想來自與Unix哲學，
+強調的是一個Module只解決一個問題，而不是成爲一個複雜的庫。
+很多Rails的開發者轉向Node，就是因爲Rails正在逐漸變得臃腫，不易自定義，且效率逐漸降低。）。
+
+這裏我就不再多談。
+已經又很多很基於Express建立了新的東西，Expess的維基裏有列舉。
+如果你覺得好可以隨意使用它們，如果你喜歡從底層做起，你也可以只選擇Express。
+不管是哪一種，好好利用它吧。
+
+原文地址：http://evanhahn.com/understanding-express-js/
+
+時間倉促，翻譯錯誤在所難免，還請指正，轉載還請註明。
+
+====
+~ Related ~
+
+22 Dec 2013 · My 2013
+http://xvfeng.me/posts/My-2013
+
+12 Sep 2013 · 在Express项目中使用Handlebars模板引擎
+http://xvfeng.me/posts/Using-Handlebarsjs-with-Expressjs
+
+07 Aug 2013 · AngularJS表单验证
+http://xvfeng.me/posts/Form-validation-with-AngularJS
+
+22 Jun 2013 · 写给Web开发人员看的Nginx介绍
+http://xvfeng.me/posts/Nginx-for-developers
+
+07 Jun 2013 · Life Sucks
+http://xvfeng.me/posts/thoughts-of-these-days
+

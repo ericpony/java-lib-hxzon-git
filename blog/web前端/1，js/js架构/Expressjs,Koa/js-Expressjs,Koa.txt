@@ -1,0 +1,44 @@
+﻿js-Expressjs
+js-Koa，Expressjs的后续。
+
+
+===================
+Express.js
+
+
+Express.js這麼描述自己："輕量靈活的node.js Web應用框架"。
+它可以幫助你快速搭建web應用。
+
+==
+Koa
+
+https://github.com/koajs/koa
+http://koajs.com/
+
+Koa is a new web framework designed by the team behind Express, 
+which aims to be a smaller, more expressive, and more robust foundation for web applications and APIs. 
+Through leveraging generators Koa allows you to ditch callbacks and greatly increase error-handling. 
+（ditch，沟）
+Koa does not bundle any middleware within core, 
+核心没有绑定任何中间件。
+and provides an elegant suite of methods that make writing servers fast and enjoyable.
+
+=======
+----
+(譯)深入理解Express.js
+http://xvfeng.me/posts/understanding-expressjs/
+
+----
+Real Time Chat With NodeJS, Socket.io and ExpressJS
+
+http://feedproxy.google.com/~r/nettuts/~3/eOVTqZbxzsA/
+net.tutsplus.comKrasimir TsonevMay 14th, 2013
+
+----
+使用Node.js、Express、sentiment 和ntwitter 构建一个情绪分析应用程序
+http://www.ibm.com/developerworks/cn/web/wa-nodejs-app/
+
+----
+Koa Web框架发布0.2.0版本
+作者 Burke Holland ，译者 夏雪 发布于 一月 27, 2014
+http://www.infoq.com/cn/news/2014/01/koa-0.2.0-release
