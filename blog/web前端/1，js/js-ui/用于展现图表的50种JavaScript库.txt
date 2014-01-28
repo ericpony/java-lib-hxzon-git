@@ -2,34 +2,78 @@
 作者 侯伯薇 发布于 2013年1月23日
 http://www.infoq.com/cn/news/2013/01/50-javascript-chart-lib
 
-在很多项目中都会有在前端展现数据图表的需求，而在开发过程中，开发者往往会使用一些JavaScript库，从而更有效地达到想要的目标。最近，TechSlide上的一篇文章总结了50种用于展现图表的JavaScript库，并对每种库做了简要的说明。这对于想要选择合适JavaScript库的开发者很有参考意义。
+在很多项目中都会有在前端展现数据图表的需求，
+而在开发过程中，开发者往往会使用一些JavaScript库，从而更有效地达到想要的目标。
+最近，TechSlide上的一篇文章总结了50种用于展现图表的JavaScript库，并对每种库做了简要的说明。
+这对于想要选择合适JavaScript库的开发者很有参考意义。
 
 文章作者首推的库是D3，他说到：
 
-它非常让人惊叹，我很喜欢它的简洁性。它的文档非常完备，源代码托管在GitHub上，而且不断会添加新的示例。有一种叫做Tributary的创建D3原型的工具，其中有很多非常棒的示例。这个库非常好，以至于xcharts、nvd3、Rickshaw、Cubism.js、dc.js、xkcd都是基于它构建的。如果你想要做出优秀的自定义数据可视化效果，那么D3可能是你最佳选择，或者对于更简单的图，你可以选择上面所提到的基于D3的库。最后，我强烈推荐阅读Scott Murray关于D3的免费书《Interactive Data Visualization for the Web》和《Dashing D3 tutorials》。
+它非常让人惊叹，我很喜欢它的简洁性。
+它的文档非常完备，源代码托管在GitHub上，而且不断会添加新的示例。
+有一种叫做Tributary的创建D3原型的工具，其中有很多非常棒的示例。
+这个库非常好，以至于xcharts、nvd3、Rickshaw、Cubism.js、dc.js、xkcd都是基于它构建的。
+如果你想要做出优秀的自定义数据可视化效果，那么D3可能是你最佳选择，
+或者对于更简单的图，你可以选择上面所提到的基于D3的库。
+
+最后，我强烈推荐阅读Scott Murray关于D3的免费书《Interactive Data Visualization for the Web》和《Dashing D3 tutorials》。
+
 接下来，他列举并简要说明了其它用于展现数据、制作表格和图表的JavaScript库，列在前20位的如下：
 
-HighCharts——它非常强大，你可以在JSFiddle中查看和编辑大量示例。它不免费，但拥有很多客户（IBM、NASA、MasterCard等）。它还向下兼容IE 8。
-jqPlot——如果你已经在使用jQuery，不想为HighCharts付费，而且情况很简单，不需要D3那样复杂的库，那么jqPlot是很好的选择。
-dygraphs——一种开源的JavaScript库，可以做出可交互、可缩放的时间线图表。对于大数据集合非常适用。
-Protovis——和D3出自同一支团队之手，是一种免费的开源库。你可以查看这个stackoveflow 页面来了解D3与其的区别。
-Flot Charts——与jqPlot一样，Flot是一种针对jQuery的纯JavaScript库，专注于简单的用法、引人注目的外观和交互特性。
-Google Chart Tools——强大、免费、易于使用。内容丰富，从最简单的线状图到负责的层级树状图都有，在展示页面中提供了大量设计良好的图表类型。
-dc.js——基于D3的JavaScript图表库，拥有本地跨过滤器（crossfilter）的支持，并让你可以高效率地浏览大型多维数据集。
-xcharts——基于D3用于构建自定义图表的库。
-nvd3——让你可以构建可重用的图表和图表组件，同时具有d3.js的强大功能。
-rickshaw——用于创建可交互时间线图表的JavaScript工具。
-Cubism.js——用于可视化时间线的D3插件。使用了Cubism构建更好的实时仪表盘，可以从Graphite、Cube和其他源拉取数据。
-xkcd——让你可以使用D3在JavaScript中做出XKCD样式的图表。
-jQuery Sparklines——一种jQuery插件，可以直接在浏览器中创建小型的内嵌图表。
-peity——一种简单的jQuery插件，可以把元素的内容转换成简单的饼图、线图和柱状图。
-BonsaiJS——一种轻量级的图形库，拥有直观的图形API和SVG渲染器。
-Flotr——为Prototype.js所用的JavaScript图表库。它拥有很多特性，像对负数值的支持、鼠标跟踪、选定支持、缩放支持、事件挂钩、CSS样式支持、在画布（canvas）中包含文字、旋转的标签、渐变颜色、图形标题和子标题、电子表格、CSV数据下载等等。
-ProtoChart——物如其名，ProtoChart让你可以使用JavaScript和Prototype创建很漂亮的图表。它是一种开源库。
-Flotr2——HumbleSoftware当前正在做的项目，让你可以使用Canvas和JavaScript创建图表。
-jQuery-Visualize——HTML的table元素驱动的HTML5 canvas图表。也是针对jQuery的图表插件。
-JS Charts——基于JavaScript的图表生成器，只需要很少甚至不需要编码。免费版会有水印，可以通过付费去掉。
-……
-文章中还列举的JavaScript库有：PlotKit、MilkChart、moochart、moowheel、table2chart、Canvas 3D Graph、TufteGraph、ArborJS、TimePlot、gRaphael、ICO、Elycharts、ZingChart、RGraph、Dojo Charting、Bluff、canvasXpress、ccchart、JIT、JSXGraph、Smoothie Charts、YUI Charts、amcharts、Emprise JavaScript Charts、FusionCharts、JavaScript Diagram Builder、jGraph、Sencha Touch Charts、Style Chart、AwesomeChartJS等，都各有千秋，如果你对这些库感兴趣的话，可以访问相应的链接或者阅读原文。
+HighCharts——它非常强大，你可以在JSFiddle中查看和编辑大量示例。
+它不免费，但拥有很多客户（IBM、NASA、MasterCard等）。它还向下兼容IE 8。
 
-这个列表对于想要利用JavaScript技术创建图表展现数据的开发者来说，非常具有参考意义，你可以从中选择最适合的库，从而高效、高质量地完成任务。
+jqPlot——如果你已经在使用jQuery，不想为HighCharts付费，而且情况很简单，不需要D3那样复杂的库，那么jqPlot是很好的选择。
+
+dygraphs——一种开源的JavaScript库，可以做出可交互、可缩放的时间线图表。对于大数据集合非常适用。
+
+Protovis——和D3出自同一支团队之手，是一种免费的开源库。你可以查看这个stackoveflow 页面来了解D3与其的区别。
+
+Flot Charts——与jqPlot一样，Flot是一种针对jQuery的纯JavaScript库，专注于简单的用法、引人注目的外观和交互特性。
+
+Google Chart Tools——强大、免费、易于使用。内容丰富，从最简单的线状图到负责的层级树状图都有，在展示页面中提供了大量设计良好的图表类型。
+
+dc.js——基于D3的JavaScript图表库，拥有本地跨过滤器（crossfilter）的支持，并让你可以高效率地浏览大型多维数据集。
+
+xcharts——基于D3用于构建自定义图表的库。
+
+nvd3——让你可以构建可重用的图表和图表组件，同时具有d3.js的强大功能。
+
+rickshaw——用于创建可交互时间线图表的JavaScript工具。
+
+Cubism.js——用于可视化时间线的D3插件。使用了Cubism构建更好的实时仪表盘，可以从Graphite、Cube和其他源拉取数据。
+
+xkcd——让你可以使用D3在JavaScript中做出XKCD样式的图表。
+
+jQuery Sparklines——一种jQuery插件，可以直接在浏览器中创建小型的内嵌图表。
+
+peity——一种简单的jQuery插件，可以把元素的内容转换成简单的饼图、线图和柱状图。
+
+BonsaiJS——一种轻量级的图形库，拥有直观的图形API和SVG渲染器。
+
+Flotr——为Prototype.js所用的JavaScript图表库。它拥有很多特性，
+像对负数值的支持、鼠标跟踪、选定支持、缩放支持、事件挂钩、CSS样式支持、
+在画布（canvas）中包含文字、旋转的标签、渐变颜色、图形标题和子标题、电子表格、CSV数据下载等等。
+
+ProtoChart——物如其名，ProtoChart让你可以使用JavaScript和Prototype创建很漂亮的图表。它是一种开源库。
+
+Flotr2——HumbleSoftware当前正在做的项目，让你可以使用Canvas和JavaScript创建图表。
+
+jQuery-Visualize——HTML的table元素驱动的HTML5 canvas图表。也是针对jQuery的图表插件。
+
+JS Charts——基于JavaScript的图表生成器，只需要很少甚至不需要编码。免费版会有水印，可以通过付费去掉。
+
+……
+
+文章中还列举的JavaScript库有：
+PlotKit、MilkChart、moochart、moowheel、table2chart、Canvas 3D Graph、
+TufteGraph、ArborJS、TimePlot、gRaphael、ICO、Elycharts、ZingChart、
+RGraph、Dojo Charting、Bluff、canvasXpress、ccchart、JIT、JSXGraph、
+Smoothie Charts、YUI Charts、amcharts、Emprise JavaScript Charts、
+FusionCharts、JavaScript Diagram Builder、jGraph、
+Sencha Touch Charts、Style Chart、AwesomeChartJS等，
+都各有千秋，如果你对这些库感兴趣的话，可以访问相应的链接或者阅读原文。
+
+这个列表对于想要利用JavaScript技术创建图表展现数据的开发者来说，非常具有参考意义，
+你可以从中选择最适合的库，从而高效、高质量地完成任务。
+

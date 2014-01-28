@@ -1,0 +1,388 @@
+﻿jQuery的发展史，你知道吗？
+http://blog.csdn.net/zuoninger/article/details/18594241
+
+每天多学一点知识，就少写一行代码
+
+====
+2006年1月，jQuery的第一个版本面世，至今已经有6年多了（注：这个时间点是截止至出书时间）。
+虽然过了这么久，但它依然以其简洁、灵活的编程风格让人一见倾心。
+在本篇文章中，我们将讲述jQuery的发展历史，让读者对jQuery有更多的了解。
+
+2005年8月，John Resig提议改进Prototype的“Behaviour”库，
+于是他在blog上发表了自己的想法，并用了3个例子做说明。
+
+第一个例子是为元素注册一个事件：
+
+Behaviour.register({
+    '#example li': function(e){
+        e.onclick = function(){
+            this.parentNode.removeChild(this);
+        }
+    }
+});
+
+他认为应该改写为：
+
+$('#example li').bind('click',function(){
+    this.parentNode.removeChild(this);
+});
+
+第二个例子是为不同的元素注册不同的事件：
+
+Behaviour.register({
+    'b.someclass' : function(e){
+        e.onclick = function(){
+            alert(this.innerHTML);
+        }
+    },
+    '#someid u' : function(e){
+        e.onmouseover = function(){
+            this.innerHTML = "BLAH!";
+        }
+    }
+});
+
+他认为应该改写为：
+
+$('b.someclass').bind('click',function(){
+    alert(this.innerHTML);
+});
+
+$('#someid u').bind('mouseover',function(){
+    this.innerHTML = 'BLAH!';
+});
+
+第三个例子是为不断变化的元素注册不同的事件：
+
+Behaviour.register({
+    '#foo ol li': function(a) {
+        a.title = "List Items!";
+        a.onclick = function(){ alert('Hello!'); };
+    },
+    '#foo ol li.tmp': function(a) {
+        a.style.color = 'white';
+    },
+    '#foo ol li.tmp .foo': function(a) {
+        a.style.background = 'red';
+    }
+});
+
+他认为应该改写为：
+
+$('#foo ol li')
+.set('title','List Items!')
+.bind('click',function(){ alert('Hello!'); })
+.select('.tmp')
+.style('color','white')
+.select('.foo')
+.style('background','red');
+
+这些代码也是jQuery语法的最初雏形。
+当时John的想法很简单：他发现这种语法相对现有的JavaScript库更为简洁。
+
+但他没想到的是，这篇文章一经发布就引起了业界的广泛关注。
+于是John开始认真思考着这件事情（编写语法更为简洁的JavaScript程序库），
+直到2006年1月14日，John正式宣布以jQuery的名称发布自己的程序库。
+随之而来的是jQuery的快速发展。
+
+2006年8月，jQuery的第一个稳定版本，并且已经支持CSS选择符、事件处理和AJAX交互。
+
+2007年7月，jQuery 1.1.3版发布，
+这次小版本的变化包含了对jQuery选择符引擎执行速度的显著提升。
+从这个版本开始，jQuery的性能达到了Prototype、Mootools以及Dojo等同类JavaScript库的水平。
+
+====
+同年9月，jQuery 1.2版发布，它去掉了对XPath选择符的支持，
+原因是相对于CSS语法它已经变得多余了。
+这一版能够对效果进行更为灵活的定制，而且借助新增的命名空间事件，也使插件开发变得更容易。
+
+同时，jQuery UI项目也开始启动，这个新的套件是作为曾经流行但已过时的Interface插件的替代项目而发布的。
+jQuery UI中包含大量预定义好的部件（widget），
+以及一组用于构建高级元素（例如可拖放、拖拽、排序）的工具。
+
+【注】：XPath（XML Path Language，XML路径语言）是在XML文档中识别不同元素或者元素值的一种语言，
+与CSS在HTML文档中识别元素的方式类似。
+在涉及属性选择符时，jQuery使用了XPath中的惯例来标识属性，即将属性前置一个@符号并放在一对方括号中。
+例如，要选择所有带title属性的链接，可以使用下面的代码：
+
+$('a[@title]')
+
+但在jQuery 1.2去掉对XPath选择符的支持后，这种写法就不能用了，必须使用如下代码：
+
+$('a[title]')
+
+在一些老的代码和插件中这种问题比较常见。
+
+====
+2008年5月，jQuery 1.2.6版发布，这版主要是将Brandon Aaron开发的流行的Dimensions插件的功能移植到了核心库中，
+同时也修改了许多BUG，而且有不少的性能得到提高。
+因此，如果把你以前的jQuery版本升级到1.2.6，那么你完全可以从你的代码中排除Dimensions插件。
+
+【注】：Dimensions插件是一个获得元素尺寸、定位的插件。
+
+在jQuery迅速发展的同时，一些大的厂商也看中了商机。
+2009年9月，微软和诺基亚公司正式宣布支持开源的jQuery库，
+另外，微软公司还宣称他们将把jQuery作为Visual Studio工具集的一部分。
+他将提供包括jQuery的智能提示、代码片段、示例文档编制等内容在内的功能。
+微软和诺基亚公司将长期成为jQuery的用户成员，其他成员还有Google，Intel，IBM，Intuit等公司。
+
+====
+2009年1月，jQuery 1.3版发布，它使用了全新的选择符引擎Sizzle，
+在各个浏览器下全面超越其他同类型JavaScript框架的查询速度，程序库的性能也因此有了极大提升。
+
+----
+这一版本的第2个变化就是提供live()方法，使用live()方法可以为当前及将来增加的元素绑定事件，
+在1.3版之前，如果要为将来增加的元素绑定事件，需要使用livequery插件，而在1.3版中，可以直接用live()方法。
+
+【注】：Sizzle是jQuery作者John Resig新写的DOM选择器引擎。
+Sizzle有一个重要的特点，它是完全独立于jQuery的，如果你不想用jQuery，可以只用Sizzle。
+Sizzle下载地址：http://sizzlejs.com/
+
+====
+2010年1月，也是jQuery的四周年生日，jQuery 1.4版发布，为了庆祝jQuery四周岁生日，
+jQuery团队特别创建了jquery14.com站点，带来了连续14天的新版本专题介绍。
+
+在1.3及更早版本中，jQuery通过JavaScript的eval方法来解析json对象。
+在1.4中，如果你用的浏览器支持，则会使用原生的JSON.parse解析json对象，这样对json对象的书写验证则更为严格。
+比如：{foo: "bar"}的写法将不会被验证为合法的json对象，必须写成{"foo":"bar"}。
+如果你的程序打算升级到1.4版本，那么这一点要尤其注意。
+
+====
+2010年2月，jQuery 1.4.2版发布，它新增了有关事件委托的两个方法：delegate()和undelegate()。
+
+delegate()用于替代1.3.2中的live()方法。
+这个方法比live()来的方便，而且也可以达到动态添加事件的作用。
+比如给表格的每个td绑定hover事件，代码如下：
+
+//1.4.2
+$("table").delegate("td", "hover", function(){
+$(this).toggleClass("hover");
+});
+//1.3.2
+$("table").each(function(){
+$("td", this).live("hover", function(){
+$(this).toggleClass("hover");
+});
+});
+
+====
+2011年1月，jQuery 1.5版发布。该版本做了如下修改：
+
+----
+重写Ajax模块
+
+（1）最大的变化是调用jQuery.ajax（或jQuery.get，jQuery.post等）会返回jqXHR的对象，
+为不同浏览器内置的XMLHttpRequest对象提供了一致的超集，
+可以完成以前不可能完成的任务，比如：中止JSONP请求。
+（2）提供了更高级的统一的API。
+（3）更好的扩展性，可以方便地扩展Ajax的发送与接收，管理Ajax请求。
+
+----
+新增延迟对象
+
+开发人员借此可以使用无法立即获得的返回值（如异步Ajax请求的返回结果），
+而且第一次能够附加多个事件处理器。
+
+比如，使用新的jQuery Ajax API实现下面的代码：
+
+// 发出请求，并记住jqxhr对象
+var jqxhr = $.ajax({ url: "example.php" })
+.success(function() { alert("success"); })
+.error(function() { alert("error"); })
+.complete(function() { alert("complete"); });
+// 这里可以做其它工作 ...
+// 完成另一个功能
+jqxhr.complete(function(){ alert("second complete"); });
+
+----
+jQuery.sub()
+
+可以方便地创建jQuery副本，不影响原有的jQuery对象，避免jQuery冲突。
+示例代码如下：
+
+(function(){
+    var sub$ = jQuery.sub();
+    sub$.fn.myCustomMethod = function(){
+        return 'just for me';
+    };
+    sub$(document).ready(function() {
+        sub$('body').myCustomMethod() ; // 'just for me'
+    });
+})();
+
+alert( typeof jQuery('body').myCustomMethod ); // undefined
+
+----
+内部开发系统
+
+jQuery团队内部开发系统的两点改变：
+一是服务器端用NodeJS替换了老的Java/Rhino系统，使得团队可以专注于JavaScript环境的新变化；
+二是所用的代码压缩优化程序从Google Closure Compiler切换到UglifyJS，新工具的压缩效果非常令人满意。
+
+====
+2011年5月，jQuery 1.6版发布。
+该版本重写了Attribute模块和大量的性能改进。
+值得注意的是此次更新有2个破坏性的变更，将会影响到现有打算升级到1.6的那些项目。
+
+----
+变更1：更新data()方法
+
+在jQuery1.5中，data()方法可以用来将元素上的数据属性转化为JSON形式的值。
+JQuery 1.6已经更新了此功能，data()方法获取的值会以驼峰形式展示，以配合W3C HTML5规范。
+比如：
+
+//html:
+<span data-max-value="15" data-min-value="5"></span>
+//js:
+$('span').data(); //jQuery 1.5.2输出：{"max-value":15,"min-value":5}
+$('span').data(); //jQuery 1.6 输出： {"maxValue":15,"minValue":5}
+
+----
+变更2：独立方法处理DOM属性，以区分DOM的attributes和properties
+
+一般情况下，attributes表示从文档中获取DOM的状态信息，而properties表示元素的动态状态信息。
+比如：
+
+//html:
+<input type="text" value="abc">
+//js:
+$("input:text").attr('value') ; //输出 abc
+$("input:text").prop('value') ; //输出 abc
+
+如果用户手动改变文本框的值为“abcdef”，那么：
+
+$("input:text").attr('value') ; //输出 abc
+$("input:text").prop('value') ; //输出 abcdef
+
+同样，如果网页中的复选框的代码如下：
+
+<input type="checkbox" checked />
+
+那么结果也会有所不同：
+
+$(":checkbox").attr('checked'); //输出''，空字符串
+$(":checkbox").prop('checked'); //输出 true
+
+所以在jQuery 1.6中，如果要判断复选框是否选中，需在事件处理程序中使用：
+
+$(this).prop("checked")
+//或者 $(this).is(":checked")
+
+
+由于jQuery 1.6对attr()方法的改变，导致很多使用attr()方法的程序出现问题，
+必须修改为1.6的语法才能使用，这个不向前兼容的改变引起了开发的强烈不满。
+于是在不到10天的时间里，jQuery 1.6.1发布，它调整了attr()方法，使其兼容1.6之前的做法。
+比如：
+
+$(":checkbox").attr("checked", true);
+$("option").attr("selected", true);
+$("input").attr("readonly", true);
+$("input").attr("disabled", true);
+if( $(":checkbox").attr("checked") ) { /* Do something */ }
+
+====
+2011年11月，jQuery 1.7版发布。该版本做了如下修改：
+
+----
+新的事件API：on()和off()
+
+新的on()和off()API统一了jQuery中所有对文档绑定事件的操作，而且它们也更加简短。
+代码如下：
+
+$(elements).on( events [, selector] [, data] , handler );
+$(elements).off( [ events ] [, selector] [, handler] );
+
+其中on()替代了之前版本中的bind()、delegate()和live()；
+off()替代了unbind()、undelegate()和die()。
+
+下面代码是新旧API调用之间对应的例子：
+
+$('a').bind('click', myHandler); //旧
+$('a').on('click', myHandler); //新
+
+$('form').bind('submit', { val: 42 }, fn); //旧
+$('form').on('submit', { val: 42 }, fn); //新
+
+$(window).unbind('scroll.myPlugin'); //旧
+$(window).off('scroll.myPlugin'); //新
+
+$('.comment').delegate('a.add', 'click', addNew); //旧
+$('.comment').on('click', 'a.add', addNew); //新
+
+$('.dialog').undelegate('a', 'click.myDlg'); //旧
+$('.dialog').off('click.myDlg', 'a'); //新
+
+$('a').live('click', fn); //旧
+
+$(document).on('click', 'a', fn); //新
+$('a').die('click'); //旧
+
+$(document).off('click', 'a'); //新
+
+----
+事件委托的性能改进
+ 
+随着页面大小和复杂度的不断增长，事件委托变得越来越重要。
+比如Backbone, JavaScript MVC和Sproutcore等应用框架都使用了大量的事件委托。
+考虑到这一点，jQuery 1.7重构了事件委派，使其更加快速，尤其是在大多数常见情况下。
+
+图10-1是1.6.4和1.7版本的性能比较，最终的事件委托和1.6.4相比，节省了大约一半的时间：
+
+----
+更好地支持IE 6/7/8下的HTML 5
+
+任何试图在IE 6/7/8中使用新的类似于<section>的HTML 5标签，
+毫无疑问都会遇到IE 6/7/8无法解析这些标签，甚至将这些标签从文档中移除的问题。
+
+在jQuery 1.7中，为较旧IE版本中html()一类的方法建立了对HTML 5的支持。
+这一功能和以前的innerShiv相同，
+但你仍然需要在你的文档头部加入HTML5Shiv（或者Modernizr）以使旧IE版本支持HTML 5标签。
+如需要更多资料，请查看The Story of the HTML5 Shiv（http://paulirish.com/2011/the-history-of-the-html5-shiv/）。
+
+----
+更直观地切换动画
+
+在jQuery的旧版本中，类似于slideToggle()或fadeToggle()的切换动画在互相堆放和前一个动画被stop()终止时无法正常工作。
+在1.7版本中这一情况被修复，动画系统会记住元素的初始值并在一个切换的动画被提前终止时重置它们。
+
+----
+异步模块定义(AMD)
+
+jQuery 1.7支持AMD规范，可以和遵循AMD规范的脚本加载器协作，比如RequireJS或者curl.js。
+
+----
+jQuery.Deferred
+
+jQuery.Deferred对象除了提供新的进度处理及通知方法之外，
+同时也新增一个可用来取得目前Deferred状态的state()方法。
+Deferred也通过jQuery.Callbacks机制来提供给开发者一个统一的事件处理接口。
+
+----
+jQuery.isNumeric()
+
+在使用jQuery的过程中，有时候需要知道一个参数是数值或可以被成功的转换为数值的情况。
+所以jQuery开发并公开jQuery.isNumeric()方法。
+为它传递一个任意类型的参数，它将对应的返回true或false。
+
+----
+弃用和删除的功能
+
+jQuery将开始弃用过时的特性，以使代码库更加精简，同时提高性能。
+比如live()和die()已在1.7版本中被弃用，这些方法还将继续有效，
+但为了兼容以后的版本不建议使用它们，可以使用on()、off()和delegate()之类的代替。
+
+一些非标准的特性在1.7版本中被彻底移除了，
+比如event.layerX和event.layerY，
+可以使用event.originalEvent.layerX和event.originalEvent.layerY代替。
+
+jQuery.isNaN()：
+这一未公开的实用函数已被删除，新的jQuery.isNumeric()提供了类似的功能，并且可以被更好的支持。
+
+jQuery.event.proxy()：
+这一未公开和过时的方法已被删除，开发者应使用公开的jQuery.proxy方法代替。
+
+jQuery所有版本的发行说明可以在官方站点查到，
+网址为http://blog.jquery.com/和http://jquery.org/history/。
+
+本文摘自《锋利的jQuery》(第2版)
+
