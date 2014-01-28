@@ -1,5 +1,6 @@
 ﻿designing with progressive enhancement(building the web that works for everyone)
 构建多平台可用的网站——渐进增强设计实践
+
 ----
 DeSigning WiTh ProgreSSive enhanCeMenT:  
 BuilDing The WeB ThaT WorkS for everyone
@@ -41,8 +42,10 @@ ISBN-13:  978-0-321-65888-3
 ISBN–10:  0-321-65888-4
 9  8  7  6  5  4  3  2  1
 Printed and bound in the United States of America
+
 ---------------------------
 Contents
+
 acknowledgments  . .............................................................................. x
 introduction  . ....................................................................................... xiii
 SeCTion i  The TeST-Driven ProgreSSive  
@@ -298,3 +301,4 @@ Using the custom file input script   . .........................................
 
 summary . ............................................................................................. 411
 index  . .................................................................................................... 413
+
