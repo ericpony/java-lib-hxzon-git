@@ -1,0 +1,310 @@
+﻿Unity 应用能力认证 （Unity Certified User） 应考须知
+http://edu.china.unity3d.com/exam_info
+
+
+应考人请在报名前详细阅读大纲及模拟练习题，为考试做好准备。
+
+主题	 概要	 内容
+
+Unity概念	 什么是Unity引擎？	 了解Unity引擎的发展以及它可以发布哪些平台。
+
+跨平台插件安装	 掌握Unity引擎与跨平台插件的安装方法。
+
+Unity的应用领域	 了解Unity引擎的应用领域。
+
+Unity工程开发框架	 掌握Unity引擎工程文件结构与开发框架。
+
+工程与应用	 能够明确工程与应用的概念与区别。
+
+场景	 掌握场景的概念及其组成。
+
+游戏对象与预置物体	 理解游戏对象与预置物体的概念与区别。
+
+组件与脚本	 熟知组件和脚本的用途
+
+Unity资源与组件	 理解组件与资源的结构与关系
+
+Unity用户界面	 界面的布局	 掌握自定义布局的使用方法
+
+工具栏功能的用途	 如何识别工具栏。并了解工具栏上所有控件的功能。
+
+工程视图	 掌握如何通过工程视图操作对资源进行管理。
+
+场景视图	 能够对场景视图的游戏对象进行移动、旋转和缩放的操作，并能熟练掌握对场景视图视角的导航功能。
+
+层级视图	 能够通过层级视图了解场景中游戏对象的父子关系，并能够通过在层次视图的操作来建立与打破游戏对象间的父子关系。
+
+检查器视图	 能够通过检查器视图查看游戏对象组件的信息，并能够通过检查器视图选项来设置导入资源的详细信息。
+
+游戏视图	 能够知道如何能过游戏视图控制栏上的控件对游戏进行预览。
+
+快捷键	 掌握对引擎界面操作的各类快捷键，能够通过快捷键操作提高工作效率。
+其中包括对场景视图的视角导航、游戏对象的操作，播放与暂停播放等快捷键的使用。
+
+游戏多媒体基本原理	 屏幕分辨率与像素	 理解屏幕分辨率与像素的概念。
+
+2D图像	 能够知道常用图像保存格式以及它们间的区别，这其中包括PNG与JPG等图像格式，知道压缩图像与非压缩的区别。
+
+3D模型	 能够知道常用的3D建模格式以及它们间的区别，这其中包括FBX与OBJ等建模格式。
+
+音频	 了解常用的音频格式，这其中包括有MP3和WAV。
+
+资源工作流程	 资源的导入	 能够通过检查器视图对不同的资源导入进行设置。并理解各设置参数的涵义。
+
+打包	 掌握将资源打包的方法。能够通过Packages来进行资源和预置物体的迁移。
+
+预置物体	 能够通过创建游戏对象为其添置预置物体，并为它添加所需的组件。
+
+动画	 能够对模型的动画进行设置，这其中包括对Mecanim动画系统的动画类型选择，
+创建Avatars、动画切割以及Animator Controller的基本使用。
+
+场景构建	 场景布置	 能够通过使用预制物体在场景实例，并组织其层次结构对场景进行布置。
+
+灯光	 能够识别和理解不同类型光源的功能，并懂得如何去使用他们。
+
+音频	 掌握基本音频组件的使用方法，能够在场景的游戏对象中创建并播放它们。
+
+Light mapping烘焙技术	 理解Light mapping烘焙技术的作用，能够为场景添加基本的光照贴图。
+
+Occlusion Culling遮挡剔除技术	 了解遮挡剔除技术的作用，掌握如何为场景添加遮挡剔除的基本方法。
+
+组件初级应用	 Rendering渲染	 掌握渲染相关组件的基本用法，
+其中包括摄像机、灯光、天空盒、GUI文字、GUI纹理等组件。
+
+Physics物理	 掌握物理相关组件的基本用法，其中包括刚体、碰撞体、铰链等组件。
+掌握基本的碰撞检测原理和方法。
+
+Shuriken粒子系统	 掌握Shuriken粒子组件的基本用法，
+能够理解检查器视图中粒子常用参数的用途并调试出相对应的效果。
+
+Effects特效	 掌握特效相关组件的基本用法，其中包括拖尾渲染器、线渲染器、光晕及投射等组件。
+
+Audio音频	 掌握音频相关音频的基本用法，其中包括音频监听器、音源等组件。
+
+Animation动画	 掌握动画相关组件的基本用法。
+
+Mesh网格	 了解网格相关组件的用途，其中包括网格适配器与网格渲染器等组件。
+
+发布	 发布可执行文件	 能够掌握对PC，MAC以及网页平台可执行文件的发布方法。
+
+=====
+Unity 应用能力认证考试模拟题
+
+1.  以下哪一个选项不属于Unity引擎所支持的视频格式文件？ 【D】
+
+后缀名为mov的文件
+后缀名为mpg的文件
+后缀名为avi的文件
+后缀名为swf的文件
+
+2.  后缀名为ogg的文件是一种什么类型的文件？ 【B】
+
+一种图片文件
+一种音频文件
+一种模型文件
+一种视频文件
+
+3.  Unity引擎的中，以下对Mesh Renderer组件描述正确的是哪一项？【C】
+
+Mesh Renderer组件决定了场景中游戏对象的位置，旋转和缩放。
+为场景中的某一游戏对象增添物理的特性，需要为该游戏对象添加Mesh Renderer组件。
+Mesh Renderer组件从Mesh Filter组件中获得网格信息，并根据物体的Transform组件所定义的位置进行渲染。
+Mesh Renderer是从网格资源中获取网格信息的组件。
+
+4.  当一个物体在视野内被其它物体遮挡，不希望对该物体进行渲染，可以通过以下哪一个模块实现该功能？【A】
+
+Occlusion Culling
+NavMesh
+Light Probes
+Culling Mask
+
+5.  制作Skybox时，为了避免出现纹理拼接时产生的接缝，这些纹理的循环方式应该设置为以下哪一项？【B】
+
+Repeat
+Clamp
+Trilinear
+Bilinear
+
+6.  下列哪个菜单可以用于打开设置发布程序选项的面板【C】
+
+General Settings → Layers → Collision
+Edit → Render Settings
+Edit → Project Settings → Player
+Edit → Preferences
+
+7.  Unity引擎使用的是左手坐标系还是右手坐标系？【A】
+
+左手坐标系
+右手坐标系
+可以通过Project Setting切换左右手坐标系
+可以通过Reference切换左右手坐标系
+
+8.  对摄像机Rendering Path的设置中，以下哪一项可以使Spot Light对物体光照产生的阴影以实时的方式渲染？【C】
+
+Vertex Lit
+Forward
+Deferred Lighting
+以上都可以
+
+9.  以下哪组摄像机中Normalized View Port Rect的数值设置
+可以使得摄像机显示的画面位于1280*720分辨率的屏幕画面的右上角。 【D】
+
+X=640，Y=-360，W=640，H=360
+X=640，Y=0，W=640，H=360
+X=0.5，Y=0，W=0.5，H=0.5
+X=0.5，Y=0.5，W=0.5，H=0.5
+
+10.  以下哪个组件是任何Game Object必备的组件？ 【B】
+
+Mesh Renderer
+Transform
+Game Object
+Main Camera
+
+11.  在Unity编辑器中，停止对Game视图进行预览播放的快捷键操作是以下哪一项？【A】
+
+CTRL/CMD + P
+CTRL/CMD + SHIFT + P
+CTRL/CMD + Alt + S
+CTRL/CMD+S
+
+12.  在对2D纹理的设置中，什么用途的纹理通常可以不强制使用2次幂的宽高数值？ 【B】
+
+用于制作天空盒的纹理
+用于UI元素的纹理
+用于三维模型贴图的纹理
+用作Cookie贴图的纹理
+
+13.  在Unity引擎中， Collider所指的是什么？【D】
+
+Collider是Unity引擎中所支持的一种资源，可用作存储网格信息
+Collider是Unity引擎中内置的一种组件，可用作对网格进行渲染
+Collider是Unity引擎中所支持的一种资源，可用作游戏对象的坐标转换
+Collider是Unity引擎中内置的一种组件，可用作游戏对象间的碰撞检测
+
+14.  可以通过以下哪个视图来录制场景中Game Object的动画？【B】
+
+Mecanim
+Animation
+Animator
+Navigation
+
+15.  在Unity工程的一个场景中，需控制多个摄像机的渲染画面的前后层次，
+可以通过Camera组件中哪个选项来进行设置。【B】
+
+Field of view
+Depth
+Clear Flags
+Rendering Path
+
+16.  如果想让一个Game Object在受到Directional Light的照射下对场景中的其它Game Object产生阴影，
+应该开启该Game Object上哪种组件的哪种属性？【B】
+
+Camera组件上的“Receive Shadows”属性
+Mesh Render组件上的“Cast Shadows”属性
+Collider上的“is Trigger”属性
+Camera组件上的“Culling Mask”属性
+
+17.  如何在Unity引擎中为场景创建一个Shuriken粒子系统？【A】
+
+依次点击菜单栏：Game Object -> Create Other -> Particle System
+在Project窗口，依次点击Create -> Particle System，创建后拖入场景中
+在Hierarchy视窗中空白处右键，在右键菜单中依次选择：Create -> Particle System
+以上都可以
+
+18.  下列选项中有关Animator的说法错误的是？【D】
+
+Animator是Unity引擎中内置的组件
+任何一个具有动画状态机功能的Game Object都需要一个Animator组件
+它主要用于角色行为的设置，包括State Machines、混合树Blend Trees以及通过脚本控制的事件
+Animator同Animation组件的用法是相同的
+
+19.  在Unity引擎中，关于如何向工程中导入图片资源，以下做法错误的是？【D】
+
+将图片文件复制或剪切到项目文件夹下的Assets文件夹或Assets子文件夹下
+通过Assets->Import New Asset….导入资源
+选中所需图片，按住鼠标左键拖入Project视图中
+选中所需图片，按住鼠标左键拖入Scene视图中
+
+20.  Unity引擎中，可通过下列哪个步骤创建Animator Controller？【D】
+
+Game Object->Animator Controller
+Component->Animator Controller
+在Hierarchy视图中点击Create->Animator Controller
+在Project视图中点击Create->Animator Controller
+
+21.  下列选项中，关于Transform组件的Scale参数的描述正确?【A】
+
+Transform组件的Scale参数不会影响ParticleSystem产生粒子的大小
+Transform组件的Scale参数不会影响GUITexture的大小
+添加Collider组件后的GameObject，其Collider组件的尺寸不受Transform组件的Scale参数影响
+添加Rigidbody组件后的物体，大小将不再受Transform组件中Scale参数的影响
+
+22.  Mecanim 动画系统非常适合用于人形角色动画的制作。
+当导入一个FBX的人形模型后，如需要对该模型做人形动画骨骼重定向的话，则需要将动画类型设置为以下哪一项？【A】
+
+Humanoid
+Generic
+Legacy
+Auto
+
+23.  在Unity中的场景中创建Camera时，默认情况下除了带有Transform、Camera、
+GUI Layer、Flare Layer组件之外，还带有以下哪种组件？【C】
+
+Mouse Look
+FPS Input Controller
+Audio Listener
+Character Motor
+
+24.  如果将一个声音剪辑文件从Project视图拖动到Inspector视图或者Scene视图中的游戏对象上，
+则该游戏对象会自动添加以下哪种组件？【C】
+
+Audio Listener
+Audio Clip
+Audio Source
+Audio Reverb Zone
+
+25.  在Unity工程的Project视图中选中一张图片，
+此时在Inspector视图中Preview窗口中显示的图片的大小表示的是以下哪一项？【B】
+
+图片实际占用外存的大小
+当工程运行时，该图片在场景中所占用显存的大小
+对图片的格式，压缩后所占用的外存的大小
+以上均不正确
+
+26.  下列哪个视图主要用于显示和编辑所选游戏对象或资源的相关属性？【C】
+
+Scene
+Project
+Inspector
+Hierarchy
+
+27.  在场景中需要使一个带有网格的Game Object接受来自Light Probes的环境光照，
+需要对下列选项中哪个组件的Use Light Probes属性进行设置？【C】
+
+Mesh Filter
+Mesh Collider
+Mesh Renderer
+Material
+
+28.  下列叙述中有关Prefab说法错误的是哪一项？【B】
+
+Prefab是一种资源类型
+Prefab是一种可以反复使用的游戏对象
+Prefab可以多次在场景进行实例
+当一个Prefab添加到场景中时，也就是创建了它的一个实例
+
+29.  以下哪一类型的纹理能够在渲染时为三维模型的表面增加凹凸细节？【A】
+
+Normal map
+Cube map
+Light map
+Specular map
+
+30.  若要给Sphere游戏对象添加Physics Material，需要使用下列选项中的哪个组件的Material属性？【C】
+
+Mesh Renderer
+Mesh Filter
+Sphere Collider
+Rigidbody
+
