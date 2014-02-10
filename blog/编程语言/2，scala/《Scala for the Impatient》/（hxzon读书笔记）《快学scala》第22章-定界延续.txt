@@ -1,0 +1,202 @@
+﻿（hxzon读书笔记）《快学scala》第22章-定界延续
+
+by hxzon
+（2014.1.22）
+====
+延续是一个强大的结构，允许你实现与分支、循环、函数调用和异常不同的控制流转机制。
+
+延续，从中间跳出，稍后继续执行。
+
+====
+22.1，捕获并执行延续
+
+在scala中，延续是定界的，这个边界由reset标出。
+
+----
+示例：读取一个文件并捕获延续。
+
+var cont:(Unit=>Unit) = null
+var filename="myfile.txt"
+var contents=""
+
+reset{
+    while(contents=""){
+        try{
+            contents=scala.io.source.fromFile(filename,"UTF-8").mkString
+        }catch{case _ =>}
+        shift{
+            k:(Unit=>Unit)=>
+            cont=k  //将延续保存到cont，以便之后使用
+        }//对cont的调用将从此处开始
+    }
+}//对cont的调用到此结束
+
+要重试的话，只需要执行延续即可：
+if(contents==""){
+    print("Try another filename:")
+    filename=readLine()
+    cont() //调用延续
+}
+println(contents)
+
+====
+22.2，“元算当中挖个洞”（略）
+
+22.3，reset和shift的控制流转
+
+reset和shift有着双重职责，一方面定义延续函数，另一方面又捕获延续函数。
+
+----
+var cont:(Unit=>Unit)=null
+reset{
+    println("Before shift")
+    shift{
+        k:(Unit=>Unit)=>{
+            cont=k
+            println("Inside shift")//跳转到reset的之后
+        }
+    }
+    println("After shift")//延续
+}
+println("After reset")
+cont()
+
+输出结果：
+Before shift
+Inside shift
+After reset
+After shift
+
+====
+22.4，reset表达式的值（暂略）
+
+22.5，reset和shift表达式的类型（暂略）
+
+22.6，CPS注解
+
+有些虚拟机中，延续的实现方式是抓取运行期栈的快照。
+当调用续延时，运行期被恢复成快照的样子。
+但java虚拟机并不允许对栈进行这样的操作，
+所以scala编译器将对reset块中的代码进行“延续传递风格”的变换。
+
+经过变换的代码与常规的scala代码很不一样，而且不能混用这两种风格。
+你必须将它注解为一个“被变换”的方法。
+
+（暂略）
+====
+22.7，将递归访问转化为迭代
+
+----
+示例，在递归当中暂停。
+
+import scala.util.continuations._
+import java.io
+
+object PrintFiles extends App{
+    var cont:(Unit=>Unit)=null
+    
+    def processDirectory(dir:File):Unit @cps[Unit]={
+        val files=dir.listFiles
+        var i=0
+        while(i<files.length){
+            val f=files
+            i+=1
+            if(f.isDirectory)
+                processDirectory(f)
+            else{
+                shift{
+                    k:(Unit=>Unit)=>{
+                        cont=k//
+                    }
+                }
+                println(f)
+            }
+        }
+    }
+    
+    reset{
+        processDirectory(new File("/")) //
+    }
+    for(i <- 1 to 100) cont() //只打印前100个文件
+}
+
+====
+22.8，撤销控制反转
+
+需求：
+在某个网页上向用户请求某些信息，然后在下一页询问更多的信息。
+你希望这样写代码：
+val response1 = getResponse(page1)
+val response2 = getResponse(page2)
+process(response1,response2)
+
+----
+示例。
+
+import java.awt._
+import java.awt.event._
+import javax.swing._
+import scala.util.continuations._
+
+object Main extends App{
+    val frame = new JFrame
+    val button = new JButton("Next")
+    setListener(button) { run() } //
+
+    val textField = new JtextArea(10,40)
+    val label = new JLabel("Welcome to the demo app")
+    frame.add(label,BorderLayout.SOUTH)
+    frame.add(textField)
+    val panel = new JPanel
+    panel.add(button)
+    frame.add(panel,BorderLayout.SOUTH)
+    frame.pack()
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+    frame.setVisible(true)
+
+    def run(){
+        reset{
+            val response1 = getResponse("What is your first name?")
+            val response2 = getResponse("What is your last name?")
+            process(response1,response2)
+        }
+    }
+
+    def process(sl :String, s2 :String){
+        label.setText("Hello, " + s1 + " " + s2)
+    }
+
+    var cont:Unit=>Unit = null
+    
+    def getResponse(prompt :String) :String @cps[Unit]={
+        label.setText(prompt)
+        setListener(button) { cont() } //
+        shift{
+            k:(Unit=Unit)=>{
+            cont=k
+            }
+        }
+        setListener(button) {} //
+        textField.getText
+    }
+
+    def setListener(button :Button)(action :=> Unit){
+        for(l <- button.getActionListeners) button.removeActionListener(l)
+        button.addActionListener(new ActionListener{
+            override def actionPerformed(event :ActionEvent) {action}
+        })
+    }
+
+}
+
+
+====
+22.9，CPS变换（略）
+单子法则
+22.10，转换嵌套的控制上下文（略）
+
+（完）
+
+
+
+

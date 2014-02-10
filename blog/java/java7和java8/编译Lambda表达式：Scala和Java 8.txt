@@ -1,0 +1,164 @@
+﻿编译Lambda表达式: Scala和Java 8
+原文地址，译文地址，译者：梁海舰， 校对：丁一
+http://ifeve.com/compiling-lambda-expressions-scala-vs-java-8/
+
+
+最近几年Lambda表达式风靡于编程界. 很多现代编程语言都把它作为函数式编程的基本组成部分. 基于JVM的编程语言如Scala,Groovy还有Clojure把它们作为关键部分集成在语言中.现在Java8也加入了它们的行列.
+
+
+有趣的是,对于JVM来说,Lambda表达式是完全不可见的,并没有匿名函数和Lamada表达式的概念,
+它只知道字节码是严格面向对象规范的.
+它取决于语言的作者和它的编译器在规范限制内创造出更新,更高级的语言元素.
+
+我们第一次接触它是在我们要给Takipi添加Scala支持的时候, 我们不得不深入研究Scala的编译器.伴随着JAVA8的来临,
+我认为探究Scala和java编译器是如何实现Lambda表达式是非常有趣的事情.结果也是相当出人意料.
+
+接下来，我展示一个简单的Lambda表达式，用于将字符串集合转化成字符串自身长度的集合。
+
+Java的写法 -
+
+
+List names = Arrays.asList("1", "2", "3");
+Stream lengths = names.stream().map(name -> name.length());
+
+Scala的写法 -
+
+
+val names = List("1", "2", "3")
+val lengths = names.map(name =>name.length)
+
+表面上看起来非常简单，那么后面的复杂东西是怎么搞的呢？
+
+一起分析Scala的实现方式
+
+SCalaLam-1
+
+The Code
+
+我使用javap（jdk自带的工具）去查看Scala编译器编译出来的class类中所包含的字节码内容。
+让我们一起看看最终的字节码（这是JVM将真正执行的）
+
+
+// 加载names对象引用,压入操作栈(JVM把它当成变量#2)
+// 它将停留一会,直到被map函数调用.
+aload_2
+
+接下来的东西变得更加有趣了，编译器产生的一个合成类的实例被创建和初始化。
+从JVM角度，就是通过这个对象持有Lambda方法的。
+有趣的是虽然Lambda被定义为我们方法的一个组成部分，但实际上它完全存在于我们的类之外。
+
+
+new myLambdas/Lambda1$$anonfun$1 //new一个lambda实例变量.
+dup //把lambda实例变量引用压入操作栈.
+
+// 最后,调用它的构造方法.记住,对于JVM来说,它仅仅只是一个普通对象.
+invokespecial myLambdas/Lambda1$$anonfun$1/()V
+ 
+//这两行长的代码加载了用于创建list的immutable.List CanBuildFrom工厂。
+//这个工厂模式是Scala集合架构的一部分。
+getstatic scala/collection/immutable/List$/MODULE$
+Lscala/collection/immutable/List$;
+invokevirtual scala/collection/immutable/List$/canBuildFrom()
+Lscala/collection/generic/CanBuildFrom;
+ 
+// 现在我们的操作栈中已经有了Lambda对象和工厂
+// 接下来的步骤是调用map函数。
+// 如果你记得，我们一开始已经将names对象引用压入操作栈顶。
+// names对象现在被作为map方法调用的实例，
+// 它也可以接受Lambda对象和工厂用于生成一个包含字符串长度的新集合。
+invokevirtual scala/collection/immutable/List/map(Lscala/Function1;
+Lscala/collection/generic/CanBuildFrom;)Ljava/lang/Object;
+
+但是，等等，Lambda对象内部到底发生了什么呢？
+
+Lambda 对象
+
+Lambda类衍生自scala.runtime.AbstractFunction1。
+通过调用map函数可以多态调用被重写的apply方法，被重写的apply方法代码如下：
+
+aload_0 //加载this对象引用到操作栈
+aload_1 //加载字符串参数到操作栈
+checkcast java/lang/String //检查是不是字符串类型
+
+ 
+// 调用合成类中重写的apply方法
+invokevirtual myLambdas/Lambda1$$anonfun$1/apply(Ljava/lang/String;)I
+
+//包装返回值
+invokestatic scala/runtime/BoxesRunTime/boxToInteger(I)Ljava/lang/Integer
+areturn
+
+真正用于执行length()操作的代码被嵌套在额外的apply方法中，用于简单的返回我们所期望的字符串长度。
+
+我们前面走了一段很长的路，终于到这边了：
+
+
+aload_1
+invokevirtual java/lang/String/length()I
+ireturn
+
+对于我们上面写的简单的代码，最后生成了大量的字节码，一个额外的类和一堆新的方法。
+当然，这并不意味着会让我们放弃使用Lambda（我们是在写scala，不是C）。
+这仅仅表明了这些结构后面的复杂性.试想Lambda表达式的代码和复杂的东西将被编译成复杂的执行链。
+
+====
+我预计Java8会以相同的方式实现Lambda，但出人意料的是，他们使用了另一种完全不同的方式。
+
+Java 8  - 新的实现方式
+
+JavaLam-1
+
+Java8的实现,字节码比较短，但是做的事情却很意外。
+它一开始很简单地加载names变量,并且调用它的stream方法,但它接下来做的东东就显得很优雅了.
+它使用一个Java7加入的一个新指令invokeDynamic去动态地连接lambda函数的真正调用点,
+从而代替创建一个用于包装lambda函数的对象.
+
+aload_1 //加载names对象引用，压入操作栈
+ 
+//调用它的stream()方法
+invokeinterface java/util/List.stream:()Ljava/util/stream/Stream;
+ 
+//神奇的invokeDynamic指令!
+invokedynamic #0:apply:()Ljava/util/function/Function;
+ 
+//调用map方法
+invokeinterface java/util/stream/Stream.map:
+(Ljava/util/function/Function;)Ljava/util/stream/Stream;
+
+神奇的InvokeDynamic指令. 
+这个是JAVA 7新加入的指令,它使得JVM限制少了,并且允许动态语言运行时绑定符号.
+
+动态链接. 如果你看到invokedynamic指令,你会发现实际上没有任何Lambda函数的引用(名为lambda$0)，
+这是因为invokedynamic的设计方式，简单地说就是lambda的名称和签名，如我们的例子-
+
+// 一个名为Lamda$0的方法，获得一个字符串参数并返回一个Integer对象
+lambdas/Lambda1.lambda$0:(Ljava/lang/String;)Ljava/lang/Integer;
+
+他们保存在.class文件中一个单独的表的条目中，执行invokedynamic时会将#0参数传给指令指针。
+这个新的表的确在很多年后的今天首次改变了字节码规范的结构，这也就需要我们改编Takipi的错误分析引擎来配合。
+
+The Lambda code
+
+下面这个字节码是真正的lambda表达式.然后就是千篇一律地、简单地加载字符串参数,
+调用length方法获得长度,并且包装返回值.
+注意它是作为静态方法编译的,从而避免了传递一个额外的this对象给他,就像我们前面看到的Scala中的做法.
+
+aload_0
+invokevirtual java/lang/String.length:()
+invokestatic java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+areturn
+
+invokedynamic 方式的另一个优点是,它允许我们使用map函数多态地调用这个方法,
+而不需要去实例化一个封装对象或调用重写的方法.非常酷吧!
+
+总结：探究java,这个最严格的的现代编程语言是如何使用动态连接加强它的lambda表达式是非常吸引人的事情.
+这是一个非常高效的方式,不需要额外的类加载,也不需要编译,
+Lambda方法是我们类中的另一个简单的私有方法.
+
+Java 8 使用Java 7中引入的新技术，使用一个非常直接的方式实现了Lambda表达式，干得非常漂亮。
+像java这样”端庄”的淑女也可以教我们一些新的花样真是非常让人高兴。
+
+fredForBlog
+
+（全文完）
+
