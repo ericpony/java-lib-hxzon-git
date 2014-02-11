@@ -1,0 +1,72 @@
+﻿庄周梦蝶-Clojure的条件编译
+http://blog.fnil.net/index.php/archives/263
+10 二月, 2014 (21:56) | Clojure | By: dennis_zhuang
+
+在C或者CPP中，条件编译很常见，比如最常见的防止重复包含头文件：
+
+
+#ifndef FUNCA_H
+#define FUNCA_H
+//头文件内容
+#endif
+
+最近读Reducer库源码，看到一个很精彩的宏，做到类似这样的条件编译：
+
+
+(defmacro ^:private compile-if
+ "Evaluate `exp` and if it returns logical true and doesn't error, expand to
+ `then`.  Else expand to `else`.
+ 
+ (compile-if (Class/forName \"java.util.concurrent.ForkJoinTask\")
+   (do-cool-stuff-with-fork-join)
+   (fall-back-to-executor-services))"
+ [exp then else]
+ (if (try (eval exp)
+          (catch Throwable _ false))
+   `(do ~then)
+   `(do ~else)))
+
+compile-if当(eval exp)的结果为true并且没有异常的时候，
+展开then表达式，否则展开else表达式，
+在Reducer库中使用这个宏来初始化Fork/Join框架，
+如果当前环境是JDK7+，直接使用Fork/Join的API，
+否则尝试JSR166的实现，
+判断当前JDK版本是通过尝试执行(Class/forName “java.util.concurrent.ForkJoinTask”)查找有没有ForkJoinTask这个类
+来做到：
+
+
+(compile-if
+ (Class/forName "java.util.concurrent.ForkJoinTask")
+ ;; We're running a JDK 7+
+ (do
+   (def pool (delay (java.util.concurrent.ForkJoinPool.)))
+ 
+   (defn fjtask [^Callable f]
+     (java.util.concurrent.ForkJoinTask/adapt f))
+ 
+   (defn- fjinvoke [f]
+     (if (java.util.concurrent.ForkJoinTask/inForkJoinPool)
+       (f)
+       (.invoke ^java.util.concurrent.ForkJoinPool @pool ^java.util.concurrent.ForkJoinTask (fjtask f))))
+ 
+   (defn- fjfork [task] (.fork ^java.util.concurrent.ForkJoinTask task))
+ 
+   (defn- fjjoin [task] (.join ^java.util.concurrent.ForkJoinTask task)))
+ ;; We're running a JDK <7
+ (do
+   (def pool (delay (jsr166y.ForkJoinPool.)))
+ 
+   (defn fjtask [^Callable f]
+     (jsr166y.ForkJoinTask/adapt f))
+ 
+   (defn- fjinvoke [f]
+     (if (jsr166y.ForkJoinTask/inForkJoinPool)
+       (f)
+       (.invoke ^jsr166y.ForkJoinPool @pool ^jsr166y.ForkJoinTask (fjtask f))))
+ 
+   (defn- fjfork [task] (.fork ^jsr166y.ForkJoinTask task))
+ 
+   (defn- fjjoin [task] (.join ^jsr166y.ForkJoinTask task))))
+
+这个宏必须能到工具库里。
+

@@ -1,0 +1,231 @@
+﻿（hxzon读书笔记）《Unity4.x从入门到精通》第2章-Unity编辑器
+
+by hxzon
+====
+2.1，视图
+
+Scene视图（场景）
+Game视图（运行）
+Inspector视图（检视）
+Hierarchy视图（层级）
+Project视图（项目）
+Animation视图
+Profiler视图（分析器，性能）
+
+====
+2.2，工具栏
+
+Transform（变换）工具
+Hand（手形）工具
+Translate（移动）工具
+Rotate（旋转）工具，旋转选中的物体。
+Scale（缩放）工具。
+
+Transform Gizmo（变换Gizmo）切换。
+
+“Play（播放）”按钮：使得可以自由地在编辑和游戏状态之间随意切换，使得游戏的调试和运行变得便捷高效。
+“预览游戏”：
+“暂停播放”：
+“逐帧播放”。
+
+----
+Layers（分层）下拉列表：用来控制在Scene视图中游戏对象的显示。
+
+----
+Layout（布局）下拉列表：用来切换视图的布局，用户也可以自定义界面布局。
+
+====
+2.3，菜单栏
+
+==
+2.3.1，文件菜单。
+
+--
+新建场景，新建项目。
+
+Project（项目工程）可以包含多个场景（Scene），而每个场景都是唯一的。
+
+--
+Build Settings（发布设置）。
+
+Build & Run（发布并运行）。
+
+==
+2.3.2，Edit菜单。
+
+Load Selection（载入选择）。
+载入选择的信息，会按照载入的选择信息选中对应的游戏对象。
+
+Save Selection（存储选择）。
+可以保存scene视图中被选中的模型物体，并且设置编号，
+设置好编号后便可以用load selection进行载入。
+
+Tags（标签）：标签是对图层的管理，可以根据需要增加图层。
+
+NavMeshLayers（导航网格层）。
+
+Physics（物理属性）。
+
+Quality（场景中的画面质量）。
+
+Scrip Execution Order（脚本执行顺序）。
+
+--
+Render Settings（渲染设置）。
+Fog，开启雾效。
+Fog Color，雾效的颜色。
+Fog Mode，雾效模式。
+
+----
+Network Emulation（网络模拟）。
+
+Graphics Emulation（图形模拟）：选择需要的着色器模型。
+
+Snap settings（对齐设置）。
+
+==
+2.3.3，Assets（资源）菜单。
+
+--
+Shader：
+Unity中配备了强大的阴影和材质的语言工具，称为ShaderLab。
+它的语法类似于着色器语言Cg和HLSL，描述了材质所必须要的一切信息，
+而不仅仅局限于顶点/像素着色。
+用户可以使用编程工具自己编写Shader材质类型。
+
+--
+Computer Shader
+
+一种运行于计算机显卡内的，但又不属于渲染管线的内容的Shader程序，通常用于并行计算。
+
+--
+Prefab（预设体）
+
+常用的一种资源类型，具有可被重复使用的功能，
+只要将游戏对象拖进Prefab内就可以定义一个Prefab，
+通过修改Prefab参数可以同时改变多个该预设体在场景中生成的实例的形态。
+
+--
+Material（材质）。
+
+--
+Animation（动画剪辑）：
+动画剪辑是构成动画的最小模块，代表一个单独部分的运动，
+如跑步、跳跃、旋转等动画信息。
+
+--
+Cubemap，由6幅图片组成的，由6张无缝纹理组成。
+通常用来显示反射效果。
+Unity内置着色器在实现反射效果时统一使用cubemap。
+
+--
+Lens Flare（耀斑），
+用来模拟太阳光晕的效果。
+制作好耀斑即可在灯光中进行指定。
+
+--
+Render Texture（渲染纹理），
+特殊类型的纹理，在运行时创建和更新，通常在摄像机对象中的Target Texture项指定Render Texture，
+以实现纹理在运行时创建并更新的功能。
+
+--
+Physic Material（物理材质），
+主要用于有实时物理碰撞的场景，
+例如保龄球游戏中的球体间、球体与滑道的碰撞，
+设置物体的摩擦力、阻力等相关设置。
+
+--
+GUI Skin。
+
+--
+Animator Controller（动画控制器），
+可以在project视图创建，应用于角色骨骼动画的控制。
+
+--
+Avatar Mask
+用来对动画里特定的身体部位进行激活或禁止。
+在网格导入观察器和动画层的动画标签里面可以进行设置。
+通过Avatar mask可以精确的裁剪动画。
+
+--
+Import Package（导入已有资源包）。
+
+--
+Custom Package（导入自定义数据包）。
+
+--
+Character Controller（导入角色控制器资源包）。
+
+--
+Glass Refraction（导入玻璃反射资源包，仅限Pro版）。
+
+--
+Image Effects（导入图像效果资源包，仅限Pro版）。
+
+--
+Light Cookies（导入Light Cookies资源包）。
+
+--
+Light Flares（导入光晕效果资源包）。
+
+--
+Particles（导入粒子效果资源包）。
+
+--
+Physic Materials（导入物理材质资源包）。
+
+--
+Projectors（导入幻灯机效果资源包）。
+
+--
+Scripts（导入脚本资源包）。
+
+--
+
+
+==
+2.3.4，GameObject（游戏对象）菜单。
+
+==
+2.3.5，Component（组件）菜单。
+
+==
+2.3.6，terrain（地形）菜单。
+
+==
+2.3.7，Window（窗口）菜单。
+
+==
+2.3.8，Help（帮助）菜单。
+
+====
+2.4，项目视图。
+
+====
+2.5，Hierarchy（层级）视图。
+
+====
+2.6，Inspector（检视）视图。
+
+====
+2.7，Game视图。
+
+====
+2.8，场景视图。
+
+====
+2.9，Profiler（分析器）视图。
+
+====
+2.10，控制台视图。
+
+====
+2.11，界面定制。
+
+
+
+
+
+
+
+
