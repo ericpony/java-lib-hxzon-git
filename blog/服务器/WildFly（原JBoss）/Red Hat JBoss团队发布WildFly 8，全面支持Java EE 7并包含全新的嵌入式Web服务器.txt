@@ -1,0 +1,111 @@
+﻿Red Hat JBoss团队发布WildFly 8，全面支持Java EE 7并包含全新的嵌入式Web服务器
+http://www.infoq.com/cn/news/2014/02/wildfly8-launch
+
+作者 Charles Humble ，译者 梅雪松 发布于 二月 14, 2014
+
+====
+Red Hat的JBoss部门今天宣布WildFly 8正式发布。其前身是JBoss Application Server。
+本次发布的版本完全支持Java EE 7规范，支持Web和Full profile。
+WildFly同时包含全新的Web服务器Undertow、新的安全特性和补丁系统。
+补丁系统用于对正在运行的系统进行升级。
+
+Undertow是一个Servlet 3.1容器，也是HTTP管理接口的服务器。
+新产品支持HTTP Upgrade，它是HTTP/1.1 RFC的一部分，允许HTTP连接升级成另一种协议。
+最常用的是初始化Web socket连接，该连接允许浏览器和其它客户端启动一个全双工连接。
+由于HTTP Upgrade允许你通过一个HTTP端口复用多种协议，因此不再需要多端口，防火墙配置也更加容易。
+WildFly本身只使用两个端口：JNDI和EJB调用基于Undertow子系统端口8080，管理则基于Web管理端口9090。
+
+作为一个示例，连接建立起来后，初始EJB请求看起来的样子是这样的：
+
+GET / HTTP/1.1
+Host: example.com
+Upgrade: jboss-remoting
+Connection: Upgrade
+Sec-JbossRemoting-Key: dGhlIHNhbXBsZSBub25jZQ==
+Undertow回应客户端，表示允许升级并且已经完成升级：
+HTTP/1.1 101 Switching Protocols
+Upgrade: jboss-remoting
+Connection: Upgrade
+Sec-JbossRemoting-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+
+之后，socket传递到WildFly EJB层，它看起来就像是普通的EJB连接。
+在处理这个初始HTTP请求时，会有比较小的性能消耗，但是一旦它完成，性能将完全相同。
+同时，由于所需的端口数量减少了，因此整体效果预期将是正面的。
+
+Jason Greene是Red Hat JBoss部门的WildFly经理和JBoss EAP平台架构师。
+他告诉InfoQ：
+因为要处理HTTP请求，因此在建立过程中会有一些额外开销。
+但是Undertow的效率确保这个开销非常低。
+在升级请求完成后，socket的行为与非HTTP时一样，因此从那之后，性能也完全相同。
+由于影响如此之低，我们将其作为默认设置。
+WildFly 8现在只有2个HTTP端口，一个用于管理，另一个用于应用。
+所有其它协议都共用这两个端口。
+Undertow也适用于嵌入模式。
+你可以使用builder API创建服务并注册HTTP处理程序，该处理程序以非阻塞方式处理请求。
+
+以下是undertow.io网站上的例子：
+
+public class HelloWorldServer { 
+ 
+    public static void main(final String[] args) { 
+        Undertow server = Undertow.builder() 
+                .addListener(8080, "localhost") 
+                .setHandler(new HttpHandler() { 
+                    @Override 
+                    public void handleRequest(final 
+HttpServerExchange exchange) throws Exception { 
+                        exchange.getResponseHeaders().put
+(Headers.CONTENT_TYPE, "text/plain"); 
+                        exchange.getResponseSender().send("Hello World"); 
+                    } 
+                }).build(); 
+        server.start(); 
+    } 
+} 
+
+Undertow也允许你嵌入基于Servlet API的代码，GitHub上有相关的例子。
+
+====
+对于新的web服务器，WildFly 8也有不错的安全提升。
+此外还包括审计日志和以角色为基础的安全模型。
+审计系统将确保管理模型的所有操作都记录到日志中，日志可以写到本地文件或者服务器。
+WildFly同时提供两个访问控制器，“简单”的那个与AS 7中的相同，要么太多、要么几乎没有。
+
+而基于角色的访问控制模型（RBAC）则允许不同的管理员拥有不同的权限（例如一个监视角色和一个修改角色）。
+WildFly内置了7个RBAC角色：
+
+监视者：拥有最少的权限。
+能够读取配置和当前运行状态，不能读取敏感资源和数据，不能查看审计日志和相关资源。
+
+操作员：除拥有监视者的所有权限外，能够修改运行时状态，重新加载或者关闭服务器，暂停/恢复JMS目标。
+操作员无法修改持久化配置。
+
+维护员：除拥有操作员的所有权限外，能够修改持久化配置，可以部署应用，增加JMS目标等等。
+维护员能够编辑几乎所有服务器和部署相关的配置。
+但是，维护员不能读取和修改敏感信息（例如密码），不能读取或修改审计信息。
+
+部署员：很像维护员，但仅限于部署相关的修改。
+部署员不能修改通用服务配置。
+
+管理员：能够查看和修改敏感信息例如密码，安全域设置。
+但是对审计日志不能进行任何操作。
+
+审计员：拥有监视者所有权限。
+绝大部分都是只读的，但是能够查看和修改审计日志系统相关的配置。
+
+超级用户：等同于AS 7的管理员，拥有所有权限。
+
+--
+RBAC数据可以存储在几乎所有LDAP服务器上，也包括活动目录。
+
+====
+WildFly还包括一个新的补丁系统，该系统最早是为JBoss EAP开发，允许你远程或者本地部署JBoss产品补丁。
+对正在运行的系统打补丁，需要重新启动以使其生效。
+最后，虽然WildFly主要用于支持Java EE，但它也可用于其它语言和环境。
+例如TorqueBox项目允许Ruby on Rails运行在WildFly服务器上。
+你可以从WildFly网站和webinar视频获取更多信息。
+
+InfoQ也就更广泛的话题采访了Jason Greene，其中包括Undertow的背景、新的审计日志系统和Oracle停止GlassFish商业支持的影响等等。
+
+原文英文链接：Red Hat's JBoss Team Launch WildFly 8 with full Java EE 7 Support and a New Embeddable Web Server
+

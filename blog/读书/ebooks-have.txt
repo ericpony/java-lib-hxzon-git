@@ -177,6 +177,11 @@ http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%
 http://www.ituring.com.cn/book/1083
 
 
+----
+188，ASP.NET 4高级程序设计(第4版)
+2011年6月1日，103.30(7折)，102.10(69折)，有中文电子版
+
+
 ==========================
 java
 
@@ -204,6 +209,16 @@ http://ifeve.com/concurrency-collection-9/
 
 ========================
 游戏开发（3D，大型多人在线游戏，人工智能）
+
+----
+Unity 4.X 从入门到精通
+http://edu.china.unity3d.com/book/detail/book_id/6
+
+中国官网教材
+http://pan.baidu.com/s/1kYnMs
+unitybook2013-12-12(1).zip
+
+参考手册，值得一读，快速了解功能和概念，有清晰完整的中文扫描电子版。
 
 ----
 197，大型多人在线游戏开发
