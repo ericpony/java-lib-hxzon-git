@@ -3,7 +3,12 @@ ASP.NET 4高级程序设计(第4版)
 Matthew MacDonald (作者), Adam Freeman (作者), Mario Szpuszta (作者), 博思工作室 (译者)
 
 102.10(6.9折)
+共34章。
+《Pro ASP.NET 4 in c# 2010,fourth edition》
+2011年6月1日，103.30(7折)，102.10(69折)，有中文电子版，不买
+[ASP.NET.4高级程序设计.第4版中文版].(Pro.ASP.NET.4.in.C#.2010.4.edition).博思工作室.扫描版.pdf，146M
 
+====
 出版社: 人民邮电出版社; 第1版 (2011年6月1日)
 丛书名: 图灵程序设计丛书
 平装: 1146页

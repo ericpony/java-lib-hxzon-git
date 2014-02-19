@@ -1,0 +1,143 @@
+﻿JUnit Theories介绍
+http://www.importnew.com/9501.html
+
+====
+你读过数学理论吗？
+
+它看起来通常像这样：
+
+对于所有的a，b>0，以下是正确的：a+b>a，a+b>b。
+
+只是我们看到的定义通常难以理解。
+
+譬如可以这样描述：它囊括了一个相当大的范围内(在此是无穷大)的所有元素(或者是元素的组合)。
+
+与此相对应，一个典型的测试片段如下：
+
+@Test
+ public void a_plus_b_is_greater_than_a_and_greater_than_b(){
+   int a = 2;
+   int b = 3;
+   assertTrue(a + b > a);
+   assertTrue(a + b > b);
+ }
+
+这仅仅是对我们所谈论的大集合中的一个元素所进行的定义。
+不是很让人印象深刻。
+当然我们可以通过在测试上进行循环（或者使用参数化测试）来稍微休整一下这个问题。
+
+@Test
+public void a_plus_b_is_greater_than_a_and_greater_than_b_multiple_values() {
+   List<Integer> values = Arrays.asList(1, 2, 300, 400000);
+   for (Integer a : values)
+     for (Integer b : values) {
+        assertTrue(a + b > a);
+        assertTrue(a + b > b);
+     }
+   }
+
+当然这仍然只测试了几个值，而且代码也看起来更难看了。
+我们竟然使用了9行代码来测试只写了一行的数学理论。
+而且最关键的是，在转化中应该对任意a，b值都适用的约束关系也完全消失了。
+
+JUnit Theories带来了希望。让我们看一下使用这种强大的工具写出来的测试是什么样子的。
+
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
+ 
+import static org.junit.Assert.assertTrue;
+ 
+@RunWith(Theories.class)
+public class AdditionWithTheoriesTest {
+ 
+  @DataPoints
+  public static int[] positiveIntegers() {
+       return new int[]{
+                        1, 10, 1234567};
+  }
+ 
+  @Theory
+  public void a_plus_b_is_greater_than_a_and_greater_than_b(Integer a, Integer b) {
+      assertTrue(a + b > a);
+      assertTrue(a + b > b);
+  }
+}
+
+
+使用JUnit Theories工具，测试被分成了两个部分：
+一个是提供数据点集(比如待测试的数据)的方法，另一个是理论本身。
+这个理论看起来几乎就像一个测试，但是它有一个不同的注解(@Theory)，并且它需要参数。
+类通过使用数据点集的任意一种可能的组合来执行所有理论。
+
+这意味着，如果我们有和测试主题相符的一个以上的理论，我们只需要声明一次数据点集。
+因此，让我们添加下面的理论，对加法来说应该是是正确的：a+b=b+a。
+所以我们将下面的理论添加至我们的类。
+
+@Theory
+public void addition_is_commutative(Integer a, Integer b) {
+    assertTrue(a + b == b + a);
+}
+
+这看起来很有魅力，你已经开始看到我们因为没有重复声明相同的数据点集，而少写了一部分代码。
+但我们仅仅对正整数进行了测试，而交换性是适用于所有整数的！
+当然我们的第一条理论仍然只对正数有效。
+
+对此问题同样有相应的解决方案，那就是：Assume类。
+使用assume使得你可以在对理论测试前首先检查一下前提条件。
+如果条件不是一个正确的给定参数集，那么此理论将会跳过此参数集。
+所以我们的测试现在看起来像这样：
+
+
+@RunWith(Theories.class)
+ public class AdditionWithTheoriesTest {
+ 
+  @DataPoints
+  public static int[] integers() {
+     return new int[]{
+                   -1, -10, -1234567,1, 10, 1234567};
+  }
+ 
+  @Theory
+  public void a_plus_b_is_greater_than_a_and_greater_than_b(Integer a, Integer b) {
+     Assume.assumeTrue(a >0 && b > 0 );
+     assertTrue(a + b > a);
+     assertTrue(a + b > b);
+  }
+ 
+  @Theory
+  public void addition_is_commutative(Integer a, Integer b) {
+     assertTrue(a + b == b + a);
+  }
+}
+
+这使得测试进行了很好的表述。
+
+除了简洁，由测试/理论模型实现的对测试数据进行的分离还有另外一点好处：
+你可能会开始考虑使你的测试数据独立于实际的东西来测试。
+
+让我们开始这样做。如果你想要测试一个接受一个整数参数的方法，什么样的整数可能会造成问题呢？
+下面是我的建议：
+
+@DataPoints
+  public static int[] integers() {
+     return new int[]{0, -1, -10, -1234567,1, 10, 1234567, Integer.MAX_VALUE, Integer.MIN_VALUE};}
+
+这样测试我们的例子当然会失败了。
+如果你让Integer.MAX_VALUE加上一个正整数，将会得到一个溢出的值！
+所以我们了解到用当前形式所描述的理论是错误的！
+是的，这显而易见，但请再看看当前的项目。
+确实需要用MIN_VALUE，MAX_VALUE，0，正数和负数来进行所有使用整数的测试吗？
+是啊，确实应该如此。
+
+那么更复杂的项目呢？
+字符串、日期、集合或者是域对象？
+使用JUnit Theories，你只需建立一次测试数据生成器，以用来创建所有更易产生问题的场景，
+然后在所有使用理论的测试中进行重用。
+这将会使你的测试更具表述力，也提高了发现错误的概率。
+
+  
+原文链接： javaadvent 翻译： ImportNew.com - 赵 坤
+译文链接： http://www.importnew.com/9501.html
+

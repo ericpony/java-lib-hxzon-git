@@ -10,6 +10,9 @@ http://www.ituring.com.cn/book/1132
 
 ----
 154，AngularJS
+认真阅读。
+
+《用AngularJS开发下一代Web应用》，38.00(6.9折)，仅仅入门，不买，有英文电子版。
 
 ----
 63，O'Reilly, 2011:JavaScript Web Applications
@@ -176,11 +179,21 @@ http://www.amazon.cn/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90Windows%E6%93%8D%E4%BD%
 《Windows Internals, Part 2》
 http://www.ituring.com.cn/book/1083
 
-
 ----
 188，ASP.NET 4高级程序设计(第4版)
-2011年6月1日，103.30(7折)，102.10(69折)，有中文电子版
+《Pro ASP.NET 4 in c# 2010,fourth edition》
+2011年6月1日，103.30(7折)，102.10(69折)，有中文电子版，不买
+[ASP.NET.4高级程序设计.第4版中文版].(Pro.ASP.NET.4.in.C#.2010.4.edition).博思工作室.扫描版.pdf，146M
 
+----
+Professional C# 2012 and .NET 4.5
+《C#高级编程(第8版)》，英文电子版
+
+----
+209，C#与.NET 4高级程序设计(第5版)
+特罗尔森
+2011年4月1日
+1197页，104.30(7折)，评价很高，较旧，有中文电子版（225M），不买
 
 ==========================
 java
@@ -219,6 +232,7 @@ http://pan.baidu.com/s/1kYnMs
 unitybook2013-12-12(1).zip
 
 参考手册，值得一读，快速了解功能和概念，有清晰完整的中文扫描电子版。
+不买。
 
 ----
 197，大型多人在线游戏开发
