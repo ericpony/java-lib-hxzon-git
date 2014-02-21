@@ -1,0 +1,29 @@
+﻿Howard Lewis Ship-Gradle: overruling third-party dependencies
+http://feedproxy.google.com/~r/TapestryCentral/~3/yy5hbgH22eU/gradle-overruling-third-party.html
+
+作者：Howard Lewis Ship | 来自：Tapestry Central
+
+We all hate dependency hell, and on any Java project of any size, you'll hit it eventually. My project, for Aviso, is a large Clojure code base, with tons of dependencies on third-party libraries, many of which are Java libraries with their own third-party dependencies. Despite using Gradle as our build tool, we don't get a free pass, we sometimes end up with conflicts.
+
+It often plays out like this: module A as a dependency on library L, which has a transitive dependency on library Q. That's OK, module A has a consistent class path when it builds.
+
+Meanwhile, module B has a dependency on library M, which has a transitive dependency on library Q ... but a different version. That's OK, module B also has a consistent class path when it builds.
+
+However, inside IntelliJ, you see both version of library Q in the "External Libraries" folder of the Project explorer. That's unfortunate and can cause confusion when navigating your code.
+
+Worse yet, in the final application, combining modules A and B, you will be executing one module with a different version of library Q than your tests. That alone makes me a touch nervous.
+
+Fortunately, Gradle provides a quite reasonable way of dealing with this. The hard way would be to just turn off all transitive dependencies. But I consider that throwing out the baby with the bathwater.
+
+Instead, we can selectively override transitive dependency, consistently across all modules. And we can do this in a single place, in our top-level build.gradle:
+
+This one small change affects every child project; we have a single place to maintain and resolve these version conflicts and don't have to chase down which module (among the 37 currently in our overall project) is the culprit for introducing a conflict. When we see a conflict, we add a new mapping to versionOverrides and we are done.
+
+This is a huge example of how powerful Gradle's Groovy DSL is; because the build script is also executable code, there's room to put logic in place that simply can't be defined declaratively.
+
+Our change hooks into the dependency resolution logic associated with each Gradle configuration (a configuration is essentially a way of declaring the class path for compiling, testing, or executing Java code).
+
+Gradle kindly exposes a step inside the overall process of analyzing the dependencies; this code hooks into this step. It sees the requested dependency, and if it's in the override map, forces the version number to a specific value. In fact, this mechanism is powerful enough to replace dependencies, but that's beyond our immediate needs.
+
+This is one of the reasons I use Gradle in preference to Maven: Gradle has the tools to cleanly and easily address my specific problems and particular edge-cases. 
+

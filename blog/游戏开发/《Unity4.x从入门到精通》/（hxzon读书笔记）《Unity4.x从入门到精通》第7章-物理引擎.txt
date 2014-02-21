@@ -1,0 +1,44 @@
+﻿（hxzon读书笔记）《Unity4.x从入门到精通》第7章-物理引擎
+
+by hxzon
+====
+目录
+
+7.1，Rigidbody（刚体）
+7.2，Colliders（碰撞体）
+7.3，Character Controller（角色控制器）
+7.4，布料
+7.5，关节
+7.6，力场
+7.7，物理引擎实例
+
+p114
+====
+7.1，刚体
+
+游戏对象添加了刚体组件，才能受到物理影响。
+
+通常情况下没有必要操作一个对象刚体的同时，也操作其transform，
+只需2选1。
+
+菜单栏Component-Physics-Rigidbody。
+
+刚体参数：
+mass，质量。
+drag，空气阻力。
+angular drag，角阻力，对象受扭矩力旋转时受到的空气阻力。
+use gravity，启用重力。
+is kinematic，启用动力学，不再受物理引擎影响，从而只能通过Transform组件来操作。
+
+interpolate，插值，控制刚体运动的抖动情况。
+collision detection，碰撞检测。
+
+constraints，约束（freeze position，冻结位置。freeze rotation，冻结旋转）。
+
+----
+
+
+
+
+
+

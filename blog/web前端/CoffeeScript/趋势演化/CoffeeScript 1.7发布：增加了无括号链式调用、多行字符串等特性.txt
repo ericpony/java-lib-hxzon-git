@@ -1,0 +1,105 @@
+﻿CoffeeScript 1.7发布：增加了无括号链式调用、多行字符串等特性
+作者 Burke Holland ，译者 吴海星 发布于 二月 18, 2014
+http://www.infoq.com/cn/news/2014/02/coffescript-17
+
+====
+Jeremy Ashkenas刚发布了CoffeeScript的1.7版，并对流行的JavaScript转换做了一些备受期待的修改。
+
+====
+版本1.7中包含了一个非常受欢迎的语言特性请求，支持无括号链式调用。
+在1.7版之前，如果有开发者想要链接函数，则必须使用括号，
+而在CoffeeScript中，函数是没必要使用括号的。
+
+// 1.7之前 - 链式调用需要括号
+$('#element').addClass('active').css({ left: 5 });
+
+// 1.7 - 没有括号了
+$ '#element'
+.addClass 'active'
+.css { left: 5 }
+
+====
+这一版还实现了对多行字符串的正确支持。
+在之前版本的CoffeeScript中，字符串（或字符串字面量）留下了新行和空格，
+而忽略了`\`操作符，这个符号的意思是要让两个字符串留在同一行上。
+
+在1.7版中，这个问题也被解决了，开发人员在CoffeeScript中可以清楚地格式化多行字符串了。
+
+console.log '''The quick brown fox jumped over the \
+lazy dog'''
+
+// 1.7版之前的输出
+ The quick brown fox jumped \nover the lazy dog
+
+// 1.7版现在的输出
+The quick brown fox jumped over the lazy dog
+
+====
+对数组解构的扩张也给加上了，这个之前曾经是CoffeScript项目中开放时间最长的问题 。
+
+# 取得animals数组中的最后一项
+animals = [ 'cat', 'dog', 'hippopotamus' ]
+
+# 1.7版之前
+hippo = animals[animal.length - 1]
+
+# 1.7版现在的样子
+[..., hippo] = animals
+
+# ...两个都会被转换成...
+hippo = animals[animals.length - 1];
+
+====
+还有更方便的数学操作符。
+包括新的平方操作符、向下取整除，以及一个模除操作符 (返回除法操作的余数)。
+
+# 平方
+2 ** 2
+# 转换成...
+Math.pow(2, 2);
+
+# 向下取整除
+2 // 3
+#转换成...
+Math.floor(2 / 3)
+
+# 模除
+2 %% 3
+#转换成...
+var __modulo = function(a, b) { return (a % b + +b) % b; };
+__modulo(2, 1);
+
+====
+其它改进包括让CoffeeScript跟Node.js 保持一致，
+这样它的require语句不会自动运行一个目录中的每个文件，
+而是表现的像Node一样，只运行index.coffee文件。
+
+1.7版本发布的大部分工作 (实际上过去几年大部分的CoffeeScript)都是由社区成员完成的。
+
+" CoffeeScript 中合并了超过一百多个开发人员的贡献和补丁"，Jeremy说。
+" CoffeeScript之所以乐于采用，是因为那些想法能够吸引JavaScript程序员。"
+考虑到Michael Srb 对1.7版本所作的贡献， Jeremy对他致以了 特别的感谢 。
+
+CoffeeScript确实享有巨大的声望，达到了 GitHub上最受欢迎的十大项目之一的高度。
+在Ruby on Rails (自3.1版开始)之类的框架中也出现到了对它的支持，
+微软的Visual Studio也通过Web Essentials插件对它提供了支持。
+
+此外，JavaScript的创建者Brenden Eich也曾表示过，
+CoffeeScript 在他思考JavaScript的未来时产生了怎样的影响。
+
+GitHub用户stefanpenner 评论说在CoffeeScript中 “…ES6 import export将会成为关键…”
+Jeremy确实在CoffeeScript的评述中提到了ES6的特性，CoffeeScript几乎要完成了
+— 过去两年到现在都十分稳定— 但将来还会继续有小幅度增长。
+比如说：有新的JavaScript特性出现时提供支持，进一步改进源码映射的支持， 
+为文学编程风格进一步打磨，让编译器内部更加精简。
+
+曾经有个 Kickstarter项目，它要重写CoffeeScript编译器。
+这个项目成功地募集到了资金，被称为CoffeeScriptRedux。
+Jeremy认为有人为CoffeeScript创建新的编译器是好事， 
+" 面向一种语言的编译器越多—那种语言越健康。
+CoffeeScript也是，它能从多个独立的编译器中受益。"
+
+你马上就可以在GitHub，或CoffeeScript官方网站上得到CoffeeScript的1.7版。
+
+原文英文链接：CoffeeScript 1.7 Released: Adds Chaining Without Parenthesis, Multiline Strings and More
+
