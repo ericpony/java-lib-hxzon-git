@@ -1,0 +1,164 @@
+﻿（hxzon读书笔记）《Unity4.x从入门到精通》第4章-创建基本游戏场景-组件、脚本、角色
+
+by hxzon
+====
+目录
+
+4.3，创建组件
+4.4，创建脚本
+4.8，创建角色
+
+====
+4.3，创建组件。
+
+在unity引擎中，GameObject（游戏对象）包括空物体，基本几何体，外部导入的模型，摄像机，GUI，粒子，灯光，树木等各类元素。
+或者简单讲，凡是出现在hierarchy视图中的元素，都是游戏对象。
+
+实际上，所有的游戏对象都是一个空对象挂载了不同类别的组件，
+从而拥有不同的功能。
+脚本在unity中也是一种组件。
+
+----
+4.3.2，如何添加组件
+
+Transform（几何变换），所有的游戏对象都会有该组件。
+该组件不可以删除。
+它定义了游戏对象的位置、旋转、缩放。
+
+选中一个游戏对象，在菜单栏Component中添加想要的组件。
+或者在inspector视图中单击Add Component按钮。
+
+----
+4.3.3，组件类型介绍。
+
+在unity中，组件共分为7类。
+inspector视图单击Add component按钮时会多出New Script一项，
+该项用于新建并添加脚本组件到游戏对象。
+
+--
+-1，Mesh（网格），3种。
+
+Mesh Filter（网格过滤器），用于在项目资源中获取网格，并将其传递到所属的游戏对象中。
+
+Text Mesh（文字渲染器），用于生成三维的字符串。
+
+Mesh Renderer，网格渲染器。
+
+--
+-2，Effects，特效，包括旧版粒子系统在内共7项。
+
+Particle system，粒子系统。
+trail Renderer，轨迹/拖尾渲染器。
+line Renderer，线条渲染器。
+Lens Flare，镜头光晕。
+Halo，光环/光晕。
+Projector，幻灯片。
+Legacy Particles，旧版粒子系统。
+
+--
+-3，Physics，物理组件，17项。
+
+unity内置NVIDIA PhysX物理引擎，可以模拟真实的物理行为，参见第7章。
+
+--
+-4，Navigation，导航/寻路，3项。
+
+navMesh Agent，导航网格代理。
+Off-mesh links，断开网络链接，Pro版才有。
+navMesh Obstacle，导航网格障碍物。
+
+--
+-5，Audio，音频，9项。
+
+--
+-6，Rendering，渲染，11项。
+
+Camera，摄像机。
+Skybox，天空盒。
+Flare Layer，耀斑/光晕层。
+GUI Layer，用户界面层。
+Light，灯光。
+light Probe Group，动态光探头/灯光探测器。
+occlusion Area，遮挡区域，pro版。
+occlusion portals，遮挡入口。
+LODGroup，LOD级别组。
+GUI Texture，用户界面纹理。
+GUI Text，用户界面文本。
+
+--
+-7，Miscellaneous，综合，4项。
+
+Animator，动画生成器。
+用来设置角色的行为，包括对状态机、动画混合树以及在脚本中控制的事件。
+只要包含avatar的游戏对象，就会包含该组件。
+
+Animation，动画。
+用来管理游戏对象上的动画文件。
+
+Network View，网络视图。
+用于通过网络来共享/传输数据。
+通过网络视图可以发起两种类型的网络通信：状态同步及远程过程调用，参考第17章。
+
+Wind Zone，风域。
+用于生成风力，并模拟游戏对象受风力影响而产生的效果。
+例如树木对象上添加该组件，就可以模拟树木的枝叶被风吹动的效果。
+
+----
+4.3.4，为游戏对象增加组件。
+
+光盘资源：unitybook\chapter04\project03，含有很多资源，
+如音频、字体库、模型、材质、贴图、Shader及脚本。
+
+====
+4.4，创建脚本
+
+脚本是一种特殊的组件，用于添加到游戏对象上，以实现各种交互操作及其他功能。
+
+----
+4.4.3，脚本资源包概述。
+
+在unity默认提供的资源包中，有专门的script.UnityPackage（脚本资源包），提供了一些非常实用的脚本。
+
+在unity中，所有的默认资源包在导入项目工程后，都放在Standard Assets文件夹中。
+
+菜单栏Assets-Import Package-Scripts可导入脚本资源包。
+
+--
+General Scripts文件夹中包含两个脚本。
+ActivateTrigger，激活触发器，用于激活场景中的触发器对象。
+Drag rigidbody，用于拖动具有刚体的游戏对象。
+
+--
+Camera Scripts文件夹中包含3个脚本。
+
+MouseOrbit，鼠标轨迹，可以控制摄像机对象跟随鼠标的偏移值进行旋转。
+
+SmoothFollow，平滑跟随，使摄像机跟随父对象进行移动、旋转等，
+并支持调节跟随过程的延迟、阻尼系数。
+
+SmoothLookAt，平滑注视，控制摄像机对象永远对准所约束的游戏对象。
+
+--
+Utility Scripts文件夹包含2个脚本。
+
+CombineChildren，结合子对象。可以将场景中相同材质的游戏对象结合起来，达到优化渲染的目的。
+
+MeshCombineUtility，网格合并工具。该脚本是被CombineChildren脚本调用的，不能直接应用到游戏对象上。
+
+====
+4.8，创建角色。
+
+导入角色控制资源包。
+
+导入后，资源包中含有2个预设体，分别为
+第1人称角色控制预设体，第3人称角色控制预设体。
+
+角色控制资源包内的Scripts文件夹包含的脚本文件用于这两个角色控制预设体，可以修改代码以改变角色控制预设体的功能。
+
+----
+在inspector视图中，为third person controller脚本组件中的
+Idle Animation（空闲动画）、Walk Animation（行走动画）、
+Run Animation（跑步动画）、Jump Pose Animation（跳跃姿势动画）指定相对应的动画。
+
+
+

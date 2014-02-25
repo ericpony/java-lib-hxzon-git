@@ -1,0 +1,71 @@
+﻿物理组件 (Physics Component)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/comp-DynamicsGroup.html
+
+
+Unity 有内置 NVIDIA PhysX 物理引擎。允许出现独特的突发行为还有许多有用的功能。
+
+基本信息
+要物理控制对象，只需对其添加刚体 (Rigidbody)。执行此操作时，对象将受重力影响，可以与世界坐标中的其他对象碰撞。
+
+刚体 (Rigidbody)
+刚体 (Rigidbody) 是以物理方式模拟的对象。可将刚体 (Rigidbody) 用于玩家可以四处推动的事物（例如板条箱或松散对象），或通过编写脚本向刚体 (Rigidbody) 应用力直接移动它。<
+
+如果直接移动非运动学刚体 (non-Kinematic Rigidbody) 的变换，则可能不会与其他对象正确碰撞。而是应通过向刚体 (Rigidbody) 应用力和扭矩来移动它。还可以向刚体 (Rigidbody) 添加关节 (Joint) 以使行为更复杂。例如，可以创建具有物理门或摇摆链条的起重机。
+
+还可使用刚体 (Rigidbody) 使车辆显得生动，例如可以使用一个刚体 (Rigidbody)、四个车轮碰撞体 (Wheel Collider) 以及一个基于用户输入应用车轮力的脚本，来创建汽车。
+
+可以通过从脚本向刚体 (Rigidbody) 应用力来创建飞机。也可以通过添加各种关节 (Joint) 并通过脚本应用力来创建特殊车辆。
+
+刚体 (Rigidbody) 最常与基元碰撞体 (Primitive Collider) 结合使用。
+
+提示：
+
+绝不应一起使用父和子刚体 (Rigidbody)
+绝不应缩放刚体 (Rigidbody) 的父级
+运动学刚体 (Kinematic Rigidbody)
+运动学刚体 (Kinematic Rigidbody) 是启用了“为运动学”(isKinematic) 选项的刚体 (Rigidbody)。运动学刚体 (Kinematic Rigidbody) 不受力、重力或碰撞的影响。它们通过设置变换的位置和旋转或对其进行动画处理来明确驱动，还可以与其他非运动学刚体 (non-Kinematic Rigidbody) 交互。
+
+运动学刚体 (Kinematic Rigidbody) 可在与其他刚体 (Rigidbody) 碰撞时正确唤醒它们，并会对置于其上的刚体 (Rigidbody) 应用摩擦力。
+
+下面是针对运动学刚体 (Kinematic Rigidbody) 的几个示例使用情况：
+
+有时希望对象处于物理控制下，但是在其他情况下是从脚本或动画进行明确控制。例如，您可以创建一个动画角色，其骨骼附加了与关节 (Joint) 连接的刚体 (Rigidbody)，以用作布娃娃。大多数时候该角色处于动画控制下，因而您会创建运动学刚体 (Kinematic Rigidbody)。但是当命中他时，您希望他变为布娃娃并受物理影响。为实现此目的，只需禁用“为运动学”(isKinematic) 选项。
+有时您需要可以推动其他对象、但不推动自己的移动对象。例如，如果您具有一个动画平台并且您要在其上放置一些刚体 (Rigidbody) 箱体，则应使该平台成为运动学刚体 (Kinematic Rigidbody) 而不仅仅是不带刚体 (Rigidbody) 的碰撞器 (Collider)。
+您可能要有一个经过动画处理的运动学刚体 (Kinematic Rigidbody)，并使用一个可用的关节 (Joint) 让真实刚体 (Rigidbody) 跟随其后。
+静态碰撞组件 (Static Collider)
+静态碰撞组件 (Static Collider)r是具有碰撞体 (Collider) 而不是刚体 (Rigidbody) 的游戏对象 (GameObject)。静态碰撞体 (Static Collider) 用于始终保持在相同位置并且从不四处移动的水平几何结构。可以将网格碰撞组件 (Mesh Collider) 添加到已存在的图形网格（使用导入设置 (Import Settings) 生成碰撞体 (Generate Colliders) 复选框甚至更好），也可以使用其他碰撞组件 (Collider) 类型之一。
+
+绝不应逐个帧地移动静态碰撞体 (Static Collider)。移动静态碰撞体 (Static Collider) 会导致 PhysX 内部重新进行一次计算，其成本十分高昂，还会使性能显著下降。不仅如此，基于静态碰撞体 (Static Collider) 唤醒其他刚体 (Rigidbody) 的行为未进行定义，并且移动静态碰撞体 (Static Collider) 不会对与之接触的刚体 (Rigidbody) 应用摩擦力。而是移动的碰撞体 (Collider) 应始终为运动学刚体 (Kinematic Rigidbody)。
+
+角色控制器 (Character Controller)
+如果要创建类人角色，可使用角色控制器 (Character Controller)。这可以是第三人称掌上游戏 (Third Person Platformer) 中的主角色、FPS 射击者或任何敌人角色。
+
+这些控制器因为感觉不正常，所以不遵守物理规则（Doom 中的您每小时跑 90 英里，在帧中停止然后在极小的空间中转弯）。而是由角色控制器 (Character Controller) 执行碰撞检测以确保角色可以沿墙滑动、走上和走下阶梯等。
+
+角色控制器 (Character Controller) 不受力影响，但是可以通过从脚本对刚体 (Rigidbody) 应用力来推动它们。通常，所有类人角色都使用角色控制器 (Character Controller) 来实现。
+
+角色控制器 (Character Controller) 本质上是非物理性的，因而如果要将真实物理现象（在绳索上摇摆、由大岩石推动）应用于角色，则必须使用刚体 (Rigidbody)，于是您可以对角色使用关节 (Joint) 和力。角色控制器 (Character Controller) 始终沿 Y 轴对齐，因此如果角色需要能够在空间中改变方向（例如在变化的重力下），则也需要使用刚体 (Rigidbody)。但是请注意，很难将刚体 (Rigidbody) 调整为使角色感觉正常，因为游戏角色的预期行为方式是非物理性的。另一个差异在于，角色控制器 (Character Controller) 可以平稳地滑过指定高度的台阶，而刚体 (Rigidbody) 则不能。
+
+如果使刚体 (Rigidbody) 成为角色控制器 (Character Controller) 的父级，则会获得类似于“关节”(Joint) 的行为。
+
+组件 (Component) 详细信息
+物理控制
+刚体 (Rigidbody) - 刚体 (Rigidbody) 将对象置于物理控制下。
+恒定力 (Constant Force) - 一种向刚体 (Rigidbody) 添加恒定力的实用工具组件 (Component)。适用于火箭和其他快速功能。
+碰撞组件 (Collider)
+球体碰撞组件 (Sphere Collider)- 用于球形对象。
+箱体碰撞组件 (Box Collider)- 用于箱形对象。
+胶囊碰撞组件 (Capsule Collider)- 用于类似于胶囊（具有半球端的圆柱体）对象。 hemisphere ends) objects.
+网格碰撞组件 (Mesh Collider)- 采用图形网格并将其用作碰撞形状。
+物理材质 (Physic Material)- 包含使您可以微调对象物理属性（摩擦力、反弹等）的设置。
+关节 (Joint)
+铰链关节 (Hinge Joint)- 用于创建门铰链。
+弹簧关节 (Spring Joint)- 类似于弹簧的关节。
+固定关节 (Fixed Joint) - 用于将对象“锁定”在一起。
+可配置关节 (Configurable Joint) 用于创建几乎任何类型的复杂关节行为
+特殊功能
+角色控制器 (Character Controller) 和角色关节 (Character Joint) - 用于创建角色控制器 (Character Controller)。
+车轮碰撞组件 (Wheel Collider) - 用于接地车辆的特殊碰撞器 (Collider)。
+蒙皮布 (Skinned Cloth) - 用于创建蒙皮布 (Skinned Cloth)
+交互布 (Interactive Cloth) - 用于创建交互布 (Interactive Cloth)，这就是所模拟的普通布。
+Page last updated: 2013-06-21

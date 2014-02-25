@@ -1,0 +1,37 @@
+﻿场景视图 (Scene View)
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/SceneView40.html
+
+场景视图 (Scene View)
+
+该场景视图 (Scene View) 为交互式沙盘。您将使用场景视图 (Scene View) 来选择和定位环境、玩家、相机、敌人和所有其他游戏对象 (GameObjects)。调动和操控场景视图 (Scene View) 中的对象是 Unity 最重要的功能，因此，必须快速进行。为此，Unity 为最常见的操作提供按键。
+
+场景视图导航 (Scene View Navigation)
+请参见场景视图导航 (Scene View Navigation)，了解场景视图 (Scene View) 导航的详情。以下是对一些要点的概述：
+
+按住鼠标右键进入漫游 (Flythrough) 模式。用鼠标和方向键（向上和向下要加上 Q 和 E 键）进入第一视角视图导航。
+选择任何游戏对象 (GameObject) 并按 F 键。这将确定所选对象在场景视图 (Scene View) 的中心位置及轴点。
+使用箭头键在 X/Z 平面上移动。
+按住 Alt 键单击拖动，使相机围绕当前轴点旋转。
+按住 Alt 键并单击中键拖动，拖动场景视图 (Scene View) 相机。
+按住 Alt 键并右击拖动，缩放场景视图 (Scene View)。与滚动鼠标滚轮的效果相同。
+您还可能发现手形工具 (Hand Tool)（快捷键：Q）的功用，特别是使用单键鼠标时。选择手形工具 (Hand tool) 后，
+
+ 单击拖动相机。 
+ 按住 Alt 键单击拖动，使相机围绕当前轴点旋转。 
+ 按住 Control 键（Mac 电脑上的 Command 键）单击拖动，缩放相机。
+场景视图 (Scene View) 的右上角是场景小图示 (Scene Gizmo)，显示场景相机 (Scene Camera) 的当前定位，让您快速改变视角。
+
+
+小图示的每个彩色“支脚”代表一根几何轴。单击任一支脚，将相机设置为沿着相应轴移动的正交（无透视）视图。单击小图示下方的文字，在正常透视图和等距视图之间切换。在等距模式下，右击拖动旋转，按 Alt 键单击拖动，进行平移。
+
+游戏对象 (GameObjects) 定位
+请参阅游戏对象 (GameObjects) 定位 了解场景中游戏对象 (GameObjects) 定位的详情。以下是对一些要点的概述：
+
+构建游戏时，会在游戏世界中放置许多不同对象。此时，使用工具栏 (Toolbar) 中的转换工具 (Transform Tools)，可转换、旋转及缩放单个游戏对象。每个都有相应的小图示 (Gizmo)，出现在场景视图 (Scene View) 的所选游戏对象 (GameObjects) 周围。可使用鼠标并操作任何 (Gizmo) 轴来修改游戏对象 (GameObjects) 的转换组件 (Transform Component)，也可以在检视器 (Inspector) 中转换组件 (Transform Component) 的数字字段中直接输入值。
+
+
+场景视图 (Scene View) 控制条
+
+可使用场景视图 (Scene View) 控制条在不同视图模式中查看场景：纹理、线框、RGB、夸张等等。还可以看（听）场景视图 (Scene View) 中的游戏照明、游戏元素及声音。请参阅视图模式 (View Modes) 了解所有详情。
+
+Page last updated: 2013-06-17

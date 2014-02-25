@@ -1,0 +1,12 @@
+﻿工具栏 (Toolbar)
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Toolbar.html
+
+工具栏 (Toolbar) 包含五个基本控件。每个控件针对编辑器 (Editor) 的不同部分。
+
+ 转换工具 (Transform Tools) -- 用于场景视图 (Scene View) 
+ 转换小图示切换 (Transform Gizmo Toggles) -- 影响场景视图 (Scene View) 显示 
+ 播放/暂停/步进按钮 (Play/Pause/Step Buttons) -- 用于游戏视图 (Game View) 
+ 层 (Layers) 下拉列表 -- 控制场景视图 (Scene View) 中显示的对象 
+ 布局 (Layout) 下拉列表 -- 控制所有视图 (View) 的排列
+
+Page last updated: 2013-05-20

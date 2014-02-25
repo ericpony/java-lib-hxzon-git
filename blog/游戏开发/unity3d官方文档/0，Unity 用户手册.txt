@@ -1,0 +1,378 @@
+﻿Unity 用户手册
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/index.html
+
+
+欢迎使用 Unity 。
+
+Unity 致力于帮您创造最好的互动娱乐或多媒体体验。本手册旨在帮助您学习 Unity 使用方法，涵盖从基础到高级的各种技术。您可以从头到尾阅读，或用作参考。
+
+本手册分为不同部分。第 1 部分用户指南介绍 Unity 界面、资源工作流程及游戏开发基础知识。如果您是首次使用 Untiy，建议从Unity 基础部分开始阅读。
+
+iOS 指南具体论述 iOS 主题，如 iOS 特定脚本 API、优化和一般平台开发问题。
+
+安卓指南具体论述安卓主题，如安卓 SDK 设置和一般开发问题。
+
+第 2 部分常见问题集合了一系列常见问答，有助于了解只需若干步骤即可完成的普通任务。
+
+第 3 部分高级技术论述游戏优化、着色器、文件大小和部署等主题。
+
+阅读完本手册后，请看看参考手册和脚本参考进一步了解如何使用 Unity 构建游戏。
+
+如果本手册未能解答您的疑问，请在 Unity 问题或 Unity 论坛提问，您将在此找到答案。
+
+祝阅读愉快！ 
+Unity 团队
+
+《Unity 用户手册指南》某些部分仅适用于特定平台。请选择您希望查看的平台。单击每页的提示三角形，就可查看平台特定信息。 
+
+     
+====
+Table of Contents
+
+
+用户指南
+
+====
+Unity 基础
+学习界面
+工程浏览器 (Project Browser)
+层级视图 (Hierarchy)
+工具栏 (Toolbar)
+场景视图 (Scene View)
+游戏视图 (Game View)
+检视器 (Inspector)
+其他视图 (Views)
+Customizing Your Workspace
+资源工作流程
+
+创建场景 (Scenes)
+构建发布
+
+教程
+Unity Hotkeys
+首选项
+
+====
+构建场景 (Building Scenes)
+
+游戏对象 (GameObjects)
+游戏对象 (GameObject) 和组件 (Component) 的关系
+使用组件 (Components)
+组件 (Component) 和脚本 (Script) 的关系
+停用游戏对象 (GameObjects)
+使用检视器 (Inspector)
+编辑值属性
+指定引用
+多对象编辑
+检视器选项
+使用场景视图 (Scene View)
+场景视图 (Scene View) 导航
+定位游戏对象 (GameObjects)
+视图模式
+小图示和图标显示控制
+搜索
+预设 (Prefabs)
+光源
+相机
+地形引擎指南 (Terrain Engine Guide)
+制作游戏的大部分时间都需要使用游戏对象 (Gameobject) 中的资源文件。它可用于制作纹理、模型、音效和行为脚本。使用 Unity 中的工程视图 (Project View) 可快速访问游戏包含的所有文件：
+导入资源
+模型
+三维格式
+旧动画系统
+材质和着色器
+二维纹理 (Texture 2D)
+程序材质
+电影纹理(Movie Texture)
+音频文件
+音轨模块
+使用脚本
+资源商店 (Asset Store)
+资源商店发布商管理
+资源服务器 (Asset Server)（仅限团队许可证）
+设置资源服务器 (Asset Server)
+缓存服务器（仅限团队许可证）
+缓存服务器（仅限团队许可证）
+缓存服务器常见问题
+幕后场景
+创建游戏
+运行时实例化预设 (Prefabs)
+输入
+变换 (Transforms)
+物理
+添加随机的游戏元素
+Particle Systems
+粒子系统曲线编辑器
+粒子系统中的颜色和渐变（忍者飞镖）
+渐变编辑器
+Particle System Inspector
+粒子系统模块介绍（忍者飞镖）
+Particle System Modules40
+粒子效果（忍者飞镖）
+Mecanim 动画系统
+动画和 Mecanim 术语表
+资源准备和导入
+制作自己的角色
+导入动画
+分割动画
+使用类人动画
+创建 Avatar
+配置 Avatar
+肌肉设定
+Avatar 身体遮蔽 (Body Mask)
+类人动画重定位
+反向动力学 (Inverse Kinematics)（仅限专业版 (Pro)）
+Mecanim 中的通用动画
+赋予角色生命
+循环动画片段
+动画器组件 (Animator Component) 和动画器控制器 (Animator Controller)
+动画状态机
+动画状态 (Animation State)
+动画转换 (Animation Transition)
+动画参数
+混合树 (Blend Tree)
+一维混合 (1D Blending)
+二维混合 (2D Blending)
+其他混合树 (Blend Tree) 选项
+Mecanim 高级主题
+在 Mecanim 中使用动画曲线 (Animation Curves)（仅限专业版 (Pro)）
+子状态机
+动画层
+Animation State Machine Preview (solo and mute)
+目标匹配
+根运动 (Root Motion) – 工作原理
+教程：为“原状”类人动画编写根运动脚本 (Scripting Root Motion)
+Mecanim 性能和优化
+Mecanim 常见问题
+旧动画系统
+动画视图指南（旧版）
+动画脚本（旧版）
+导航网格 (Navmesh) 和寻路 (Pathfinding)（仅限专业版 (Pro)）
+导航网格烘焙
+Sound
+游戏界面元素
+多玩家联网游戏
+iOS 开发入门
+Unity iOS 基础
+Unity Remote
+iOS 脚本
+输入
+手机键盘
+高级 Unity 手机脚本
+使用 .NET API 2.0 兼容级别
+iOS 硬件指南
+iOS 性能优化。
+iOS 特定优化
+使用内置分析器测定性能
+优化内置 iOS 播放器的大小
+账户设置
+Unity iOS 当前不支持的功能
+构建 iOS 插件
+应用程序准备“内购”
+自定义手机应用程序启动画面
+故障排除
+iOS 报告崩溃错误
+Android 开发入门
+Android SDK 设置
+Android Remote
+故障排除
+在 Android 中报告崩溃错误
+目前 Unity Android 不支持的功能
+分离应用程序二进制 (.OBB) 支持
+播放器设置
+Android 脚本
+输入
+手机键盘
+高级 Unity 手机脚本
+使用 .NET API 2.0 兼容级别
+为 Android 构建插件
+自定义手机应用程序启动画面
+Blackberry 10 开发入门
+设置 Unity，为 Blackberry10 设备构建应用程序
+Blackberry10 详细信息
+Blackberry10 调试
+Blackberry10 FAQ
+Metro：入门指南
+Metro：调试
+命令行参数
+Metro：插件
+Metro：工程类型
+Metro：常见问题
+Metro 常见问题：WACK
+Metro：示例
+本地客户端开发入门
+Flash 开发入门
+Flash：安装
+Flash:构建并运行
+Flash：调试
+Flash：支持和不支持的功能
+Flash：在较大的 Flash 工程中嵌入 Unity 生成的 Flash 内容
+示例： 将 Flash 中的数据提交给 Unity
+示例：在 Unity 中调用 ActionScript 函数
+示例： 浏览器 JavaScript 通信
+示例： 访问 Stage
+示例： Flash Vars
+FAQ
+Unity 3.5 至 4.0 升级指南
+Unity 3.5 升级指南
+Unity 工程从 2.x 升级至 3.x
+物理升级细节
+Mono 升级细节
+渲染升级细节
+Unity 3.x 着色器转换指南
+Unity 4.0 激活概述
+管理 Unity 4.x 许可证
+Unity 4.0 在线激活详细步骤指南
+Unity 4.0 手动激活详细步骤指南
+游戏代码问题
+如何制作简单的第一人称步骤
+图形问题
+如何导入 Alpha 纹理？
+如何使用法线贴图 (Normal Maps)？
+如何使用细节纹理？
+如何制作立方体贴图纹理？
+如何制作天空盒？
+怎样制作网格粒子发射器 (Mesh Particle Emitter)？（旧粒子系统 (Legacy Particle System)）
+如何制作启动画面？
+如何创建聚光灯 Cookie？
+如何修正已导入模型的旋转？
+如何使用水？
+FBX 导出指南
+艺术资源最佳实务指南
+如何从三维应用程序中导入对象？
+从 Maya 中导入对象
+从 Cinema 4D 中导入对象
+从 3D Studio Max 中导入对象
+从 Cheetah3D 中导入对象
+从 Modo 中导入对象
+从 Lightwave 中导入对象
+从 Blender 中导入对象
+使用 Blender 和装备 (Rigify)
+工作流程问题
+Mono Develop 入门
+如何在工程之间重复使用资源？
+如何安装或升级标准资源 (Standard Assets)？
+平台间的工程移植
+移动开发人员检查表
+系统崩溃
+性能分析
+优化
+Advanced
+Vector Cookbook
+了解向量运算
+从一个对象到另一个对象的方向和距离
+计算法向量/垂直向量
+一个向量在另一个向量方向的投影量值
+资源包（仅限专业版）
+资源包常见问题
+构建资源包
+Downloading AssetBundles
+Loading resources from AssetBundles
+Keeping track of loaded AssetBundles
+存储并加载资源包中的二进制数据
+内容保护
+管理资源相关性
+在资源包中加入脚本
+Graphics Features
+Unity 中的高动态范围 (High Dynamic Range) 渲染
+渲染路径
+线性照明（仅限专业版）
+细节等级（仅限专业版）
+着色器
+着色器：ShaderLab 和固定功能着色器
+着色器：顶点和片段程序
+在 Unity 4 中使用 DirectX 11
+计算着色器
+图形仿真
+资源数据库 (AssetDatabase)
+构建播放器管道
+分析器（仅限专业版）
+分析器 (Profiler) 窗口
+CPU 使用率 (CPU Usage) 区域
+渲染 (Rendering) 区域
+内存 (Memory) 区域
+音频 (Audio) 区域
+物理分析器
+GPU 区域
+光照贴图快速入门
+深入了解光照贴图
+Beast 自定义设置
+光照贴图 UV
+灯光探测器 (Light Probes)（仅限专业版）
+遮挡剔除（仅限专业版）
+相机使用技巧
+了解视锥体
+从相机到给定距离的视锥体大小
+推拉变焦（又称“伸缩”变焦）
+相机射线
+使用斜视锥体
+营造大尺寸或小尺寸的印象
+运行时加载资源
+通过脚本修改源资源
+用程序生成网格几何体
+网格剖析
+使用网格类
+示例 – 创建一个广告牌平面
+富文本
+在 Unity 工程 (Project) 中使用 Mono DLL
+事件函数的执行顺序
+移动优化实用指南
+移动优化实用指南 - 未来与高端设备
+移动优化实用指南 – 图形方法
+移动优化实用指南 – 脚本和游戏设置方法
+移动优化实用指南 — 渲染优化
+移动优化实用指南 — 优化脚本
+Unity XCode 工程结构
+优化图形性能
+绘制调用批处理
+为优化性能建模角色
+渲染统计信息窗口
+减少文件大小
+理解自动内存管理
+平台依赖编译
+泛型函数
+调试
+控制台
+调试器
+日志文件
+访问隐藏文件夹
+插件（专业版/移动版特有功能）
+为台式机平台构建插件
+构建 iOS 插件
+为 Android 构建插件
+底层本地插件接口
+文本场景文件格式（仅限专业版）
+格式说明
+YAML 场景文件示例。
+YAML 类 ID 参考
+流媒体资源
+命令行参数
+启动时运行编辑器脚本代码
+网络模拟
+网络播放器 (Webplayer) 安全沙盒
+Overview of available .NET Class Libraries
+Visual Studio C# 集成
+使用 Unity 外部版本控制系统
+分析
+检查更新
+安装多版本 Unity
+故障排除
+编辑器故障排除
+网络播放器故障排除
+Unity 中的阴影
+方向性阴影详情
+阴影疑难解答
+阴影大小计算
+Unity 中的 IME
+对集成显卡进行优化
+网络播放器 (Web Player) 部署
+用 HTML 代码加载 Unity 内容
+UnityObject2 的使用
+自定义 Unity 网络播放器 (Web Player) 加载屏幕
+自定义 Unity 网络播放器 (Web Player) 的行为
+Unity 网络播放器 (Web Player) 和浏览器通信
+使用网络播放器模版
+网络播放器流处理
+网络播放器发布版
+使用网络播放器中的信任链系统
+Page last updated: 2013-05-30

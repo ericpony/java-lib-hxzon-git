@@ -1,0 +1,81 @@
+﻿角色控制器 (Character Controller)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-CharacterController.html
+
+角色控制器 (Character Controller) 主要用于不使用刚体 (Rigidbody) 物理的第三人称或第一人称玩家控制。
+
+
+角色控制器 (Character Controller)
+
+----
+属性
+
+属性：	功能：
+
+高度 (Height)	角色的胶囊碰撞体 (Capsule Collider) 高度。更改此项会同时在正方向和负方向上沿 Y 轴缩放碰撞体 (Collider)。
+半径 (Radius)	胶囊碰撞体 (Capsule Collider) 半径长度。这本质上是碰撞体 (Collider) 宽度。
+斜坡限制 (Slope Limit)	将碰撞体 (Collider) 限制为仅爬上等于或小于指示值的斜坡。
+台阶偏移 (Step Offset)	仅当阶梯比指示值更接近地面时，角色才会走上阶梯。
+最小移动距离 (Min Move Distance)	如果角色尝试移动的距离小于指示值，则它完全不移动。这可以用于减少抖动。在大多数情况下，此值应保留为 0。
+皮肤宽度 (Skin width)	两个碰撞体 (Collider) 可以互相穿透的深度为其“皮肤宽度”(Skin Width)。较大“皮肤宽度”(Skin Width) 可减少抖动。较小“皮肤宽度”(Skin Width) 可能导致角色卡住。良好设置是使此值为“半径”(Radius) 的 10%。
+中心 (Center)	这会使胶囊碰撞体 (Capsule Collider) 在世界坐标空间中偏移，不会影响角色旋转方式。
+
+----
+详细信息
+
+传统 Doom 样式第一人称控制在物理上不现实。
+角色每小时奔跑 90 英里，立即停止并在极小空间中转弯。
+因为它如此不现实，所以使用刚体 (Rigidbody) 和物理创建此行为不切实际且感觉不正常。
+解决方案是专业的角色控制器 (Character Controller)。
+它仅仅是从脚本获知在某个方向上移动的胶囊形碰撞体 (Collider) 。
+该控制器随后执行移动，但是受碰撞约束。
+它会沿墙滑动、走上阶梯（如果低于台阶偏移 (Step Offset) ）并走上处于坡限制 (Slope Limit)内的斜坡。
+
+该控制器自己不对力作出反应，不会自动推走刚体 (Rigidbody)。
+
+如果要使用角色控制器 (Character Controller) 推动刚体 (Rigidbody) 或对象，
+则可以使用脚本通过OnControllerColliderHit() 函数对任何与之碰撞的对象应用力。
+
+另一方面，如果希望玩家角色受物理影响，则使用刚体 (Rigidbody) 会比角色控制器 (Character Controller) 更好。
+
+----
+微调角色
+
+可以修改高度 (Height) 和半径 (Radius) 以适合角色的网格。
+建议始终将大约 2 米用于类人角色。
+如果旋转点未处于角色的准确中心处，则还可以修改胶囊的中心 (Center)。 
+of the capsule in case your pivot point is not at the exact center of the Character.
+
+台阶偏移 (Step Offset) 也可以影响这一点，请确保此值对于 2 米大小人体介于 0.1 与 0.4 之间。
+
+斜坡限制 (Slope Limit) 不应太小。通常最适合使用 90 度的值。
+角色控制器 (Character Controller) 将由于胶囊形状而无法爬上墙。
+
+----
+不卡住
+
+皮肤宽度 (Skin Width) 是在调整角色控制器 (Character Controller) 时要正确设置的最关键属性之一。
+如果角色卡住，则很可能是因为皮肤宽度 (Skin Width) 太小。
+皮肤宽度 (Skin Width) 会使对象稍微穿透控制器，但是可消除抖动并防止其卡住。.
+
+将皮肤宽度 (Skin Width) 保持为至少大于 0.01 且大于半径 (Radius) 的 10% 是个好做法。
+
+建议将最小移动距离 (Min Move Distance) 保持为 0。
+
+请参阅此处的角色控制器 (Character Controller) 脚本参考
+http://edu.china.unity3d.com/learning_document/getData?file=/ScriptReference/CharacterController.html
+
+可以从我们网站的资源区域下载演示预设动画且移动的角色控制器 (Character Controller) 的示例工程。
+
+提示
+
+如果发现角色经常卡住，请尝试调整皮肤宽度 (Skin Width) 。
+
+如果编写自己的脚本，则角色控制器 (Character Controller) 可以使用物理影响对象。
+
+对象不能通过物理影响角色控制器 (Character Controller)。
+
+请注意，在检视器 (Inspector) 中更改角色控制器 (Character Controller) 属性会在场景中重新创建控制器，
+因此任何现有触发器 (Trigger) 接触都会丢失，在控制器再次移动之前将不会收到任何 OnTriggerEntered 消息。
+
+Page last updated: 2013-06-21
+

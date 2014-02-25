@@ -1,0 +1,300 @@
+﻿参考手册 (Reference Manual)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/index.html
+
+有关深入使用 Unity 各方面功能的详细信息，请参阅以下页面。
+
+《Unity 手册指南》包含仅适用于某些平台的部分。请选择您希望查看的平台。单击每页的提示三角形，就可查看平台特定信息。
+
+     
+====
+Components
+寻路
+导航网格代理(NavMesh Agent)（仅限专业版）
+分离网格链接 (OffMeshLink）（仅限专业版）
+导航网格障碍
+动画组件
+动画
+动画片段 (Animation Clip)
+动画器组件
+动画器控制器 (Animator Controller)
+动画状态 (Animation State)
+动画转换 (Animation Transition)
+混合树 (Blend Tree)
+一维混合 (1D Blending)
+二维混合 (2D Blending)
+其他混合树 (Blend Tree) 选项
+创建 Avatar
+Avatar 身体遮蔽 (Body Mask)
+Avatar 骨架遮蔽 (Skeleton Mask)
+人类模板 (Human Template) 文件
+资源组件
+音频片段 (Audio Clip)
+立方体贴图纹理 (Cubemap Texture)
+模型
+网格的导入设置 (Import settings for Meshes)
+FBX 导入器，装置 (Rig) 选项
+FBX 导入器 - 动画 (Animations) 选项卡
+光晕 (Flare)
+字体
+材质
+网格(Meshes)
+电影纹理(Movie Texture)
+程序性材质资源 (Procedural Material Asset)
+渲染纹理 (Render Texture)
+文本资源 (Text Asset)
+二维纹理 (Texture 2D)
+音频组件 (Audio Component)
+音频侦听器 (Audio Listener)
+音频源 (Audio Source)
+音频过滤器 (Audio Filter)（仅限专业版）
+音频低通过滤器 (Audio Low Pass Filter)（仅限专业版）
+音频高通过滤器 (Audio High Pass Filter)（仅限专业版）
+音频回声过滤器 (Audio Echo Filter)（仅限专业版）
+音频变形过滤器 (Audio Distortion Filter)（仅限专业版）
+音频混响过滤器 (Audio Reverb Filter)（仅限专业版）
+音频合音过滤器 (Audio Chorus Filter)（仅限专业版）
+混响区域 (Reverb Zone)
+麦克风 (Microphone)
+物理组件 (Physics Component)
+箱体碰撞体 (Box Collider)
+胶囊碰撞体 (Capsule Collider)
+角色控制器 (Character Controller)
+角色关节 (Character Joint)
+可配置关节 (Configurable Joint)
+恒定力 (Constant Force)
+固定关节 (Fixed Joint)
+铰链关节 (Hinge Joint)
+网格碰撞体 (Mesh Collider)
+物理材质 (Physics Material)
+刚体 (Rigidbody)
+(Sphere Collider)
+弹簧关节 (Spring Joint)
+交互布 (Interactive Cloth)
+蒙皮布 (Skinned Cloth)
+车轮碰撞体 (Wheel Collider)
+游戏对象 (GameObject)
+游戏对象 (GameObject)
+图像效果(Image Effect Scripts）
+抗锯齿 (AntiAliasing)（后期效果）
+高光溢出 (Bloom)
+高光溢出和镜头光晕 (Bloom and Lens Flare)
+模糊 (Blur)
+相机运动模糊 (Motion Blur)
+颜色修正曲线 (Color Correction Curve)
+颜色修正 (Color Correction)
+颜色修正查找纹理 (Color Correction Lookup Texture)
+对比度增强 (Contrast Enhance)
+对比度拉伸 (Contrast Stretch)
+起皱 (Crease)
+视野深度 (Depth of Field) 3.4
+视野深度 (Depth of Field)
+边缘检测 (Edge Detection)
+边缘检测效应
+鱼眼 (Fisheye)
+全局雾 (Global Fog)
+发光 (Glow)
+灰度 (Grayscale)
+运动模糊 (Motion Blur)
+噪波和颗粒 (Noise And Grain)
+噪波 (Noise)
+屏幕叠加 (Screen Overlay)
+棕褐色调 (Sepia Tone)
+阳光照射 (Sun Shaft)
+屏幕空间环境光遮蔽 (SSAO) (Screen Space Ambient Occlusion (SSAO))
+倾斜位移 (Tilt Shift)
+色调映射 (Tonemapping)
+旋转 (Twirl)
+渐晕 (Vignetting)（和色差 (Chromatic Aberration)）
+旋涡
+设置管理器 (Settings Manager)
+音频管理器 (Audio Manager)
+编辑器设置 ( Editor settings)
+输入管理器 (Input Manager)
+NavMesh 层（仅限专业版）
+网络管理器 (Network Manager)
+物理管理器 (Physics Manager)
+播放器设置 (Player Settings)
+质量设置 (Quality Settings)
+渲染设置 (Render Settings)
+脚本执行顺序设置 (Script Execution Order Settings)
+标记管理器 (Tag Manager)
+时间管理器 (Time Manager)
+网格组件 (Mesh Components)
+网格过滤器 (Mesh Filter)
+网格渲染器
+蒙皮网格渲染器
+文本网格
+网络组
+网络视图
+效果
+粒子系统 (Shuriken)
+光晕
+镜头光晕 (Lens Flares)
+线渲染器
+拖尾渲染器
+投影仪
+粒子系统（3.5 版之前的旧版）
+椭圆体粒子发射器 (Ellipsoid Particle Emitter)（旧版）
+网格粒子发射器（旧版）
+Part粒子动画器（旧版）
+粒子渲染器（旧版）
+世界坐标粒子碰撞组件（旧版）
+渲染组件
+相机
+光斑层
+GUI 层 (GUI Layer)
+GUI 文本 (GUI Text)
+GUI 纹理
+灯光
+光探头组
+遮挡区域（仅限专业版）
+遮挡门户
+天空盒
+细节等级（仅限专业版）
+三维纹理
+变换组件 (Transform Component)
+变换
+UnityGUI 组
+GUI 皮肤
+GUI 样式 (GUI Style)
+向导
+布娃娃向导
+地形引擎指南 (Terrain Engine Guide)
+使用地形
+高度
+纹理
+树
+草
+细节网格
+地形引擎指南 (Terrain Engine Guide)
+其他设置 (Other Settings)
+树木创建器指南
+创建您的第一棵树
+树木创建器结构
+树枝组属性
+树叶组属性
+树木 - 风区
+动画视图指南
+使用动画视图（旧版）
+使用动画曲线（旧版）
+编辑曲线
+带有多个移动部分的对象
+使用动画事件 (Animation Event)
+GUI 脚本指南
+GUI 基础
+控件 (Controls)
+自定义
+布局模式
+扩展 UnityGUI
+扩展编辑器
+网络参考指南
+移动设备上的网络连接。
+高级网络概念
+Unity 中的网络元素
+网络视图 (Network View)
+RPC 详细信息
+状态同步详细信息
+网络实例化
+Network Level Loading
+主服务器
+独自构建 Unity 网络服务器
+最小化网络带宽
+社交 API
+内置着色器指南
+Unity 着色器的性能
+标准着色器系列
+顶点光照 (Vertex-Lit)
+漫反射
+高光
+凹凸漫反射 (Bumped Diffuse)
+凹凸高光 (Bumped Specular)
+Parallax Diffuse
+视差凹凸高光
+印花 (Decal)
+漫反射细节 (Diffuse Detail)
+透明着色器系列
+透明顶点光照
+透明漫反射
+透明高光
+透明凹凸漫反射
+透明凹凸高光
+透明视差漫反射
+透明视差高光
+透明镂空着色器系列
+透明镂空顶点光照
+透明镂空漫反射
+透明镂空高光
+透明镂空凹凸漫反射
+透明镂空凹凸高光
+自发光着色器系列
+自发光顶点光照
+自发光漫反射
+自发光高光
+自发光法线贴图漫反射
+自发光法线贴图高光
+自发光视差漫反射
+自发光视差高光
+反射着色器系列
+反射性顶点光照
+反射性漫反射
+反射性高光
+反射性凹凸漫反射
+反射性凹凸高光
+反射性视差漫反射
+反射性视差高光
+反射性法线贴图无光照
+反射性法线贴图顶点光照
+Unity 的后台渲染
+延时光照渲染路径
+正向渲染路径细节
+顶点光照渲染路径细节
+Unity 图形功能的硬件要求
+着色器参考
+编写表面着色器
+表面着色器示例
+表面着色器中的自定义光照模型
+表面着色器光照示例
+具有 DX11 密铺 (Tessellation) 的表面着色器
+编写顶点和片元着色器
+在 Cg 中访问着色器属性
+提供顶点数据给顶点程序
+内置着色器包含文件
+预定义着色器预处理宏
+Built-in state variables in shader programs
+GLSL 着色器程序
+ShaderLab 语法：Shader
+ShaderLab 语法：Properties
+ShaderLab 语法：子着色器 (SubShader)
+ShaderLab 语法：Pass
+ShaderLab syntax: Color, Material, Lighting
+ShaderLab 语法：剔除和深度测试 (Culling & Depth Testing)
+ShaderLab 语法：纹理组合器 (Texture Combiners)
+ShaderLab 语法：雾 (Fog)
+ShaderLab 语法：Alpha 测试 (Alpha testing)
+ShaderLab 语法：混合 (Blending)
+ShaderLab 语法：通道标记 (Pass Tags)
+ShaderLab 语法：名称 (Name)
+ShaderLab 语法：绑定通道 (BindChannels)
+ShaderLab 语法：使用通道 (UsePass)
+ShaderLab 语法：GrabPass
+ShaderLab 语法：子着色器标记 (SubShader Tags)
+ShaderLab 语法：回退 (Fallback)
+ShaderLab 语法：自定义编辑器 (CustomEditor)
+ShaderLab 语法：其他命令
+高级 ShaderLab 主题
+Unity 渲染管线
+编写着色器时的性能提示
+使用替换着色器渲染
+自定义材质编辑器
+使用深度纹理
+相机的深度纹理
+特定平台的渲染差异
+着色器细节等级
+ShaderLab 内置值
+Scripting Concepts
+层
+基于层的碰撞检测
+什么是标记 (Tag)？
+Rigidbody Sleeping
+
+Page last updated: 2013-06-21

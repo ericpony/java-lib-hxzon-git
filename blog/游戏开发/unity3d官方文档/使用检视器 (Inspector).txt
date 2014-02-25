@@ -1,0 +1,20 @@
+﻿使用检视器 (Inspector)
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/UsingTheInspector.html
+
+检视器 (Inspector) 用于查看和编辑许多不同类型的属性 (Properties)。
+
+ Unity 中的游戏是由包含网格、脚本、声音或其他图形元素（比如光源）的多个游戏对象 (GameObjects)构成。当您在层级视图 (Hierarchy) 或场景视图 (Scene View) 中选择一个游戏对象 (GameObject) 时，检视器 (Inspector)会显示它并且可以让您修改该游戏对象 (GameObject) 的属性 (Properties) 及其所有组件 (Components) 和材质 (Materials)。如果在工程视图 (Project View) 中选择预设 (Prefab)，也会发生相同的情况。通过这种方法，您可以修改游戏中游戏对象 (GameObject) 的功能。您可以阅读更多关于游戏对象 (GameObject) -组件 (Component) -关系的内容，因为了解这些非常重要。 
+
+检视器 (Inspector) 显示游戏对象 (GameObject) 的属性及其组件和材质。
+当您自己创建脚本时，它将作为一个自定义的组件 (Component) 类型，当该脚本组件添加到一个游戏对象 (GameObject) 中时，该脚本的成员变量将作为可直接编辑的属性 (Properties) 陈列在检视器 (Inspector) 中。通过这种方式，无需修改脚本本身就可以更改其变量。
+
+此外，检视器 (Inspector) 也用于显示资源的导入选项，比如纹理、三维模型以及选择时的字体。某些场景和工程范围的设置也可以在检视器 (Inspector) 中查看，比如所有设置管理器 (Settings Managers)。
+
+检视器 (Inspector) 中显示的任何属性都可以直接修改。有两种主要类型的属性：值 (Values) 和引用 (References)。值可能为光源的颜色或者矢量。引用是连接到其他对象的链接，比如纹理或其他游戏对象。
+
+编辑值属性
+指定引用
+多对象编辑
+检视器选项
+
+Page last updated: 2013-05-29
