@@ -9,12 +9,13 @@ Page last updated: 2013-06-26
 
 ====
 变换
+
 http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-Transform.html
 
 变换 Component 决定场景中每个对象的位置 (Position) 、旋转 (Rotation) 和缩放 (Scale) 。
 每个对象都有一个变换 (Transform) 属性。
 
-
+----
 场景视图 (Scene View) 和检视器 (Inspector)可以编辑变换组件 (Transform Component)
 
 属性
@@ -24,9 +25,11 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-Tr
 旋转 (Rotation)	变换 (Transform) 围绕 X、Y 和 Z 轴的旋转，以度计。
 缩放 (Scale)	变换 (Transform) 沿 X、Y 和 Z 轴的缩放。“1” 是原始大小（对象被导入时的大小）。
 
+--
 变换 (Transform) 的所有属性都是参照它的父级进行测量的（请参阅以下内容了解更多详细信息）。
 如果变换 (Transform) 无父级，则参照世界坐标空间 (World Space) 测量属性。
 
+----
 使用变换
 
 通常在 X、Y 和 Z 轴的三维空间中控制变换 (Transform)。
@@ -40,7 +43,7 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-Tr
 上述工具位于 Unity 编辑器 (Editor) 左上角。
 
 
-“视图”(View)、“平移”(Translate)、“旋转”(Rotate) 和“缩放”(Scale) 工具
+图：“视图”(View)、“平移”(Translate)、“旋转”(Rotate) 和“缩放”(Scale) 工具
 
 （hxzon：手形，十字，“刷新”，“全屏”）
 
@@ -62,7 +65,7 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-Tr
 这些方框使您可以在单个平面内拖动变换 (Transform)（即，对象会在两个轴上移动，但在第三个轴上保持不动）。
 
 
-在 XZ 平面内拖动
+图：在 XZ 平面内拖动
 
 ----
 父子化
@@ -77,40 +80,87 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-Tr
 此操作会在两个游戏对象 (GameObject) 之间创建一种父子关系。
 
 
-父子层级视图 (hierarchy) 示例。名称左侧有折叠箭头的游戏对象 (GameObjects) 是父级。
+图：父子层级视图 (hierarchy) 示例。名称左侧有折叠箭头的游戏对象 (GameObjects) 是父级。
 
 上述示例中，我们认为躯干是手臂的父级而手臂是手的父级。
 您在 Unity 中制作的场景将包含这些变换层级 (Transform hierarchy)的集合。
 最上层的父级对象被称为根对象 (Root object)。
 当您移动、缩放或旋转某个父级对象时，其变换 (Transform) 中的所有变化都会被应用于其子级对象。
 
-值得指出的是任何子级游戏对象 (Child GameObject) 的检视器 (Inspector) 中的变换 (Transform) 值都会相对于父级 (Parent) 的变换 (Transform) 值而显示。这些值又被称局部坐标 (Local Coordinate) 。您可以通过脚本处理访问全局坐标 (Global Coordinate) 和局部坐标 (local coordinate)。
+值得指出的是任何子级游戏对象 (Child GameObject) 的检视器 (Inspector) 中的变换 (Transform) 值
+都会相对于父级 (Parent) 的变换 (Transform) 值而显示。
+这些值又被称“局部坐标 (Local Coordinate)” 。
+您可以通过脚本处理访问全局坐标 (Global Coordinate) 和局部坐标 (local coordinate)。
 
-您可以将多个单独的对象一起父子化来构建复合对象，例如，布娃娃的骨架结构。您还可以通过简单的层级实现有用的效果。例如，如果您有个夜间恐怖游戏，您就可以用手电筒创造有效气氛。要创建此对象，您要使手电筒变换 (Transform) 成为聚光灯变换 (Transform) 的父级。然后，手电筒变换 (Transform) 的任何修改都会影响聚光灯，创建一个逼真的手电筒效果。
+您可以将多个单独的对象一起父子化来构建复合对象，例如，布娃娃的骨架结构。
+您还可以通过简单的层级实现有用的效果。
+例如，如果您有个夜间恐怖游戏，您就可以用手电筒创造有效气氛。
+要创建此对象，您要使手电筒变换 (Transform) 成为聚光灯变换 (Transform) 的父级。
+然后，手电筒变换 (Transform) 的任何修改都会影响聚光灯，创建一个逼真的手电筒效果。
 
+----
 非等比缩放的性能问题和局限性
-非等比缩放是指当变换 (Transform) 中的 缩放 (Scale) 属性的 x、y 和 z 值不同时；例如 (2, 4, 2)。与此相反，等比缩放中的 x、y 和 z 值相同；例如 (3, 3, 3)。非等比缩放可能在少数选择个案中是有用的，但能避免使用它时就应避免。
 
-非等比缩放对渲染性能有负面影响。为正确变换顶点法线，我们变换 CPU 上的网格并另外创建一份数据拷贝。通常我们可以保持网格在图形内存实例之间共享，但这样您就每个实例都需支付 CPU 和内存成本。
+非等比缩放是指当变换 (Transform) 中的 缩放 (Scale) 属性的 x、y 和 z 值不同时；例如 (2, 4, 2)。
+与此相反，等比缩放中的 x、y 和 z 值相同；例如 (3, 3, 3)。
 
+非等比缩放可能在少数选择个案中是有用的，但能避免使用它时就应避免。
+
+非等比缩放对渲染性能有负面影响。
+为正确变换顶点法线，我们变换 CPU 上的网格并另外创建一份数据拷贝。
+通常我们可以保持网格在图形内存实例之间共享，但这样您就每个实例都需支付 CPU 和内存成本。
+
+--
 Unity 处理非等比缩放的方式也有一定局限性：
 
-某些组件不完全支持非等比缩放。例如，对于有半径或类似属性的组件，例如球体碰撞组件 (Sphere Collider)、胶囊碰撞组件 (Capsule Collider), 灯光（Light）, 音频源 (Audio Source) 等等，形状不会变成椭圆，而是仍然保持圆形/球形，不管如何进行非等比缩放。
-有一个非等比缩放的父级且相对该父级被旋转的子级对象可能会有一个非正交矩阵，这意味着它可能出现偏斜。一些确实支持简单非等比缩放的组件仍不支持非正交矩阵。例如，箱体碰撞组件 (Box Collider)不能偏斜，所以如果它的变换 (transform) 是非正交的，则箱体碰撞组件 (Box Collider) 不会准确匹配被渲染的网格的形状。。
-出于性能原因，有一个非等比缩放的父级的子级对象在旋转时不会自动更新其缩放/矩阵。这可能导致缩放一旦更新就会弹出，例如，如果对象与其父级分离。
-缩放的重要性
-(Transform) 的缩放决定建模应用程序中网格和 Unity 中网格之间的大小差异。Unity 中的网格大小（因此变换 (Transform) 的缩放）非常重要，特别是在物理模拟期间。有三个可以影响对象缩放的系数：
+某些组件不完全支持非等比缩放。
+例如，对于有半径或类似属性的组件，
+例如球体碰撞组件 (Sphere Collider)、胶囊碰撞组件 (Capsule Collider), 灯光（Light）, 音频源 (Audio Source) 等等，
+形状不会变成椭圆，而是仍然保持圆形/球形，不管如何进行非等比缩放。
 
+有一个非等比缩放的父级且相对该父级被旋转的子级对象可能会有一个非正交矩阵，这意味着它可能出现偏斜。
+一些确实支持简单非等比缩放的组件仍不支持非正交矩阵。
+例如，箱体碰撞组件 (Box Collider)不能偏斜，所以如果它的变换 (transform) 是非正交的，
+则箱体碰撞组件 (Box Collider) 不会准确匹配被渲染的网格的形状。
+
+出于性能原因，有一个非等比缩放的父级的子级对象在旋转时不会自动更新其缩放/矩阵。
+这可能导致缩放一旦更新就会弹出，例如，如果对象与其父级分离。
+
+----
+缩放的重要性
+
+(Transform) 的缩放决定建模应用程序中网格和 Unity 中网格之间的大小差异。
+Unity 中的网格大小（因此变换 (Transform) 的缩放）非常重要，特别是在物理模拟期间。
+有三个可以影响对象缩放的系数：
+
+--
 三维建模应用程序中网格的大小。
+
 对象的导入设置 (Import Settings) 中的网格缩放系数 (Mesh Scale Factor) 设置。
 变换组件 (Transform Component) 的缩放 (Scale)值。
-理想情况下，您不应该调整变换组件 (Transform Component) 中对象的 缩放 (Scale) 值。最佳选项是按实际比例创建您的模型，这样您就不必改变变换 (Transform) 的缩放值。第二最佳选项是调整在单个网格的导入设置 (Import Settings 中导入网格时的缩放值。根据导入大小会进行某些优化，而实例化有一个调整过的缩放值的对象会降低性能。有关更多信息，请参阅刚体组件参考页面上的优化缩放部分。
+理想情况下，您不应该调整变换组件 (Transform Component) 中对象的 缩放 (Scale) 值。
+最佳选项是按实际比例创建您的模型，这样您就不必改变变换 (Transform) 的缩放值。
+第二最佳选项是调整在单个网格的导入设置 (Import Settings 中导入网格时的缩放值。
+根据导入大小会进行某些优化，而实例化有一个调整过的缩放值的对象会降低性能。
+有关更多信息，请参阅刚体组件参考页面上的优化缩放部分。
 
+----
 提示
-父子化变换 (Transform) 时，请在添加子级之前将父级的位置设置为 <0,0,0>。这会为您以后节省很多精力。
-粒子系统 (Particle System) 不受变换 (Transform) 的 缩放 (Scale)的影响。为缩放某个粒子系统 (Particle System)，您需要修改该系统的粒子发射器、动画器和渲染器的属性。
+
+父子化变换 (Transform) 时，请在添加子级之前将父级的位置设置为 <0,0,0>。
+这会为您以后节省很多精力。
+
+粒子系统 (Particle System) 不受变换 (Transform) 的 缩放 (Scale)的影响。
+为缩放某个粒子系统 (Particle System)，您需要修改该系统的粒子发射器、动画器和渲染器的属性。
+
 如果您正将 刚体 (Rigidbody) 用于物理模拟，则您可以参考在类别 - 刚体 组件参考页面上的一些有关“缩放”(Scale) 属性的重要信息。
-您可以从偏好设置改变变换 (Transform) 轴（和其他 UI 元素）的颜色，（ 菜单：Unity > 偏好设置 (Preferences) ，然后选择 颜色和按键 (Colors & keys) 面板）。.
-如果可能，最好避免在 Unity 中进行缩放。试着在三维建模应用程序中或在网格的 导入设置 (Import Settings 中完成对象的缩放。S
+
+您可以从偏好设置改变变换 (Transform) 轴（和其他 UI 元素）的颜色，
+（ 菜单：Unity > 偏好设置 (Preferences) ，然后选择 颜色和按键 (Colors & keys) 面板）。
+
+如果可能，最好避免在 Unity 中进行缩放。
+试着在三维建模应用程序中或在网格的 导入设置 (Import Settings 中完成对象的缩放。
+
+
 Page last updated: 2013-07-01
 

@@ -1,12 +1,27 @@
 ﻿游戏对象 (GameObjects)
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/GameObjects.html
 
-游戏对象 (GameObjects) 是 Unity 中最重要的对象。了解什么是游戏对象 (GameObject) 及如何使用至关重要。本页将为您讲解这一切。
+游戏对象 (GameObjects) 是 Unity 中最重要的对象。
+了解什么是游戏对象 (GameObject) 及如何使用至关重要。
+本页将为您讲解这一切。
 
+--
 什么是游戏对象 (GameObjects)？
-游戏中的每个对象都是一个游戏对象 (GameObject)。然而，游戏对象 (GameObjects) 本身不做任何事情。它们需要特殊属性 (special properties) 才能成为一个角色、一种环境或者一种特殊效果。但是每个对象要做很多不同的事情。如果每个对象都是一个游戏对象 (GameObject)，我们该如何区分静态空间 (static room) 中的交互式启动对象 (interactive power-up object) 呢？是什么使得这些游戏对象 (GameObjects) 互不相同？
 
-答案是游戏对象 (GameObjects) 是一种容器。它们是空盒，能够容纳组成一个光照贴图的岛屿或物理驱动的小车的不同部分。因此，要真正理解游戏对象 (GameObjects)，就必须了解这些组成部分（称为“组件 (Components)”）。根据您要创建的对象类型，您可以添加不同的组件 (Components) 组合到游戏对象 (GameObject) 中。想象一个游戏对象 (GameObject) 是一口空烹饪锅，组件 (Components) 是不同的作料，它们构成了您的游戏食谱。您也可以使用脚本 (Scripts) 制作自己的组件 (Components)。
+游戏中的每个对象都是一个游戏对象 (GameObject)。
+然而，游戏对象 (GameObjects) 本身不做任何事情。
+它们需要特殊属性 (special properties) 才能成为一个角色、一种环境或者一种特殊效果。
+但是每个对象要做很多不同的事情。
+如果每个对象都是一个游戏对象 (GameObject)，
+我们该如何区分静态空间 (static room) 中的交互式启动对象 (interactive power-up object) 呢？
+是什么使得这些游戏对象 (GameObjects) 互不相同？
+
+答案是游戏对象 (GameObjects) 是一种容器。
+它们是空盒，能够容纳组成一个光照贴图的岛屿或物理驱动的小车的不同部分。
+因此，要真正理解游戏对象 (GameObjects)，就必须了解这些组成部分（称为“组件 (Components)”）。
+根据您要创建的对象类型，您可以添加不同的组件 (Components) 组合到游戏对象 (GameObject) 中。
+想象一个游戏对象 (GameObject) 是一口空烹饪锅，组件 (Components) 是不同的作料，它们构成了您的游戏食谱。
+您也可以使用脚本 (Scripts) 制作自己的组件 (Components)。
 
 在本部分的页面中，您可以阅读到更多关于游戏对象 (GameObjects)、组件 (Components) 和脚本组件 (Script Components) 的内容：
 
@@ -19,94 +34,176 @@ Page last updated: 2013-06-18
 
 ====
 游戏对象 (GameObject) 和组件 (Component) 的关系
+
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/TheGameObject-ComponentRelationship.html
 
-如之前在游戏对象 (GameObjects) 中所述，游戏对象包含组件 (Components)。我们将通过讨论游戏对象 (GameObject) 及其最常见的组件 (Component) - 变换组件 (Transform Component) 来探讨这种关系。打开任意 Unity 场景，创建一个新的游戏对象 (GameObject)（在 Windows 中使用 Shift-Control-N，或在 Mac 中使用 Shift-Command-N），选择该游戏对象并在检视器 (Inspector) 中查看。
+如之前在游戏对象 (GameObjects) 中所述，游戏对象包含组件 (Components)。
+我们将通过讨论游戏对象 (GameObject) 及其最常见的组件 (Component) - 变换组件 (Transform Component) 来探讨这种关系。
+打开任意 Unity 场景，创建一个新的游戏对象 (GameObject)
+（在 Windows 中使用 Shift-Control-N，或在 Mac 中使用 Shift-Command-N），
+选择该游戏对象并在检视器 (Inspector) 中查看。
 
 
-一个空游戏对象 (GameObject) 的检视视图 (Inspector)
-请注意，一个空游戏对象 (GameObject) 仍包含一个名称 (Name)、一个标签 (Tag) 和一个 层 (Layer)。每个游戏对象 (GameObject) 还包含一个变换组件 (Transform Component)。
+图：一个空游戏对象 (GameObject) 的检视视图 (Inspector)
+
+请注意，一个空游戏对象 (GameObject) 仍包含一个名称 (Name)、一个标签 (Tag) 和一个 层 (Layer)。
+每个游戏对象 (GameObject) 还包含一个变换组件 (Transform Component)。
 
 变换组件 (Transform Component)
-在 Unity 中创建一个没有变换组件 (Transform Component) 的游戏对象 (GameObject) 是不可能的。变换组件 (Transform Component) 是最重要的组件 (Components) 之一，因为所有游戏对象 (GameObject) 的变换 (Transform) 属性均由此组件启用。在游戏世界/场景视图 (Scene View) 中，它定义了游戏对象 (GameObject) 的位置、旋转和缩放。如果一个游戏对象 (GameObject) 没有变换组件 (Transform Component)，它只是计算机内存中的一些信息，实际上并不存在于场景世界。
 
-变换组件 (Transform Component) 还启用称为“父子化 (Parenting)”的概念，它是应用游戏对象 (GameObjects) 的关键，可通过 Unity 编辑器 (Unity Editor) 使用。如要了解更多有关变换组件 (Transform Component) 和父子化 (Parenting) 的内容，请阅读 变换组件参考 (Transform Component Reference) 页面。
+在 Unity 中创建一个没有变换组件 (Transform Component) 的游戏对象 (GameObject) 是不可能的。
+变换组件 (Transform Component) 是最重要的组件 (Components) 之一，
+因为所有游戏对象 (GameObject) 的变换 (Transform) 属性均由此组件启用。
+在游戏世界/场景视图 (Scene View) 中，它定义了游戏对象 (GameObject) 的位置、旋转和缩放。
+如果一个游戏对象 (GameObject) 没有变换组件 (Transform Component)，它只是计算机内存中的一些信息，实际上并不存在于场景世界。
+
+变换组件 (Transform Component) 还启用称为“父子化 (Parenting)”的概念，
+它是应用游戏对象 (GameObjects) 的关键，可通过 Unity 编辑器 (Unity Editor) 使用。
+如要了解更多有关变换组件 (Transform Component) 和父子化 (Parenting) 的内容，
+请阅读 变换组件参考 (Transform Component Reference) 页面。
 
 其他组件 (Components)
-变换组件 (Transform Component) 是所有游戏对象 (GameObjects) 的关键组件，所以每个游戏对象 (GameObject) 都有一个，但游戏对象可以包含其他组件 (Components)。
+
+变换组件 (Transform Component) 是所有游戏对象 (GameObjects) 的关键组件，所以每个游戏对象 (GameObject) 都有一个，
+但游戏对象可以包含其他组件 (Components)。
 
 
-默认添加到每个场景的主相机 (Main Camera)
-以主相机游戏对象 (Main Camera GameObject) 为例，您可以看到，它包含了组件 (Components) 的不同集合。具体来说，包含一个 相机组件 (Camera Component)、一个 GUI 层 (GUILayer)、一个光晕层 (Flare Layer) 和一个音频侦听器 (Audio Listener)。所有这些组件为游戏对象 (GameObject) 提供了更多功能。没有这些组件，就无法为玩家渲染出任何游戏图形！刚体、碰撞组件、粒子和音频都是不同的组件 (Components)（或其组合），可以添加到任何特定的游戏对象 (GameObject) 中。
+图：默认添加到每个场景的主相机 (Main Camera)
+
+以主相机游戏对象 (Main Camera GameObject) 为例，您可以看到，它包含了组件 (Components) 的不同集合。
+具体来说，包含一个 相机组件 (Camera Component)、一个 GUI 层 (GUILayer)、一个光晕层 (Flare Layer) 和一个音频侦听器 (Audio Listener)。
+所有这些组件为游戏对象 (GameObject) 提供了更多功能。
+没有这些组件，就无法为玩家渲染出任何游戏图形！
+刚体、碰撞组件、粒子和音频都是不同的组件 (Components)（或其组合），可以添加到任何特定的游戏对象 (GameObject) 中。
 
 Page last updated: 2013-06-18
 
 ====
 使用组件 (Components)
+
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/UsingComponents40.html
 
-在游戏中，组件 (Components) 就是对象和行为的螺栓与螺母，它们是每个游戏对象 (GameObject) 的功能零件。如果您还不了解组件 (Components) 与游戏对象 (GameObjects) 之间的关系，请在进一步学习之前先阅读游戏对象 (GameObjects) 页面。
+在游戏中，组件 (Components) 就是对象和行为的螺栓与螺母，它们是每个游戏对象 (GameObject) 的功能零件。
+如果您还不了解组件 (Components) 与游戏对象 (GameObjects) 之间的关系，请在进一步学习之前先阅读游戏对象 (GameObjects) 页面。
 
-游戏对象 (GameObject) 是容纳许多不同组件 (Components) 的容器。默认情况下，所有游戏对象 (GameObjects) 自动包含一个变换组件 (Transform Component)。这是因为变换 (Transform) 组件决定了游戏对象 (GameObject) 的位置，以及它如何旋转和缩放。没有变换组件 (Transform Component)，游戏对象 (GameObject) 就不会存在于游戏世界中。现在尝试创建一个空的游戏对象 (GameObject) 作为示例。单击“游戏对象 (GameObject)->创建空游戏对象 (Create Empty)”菜单项，选择新游戏对象 (GameObject)，并在检视器 (Inspector) 中查看。
+游戏对象 (GameObject) 是容纳许多不同组件 (Components) 的容器。
+默认情况下，所有游戏对象 (GameObjects) 自动包含一个变换组件 (Transform Component)。
+这是因为变换 (Transform) 组件决定了游戏对象 (GameObject) 的位置，以及它如何旋转和缩放。
+没有变换组件 (Transform Component)，游戏对象 (GameObject) 就不会存在于游戏世界中。
+现在尝试创建一个空的游戏对象 (GameObject) 作为示例。
+单击“游戏对象 (GameObject)->创建空游戏对象 (Create Empty)”菜单项，选择新游戏对象 (GameObject)，并在检视器 (Inspector) 中查看。
 
 
-即使空游戏对象 (GameObjects) 也有一个变换组件 (Transform Component)
+图：即使空游戏对象 (GameObjects) 也有一个变换组件 (Transform Component)
 
-请记住，您始终可以使用检视器 (Inspector) 查看哪些组件 (Components) 连接到了所选游戏对象 (GameObject)。添加和删除组件 (Components) 时，检视器 (Inspector) 会始终向您显示当前已连接的组件。您可以使用检视器 (Inspector) 更改任何组件 (Component)（包括脚本）的所有属性。
+请记住，您始终可以使用检视器 (Inspector) 查看哪些组件 (Components) 连接到了所选游戏对象 (GameObject)。
+添加和删除组件 (Components) 时，检视器 (Inspector) 会始终向您显示当前已连接的组件。
+您可以使用检视器 (Inspector) 更改任何组件 (Component)（包括脚本）的所有属性。
 
+----
 添加组件 (Components)
-您可以通过组件 (Components) 菜单向所选游戏对象 (GameObject) 添加组件 (Components)。现在我们试着为刚刚创建的空游戏对象 (GameObject) 添加一个刚体 (Rigidbody)。选中该游戏对象，然后从菜单选择“组件 (Component)->物理 (Physics)->刚体 (Rigidbody)”。当您操作时，您会看到刚体 (Rigidbody) 属性出现在检视器 (Inspector) 中。如果在空游戏对象 (GameObject) 仍被选中时按“播放 (Play)”，您可能会得到一个小惊喜。试一试，注意观察刚体 (Rigidbody) 是如何将功能添加到空游戏对象 (GameObject) 的。（游戏对象 (GameObject) 的 Y 坐标值开始减小，这是因为 Unity 的物理引擎导致游戏对象 (GameObject) 在重力的作用下落下。）
+
+您可以通过组件 (Components) 菜单向所选游戏对象 (GameObject) 添加组件 (Components)。
+现在我们试着为刚刚创建的空游戏对象 (GameObject) 添加一个刚体 (Rigidbody)。
+选中该游戏对象，然后从菜单选择“组件 (Component)->物理 (Physics)->刚体 (Rigidbody)”。
+当您操作时，您会看到刚体 (Rigidbody) 属性出现在检视器 (Inspector) 中。
+如果在空游戏对象 (GameObject) 仍被选中时按“播放 (Play)”，您可能会得到一个小惊喜。
+试一试，注意观察刚体 (Rigidbody) 是如何将功能添加到空游戏对象 (GameObject) 的。
+（游戏对象 (GameObject) 的 Y 坐标值开始减小，这是因为 Unity 的物理引擎导致游戏对象 (GameObject) 在重力的作用下落下。）
 
 
-一个连接了刚体组件 (Rigidbody Component) 的空游戏对象 (GameObject)
+图：一个连接了刚体组件 (Rigidbody Component) 的空游戏对象 (GameObject)
 
 另一种选择是使用组件浏览器 (Component Browser)，使用对象检视器中的“添加组件(Add Component)”按钮可激活该浏览器。
 
 
 该浏览器可让您按类别方便地导航组件，还具有搜索框，您可以用此框按名称定位组件。
 
-您可以将任意数量或组合的组件 (Components) 添加到单一的游戏对象 (GameObject)。有些组件 (Components) 与其它组件结合起来可发挥最佳作用。例如，刚体 (Rigidbody) 可与任何碰撞组件结合使用。刚体 (Rigidbody) 通过 NVIDIA PhysX 物理引擎来控制变换 (Transform)，碰撞组件 (Collider) 则允许刚体 (Rigidbody) 与其他碰撞组件 (Colliders) 碰撞和相互作用。
+您可以将任意数量或组合的组件 (Components) 添加到单一的游戏对象 (GameObject)。
+有些组件 (Components) 与其它组件结合起来可发挥最佳作用。
+例如，刚体 (Rigidbody) 可与任何碰撞组件结合使用。
+刚体 (Rigidbody) 通过 NVIDIA PhysX 物理引擎来控制变换 (Transform)，
+碰撞组件 (Collider) 则允许刚体 (Rigidbody) 与其他碰撞组件 (Colliders) 碰撞和相互作用。
 
-如果想了解更多关于使用特殊组件 (Component) 的信息，您可以阅读 组件参考 (Component Reference) 中的任何内容。您也可以在 Unity 中，通过点击检视器 (Inspector) 中组件 (Component) 标题上的小 ?，访问组件 (Component) 的参考页面。
+如果想了解更多关于使用特殊组件 (Component) 的信息，您可以阅读 组件参考 (Component Reference) 中的任何内容。
+您也可以在 Unity 中，通过点击检视器 (Inspector) 中组件 (Component) 标题上的小 ?，访问组件 (Component) 的参考页面。
 
+----
 编辑组件 (Components)
-组件 (Components) 的一个重要方面是灵活性。将一个组件 (Component) 连接到游戏对象 (GameObject) 时，该组件 (Component) 有不同的值或属性 (Properties)，这些值或属性在构建游戏时可以在编辑器里调整，或者在运行游戏时由脚本来调整。有两种主要类型的属性 （Properties）：值 (Values) 和引用 (References)。
 
-观察如下图片，它是一个具有音频源(Audio Source)组件 (Component) 的空游戏对象 (GameObject)。检视器中音频源(Audio Source)的所有值均为默认值。
+组件 (Components) 的一个重要方面是灵活性。
+将一个组件 (Component) 连接到游戏对象 (GameObject) 时，该组件 (Component) 有不同的值或属性 (Properties)，
+这些值或属性在构建游戏时可以在编辑器里调整，或者在运行游戏时由脚本来调整。
+
+有两种主要类型的属性 （Properties）：值 (Values) 和引用 (References)。
+
+观察如下图片，它是一个具有音频源(Audio Source)组件 (Component) 的空游戏对象 (GameObject)。
+检视器中音频源(Audio Source)的所有值均为默认值。
 
 
-该组件 (Component) 包含一个引用 (Reference) 属性和七个值 (Value) 属性。音频剪辑(Audio Clip)是引用 (Reference) 属性。音频源 (Audio Source) 开始播放时，它将尝试播放音频剪辑(Audio Clip)属性中引用的音频文件。如果没有引用，则将出现错误，因为没有可播放的音频。您必须在检视视图 (Inspector) 中引用文件。这非常简单，只需从工程视图将音频文件拖到引用属性 (Reference Property) 上即可，或者使用对象选择器 (Object Selector) 来完成。
+图：该组件 (Component) 包含一个引用 (Reference) 属性和七个值 (Value) 属性。
+
+音频剪辑(Audio Clip)是引用 (Reference) 属性。
+音频源 (Audio Source) 开始播放时，它将尝试播放音频剪辑(Audio Clip)属性中引用的音频文件。
+如果没有引用，则将出现错误，因为没有可播放的音频。
+您必须在检视视图 (Inspector) 中引用文件。
+这非常简单，只需从工程视图将音频文件拖到引用属性 (Reference Property) 上即可，或者使用对象选择器 (Object Selector) 来完成。
 
 
-现在音效文件已引用到音频剪辑(Audio Clip)属性
+图：现在音效文件已引用到音频剪辑(Audio Clip)属性
 
-组件 (Components) 可以将引用属性包含到任何其他类型的组件 (Component)、游戏对象 (GameObjects) 或资源 (Assets)。您可以在 指定引用页面阅读更多关于指定引用的内容。
+组件 (Components) 可以将引用属性包含到任何其他类型的组件 (Component)、游戏对象 (GameObjects) 或资源 (Assets)。
+您可以在 指定引用页面阅读更多关于指定引用的内容。
 
-音频剪辑 (Audio Clip) 上的其余属性都是值 (Value) 属性，这些属性可以直接在检视器 (Inspector) 中调整。音频剪辑 (Audio Clip) 上的值 (Value) 属性都是切换、数值、下拉字段，不过值属性也可以是文本字符串、颜色、曲线和其他类型。有关这些属性及编辑值属性的更多内容，请阅读编辑值属性页面。
+音频剪辑 (Audio Clip) 上的其余属性都是值 (Value) 属性，这些属性可以直接在检视器 (Inspector) 中调整。
+音频剪辑 (Audio Clip) 上的值 (Value) 属性都是切换、数值、下拉字段，不过值属性也可以是文本字符串、颜色、曲线和其他类型。
+有关这些属性及编辑值属性的更多内容，请阅读编辑值属性页面。
 
+----
 复制和粘贴组件 (Component) 设置
+
 组件 (Component) 的上下文菜单包含一些用于复制和粘贴其设置的项目。
 
 
-使用“粘贴组件值(Paste Component Values)”菜单项，可将复制值粘贴到现有组件。或者可以使用“将组件粘贴为新组件(Paste Component As New)”，创建具有这些值的新组件 (Component)。
+使用“粘贴组件值(Paste Component Values)”菜单项，可将复制值粘贴到现有组件。
+或者可以使用“将组件粘贴为新组件(Paste Component As New)”，创建具有这些值的新组件 (Component)。
 
+--
 测试属性 (Properties)
-当游戏处于播放模式 (Play Mode)时，您可以在任何游戏对象 (GameObject) 的检视器 (Inspector) 中随意更改属性。例如，您可能想实验不同高度的跳跃。如果在脚本中创建一个跳跃高度属性，则可以进入播放模式 (Play Mode)，更改该值，然后按下跳跃按钮看看发生了什么。然后不退出播放模式 (Play Mode) 也可再次更改该值，并在接下来的几秒看看结果。退出播放模式 (Play Mode)，属性将恢复到播放模式前 (pre-Play Mode) 的数值，这样就不会丢失任何工作。这样的工作流程将赋予您难以置信的能力去实验、调整和完善您的游戏设置，而无需花费大量的迭代周期时间。尝试在播放模式 (Play Mode) 下更改任意属性，我们相信您会留下深刻的印象。
 
+当游戏处于播放模式 (Play Mode)时，您可以在任何游戏对象 (GameObject) 的检视器 (Inspector) 中随意更改属性。
+例如，您可能想实验不同高度的跳跃。
+如果在脚本中创建一个跳跃高度属性，则可以进入播放模式 (Play Mode)，更改该值，然后按下跳跃按钮看看发生了什么。
+然后不退出播放模式 (Play Mode) 也可再次更改该值，并在接下来的几秒看看结果。
+退出播放模式 (Play Mode)，属性将恢复到播放模式前 (pre-Play Mode) 的数值，这样就不会丢失任何工作。
+这样的工作流程将赋予您难以置信的能力去实验、调整和完善您的游戏设置，而无需花费大量的迭代周期时间。
+尝试在播放模式 (Play Mode) 下更改任意属性，我们相信您会留下深刻的印象。
+
+----
 更改组件 (Components) 的顺序
-在大多数情况下，检视器 (Inspector) 中所列组件的顺序无关紧要。然而，有一些组件 (Components) 的顺序非常重要，例如 图像效果。上下文菜单具有上移 (Move Up) 和下移 (Move Down) 命令，以便您根据需要重新排序组件 (Components)。
 
+在大多数情况下，检视器 (Inspector) 中所列组件的顺序无关紧要。
+然而，有一些组件 (Components) 的顺序非常重要，例如 图像效果。
+上下文菜单具有上移 (Move Up) 和下移 (Move Down) 命令，以便您根据需要重新排序组件 (Components)。
 
+----
 删除组件 (Components)
-如要删除一个组件 (Component)，请在检视器 (Inspector) 中选择或右击其标题，然后选择“删除组件(Remove Component)”。或者可以左击组件 (Component) 标题 ? 旁边的选项图标。所有属性值将丢失且此操作无法撤消，所以在删除组件 (Component) 之前，请完全确定。
+
+如要删除一个组件 (Component)，请在检视器 (Inspector) 中选择或右击其标题，然后选择“删除组件(Remove Component)”。
+或者可以左击组件 (Component) 标题 ? 旁边的选项图标。
+所有属性值将丢失且此操作无法撤消，所以在删除组件 (Component) 之前，请完全确定。
 
 Page last updated: 2013-05-30
 
 ====
 组件 (Component) 和脚本 (Script) 的关系
+
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/TheComponent-ScriptRelationship.html
 
-创建脚本并将其连接到游戏对象 (GameObject) 时，脚本会出现在游戏对象 (GameObject) 的检视器 (Inspector) 中，就像一个组件 (Component)。这是因为脚本在保存时变成了组件 (Components) - 脚本只是一种特定类型的组件 (Component)。在技术层面上，脚本编译为一种类型的组件 (Component)，Unity 引擎将其像其他组件一样对待。因此基本上，脚本是您自己创建的一个组件 (Component)，您将定义其陈列在检视器 (Inspector) 中的元素，它会执行您写出的任何功能。
+创建脚本并将其连接到游戏对象 (GameObject) 时，脚本会出现在游戏对象 (GameObject) 的检视器 (Inspector) 中，就像一个组件 (Component)。
+这是因为脚本在保存时变成了组件 (Components) - 脚本只是一种特定类型的组件 (Component)。
+在技术层面上，脚本编译为一种类型的组件 (Component)，Unity 引擎将其像其他组件一样对待。
+因此基本上，脚本是您自己创建的一个组件 (Component)，您将定义其陈列在检视器 (Inspector) 中的元素，它会执行您写出的任何功能。
 
 在脚本页面阅读更多关于创建及使用脚本的内容。
 
@@ -114,18 +211,28 @@ Page last updated: 2013-05-29
 
 ====
 停用游戏对象 (GameObjects)
+
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/DeactivatingGameObjects.html
 
-可将一个游戏对象 (GameObject) 标记为“不活动”，暂时将其从场景中删除。使用脚本中的 activeSelf 属性或检视器中的激活复选框可实现该目的
+可将一个游戏对象 (GameObject) 标记为“不活动”，暂时将其从场景中删除。
+使用脚本中的 activeSelf 属性或检视器中的激活复选框可实现该目的。
 
 
-游戏对象 (GameObject) 的激活复选框
+图：游戏对象 (GameObject) 的激活复选框
 
+----
 停用父游戏对象 (GameObject) 的影响
 
-停用父对象时，停用也将覆盖所有其子对象上的 activeSelf 设置，因此，父级以下的整个层次结构都处于不活动状态。请注意，这样不会更改子对象上 activeSelf 属性的值，所以在父对象重新激活时，子对象会恢复到原始状态。这意味着，通过阅读子对象的 activeSelf 属性无法确定其在场景中当前是否处于活动状态。反而，您应当使用 activeInHierarchy 属性，它会将父对象的覆盖效果考虑在内。
+停用父对象时，停用也将覆盖所有其子对象上的 activeSelf 设置，因此，父级以下的整个层次结构都处于不活动状态。
+请注意，这样不会更改子对象上 activeSelf 属性的值，所以在父对象重新激活时，子对象会恢复到原始状态。
+这意味着，通过阅读子对象的 activeSelf 属性无法确定其在场景中当前是否处于活动状态。
+反而，您应当使用 activeInHierarchy 属性，它会将父对象的覆盖效果考虑在内。
 
-Unity 4.0 中引入了该覆盖行为。在早期版本中，有一个称为 SetActiveRecursively 的功能，可用于激活或停用给定父对象的子对象。然而，该功能的工作原理不同之处在于，每个子对象的激活设置已更改 - 整个层次结构可以打开、关闭，但子对象无法“记住”自己的原始状态。为避免破坏旧代码，在 4.0 的 API 中保留了 SetActiveRecursively，但不建议使用，将来可能会将其删除。在特殊情况下，比如实际上您想更改子对象的 activeSelf 设置，您可以使用以下代码：-
+Unity 4.0 中引入了该覆盖行为。
+在早期版本中，有一个称为 SetActiveRecursively 的功能，可用于激活或停用给定父对象的子对象。
+然而，该功能的工作原理不同之处在于，每个子对象的激活设置已更改 - 整个层次结构可以打开、关闭，但子对象无法“记住”自己的原始状态。
+为避免破坏旧代码，在 4.0 的 API 中保留了 SetActiveRecursively，但不建议使用，将来可能会将其删除。
+在特殊情况下，比如实际上您想更改子对象的 activeSelf 设置，您可以使用以下代码：-
 
 // JavaScript
 function DeactivateChildren(g: GameObject, a: boolean) {

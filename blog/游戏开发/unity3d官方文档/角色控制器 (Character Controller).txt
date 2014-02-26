@@ -11,13 +11,32 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-Ch
 
 属性：	功能：
 
-高度 (Height)	角色的胶囊碰撞体 (Capsule Collider) 高度。更改此项会同时在正方向和负方向上沿 Y 轴缩放碰撞体 (Collider)。
-半径 (Radius)	胶囊碰撞体 (Capsule Collider) 半径长度。这本质上是碰撞体 (Collider) 宽度。
-斜坡限制 (Slope Limit)	将碰撞体 (Collider) 限制为仅爬上等于或小于指示值的斜坡。
-台阶偏移 (Step Offset)	仅当阶梯比指示值更接近地面时，角色才会走上阶梯。
-最小移动距离 (Min Move Distance)	如果角色尝试移动的距离小于指示值，则它完全不移动。这可以用于减少抖动。在大多数情况下，此值应保留为 0。
-皮肤宽度 (Skin width)	两个碰撞体 (Collider) 可以互相穿透的深度为其“皮肤宽度”(Skin Width)。较大“皮肤宽度”(Skin Width) 可减少抖动。较小“皮肤宽度”(Skin Width) 可能导致角色卡住。良好设置是使此值为“半径”(Radius) 的 10%。
-中心 (Center)	这会使胶囊碰撞体 (Capsule Collider) 在世界坐标空间中偏移，不会影响角色旋转方式。
+高度 (Height)	
+角色的胶囊碰撞体 (Capsule Collider) 高度。
+更改此项会同时在正方向和负方向上沿 Y 轴缩放碰撞体 (Collider)。
+
+半径 (Radius)	
+胶囊碰撞体 (Capsule Collider) 半径长度。
+这本质上是碰撞体 (Collider) 宽度。
+
+斜坡限制 (Slope Limit)	
+将碰撞体 (Collider) 限制为仅爬上等于或小于指示值的斜坡。
+
+台阶偏移 (Step Offset)	
+仅当阶梯比指示值更接近地面时，角色才会走上阶梯。
+
+最小移动距离 (Min Move Distance)	
+如果角色尝试移动的距离小于指示值，则它完全不移动。
+这可以用于减少抖动。在大多数情况下，此值应保留为 0。
+
+皮肤宽度 (Skin width)	
+两个碰撞体 (Collider) 可以互相穿透的深度为其“皮肤宽度”(Skin Width)。
+较大“皮肤宽度”(Skin Width) 可减少抖动。
+较小“皮肤宽度”(Skin Width) 可能导致角色卡住。
+良好设置是使此值为“半径”(Radius) 的 10%。
+
+中心 (Center)	
+这会使胶囊碰撞体 (Capsule Collider) 在世界坐标空间中偏移，不会影响角色旋转方式。
 
 ----
 详细信息
@@ -26,6 +45,7 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-Ch
 角色每小时奔跑 90 英里，立即停止并在极小空间中转弯。
 因为它如此不现实，所以使用刚体 (Rigidbody) 和物理创建此行为不切实际且感觉不正常。
 解决方案是专业的角色控制器 (Character Controller)。
+
 它仅仅是从脚本获知在某个方向上移动的胶囊形碰撞体 (Collider) 。
 该控制器随后执行移动，但是受碰撞约束。
 它会沿墙滑动、走上阶梯（如果低于台阶偏移 (Step Offset) ）并走上处于坡限制 (Slope Limit)内的斜坡。
@@ -66,6 +86,7 @@ http://edu.china.unity3d.com/learning_document/getData?file=/ScriptReference/Cha
 
 可以从我们网站的资源区域下载演示预设动画且移动的角色控制器 (Character Controller) 的示例工程。
 
+----
 提示
 
 如果发现角色经常卡住，请尝试调整皮肤宽度 (Skin Width) 。
@@ -76,6 +97,7 @@ http://edu.china.unity3d.com/learning_document/getData?file=/ScriptReference/Cha
 
 请注意，在检视器 (Inspector) 中更改角色控制器 (Character Controller) 属性会在场景中重新创建控制器，
 因此任何现有触发器 (Trigger) 接触都会丢失，在控制器再次移动之前将不会收到任何 OnTriggerEntered 消息。
+
 
 Page last updated: 2013-06-21
 

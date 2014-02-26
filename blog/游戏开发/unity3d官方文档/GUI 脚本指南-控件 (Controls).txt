@@ -1,0 +1,658 @@
+﻿GUI 脚本指南-控件 (Controls)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/gui-Controls.html
+
+----
+控件类型
+
+您可以创建多种不同的 GUI 控件 (Control) 。
+本节列出了所有的可用显示控件和交互式控件。
+本指南的布局一节还描述了影响控件 (Control) 布局的其他 GUI 功能。
+
+--
+标签
+
+标签 (Label) 是非互动式的。
+其仅用于显示。
+不能点击或移动标签 (Label)。
+标签 (Label) 仅适合用于显示信息。
+
+/* GUI.Label 示例 */
+
+
+// JavaScript
+function OnGUI () {
+	GUI.Label (Rect (25, 25, 100, 30), "Label");
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	void OnGUI () {
+		GUI.Label (new Rect (25, 25, 100, 30), "Label");
+	}
+
+}
+
+图：由示例代码创建的标签 (Label)
+
+--
+按钮
+
+按钮 (Button) 是典型的互动式按钮。
+无论按住鼠标多久，单击按钮 (Button) 后，它都将响应一次。
+只要一松开鼠标按钮就会发生响应。
+
+基本用法
+
+在 UnityGUI 中，单击“按钮” (Button) 后，它将返回真。
+如需在单击“按钮” (Button) 后执行代码，您可以将 GUI.Button 函数放入 if 语句中。
+在单击“按钮” (Button) 后将执行存在于if 语句中的代码。
+
+/* GUI.Button 示例 */
+
+
+// JavaScript
+function OnGUI () {
+	if (GUI.Button (Rect (25, 25, 100, 30), "Button")) {
+		// This code is executed when the Button is clicked
+	}
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	void OnGUI () {
+		if (GUI.Button (new Rect (25, 25, 100, 30), "Button")) {
+			// This code is executed when the Button is clicked
+		}
+	}
+
+}
+
+图：由示例代码创建的“按钮” (Button)
+
+--
+重复按钮
+
+重复按钮 (RepeatButton) 是常规按钮 (Button) 的变型。
+不同之处在于，重复按钮 (RepeatButton) 将在每帧按压鼠标按钮期间作出响应。
+这使您可以创建“单击并按住” (click-and-hold) 功能。
+
+基本用法
+
+在 UnityGUI 中，“重复按钮” (RepeatButton) 将对点击它们时的每个帧返回 true 。
+如需在点击“按钮” (Button) 时执行代码，您可以将 GUI.RepeatButton 函数放入 if语句中。
+在保持点击“重复按钮” (RepeatButton) 期间将执行 if 语句中的代码。
+
+/* GUI.RepeatButton 示例 */
+
+
+// JavaScript
+function OnGUI () {
+	if (GUI.RepeatButton (Rect (25, 25, 100, 30), "RepeatButton")) {
+		// 在每帧保持点击“重复按钮”(RepeatButton) 时执行此代码
+	}
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	void OnGUI () {
+		if (GUI.RepeatButton (new Rect (25, 25, 100, 30), "RepeatButton")) {
+			// 在每帧保持点击“重复按钮”(RepeatButton) 时执行此代码
+		}
+	}
+
+}
+
+图：由示例代码创建的“重复按钮” (Repeat Button)
+
+--
+文本框
+
+文本框 (TextField 控件是一种互动式、可编辑的单行字段，含有文本字符串。
+
+基本用法
+
+“文本框” (TextField) 始终显示字符串。
+您必须在“文本框” (TextField) 中提供待显示的字符串。
+在编辑字符串时，“文本框” (TextField) 函数将返回已编辑的字符串。
+
+/* GUI.TextField 示例 */
+
+
+// JavaScript
+var textFieldString = "text field";
+
+function OnGUI () {
+	textFieldString = GUI.TextField (Rect (25, 25, 100, 30), textFieldString);
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private string textFieldString = "text field";
+
+	void OnGUI () {
+		textFieldString = GUI.TextField (new Rect (25, 25, 100, 30), textFieldString);
+	}
+
+}
+
+图：由示例代码创建的“文本框”(TextField)
+
+--
+文本区
+
+文本区 (TextArea) 控件是一种互动式、可编辑的多行区域，含有文本字符串。
+
+基本用法
+
+“文本区” (TextArea) 始终显示字符串。
+您必须在“文本区” (TextArea) 中提供待显示的字符串。
+在编辑字符串时，“文本区” (TextArea) 函数将返回已编辑的字符串。
+
+/* GUI.TextArea 示例 */
+
+
+// JavaScript
+var textAreaString = "text area";
+
+function OnGUI () {
+	textAreaString = GUI.TextArea (Rect (25, 25, 100, 30), textAreaString);
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private string textAreaString = "text area";
+
+	void OnGUI () {
+		textAreaString = GUI.TextArea (new Rect (25, 25, 100, 30), textAreaString);
+	}
+
+}
+
+图：由示例代码创建的“文本区”(TextArea)
+
+--
+切换键
+
+“切换键” (Toggle) 切换键 (Toggle) 控件创建具有持续的开/关状态的复选框。
+用户可通过单击复选框来改变其状态。
+
+基本用法
+
+“切换键” (Toggle) 的开/关状态由真/假布尔值表示。
+您必须提供布尔值作为参数，使“切换键” (Toggle) 代表实际状态。
+点击“切换键”(Toggle) 时，切换键函数将返回一个新的布尔值。
+要获得此互动性，您必须指定布尔型变量接受“切换键” (Toggle) 函数的返回值。
+
+/* GUI.Toggle example */
+
+
+// JavaScript
+var toggleBool = true;
+
+function OnGUI () {
+	toggleBool = GUI.Toggle (Rect (25, 25, 100, 30), toggleBool, "Toggle");
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private bool toggleBool = true;
+
+	void OnGUI () {
+		toggleBool = GUI.Toggle (new Rect (25, 25, 100, 30), toggleBool, "Toggle");
+	}
+
+}
+
+图：由示例代码创建的“切换键”(Toggle)
+
+--
+工具栏
+
+工具栏 (Toolbar) 控件实际上就是一排按钮 (Button)。
+一次只可激活“工具栏”(Toolbar) 上的一个“按钮”(Button)，且在单击另一个“按钮”(Button) 之前，该按钮将保持激活状态。
+这种行为是效仿经典“工具栏”(Toolbar) 的行为。
+您可以在“工具栏”(Toolbar) 上定义任意数目的“按钮”(Button)。
+
+基本用法
+
+通过一个整数可跟踪“工具栏”(Toolbar) 中激活的“按钮”(Button)。
+您必须提供该整数作为此函数的参数。
+要使“工具栏”(Toolbar) 变为互动式的，则必须将该整数指定为函数的返回值。
+您提供的内容数组中的元素数目将决定“工具栏” (Toolbar) 中显示的“按钮” (Button) 的数目。
+
+/* GUI.Toolbar 示例  */
+
+
+// JavaScript
+var toolbarInt = 0;
+var toolbarStrings : String[] = ["Toolbar1", "Toolbar2", "Toolbar3"];
+
+function OnGUI () {
+	toolbarInt = GUI.Toolbar (Rect (25, 25, 250, 30), toolbarInt, toolbarStrings);
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private int toolbarInt = 0;
+	private string[] toolbarStrings = {"Toolbar1", "Toolbar2", "Toolbar3"};
+
+	void OnGUI () {
+		toolbarInt = GUI.Toolbar (new Rect (25, 25, 250, 30), toolbarInt, toolbarStrings);
+	}
+
+}
+
+图：由示例代码创建的“工具栏”(Toolbar)
+
+--
+栅格选择
+
+栅格选择 (SelectionGrid) 控件是多排工具栏 (Toolbar)。您可以决定栅格中的列数和行数。
+一次仅可激活一个“按钮”(Button)。
+
+基本用法
+
+通过一个整数可跟踪“栅格选择”(SelectionGrid) 中激活的“按钮”(Button)。
+您必须提供该整数作为此函数的参数。
+要使“栅格选择”(SelectionGrid) 变为互动式的，则必须指定该整数为函数的返回值。
+您提供的内容数组中的元素数目将决定“栅格选择”(SelectionGrid) 中显示的“按钮” (Button) 的数目。
+您可以通过函数参数确定列数。
+
+/* GUI.SelectionGrid 示例*/
+
+
+// JavaScript
+var selectionGridInt : int = 0;
+var selectionStrings : String[] = ["Grid 1", "Grid 2", "Grid 3", "Grid 4"];
+
+function OnGUI () {
+	selectionGridInt = GUI.SelectionGrid (Rect (25, 25, 100, 30), selectionGridInt, selectionStrings, 2);
+
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private int selectionGridInt = 0;
+	private string[] selectionStrings = {"Grid 1", "Grid 2", "Grid 3", "Grid 4"};
+
+	void OnGUI () {
+		selectionGridInt = GUI.SelectionGrid (new Rect (25, 25, 300, 60), selectionGridInt, selectionStrings, 2);
+
+	}
+
+}
+
+图：由示例代码创建的“栅格选择”(SelectionGrid)
+
+--
+水平滑动条
+
+水平滑动条 (HorizontalSlider) 控件是典型的水平滑动钮，可通过拖动在预定最小值和最大值之间改变值的大小。
+
+基本用法
+
+“滑动条”(Slider) 钮的位置以浮点数形式存储。
+要显示该钮的位置，您需要提供该浮点数作为函数的参数。
+另有两个值用于确定最小值和最大值。
+如果希望滑动条钮是可调的，则将滑动条值浮点数指定为“滑动条"(Slider) 函数的返回值。
+
+/* 水平滑动条”(Horizontal Slider) 示例 */
+
+
+// JavaScript
+var hSliderValue : float = 0.0;
+
+function OnGUI () {
+	hSliderValue = GUI.HorizontalSlider (Rect (25, 25, 100, 30), hSliderValue, 0.0, 10.0);
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private float hSliderValue = 0.0f;
+
+	void OnGUI () {
+		hSliderValue = GUI.HorizontalSlider (new Rect (25, 25, 100, 30), hSliderValue, 0.0f, 10.0f);
+	}
+
+}
+
+图：由示例代码创建的“水平滑动条”(Horizontal Slider)
+
+--
+垂直滑块
+
+垂直滑块 (VerticalSlider) 控件是典型的垂直滑动钮，可通过拖动在预定最小值和最大值之间改变值的大小。
+
+基本用法
+
+“滑块”(Slider) 钮的位置以浮点数形式存储。
+要显示该钮的位置，您需要提供该浮点数作为函数的参数。
+另有两个值用于确定最小值和最大值。
+如果希望滑块钮是可调的，则将滑块值浮点数指定为“滑块"(Slider) 函数的返回值。
+
+/* 垂直滑块”(Vertical Slider) 示例  */
+
+
+// JavaScript
+var vSliderValue : float = 0.0;
+
+function OnGUI () {
+	vSliderValue = GUI.VerticalSlider (Rect (25, 25, 100, 30), vSliderValue, 10.0, 0.0);
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private float vSliderValue = 0.0f;
+
+	void OnGUI () {
+		vSliderValue = GUI.VerticalSlider (new Rect (25, 25, 100, 30), vSliderValue, 10.0f, 0.0f);
+	}
+
+}
+
+图：由示例代码创建的“垂直滑动条”(Vertical Slider)
+
+--
+水平滚动条
+
+水平滚动条 (HorizontalScrollbar) 控件与滑动条 (Slider) 控件类似，但视觉上更像是网页浏览器或文字处理器的滚动元素。
+此控件用于导航滚动视图 (ScrollView) 控件。
+
+基本用法
+
+“水平滚动条”(HorizontalScrollbar) 的执行与“水平滑动条”(Horizontal Slider) 相同，但有一个例外之处：
+另有一个参数控制“滚动条”(Scrollbar) 钮自身的宽度。
+
+/* “水平滑动条”(Horizontal Slider) 示例 */
+
+
+// JavaScript
+var hScrollbarValue : float;
+
+function OnGUI () {
+	hScrollbarValue = GUI.HorizontalScrollbar (Rect (25, 25, 100, 30), hScrollbarValue, 1.0, 0.0, 10.0);
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private float hScrollbarValue;
+
+	void OnGUI () {
+		hScrollbarValue = GUI.HorizontalScrollbar (new Rect (25, 25, 100, 30), hScrollbarValue, 1.0f, 0.0f, 10.0f);
+	}
+
+}
+
+图：由示例代码创建的“水平滚动条”(Horizontal Scrollbar)
+
+--
+垂直滚动条
+
+垂直滚动条 (VerticalScrollbar) 控件与 滑动条 (Slider) 控件类似，但视觉上更像网页浏览器或文字处理器的滚动元素。
+此控件用于导航 滚动视图 (ScrollView) 控件。
+
+基本用法
+
+“垂直滚动条”(Vertical Scrollbar) 的执行与“垂直滑动条”(Vertical Slider) 相同，但有一个例外之处：
+另有一个参数控制“滚动条”(Scrollbar) 钮自身的高度。
+
+/* 垂直滑动条”(Vertical Scrollbar) 示例  */
+
+
+// JavaScript
+var vScrollbarValue : float;
+
+function OnGUI () {
+	vScrollbarValue = GUI. VerticalScrollbar (Rect (25, 25, 100, 30), vScrollbarValue, 1.0, 10.0, 0.0);
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private float vScrollbarValue;
+
+	void OnGUI () {
+		vScrollbarValue = GUI. VerticalScrollbar (new Rect (25, 25, 100, 30), vScrollbarValue, 1.0f, 10.0f, 0.0f);
+	}
+
+}
+
+图：由示例代码创建的“垂直滚动条”(Vertical Scrollbar)
+
+--
+滚动视图
+
+滚动视图 (ScrollView) 是显示较大控件组的可视区域的控件。
+
+基本用法
+
+“滚动视图”(ScrollView) 需要两个 Rects作为参数。
+第一个 Rect 定义屏幕上的可视“滚动视图”(ScrollView) 区域的位置和大小。
+第二个 Rect 定义该可视区域内部的空间大小。
+如果该可视区域内部的空间大于该可视区域，“滚动条”(Scrollbar) 根据情况适当地显示出来。
+您还必须分配并提供一个存储所显示的可视区域位置的二维向量 (2D Vector)。
+
+/* 滚动视图”(ScrollView) 示例*/
+
+
+// JavaScript
+var scrollViewVector : Vector2 = Vector2.zero;
+var innerText : String = "I am inside the ScrollView";
+
+function OnGUI () {
+	// 开始“滚动视图”(ScrollView)
+	scrollViewVector = GUI.BeginScrollView (Rect (25, 25, 100, 100), scrollViewVector, Rect (0, 0, 400, 400));
+
+	// 向“滚动视图”(ScrollView) 输入内容
+	innerText = GUI.TextArea (Rect (0, 0, 400, 400), innerText);
+
+	// 结束“滚动视图”(ScrollView)
+	GUI.EndScrollView();
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private Vector2 scrollViewVector = Vector2.zero;
+	private string innerText = "I am inside the ScrollView";
+
+	void OnGUI () {
+		// 开始“滚动视图”(ScrollView)
+		scrollViewVector = GUI.BeginScrollView (new Rect (25, 25, 100, 100), scrollViewVector, new Rect (0, 0, 400, 400));
+
+		// 向“滚动视图”(ScrollView) 输入内容
+		innerText = GUI.TextArea (new Rect (0, 0, 400, 400), innerText);
+
+		// 结束“滚动视图”(ScrollView)
+		GUI.EndScrollView();
+	}
+
+}
+
+图：由示例代码创建的“滚动视图”(ScrollView)
+
+--
+窗口
+
+窗口 (Window) 是控件的可拖动容器。
+点击时，窗口会获得焦点或失去焦点。
+因此，它们的执行与其他控件略有不同。
+每个“窗口”(Window) 都有一个id 号，当“窗口”(Window) 获得焦点时，其内容在调用的独立函数内声明。
+
+基本用法
+
+“窗口”(Window) 是唯一一个需要附加函数来实现正确运行的控件。
+您必须提供一个 id 号和对该“窗口”(Window) 执行的函数名。
+在“窗口”(Window) 函数中，您可以创建您的实际行为或包含的控件。
+
+/* 窗口”(Window) 示例 */
+
+
+// JavaScript
+var windowRect : Rect = Rect (20, 20, 120, 50);
+
+function OnGUI () {
+	windowRect = GUI.Window (0, windowRect, WindowFunction, "My Window");
+}
+
+function WindowFunction (windowID : int) {
+	// 绘制此处窗口内的所有控件
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private Rect windowRect = new Rect (20, 20, 120, 50);
+
+	void OnGUI () {
+		windowRect = GUI.Window (0, windowRect, WindowFunction, "My Window");
+	}
+
+	void WindowFunction (int windowID) {
+		// 绘制此处窗口内的所有控件
+	}
+
+}
+
+图：由示例代码创建的“窗口”(Window)
+
+--
+GUI.changed
+
+要检测用户是否对 GUI 进行过操作（如点击“按钮”(Button)、拖动滑动条等等），
+请从脚本读取 GUI.changed 值。
+用户进行过操作的情况下，该值设定为 true，因此很容易证实用户的输入。
+
+对于“工具栏”(Toolbar) 可能会出现这种情况，即您想根据“工具栏”(Toolbar) 中点击的“按钮”(Button) 时都分配该值，
+而是仅在点击其中一个“按钮”(Button) 时进行分配。
+
+/* GUI.changed 示例  */
+
+
+// JavaScript
+private var selectedToolbar : int = 0;
+private var toolbarStrings = ["One", "Two"];
+
+function OnGUI () {
+	// 确定到此帧时，哪个按钮处于激活状态以及其是否被点击过
+	selectedToolbar = GUI.Toolbar (Rect (50, 10, Screen.width - 100, 30), selectedToolbar, toolbarStrings);
+
+	// 如果用户在此帧点击一个新的“工具栏”(Toolbar) 按钮，则我们将处理其输入
+	if (GUI.changed)
+	{
+		print ("The toolbar was clicked");
+
+		if (selectedToolbar == 0)
+		{
+			print ("First button was clicked");
+		}
+		else
+		{
+			print ("Second button was clicked");
+		}
+	}
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	private int selectedToolbar = 0;
+	private string[] toolbarStrings = {"One", "Two"};
+
+	void OnGUI () {
+		// 确定到此帧时，哪个按钮处于激活状态以及其是否被点击过
+		selectedToolbar = GUI.Toolbar (new Rect (50, 10, Screen.width - 100, 30), selectedToolbar, toolbarStrings);
+
+		// 如果用户在此帧点击一个新的“工具栏”(Toolbar) 按钮，则我们将处理其输入。
+		if (GUI.changed)
+		{
+			Debug.Log("The toolbar was clicked");
+
+			if (0 == selectedToolbar)
+			{
+				Debug.Log("First button was clicked");
+			}
+			else
+			{
+				Debug.Log("Second button was clicked");
+			}
+		}
+	}
+
+}
+
+如果用户操作了放置在 GUI.changed 之前的 GUI 控件 (GUI Control)，则“GUI.changed” 将返回真。
+
+Page last updated: 2013-07-01
+

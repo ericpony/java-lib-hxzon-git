@@ -1,0 +1,373 @@
+﻿地形引擎指南 (Terrain Engine Guide)
+
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/script-Terrain.html
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Terrains.html （同）
+
+本节将讲解如何使用地形引擎 (Terrain Engine)。
+其涵盖了创建、技术细节以及其他考虑因素。
+它分为以下几个部分：
+
+使用地形
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-UsingTerrains.html
+本节涵盖了有关使用地形 (Terrain) 的最基本信息。
+这包括创建地形(Terrain) 以及如何使用新地形(Terrain) 工具和笔刷。
+
+
+高度
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-Height.html
+本节内容讲解如何使用改变地形(Terrain) 高度(Height) 的不同工具和笔刷。
+
+
+地形纹理
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-Textures.html
+本节内容讲解如何使用不同的笔刷添加、绘制和混合地形纹理 (Terrain Texture)。
+
+
+树
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-Trees.html
+本节包含有关创建树木资源的重要信息。还包括在地形(Terrain) 上添加和绘制树木。
+
+
+草地
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-Grass.html
+本节讲解草的工作原理和使用方法。
+
+
+细节网格
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-DetailMeshes.html
+本节讲解岩石、草垛、植被等细节网格的实际应用。
+
+
+光照贴图
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Lightmapping.html
+您可以使用 Unity 内置的光照贴图器像对其他任何对象一样地对地形进行光照贴图。
+请查阅光照贴图快速入门以获取帮助。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Lightmapping.html
+
+其他设置
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-OtherSettings.html
+本节涵盖了与地形(Terrain) 相关的其他所有设置。
+
+移动性能注意事项
+渲染地形成本很高，因此在较低端的移动设备上地形引擎不是很实用。
+
+Page last updated: 2010-06-03
+
+====
+使用地形
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-UsingTerrains.html
+
+创建新地形
+
+要创建新地形 (Terrain)请点击地形 (Terrain) -> 创建地形 (Create Terrain) 。
+这会将“地形”(Terrain) 添加到您的项目 (Project) 和层级视图 (Hierarchy Views)中。
+
+
+新创建的地形 (Terrain) 在场景视图 (Scene View)中如下图所示：:
+
+图：场景视图 (Scene View) 中的新地形 (Terrain)
+
+如果想要不同大小的地形 (Terrain)，请在菜单栏中选择地形 (Terrain) -> 设置分辨率 (Set Resolution) 。
+从本对话框中，您可以进行与地形 (Terrain) 大小相关的多项设置。
+
+图：设置地形的分辨率。
+
+上图中的某些值可以更改。
+这些值是：
+
+地形宽度 (Terrain Width)：以单位计的地形 (Terrain) 宽度。
+地形高度 (Terrain Height)：以单位计的地形 (Terrain) 高度。
+地形长度 (Terrain Length)：以单位计的地形 (Terrain) 长度。
+高度图分辨率 (HeightMap Resolution)：选中地形 (Terrain) 的高度图 (HeightMap) 分辨率。
+细节分辨率 (Detail Resolution)：控制草地和细节网格的地图分辨率。出于性能原因（为了节省绘图调用），该数字设置地越低越好。
+控制纹理分辨率 (Control Texture Resolution)：用于将地形 (Terrain) 上所画的纹理进行分层的泼溅贴图 (splat map) 分辨率。
+基础纹理分辨率 (Base Texture Resolution)：用于代替在一定距离的泼溅贴图 (splat map) 的复合纹理分辨率。
+
+----
+地形导航
+
+地形与其他游戏对象 (GameObject) 略有不同。
+您可以使用笔刷 (Brushes) 绘制和操纵地形 (Terrain)。
+如果要改变地形 (Terrain) 的位置，您可以修改其在检视器 (Inspector) 中的变换位置 (Transform Position) 值。
+这使您能够四处移动地形 (Terrain)，但无法旋转或改变其大小。
+
+在“层级视图”(Hierarchy) 中选中地形 (Terrain) 后，您便可以使用 F（焦点）键对地形进行轻松导航。
+按 F 后，无论鼠标在哪个位置，都会移动到场景视图 (Scene View) 的中心位置。
+这使您能够对某个区域进行润色，快速移动到另一个区域并修改其他东西。
+如果在按下 F 键时鼠标没有悬停在地形 (Terrain) 的某个区域，则整个地形 (Terrain) 都会被置于场景视图 (Scene View) 的中心位置。
+
+----
+编辑地形
+
+选中地形 (Terrain) 后，您可以在检视器 (Inspector) 中查看一些极好的新地形 (Terrain) 编辑工具。
+
+图：检视器 (Inspector) 中的地形编辑工具 (Terrain Editing Tools)
+
+每个矩形按钮都是不同的地形 (Terrain) 工具。
+有更改高度、绘制泼溅贴图或添加树木或岩石等细节的工具。
+要使用特定工具，请点击该工具。
+然后，工具按钮下方会出现对该工具的简短说明（文本形式）。
+
+大部分工具会使用笔刷。
+使用笔刷的任何一种工具都会显示许多不同的笔刷。
+要选择笔刷，只需点击该笔刷。
+鼠标在地形上悬停时，当前选中的笔刷会以已指定的大小显示预览。
+
+您将在场景视图 (Scene View) 中使用所有这些笔刷，可直接在地形 (Terrain) 上进行绘制。
+仅需选择您需要的工具和笔刷，然后在地形 (Terrain) 上点击和拖动以对其进行实时修改。
+要绘制高度、纹理或装饰，您必须在层级视图 (Hierarchy View) 中选中该地形 (Terrain)。
+
+注意: 选中笔刷后，请将鼠标移动到场景视图 (Scene View) 中的地形 (Terrain) 上，并按F。 
+这将使场景视图 (Scene View) 以鼠标指针所在位置为中心，并自动将画面拉近到笔刷大小 (Brush Size) 的距离。
+这是创建地形 (Terrain) 时实现导航的最快且最简便的方法。
+
+----
+地形键盘快捷键
+
+当地形检视器 (Terrain Inspector) 处于激活状态时，这些键盘快捷键可用于快速编辑（所有键盘快捷键都可在 Unity“偏好设置”(Preferences) 中进行自定义）：
+
+Shift-Q 到 Shift-Y 用于选择激活的地形工具。
+逗号 (,) 和 点 (.) 在激活的笔刷中循环。
+Shift - 逗号 (<) 和 Shift - 点 (>) 在激活的树木/纹理/细节对象中循环。
+
+Page last updated: 2013-07-01
+
+====
+高度
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-Height.html
+
+所有地形 (Terrain) 编辑工具的使用都很简单。
+您可以在场景视图 (Scene View) 中逐步绘制地形 (Terrain)。
+对于高度工具和其他所有工具，您只需选中工具，然后在场景视图 (Scene View) 中点击地形 (Terrain) 便可对其进行实时操纵。
+
+----
+增加和降低高度
+
+图：左边第一个工具是增加高度 (Raise Height) 工具。
+
+使用该工具可画出增加地形 (Terrain) 高度的笔触。
+单击一次鼠标将使高度增加一些。
+按住鼠标按钮并移动鼠标将持续增加高度，直到达到最大高度为止。
+
+图：使用不同的笔刷可得到不同的效果
+
+图：单击时，如果要降低高度，请按住 Shift 键。
+
+请注意：选中笔刷后，请将鼠标移动到场景视图 (Scene View) 中的地形 (Terrain) 上，并按 F。
+这将使场景视图 (Scene View) 以鼠标指针所在位置为中心，并自动将画面拉近到笔刷大小 (Brush Size) 的距离。
+这是创建地形 (Terrain) 时实现导航的最快且最简便的方法。
+
+----
+绘制高度
+
+图：左边第二个工具是绘制高度 (Paint Height) 工具
+
+该工具使您能够指定目标高度，并将地形的任意部分移向该高度。
+一旦达到目标高度，地形便会停止移动并保持在此高度。
+
+要指定目标高度，请按住 Shift并在地形上点击所需高度。
+
+图：您也可在检视器Inspector) 中手动调节高度 (Height) 滑块。
+
+现在，您已指定了目标高度，在地形上进行任何点击都会升高或降低地形，使其达到目标高度。
+
+----
+Smoothing Height
+
+图：左边第三个工具是平滑高度 (Smoothing Height) 工具 
+
+该工具使您能够柔化绘制区域中的任何高度差。
+与其他笔刷类似，请在场景视图 (Scene View) 中绘制需要平滑的区域。
+
+----
+使用高度图
+
+如果喜欢，您可导入用 Photoshop 创建或来自真实世界地理数据的灰度高度图 (Heightmap)，
+并将其应用到地形 (Terrain) 中。
+要进行此操作，请选择地形 (Terrain) -> 导入高度图 (Import Heightmap) - 原始图象数据存储格式... (Raw), ，
+然后选择所需的原始图象数据存储格式文件。
+然后您将看到一些导入设置。
+这些将会为您设置，但您可以根据自己的喜好在该对话框中修改地形 (Terrain) 大小。
+准备好后，单击导入 (Import) 按钮。
+将高度图 (Heightmap) 应用到地形 (Terrain) 后，您可使用上述所有工具对其进行正常编辑。
+请注意：Unity 高度图 (Heightmap) 导入器只能导入灰度原始图象数据存储格式文件。
+因此，不能使用 RGB 通道创建原始图象数据存储格式高度图，而是必须使用灰度。
+
+Unity 支持使用全 16 位分辨率的原始图象数据存储格式文件。
+其他任何高度图编辑应用程序（如 Bryce、Terragen 或 Photoshop 等）都支持全分辨率的 Unity 高度图 (Heightmap)。
+
+您还可将高度图 (Heightmap) 导出为原始图象数据存储格式。
+选择 地形 (Terrain) -> 导出高度图 (Export Heightmap) - 原始图象数据存储格式... (Raw...) ，然后会看到一个导出设置对话框。
+做出您想要的任何更改，然后单击 导出 (Export) 以保存新的高度图 (Heightmap)。
+
+Unity 还提供可使地形变平的简便方法。
+选择地形 (Terrain) -> 变平... (Flatten...) 。
+该功能使您能够将地形变平至您在向导中指定的高度。
+
+Page last updated: 2013-07-01
+
+====
+地形纹理
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-Textures.html
+
+通过在整个地形上铺设地地形纹理 (Terrain Textures) 的方法装饰地形风景。
+你可以混合和组合地形纹理 (Terrain Textures)，使一个地图平滑过渡到另一个地图，或使周围环境多样化。
+
+地形纹理 (Terrain Textures) 也叫泼溅贴图。
+这表示您可以使用直接绘制到地形 (Terrain) 上的 alpha 贴图定义几个重复的高分辨率纹理，并对其进行任意混合。
+由于与地形尺寸比起来纹理并不大，因此纹理 (Textures) 的分布尺寸会非常小。
+
+请注意： 使用数量为 4 的倍数的纹理会为地形 (Terrain) alpha 贴图的性能和存储提供最大优势。
+
+图：要使用纹理，请单击检视器 (Inspector) 中的绘绘制纹理 (Paint Textures) 按钮
+
+----
+添加地形纹理
+
+开始绘制地形纹理 (Terrain Textures) 之前，需从“项目”(Project) 文件夹中添加至少一个纹理到地形 (Terrain) 中。
+单击选项按钮 (Options Button) -> 添加纹理... (Add Texture...)。
+
+图：这将会弹出“添加地形纹理”(Add Terrain Texture) 对话框。
+
+图：添加地形纹理 (Add Terrain Texture) 对话框
+
+在该对话框的泼溅 (Splat) 属性中选择一个可平铺的纹理。
+您可从项目视图 (Project View) 将纹理拖到属性中，也可从下拉菜单中选择。
+
+在，设置平铺大小 X 轴 (Tile Size X) 和平铺大小 Y 轴 (Tile Size Y) 属性。
+数值越大，每个纹理“平铺”的缩放比例就越大。 
+Textures with large 平铺尺寸 (Tile Sizes) 较大的纹理在整个地形 (Terrain) 上重复的次数会更少。
+数值较小的纹理将会使用更小的平铺重复更多的次数。
+
+在 Unity 4 中，您还可以指定法线贴图纹理。
+为了使法线贴图拥有任何效果，地形必须使用能够使用法线贴图的着色器。
+在地形设置选项卡中指定带法线贴图地形着色器的材质。
+
+单击添加 (Add)按钮，您将看到第一个地形纹理 (Terrain Texture) 平铺在整个地形 (Terrain) 上。
+
+
+重复此过程可按个人喜好添加多个地形纹理 (Terrain Textures)。
+
+----
+绘制地形纹理
+
+添加两个或两个以上的地形纹理 (Terrain Textures) 后，可用多种方式将其混合在一起。
+这部分很有趣，所以我们还是直接跳到这部分吧。
+
+选择想使用的地形纹理 (Terrain Texture)。
+当前选中的地形纹理 (Terrain Texture) 会高亮显示为蓝色。
+
+图：选择想使用的笔刷 (Brush)。
+当前选中的笔刷会高亮显示为蓝色。
+
+图：选择笔刷 (Brush)大小 (Size)、不透明度 (Opacity) 以及目标强度 (Target Strength)。
+
+大小 (Size) 指与地形方格相关的笔刷宽度。
+
+不透明度 (Opacity) 是在给定的绘制时间内应用纹理的透明度或者数量
+
+目标强度 (Target Strength) 是通过持续绘制所能达到的最大不透明度。
+
+
+在地形上单击并拖动来绘制地形纹理 (Terrain Texture)。
+
+
+使用多种纹理 (Textures)、笔刷 (Brushes)、大小 (Sizes) 和不透明度 (Opacities) 创建各种各样的混合样式。
+
+
+请注意：选中笔刷后，请将鼠标移动到场景视图 (Scene View) 中的地形 (Terrain) 上，并按 F 。
+这将使场景视图 (Scene View) 以鼠标指针所在位置为中心，并自动将画面拉近到 笔刷大小 (Brush Size) 的距离。
+这是创建地形 (Terrain) 时实现导航的最快且最简便的方法。
+
+Page last updated: 2013-07-01
+
+====
+树
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-Trees.html
+
+
+====
+草地
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-Grass.html
+
+
+====
+细节网格
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-DetailMeshes.html
+
+任何非树非草的地形 (Terrain) 装饰都应创建成细节细节网格 (Detail Mesh) 。
+这对岩石、三维灌木丛或其他静物而言很完美。
+要添加这些静物，请使用绘制植被 (Paint Foliage) 按钮 然后选择辑细节 (Edit Details) 按钮 -> 添加细节网格 (Add Detail Mesh) 。
+您会看见添加细节网格 (Add Detail Mesh) 对话框出现。
+
+图：添加细节网格 (Add Detail Mesh) 对话框
+
+属性:	功能：
+
+细节 (Detail)	用于细节的网格。
+
+噪波范围 (Noise Spread)	生成噪波的细节 (Detail) 簇的大小。数值越低，噪波就越少。<。
+
+随机宽度 (Random Width)	对所有细节对象间宽度差额的限制。
+
+随机高度 (Random Height)	对所有细节对象间高度差额的限制。
+
+健康色 (Healthy Color)	健康细节对象的颜色，在噪波范围 (Noise Spread) 簇中心突出显示。
+
+干枯色 (Dry Color)	干枯细节对象的颜色，在噪波范围 (Noise Spread) 簇外缘突出显示。
+
+灰度照明 (Grayscale Lighting)	如果启用，则照射地形 (Terrain) 的任何有色光都不能着色细节对象。
+
+光照贴图因数 (Lightmap Factor)	光照贴图 (Lightmap) 对细节对象会产生多大影响。
+
+渲染模式 (Render Mode)	选择是用“草”(Grass) 光照还是用常规“顶点”(Vertex) 光照照亮此类型的细节对象。
+岩石等细节对象应使用“顶点”(Vertex) 光照。
+
+
+单击添加 (Add) 按钮后，您会看见细节 (Detail) 网格出现在检视器 (Inspector) 中。
+细节 (Detail) 网格和草会相继出现。
+
+图：添加的细节 (Detail) 网格出现在检视器 (Inspector) 中任意草 (Grass) 对象旁边
+
+----
+绘制细节网格
+
+绘制细节 (Detail) 网格的工作原理与绘制纹理、树或草相同。
+选择您想绘制的细节 (Detail)，然后直接绘制到场景视图 (Scene View) 中的地形 (Terrain) 上
+
+图：绘制细节 (Detail) 网格很简单
+
+请注意：选中笔刷后，请将鼠标移动到场景视图 (Scene View) 中的地形上，并按 F。
+这将使场景视图 (Scene View) 以鼠标指针所在位置为中心，并自动将画面拉近到笔刷大小 (Brush Size) 的距离。
+这是创建地形 (Terrain) 时实现导航的最快且最简便的方法。
+
+----
+编辑细节
+
+要更改某个细节网格 (Detail Mesh) 的任何导入参数，请先将其选中，然后选择编辑细节 (Edit Details) 按钮 -> 编辑 (Edit) 。
+然后您会看见编辑细节网格 (Edit Detail Mesh) 对话框出现，这样您就能能调整上文描述的参数了。
+
+----
+刷新源资源
+
+如果您对细节网格 (Detail Mesh) 资源源文件进行了任何更新，必须重新将其手动导入到地形 (Terrain) 中。
+要执行此操作，请使用地形 (Terrain) -> 刷新树和细节原型 (Refresh Tree and Detail Prototypes)。
+该操作在更改和保存源资源后完成，并将立即刷新地形 (Terrain) 中的细节网格 (Detail Mesh)。
+
+提示：
+
+细节网格对象的 UV 需在 0 - 1 范围内，
+因为用于所有细节网格的所有单独纹理都被打包放入一个单一的纹理贴图册 (texture atlas) 中。
+
+Page last updated: 2013-07-01
+
+====
+光照贴图
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Lightmapping.html
+
+
+====
+其他设置
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/terrain-OtherSettings.html
+
+

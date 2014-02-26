@@ -40,5 +40,8 @@ Shader开发（16）
 
 选择任何游戏对象 (GameObject) 并按 F 键。这将确定所选对象在场景视图 (Scene View) 的中心位置及轴点。
 
-
+====
+NVIDIA PhysX 物理引擎
+Mecanim 动画引擎
+Shuriken 粒子系统
 

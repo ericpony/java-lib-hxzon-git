@@ -1,0 +1,428 @@
+﻿GUI 脚本指南
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/GUIScriptingGuide.html
+
+概述
+UnityGUI 使您能够快速、轻松地创建大量功能强大的 GUI。
+通过手动定位 GUI 对象并编写处理其功能的脚本，您只需几行代码即可马上搞定一切，而不是创建 GUI 对象。
+代码生成 GUI 控件 (GUI controls) ，这些控件通过单个的函数调用进行实例化、定位和处理。
+
+例如，以下代码将创建和处理一个按钮，而不需要在编辑器或其他地方进行额外操作：-
+
+// JavaScript
+function OnGUI () {
+	if (GUI.Button (Rect (10,10,150,100), "I am a button")) {
+		print ("You clicked the button!");
+	}
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	void OnGUI () {
+		if (GUI.Button (new Rect (10,10,150,100), "I am a button")) {
+			print ("You clicked the button!");
+		}
+	}
+}
+
+图：这是由以上代码创建的按钮
+
+虽然这个示例非常简单，但在 UnityGUI 中有非常强大和复杂的方法可供使用。
+GUI 的构建是一个大主题，但以下部分应该可以帮助您尽快了解它。
+本指南可以通读，也可作为参考材料。
+
+----
+UnityGUI 基础
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/gui-Basics.html
+这部分涵盖了 UnityGUI 的基本概念，提供了概述以及一组可粘贴到自己代码里的应用示例。
+UnityGUI 很容易上手，因此从这里开始比较好。
+
+控件
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/gui-Controls.html
+本节列出了 UnityGUI 中的每个可用控件 (Control) 以及显示结果的代码样例和图像。
+
+自定义
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/gui-Customization.html
+能够更改 GUI 外观使其与您的游戏外观相匹配是很重要的。
+UnityGUI 中的所有控件都可按照本节中描述的方法用 GUIStyles 和 GUISkins 进行自定义。
+
+布局模式
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/gui-Layout.html
+UnityGUI 提供两种布置 GUI 的方法：您可以手动将每个控件放置在屏幕上，
+也可使用与 HTML 表的工作原理相同的自动布局系统。
+可根据需要使用任何一种方法，并且这两种方法可以自由组合。
+本节讲解了这两种系统之间的功能差异,包括示例。
+
+扩展 UnityGUI
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/gui-Extending.html
+使用新的控件 (Control) 类型可很容易地扩展 UnityGUI。
+这章向您展示如何制作简单的复合 (compound) 控件，包括集成到 Unity 事件系统。
+
+扩展 Unity 编辑器
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/gui-ExtendingEditor.html
+Unity 编辑器的 GUI 实际上是使用 UnityGUI 编写的。
+因此，使用用于游戏中的 GUI 的相同类型代码可使编辑器高度扩展。
+此外，还有大量专门用于编辑器 (Editor) 的 GUI 控件来帮助您创建自定义编辑器 GUI。
+
+Page last updated: 2013-07-01
+
+====
+GUI 基础
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/gui-Basics.html
+
+本节讲解了用 UnityGUI 对控件 (Controls) 进行脚本编辑的基本要求。
+
+----
+用 UnityGUI 制作控件
+
+UnityGUI 控件使用一种称为 OnGUI() 的特殊函数。
+只要包含的脚本已启用，每帧OnGUI() 函数都会被调用 - 正如 Update() 函数。
+
+GUI 控件本身结构很简单。
+此结构在以下示例中较为清楚。
+
+/* 示例等级加载器 */
+
+
+// JavaScript
+function OnGUI () {
+	// 制作背景盒
+	GUI.Box (Rect (10,10,100,90), "Loader Menu");
+
+	// 制作第一个按钮。按下这个按钮将执行 Application.Loadlevel (1)
+	if (GUI.Button (Rect (20,40,80,20), "Level 1")) {
+		Application.LoadLevel (1);
+	}
+
+	// 制作第二个按钮。
+	if (GUI.Button (Rect (20,70,80,20), "Level 2")) {
+		Application.LoadLevel (2);
+	}
+}
+
+
+//C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	void OnGUI () {
+		// Make a background box
+		GUI.Box(new Rect(10,10,100,90), "Loader Menu");
+
+		// Make the first button. If it is pressed, Application.Loadlevel (1) will be executed
+		if(GUI.Button(new Rect(20,40,80,20), "Level 1")) {
+			Application.LoadLevel(1);
+		}
+
+		// Make the second button.
+		if(GUI.Button(new Rect(20,70,80,20), "Level 2")) {
+			Application.LoadLevel(2);
+		}
+	}
+}
+
+此示例是一个完整的功能性等级加载器。
+如果您复制/粘贴此脚本并将其贴到游戏对象 (GameObject) 上，则进入播放模式 (Play Mode) 时会看到以下菜单：
+
+图：由示例代码创建的加载器菜单 (Loader Menu)
+
+我们来看看示例代码的详细信息：
+
+第一行 GUI 命令行 GUI.Box (Rect (10,10,100,90), "Loader Menu"); 显示了带标题文本“Loader Menu”的盒 (Box) 控件。
+它遵循我们马上要讲解的典型 GUI 控件声明模式。
+
+下一行 GUI 是按钮 控件 (Button Control) 声明。
+注意它与盒控件 (Box Control) 声明有些许不同。
+特别是整个按钮 (Button) 声明都置于 if 语句内。
+如果在运行游戏时单击此按钮 (Button)，该 if 语句返回真值并执行 if 块内的任意代码。
+
+由于 OnGUI() 代码在每一帧获得调用，因此您不必明确创建或破坏 GUI 控件。
+声明该控件 (Control) 的行与创建它的行是同一行。
+如果您需要在特定时间显示控件 (Control)，可使用任何一种脚本逻辑来操作。
+
+/* Flashing button example */
+
+
+// JavaScript
+function OnGUI () {
+	if (Time.time % 2 < 1) {
+		if (GUI.Button (Rect (10,10,200,20), "Meet the flashing button")) {
+			print ("You clicked me!");
+		}
+	}
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	void OnGUI () {
+		if (Time.time % 2 < 1) {
+			if (GUI.Button (new Rect (10,10,200,20), "Meet the flashing button")) {
+				print ("You clicked me!");
+			}
+		}
+	}
+}
+
+此处，GUI.Button() 仅每隔一秒获得调用，因此此按钮会出现然后消失。
+因此，只有在按钮可见时用户才能单击它。
+
+正如您所见，当 GUI 控件 (Control) 显示并可用时，您可使用任何需要的逻辑进行控制。
+现在我们来探究每个控件 (Control) 声明的详细信息。
+
+----
+控件剖析
+
+声明 GUI 控件 (Control) 时必需有三条关键信息：
+
+类型 （位置、内容） 
+观察到此结构是一个有两个参数的函数。
+现在我们来探究此结构的详细信息。
+
+--
+类型
+
+类型 (Type) 是控件类型 (Control Type)，而且是通过调用 UnityGUI 类或 GUILayout 类 中的一个函数进行声明的。
+GUILayout 类将在指南的 布局模式 (Layout Modes) 部分进行详细讨论。
+例如，GUI.Label() 将创建一个非互动式的标签。
+所有不同的控件类型稍后会在指南的控件部分进行解释。
+
+--
+位置
+
+位置 (Position) 是任何 GUI 控件 (Control) 函数中的第一个参数。
+参数本身设置有 Rect() 函数。
+Rect() 定义四种属性：最左端位置、最顶端位置、总宽度和总高度。
+所有这些值都是整数，这与像素值对应。
+所有 UnityGUI 控件都在屏幕空间 (Screen Space)中运行，该屏幕空间是以像素为单位的已发布播放器的分辨率。
+
+坐标系统以左上角为基点。
+Rect(10, 20, 300, 100) 定义矩形 (Rectangle)，该矩形始于坐标：10,20，结束于坐标 310,120。
+还要重复一下，Rect() 中的第二对值是总宽度和高度，而非控件的结束坐标。
+这就是为什么上文提及示例的结束坐标是 310,120 而不是 300,100。
+
+使用Screen.width 和 Screen.height 属性可使屏幕空间的总尺寸在播放器中可用。
+以下示例可能有助于阐明其完成方式：
+
+/* Screen.width & Screen.height 示例 */
+
+
+// JavaScript
+function OnGUI () {
+	GUI.Box (Rect (0,0,100,50), "Top-left");
+	GUI.Box (Rect (Screen.width - 100,0,100,50), "Top-right");
+	GUI.Box (Rect (0,Screen.height - 50,100,50), "Bottom-left");
+	GUI.Box (Rect (Screen.width - 100,Screen.height - 50,100,50), "Bottom-right");
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	void OnGUI(){
+		GUI.Box (new Rect (0,0,100,50), "Top-left");
+		GUI.Box (new Rect (Screen.width - 100,0,100,50), "Top-right");
+		GUI.Box (new Rect (0,Screen.height - 50,100,50), "Bottom-left");
+		GUI.Box (new Rect (Screen.width - 100,Screen.height - 50,100,50), "Bottom-right");
+	}
+
+}
+
+图：通过以上示例定位的盒
+
+--
+内容
+
+用于 GUI 控件 (Control) 的第二个参数是用控件 (Control) 显示的实际内容。
+很多时候您需要在控件 (Control) 上显示某个文本或图像。
+如需显示文本，请将字符串作为内容 (Content) 参数进行传递，如下所示：
+
+/* 字符串内容示例 */
+
+
+// JavaScript
+function OnGUI () {
+	GUI.Label (Rect (0,0,100,50), "This is the text string for a Label Control");
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	void OnGUI () {
+		GUI.Label (new Rect (0,0,100,50), "This is the text string for a Label Control");
+	}
+
+}
+
+如需显示图像，请声明二维纹理 (Texture2D) 公共变量，并将变量名称作为内容参数进行传递，
+如下所示：
+
+/* 二维纹理内容示例 */
+
+
+// JavaScript
+var controlTexture : Texture2D;
+
+function OnGUI () {
+	GUI.Label (Rect (0,0,100,50), controlTexture);
+}
+
+
+// C#
+public Texture2D controlTexture;
+  ...
+
+void OnGUI () {
+	GUI.Label (new Rect (0,0,100,50), controlTexture);
+}
+
+这里是一个更接近真实世界场景的示例：
+
+/* 按钮内容示例 */
+
+
+// JavaScript
+var icon : Texture2D;
+
+function OnGUI () {
+	if (GUI.Button (Rect (10,10, 100, 50), icon)) {
+		print ("you clicked the icon");
+	}
+
+	if (GUI.Button (Rect (10,70, 100, 20), "This is text")) {
+		print ("you clicked the text button");
+	}
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	public Texture2D icon;
+
+	void OnGUI () {
+		if (GUI.Button (new Rect (10,10, 100, 50), icon)) {
+			print ("you clicked the icon");
+		}
+
+		if (GUI.Button (new Rect (10,70, 100, 20), "This is text")) {
+			print ("you clicked the text button");
+		}
+	}
+
+}
+
+图：由以上示例创建的按钮 (Button)
+如需让图像和文本在 GUI 控件 (Control) 上一并显示，还有第三种选择。
+提供一个GUIContent 对象作为内容 (Content) 参数，并定义显示在 GUIContent 中的字符串和图像。
+
+/* 使用 GUIContent 显示图像和字符串 */
+
+
+// JavaScript
+var icon : Texture2D;
+
+function OnGUI () {
+	GUI.Box (Rect (10,10,100,50), GUIContent("This is text", icon));
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	public Texture2D icon;
+
+	void OnGUI () {
+		GUI.Box (new Rect (10,10,100,50), new GUIContent("This is text", icon));
+	}
+
+}
+
+您还可以在 GUIContent 中定义工具提示 (Tooltip)。
+当鼠标在工具提示上方悬停时，可将其显示在 GUI 中的其他地方。
+
+/* 使用 GUIContent 显示工具提示*/
+
+
+// JavaScript
+function OnGUI () {
+	// 该行向 GUI 工具提示输入“This is the tooltip”
+	GUI.Button (Rect (10,10,100,20), GUIContent ("Click me", "This is the tooltip"));
+	// 该行读取并显示 GUI 工具提示的内容
+	GUI.Label (Rect (10,40,100,20), GUI.tooltip);
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	void OnGUI () {
+		// 该行向 GUI 工具提示输入“This is the tooltip”
+		GUI.Button (new Rect (10,10,100,20), new GUIContent ("Click me", "This is the tooltip"));
+
+		// 该行读取并显示 GUI 工具提示的内容
+		GUI.Label (new Rect (10,40,100,20), GUI.tooltip);
+	}
+
+}
+
+如果您有足够胆量，还可以使用 GUIContent 显示字符串、图标和工具提示!
+
+/* 使用 GUIContent 显示图像、字符串和工具提示 */
+
+
+// JavaScript
+var icon : Texture2D;
+
+function OnGUI () {
+	GUI.Button (Rect (10,10,100,20), GUIContent ("Click me", icon, "This is the tooltip"));
+	GUI.Label (Rect (10,40,100,20), GUI.tooltip);
+}
+
+
+// C#
+using UnityEngine;
+using System.Collections;
+
+public class GUITest : MonoBehaviour {
+
+	public Texture2D icon;
+
+	void OnGUI () {
+		GUI.Button (new Rect (10,10,100,20), new GUIContent ("Click me", icon, "This is the tooltip"));
+		GUI.Label (new Rect (10,40,100,20), GUI.tooltip);
+	}
+
+}
+
+丰富示例列表的 GUIContent 构造函数 的脚本参考页面。
+http://edu.china.unity3d.com/learning_document/getData?file=/ScriptReference/GUIContent.GUIContent.html
+
+Page last updated: 2013-06-27
+

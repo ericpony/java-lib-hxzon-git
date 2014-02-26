@@ -1,0 +1,90 @@
+﻿主服务器
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/net-MasterServer.html
+
+主服务器 (Master Server) 是将游戏实例与想与之相连接的玩家客户端联系起来的会聚位置。它还可以隐藏端口号和 IP 地址以及执行其他在建立网络连接时出现的技术任务，例如防火墙处理和 NAT 穿透 (punchthrough)。
+
+每次单独的游戏实例运行都会给主服务器 (Master Server) 提供一个游戏类型 (Game Type)。当玩家连接主服务器 (Master Server) 并查询与其匹配的游戏类型 (Game Type) 时，服务器会回复一个正在运行的游戏的列表、每个游戏中的玩家人数以及游戏是否需要密码等信息。用于交换该数据的两个函数为：用于服务器的 MasterServer.RegisterHost() 和用于玩家客户端的 MasterServer.RequestHostList()。
+
+调用 RegisterHost 时，您需要传递正在注册的主机的三个参数 - gameTypeName（之前提到过的游戏类型 (Game Type)）、gameName 和 comment。RequestHostList 将您有兴趣连接的主机的 gameTypeName o作为一个参数。所有已注册的该类型主机都将被返回到发出请求的客户端。这是一项异步操作，列表填满后，可用 PollHostList() 检索完整的列表。
+
+主服务器 (Master Server) 的 NAT 穿透 (punchthrough) 职责实际上是由一个称为服务商 (Facilitator) 的单独过程负责的，但 Unity 的主服务器 (Master Server) 可并行地运行两种服务。
+
+游戏类型 (Game Type) 是标识性的名称，对每个游戏都应该是唯一的（尽管 Unity 不提供任何中央注册系统来对此进行保证）。选择一个其他人不太可能用到的、与众不同的名称是明智的。如果您的游戏有几个不同的版本，那么您可能会需要警告用户他们的客户端与运行的服务器版本不兼容。版本信息可以在注释字段（这实际上是二进制数据，因此版本信息可以以任何想要的形式进行传递）进行传递。游戏名称仅仅是建立该游戏者提供的特定游戏实例的名称。
+
+在对主服务器 (Master Server) 作适当修改的情况下可将注释字段用于更多高级的用途（有关如何执行此操作的更多信息，请参阅以下内容）。例如，您可以将注释字段的前十个字节保留为密码，然后在主服务器 (Master Server) 接收主机更新时在主服务器 (Master Server) 中提取出该密码。如果密码检查错误，它就会拒绝主机更新
+
+注册一个游戏
+注册一个游戏之前，请务必根据主机是否支持 NAT 功能来对其进行启用或禁用；您可以使用 Network.InitializeServer 的 useNat 参数来执行此操作。
+
+可用与如下代码相似的代码启动服务器：-
+
+function OnGUI() {
+	if (GUILayout.Button ("Start Server"))
+	{
+		// 如果不存在公有 IP 地址，请使用 NAT 穿透 (punchthrough
+		Network.InitializeServer(32, 25002, !Network.HavePublicAddress());
+		MasterServer.RegisterHost("MyUniqueGameType", "JohnDoes game", "l33t game for all");
+	}
+}
+在这里我们只是通过检查机器是否有公有地址来确定是否需要 NAT 穿透 (punchthrough)。还有一个称为 Network.TestConnection 的更精密的函数能够告诉您主机是否能够执行 NAT。它也进行公有 IP 地址连通性测试，以查看防火墙是否阻塞游戏端口。拥有公有 IP 地址的机器总是能通过 NAT 测试，但如果测试失败，主机将不能连接到 NAT 客户端。在这种情况下，应通知用户必须启用端口转发 (port forwarding) 以确保游戏正常运行。家用的宽带连接通常有一个 NAT 地址，但不能建立端口转发 (port forwarding)（因为它们没有个人公有 IP 地址）。这种情况下，如果 NAT 测试失败，应通知用户由于只能连接同一本地网络上的客户端，因此不宜运行服务器。
+
+如果主机在不需要的情况下启用了 NAT 功能，该功能仍然是可以访问的。但是，无法执行 NAT 穿透 (punchthrough) 的客户端可能会错误地认为它们无法连接服务器，因为服务器启用了 NAT。
+
+连接到一个游戏
+一个 HostData 对象在主机注册或查询期间被发送。它包含与主机有关的以下信息：-
+
+boolean	useNat	表明主机是否使用 NAT 穿透 (punchthrough)。
+String	gameType	主机的游戏类型。
+String	gameName	主机的游戏名称。
+int	connectedPlayers	当前已连接的玩家/客户端数量。
+int	playerLimit	允许同时连接的玩家/客户端的最大数量。
+String[]	IP	主机的内部 IP 地址。在有公有地址的服务器上，外部和内部地址是相同的。该字段被定义为一个数组，因为内部连接时与该机器的所有活动接口相关联的所有 IP 地址都需要被检查。
+int	port	主机的端口。
+boolean	passwordProtected	表明连接到该主机是否需要提供密码。
+String	comment	在主机注册期间设置的任何注释。
+String	guid	主机的网络 GUID。需要使用 NAT 穿透 (punchthrough) 进行连接。
+该信息可由客户端用来查看主机的连接能力。启用 NAT 后，您需要使用主机的 GUID 来进行连接。在您进行连接的过程中检索 HostData 后，将自动对此进行处理。连接程序大致如下所示：
+
+function Awake() {
+	MasterServer.RequestHostList("MadBubbleSmashGame");
+}
+
+function OnGUI() {
+	var data : HostData[] = MasterServer.PollHostList();
+	// 检查主机列表中的所有主机
+	for (var element in data)
+	{
+		GUILayout.BeginHorizontal();	
+		var name = element.gameName + " " + element.connectedPlayers + " / " + element.playerLimit;
+		GUILayout.Label(name);	
+		GUILayout.Space(5);
+		var hostInfo;
+		hostInfo = "[";
+		for (var host in element.ip)
+			hostInfo = hostInfo + host + ":" + element.port + " ";
+		hostInfo = hostInfo + "]";
+		GUILayout.Label(hostInfo);	
+		GUILayout.Space(5);
+		GUILayout.Label(element.comment);
+		GUILayout.Space(5);
+		GUILayout.FlexibleSpace();
+		if (GUILayout.Button("Connect"))
+		{
+			// /连接到 HostData 结构，内部使用正确的方法（使用 NAT 时使用 GUID）。
+			Network.Connect(element);			
+		}
+		GUILayout.EndHorizontal();	
+	}
+}
+该示例打印出了主服务器 (Master Server) 返回的所有相关的主机信息。可将如 ping 信息或主机的地理位置等其他有用的数据添加到这里。
+
+NAT 穿透 (punchthrough)
+NAT 穿透 (punchthrough) 的可用性可决定某个特定计算机是否适合用作服务器。一些客户端可能能够连接任意的 NAT 服务器，而另一些客户端可能不行。
+
+NAT 穿透 (punchthrough) 的可用性可决定某个特定计算机是否适合用作服务器。一些客户端可能能够连接任意的 NAT 服务器，而另一些客户端可能不行。 默认情况下，在主服务器 (Master Server) 的帮助下提供 NAT 穿透 (punchthrough)，但并不需要这么做。服务商 (Facilitator) 是实际用于 NAT 穿透 (punchthrough) 服务的进程。如果两台机器都连接到服务商 (Facilitator)，那么只要服务商使用了外部 IP 和端口，这两台机器看起来就好像可以相互连接。主服务器 (Master Server) 用于提供此外部 IP 和端口信息，该信息用其他方法是很难确定的。这就是主服务器 (Master Server) 和服务商 (Facilitator) 如此紧密结合的原因。默认情况下，主服务器 (Master Server) 和服务商 (Facilitator) 具有相同的 IP 地址。要更改其中一个，请使用 MasterServer.ipAddress、MasterServer.port、Network.natFacilitatorIP 和 Network.natFacilitatorPort
+
+
+高级
+Unity Technologies 还有一台全面部署的主服务器 (Master Serve) 用于测试目的，实际上它也是会默认情况下使用的服务器。然而，源代码是开放给所有人使用的，并且服务器可在 Windows、Linux 和 Mac OS 上部署。除了简单地从源代码构建工程之外，您可能还会遇到要修改主服务器 (Master Server) 处理信息和通信方式的情况。例如，您可能能够优化主机数据的处理或限制主机列表上返回的客户端数量。这些更改将需要修改源代码；有关实现此操作的信息，请参阅主服务器构建页面.
+
+Page last updated: 2013-06-27

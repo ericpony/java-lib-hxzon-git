@@ -1,0 +1,47 @@
+﻿光源
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Lights.html
+
+光源 (Lights) 是每个场景的重要组成部分。
+网格和纹理决定了场景的形状和外观，而光源则决定了三维环境的颜色和氛围。
+您可能会在每个场景中使用多个光源。让它们一起工作需要一些实践，但结果却相当惊人。
+
+
+图：简单的两个光源设置
+
+通过“游戏对象 (GameObject)->创建其他 (Create Other )” 菜单可向场景添加光源。
+一旦添加了光源，您可以像操纵其他游戏对象 (GameObject) 那样来操纵它。
+此外，您可以使用为“组件 (Component)->渲染 (Rendering)->光源 (Light)” 向任何选定的游戏对象 (GameObject) 添加一个光源组件 (Light Component)。
+
+在检视器 (Inspector) 的光源组件 (Light Component) 中有许多不同的选项。
+
+
+图：检视器 (Inspector) 中的光源组件 (Light Component) 属性
+
+通过简单地改变光源的颜色 (Color)，您可以赋予场景一种完全不同的氛围。
+
+
+图：明亮温暖的光
+
+图：黑暗的、中世纪的光
+
+图：幽灵般的夜光
+
+这种方式创建的光源是实时光源 - 它们在游戏运行的每一帧都要进行计算。
+如果您知道某个光源是不变的，则可以使用光照贴图让您的游戏速度更快、看起来效果更好。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Lightmapping.html
+
+----
+渲染路径
+
+Unity 支持不同的渲染路径 (Rendering Paths)，这些路径主要影响光与阴影，
+因此根据您的游戏需要选择正确的渲染路径可以提高工程性能。 有关渲染路径的更多信息，可访问渲染路径部分。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/RenderingPaths.html
+
+----
+更多信息
+
+有关使用光源 (Lights) 的更多信息，请查阅参考手册中的光源 (Lights) 页面。
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-Light.html
+
+Page last updated: 2013-06-13
+
