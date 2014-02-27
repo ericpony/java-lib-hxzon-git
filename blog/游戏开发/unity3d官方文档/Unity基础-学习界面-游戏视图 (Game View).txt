@@ -1,0 +1,46 @@
+﻿Unity基础-学习界面-游戏视图 (Game View)
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/GameView40.html
+
+游戏视图 (Game View) 从游戏的相机 ((Camera(s)) 中呈现，代表所发布游戏的最终版。
+您将需要一台或以上的相机 (Cameras) 来控制玩家玩游戏时真实看到的情景。
+有关相机 (Cameras) 的更多信息请参阅相机组件 (Camera Component) 页面。
+
+----
+图：播放模式 (Play Mode)
+
+使用工具栏 (Toolbar) 上的按钮来控制编辑器 (Editor) 播放模式 (Play Mode) 并查看所发布游戏的效果。
+处于播放模式 (Play Mode) 时，所做的任何变更都是暂时性的，退出播放模式 (Play Mode) 时将重置。
+编辑器 (Editor) 用户界面将变暗，进行提醒。
+
+----
+图：游戏视图 (Game View) 控制条
+
+游戏视图 (Game View) 控制条上第一个下拉列表是宽高比下拉列表 (Aspect Drop-down)，
+可用于调节游戏视图 (Game View) 窗口的宽高比，还可测试在不同宽高比显示器上的显示效果。
+
+往右第二个是游戏时最大化 (Maximize on Play) 按钮。
+启用后，游戏视图 (Game View) 将自身放大至编辑器窗口 (Editor Window) 的 100%，
+便于进入播放模式 (Play Mode) 时全屏预览。
+
+其次是统计 (Stats) 按钮，显示呈现统计数据 (Rendering Statistics) 窗口，
+该窗口对于监控游戏的图形性能非常有用（请参阅优化图形性能 (Optimizing Graphics Performance) 部分了解更多信息）。
+
+
+最后一个按钮是小图示 (Gizmos)。
+启用后，场景视图 (Scene View) 中出现的所有小图示 (Gizmos) 将拖到游戏视图 (Game View) 中。
+其中包括使用任一小图示 (Gizmos) 类函数拖动的小图示 (Gizmos)。
+小图示 (Gizmos) 按钮也有一个弹出菜单，显示游戏中使用的不同类型的组件。
+
+
+每个组件 (Component) 名称旁边是相关的图标和图示设置。
+图标 (Icon) 设置显示另一个弹出菜单，供用户从一系列预设图标或纹理规定的自定义图标中选择。
+
+
+图：小图示 (Gizmos) 设置可供选择性地禁用特定组件的小图示拖拽。
+
+菜单顶部的三维小图示 (3D Gizmos) 设置指的是小图示 (Gizmos) 的图标。
+该设置启用后，图标会显示相机的透视图（如附近对象的图标会比远距离对象的图标大），而非不论距离远近，大小皆相同。
+复选框旁边的滑块可供您修改图标的大小，对于有许多小图标可见时减少杂乱很有帮助。
+
+Page last updated: 2013-07-02
+

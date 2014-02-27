@@ -1,0 +1,102 @@
+﻿Java8中的java.util.Random类
+
+原文链接： javacodegeeks 翻译： ImportNew.com - 宋 涛
+译文链接： http://www.importnew.com/9672.html
+
+====
+在Java8中java.util.Random类的一个非常明显的变化就是新增了返回随机数流(random Stream of numbers)的一些方法。
+
+下面的代码是创建一个无穷大的double类型的数字流，这些数字在0（包括0）和1（不包含1）之间。
+
+    Random random = new Random();
+    DoubleStream doubleStream = random.doubles();
+
+下面的代码是创建一个无穷大的int类型的数字流，这些数字在0（包括0）和100（不包括100）之间。
+
+    Random random = new Random();
+    IntStream intStream = random.ints(0, 100);
+
+那么这些无穷大的数字流用来做什么呢？接下来，我通过一些案例来分析。
+记住，这些无穷大的数字流只能通过某种方式被截断（limited）。
+
+示例1：创建10个随机的整数流并打印出来：
+
+    intStream.limit(10).forEach(System.out::println);
+
+示例2：创建100个随机整数：
+
+    List<Integer> randomBetween0And99 = intStream
+                                       .limit(100)
+                                       .boxed()
+                                       .collect(Collectors.toList());
+----
+对于高斯伪随机数（gaussian pseudo-random values）来说，没有等价于random.doubles()方法所创建的流，
+然而，如果用java8所提供的功能是非常容易实现的。
+
+    Random random = new Random();
+    DoubleStream gaussianStream = Stream.generate(random::nextGaussian).mapToDouble(e -> e);
+
+这里，我使用了Stream.generate api，并传入Supplier 类的对象作为参数，
+这个对象是通过调用Random类中的方法 nextGaussian()创建另一个高斯伪随机数。
+
+接下来，我们来对double类型的伪随机数流和double类型的高斯伪随机数流做一个更加有意思的事情，
+那就是获得两个流的随机数的分配情况。
+预期的结果是：double类型的伪随机数是均匀的分配的，而double类型的高斯伪随机数应该是正态分布的。
+
+通过下面的代码，我生成了一百万个伪随机数，这是通过java8提供的api实现的：
+
+    Random random = new Random();
+    DoubleStream doubleStream = random.doubles(-1.0, 1.0);
+    LinkedHashMap<Range, Integer> rangeCountMap = doubleStream.limit(1000000)
+        .boxed()
+        .map(Ranges::of)
+        .collect(Ranges::emptyRangeCountMap, (m, e) -> m.put(e, m.get(e) + 1), Ranges::mergeRangeCountMaps);
+
+    rangeCountMap.forEach((k, v) -> System.out.println(k.from() + "\t" + v));
+
+代码的运行结果如下：
+
+    -1      49730
+    -0.9    49931
+    -0.8    50057
+    -0.7    50060
+    -0.6    49963
+    -0.5    50159
+    -0.4    49921
+    -0.3    49962
+    -0.2    50231
+    -0.1    49658
+    0       50177
+    0.1     49861
+    0.2     49947
+    0.3     50157
+    0.4     50414
+    0.5     50006
+    0.6     50038
+    0.7     49962
+    0.8     50071
+    0.9     49695
+
+为了类比，我们再生成一百万个高斯伪随机数：
+
+    Random random = new Random();
+    DoubleStream gaussianStream = Stream.generate(random::nextGaussian).mapToDouble(e -> e);
+    LinkedHashMap<Range, Integer> gaussianRangeCountMap =
+        gaussianStream
+                .filter(e -> (e >= -1.0 && e < 1.0))
+                .limit(1000000)
+                .boxed()
+                .map(Ranges::of)
+                .collect(Ranges::emptyRangeCountMap, (m, e) -> m.put(e, m.get(e) + 1), Ranges::mergeRangeCountMaps);
+
+    gaussianRangeCountMap.forEach((k, v) -> System.out.println(k.from() + "\t" + v));
+
+上面代码输出的结果恰恰与我们预期结果相吻合，即：double类型的伪随机数是均匀的分配的，
+而double类型的高斯伪随机数应该是正态分布的。
+
+用伪随机数所得的结果：
+
+用高斯伪随机数所得的结果：
+
+附：完整代码可点击这里获取
+https://gist.github.com/bijukunjummen/8129250

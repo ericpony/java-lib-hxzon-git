@@ -1,4 +1,4 @@
-﻿角色控制器 (Character Controller)
+﻿物理组件-角色控制器 (Character Controller)
 http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-CharacterController.html
 
 角色控制器 (Character Controller) 主要用于不使用刚体 (Rigidbody) 物理的第三人称或第一人称玩家控制。

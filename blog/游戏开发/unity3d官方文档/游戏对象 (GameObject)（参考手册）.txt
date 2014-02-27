@@ -1,0 +1,76 @@
+﻿游戏对象 (GameObject)（参考手册）
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/comp-GameObjectGroup.html
+
+游戏对象 (GameObject) 是所有其他组件 (Component) 的容器。
+游戏中的所有对象都是包含不同组件 (Component) 的游戏对象 (GameObject)。
+技术上来讲，可以创建不使用游戏对象 (GameObject) 的组件 (Component)，但是在将其应用于游戏对象 (GameObject) 之前将无法使用它。
+
+游戏对象 (GameObject)
+
+Page last updated: 2013-06-05
+
+====
+游戏对象 (GameObject)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-GameObject.html
+
+游戏对象 (GameObject)是所有其他组件 (Component) 的容器。
+游戏中的所有对象本质上都是游戏对象 (GameObject)。
+
+----
+空游戏对象 (GameObject)
+
+创建游戏对象 (GameObject)
+
+游戏对象 (GameObject) 自身不会向游戏添加任何特性。
+而是容纳实现实际功能的组件 (Component) 的容器。
+例如，光 (Light) 是一个附加到游戏对象 (GameObject) 的组件 (Component)。
+
+如果要从脚本创建组件 (Component)，则应创建空游戏对象 (GameObject)，
+然后使用 gameObject.AddComponent(ClassName) 函数添加所需组件 (Component)。
+不能创建组件 (Component)，然后从对象引用它。
+
+在脚本中，组件 (Component) 可以方便地通过消息发送或 GetComponent(TypeName) 函数相互通信。
+这使您可以编写可重复使用的小脚本，这些脚本可以附加到多个游戏对象 (GameObject) 并重复用于不同用途。
+
+----
+详细信息
+
+除了作为组件 (Component) 的容器之外，游戏对象 (GameObject) 还具有标记 (Tag)、层 (Layer) 和名称 (Name)。
+
+标记 (Tag) 用于通过标记 (Tag) 名称来快速查找对象。
+
+层 (Layer) 可用于仅对某些特定的对象组投射光线、渲染或应用光照。
+
+标记 (Tag) 和层 (Layer) 可以使用标记管理器 (Tag Manager)
+（在编辑 (Edit) ->项目设置 (Project Settings) -> 标记 (Tags) 中）进行设置。
+
+--
+“静态”(Static) 复选框
+
+在 Unity 中，游戏对象 (GameObject) 中有一个名为静态 (Static) 的复选框。
+
+此复选框用于：
+
+准备静态几何结构以用于自动批处理
+计算遮挡剔除 (Occlusion Culling)
+
+生成遮挡 (Occlusion) 数据时使用“静态”(Static) 复选框
+
+生成遮挡 (Occlusion) 数据时，将游戏对象 (GameObject) 标记为静态 (Static) 
+会使其可以剔除（或禁用）在静态 (Static) 对象之后不可见的网格对象。
+因此，不会在场景中四处移动的所有环境对象都应标记为静态 (Static)。
+
+有关遮挡剔除 (Occlusion Culling) 在 Unity 中的工作方式的更多信息，请阅读遮挡剔除 (Occlusion Culling) 页面。
+
+----
+提示
+
+有关更多信息，请参阅游戏对象 (GameObject) 脚本参考页面。
+http://edu.china.unity3d.com/learning_document/getData?file=/ScriptReference/GameObject.html
+
+可以在此处找到有关如何使用层的更多信息。
+
+可以在此处找到有关如何使用标记的更多信息。
+
+Page last updated: 2013-06-05
+

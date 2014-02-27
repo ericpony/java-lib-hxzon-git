@@ -59,4 +59,13 @@ public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command,
 没法设置在某些时间点执行。
 没法设置只执行多少次。
 
+设计：
+时间点rule
+执行次数times
+结束时间endTime
+
+根据rule，得到下一次执行的时间，
+生成一次调度任务，
+在任务开头判断endTime和times。
+在任务的末尾，计算下一次执行的时间。
 

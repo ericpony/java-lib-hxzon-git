@@ -1,4 +1,4 @@
-﻿预设 (Prefabs)
+﻿构建场景-预设 (Prefabs)
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Prefabs.html
 
 预设 (Prefab) 是一种资源 - 存储在工程视图 (Project View) 中可重复使用的游戏对象 (GameObject)。预设 (Prefabs) 可放入到多个场景中，且每个场景可使用多次。向场景添加一个预设 (Prefab) 时，就会创建它的一个实例。所有预设 (Prefab) 实例都链接到原始预设 (Prefab)，实质上是原始预设的克隆。不管您的工程中有多少个实例，您对预设 (Prefab) 作薄出任何更改时，您会看到这些更改应用于所有实例。

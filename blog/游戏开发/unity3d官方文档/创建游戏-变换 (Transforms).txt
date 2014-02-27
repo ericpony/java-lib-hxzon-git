@@ -1,0 +1,14 @@
+﻿创建游戏-变换 (Transforms)
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Transforms.html
+
+变换 (Transforms) 是每个游戏对象 (GameObject) 的关键组件 (Component)。
+它们决定游戏对象 (GameObject) 的位置、旋转方式及缩放。
+创建一个没有变换组件 (Transform) 的游戏对象 (GameObject) 是不可能的。
+可以从场景视图 (Scene View)、检视器 (Inspector) 或通过脚本 (Scripting) 调整任意游戏对象 (GameObject) 的变换组件 (Transform)。
+
+下面的文字来自变换组件参考页面。
+
+（hxzon：略。与 http://edu.china.unity3d.com/learning_document/getData?file=/Components/comp-TransformationGroup.html 同。）
+
+Page last updated: 2013-06-20
+

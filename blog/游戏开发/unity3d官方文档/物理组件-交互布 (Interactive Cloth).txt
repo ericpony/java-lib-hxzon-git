@@ -1,0 +1,116 @@
+﻿物理组件-交互布 (Interactive Cloth)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-InteractiveCloth.html
+
+交互布 (Interactive Cloth) 类是在网格上模拟“类似于布”的行为的组件 (Component)。
+如果要在场景中使用布，请使用此组件 (Component)。
+
+
+图：场景视图中的交互布 (Interactive Cloth) 及其在检视器 (Inspector) 中的属性。
+
+----
+属性
+交互布 (Interactive Cloth)
+属性：	功能：
+
+弯曲刚度 (Bending Stiffness)	
+布的弯曲刚度。
+
+伸展刚度 (Stretching Stiffness)	
+布的伸展刚度。
+
+阻尼 (Damping)	
+对布运动进行阻尼处理。
+
+厚度 (Thickness)	
+布表面的厚度。
+
+使用重力 (Use Gravity)	
+重力是否应影响布模拟。
+
+自碰撞 (Self Collision)	
+布是否会与自己碰撞。
+
+外部加速度 (External Acceleration)	
+应用于布的恒定外部加速度
+
+随机加速度 (Random Acceleration)	
+应用于布的随机外部加速度
+
+网格 (Mesh)	
+由交互布 (Interactive Cloth) 用于模拟的网格
+
+摩擦力 (Friction)	
+布的摩擦力。
+
+密度 (Density)	
+布的密度。
+
+压力 (Pressure)	
+布内部的压力。
+
+碰撞响应 (Collision Response)	
+将应用于碰撞刚体 (Rigidbody) 的力的大小。
+
+附件撕裂系数 (Attachment Tear Factor)	
+附加刚体 (Rigidbody) 在撕下之前需要伸展的距离。
+
+附件响应 (Attachment Response)	
+将应用于附加刚体 (Rigidbody) 的力的大小。
+
+撕裂系数 (Tear Factor)	
+布顶点在布撕裂之前需要伸展的距离。
+
+附加碰撞体 (Attached Colliders)	
+包含附加到此布的碰撞体 (Collider) 的数组
+
+----
+交互布 (Interactive Cloth) 组件 (Component) 依赖于布渲染器 (Cloth Renderer) 组件 (Component)，
+这表示如果布渲染器 (Cloth Renderer) 存在于游戏对象 (Game Object) 中，则不能删除此组件 (Component)。
+
+布渲染器 (Cloth Renderer)
+
+投射阴影 (Cast Shadows)	
+如果选中，则布会投射阴影
+
+接收阴影 (Receive Shadows	
+如果启用，则布可以接收阴影
+
+材质 (Materials)	
+布将使用的材质。
+
+使用光探头 (Use Light Probes)	
+如果选中，则将启用光探头。
+
+光探头锚点 (Light Probe Anchor)	
+光探头光照在渲染器边界中心或锚点（如果分配）位置处进行内插。
+
+不可见时暂停 (Pause When Not Visible)	
+如果选中，则在相机未渲染布时不计算模拟。
+
+--
+添加交互布 (Interactive Cloth) 游戏对象 (Game Object)
+
+要在场景中添加交互布 (Interactive Cloth)，只需选择游戏对象 (GameObject) -> 创建其他 (Create Other) -> 布 (Cloth)。
+
+----
+提示
+
+在游戏中使用大量布会以指数方式降低游戏性能。
+
+如果要对角色模拟布，请改为选中蒙皮布 (Skinned Cloth) 组件 (Component)，
+这可与蒙皮网格渲染器 (SkinnedMeshRenderer) 组件 (Component) 交互并且比交互布 (Interactive Cloth) 快得多。
+
+要将布附加到其他对象，请使用附加碰撞体 (Attached Colliders) 属性分配要附加到的其他对象。
+碰撞体 (Collider) 必须与布网格的一些顶点重叠才能使之工作。
+
+附加碰撞体 (Attached Collider) 的对象必须与附加到的布相交。
+
+备注
+
+布模拟会生成法线，但不生成切线。
+如果源网格具有切线，则这些切线会不进行修改地传递给着色器 
+- 因此如果使用依赖于切线的着色器（如碰撞贴图着色器），则光照对于从其初始位置移动的布会显示不正确。
+
+
+Page last updated: 2013-06-21
+

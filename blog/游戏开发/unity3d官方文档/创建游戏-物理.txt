@@ -1,0 +1,407 @@
+﻿创建游戏-物理
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Physics.html
+
+Unity 有内置 NVIDIA PhysX 物理引擎。
+允许出现独特的突发行为还有许多有用的功能。
+
+基本信息
+
+要物理控制对象，只需对其添加刚体 (Rigidbody)。
+执行此操作时，对象将受重力影响，可以与世界坐标中的其他对象碰撞。
+
+刚体 (Rigidbody)
+
+刚体 (Rigidbody) 是以物理方式模拟的对象。
+可将刚体 (Rigidbody) 用于玩家可以四处推动的事物（例如板条箱或松散对象），或通过编写脚本向刚体 (Rigidbody) 应用力直接移动它。
+
+如果直接移动非运动学刚体 (non-Kinematic Rigidbody) 的变换，则可能不会与其他对象正确碰撞。
+而是应通过向刚体 (Rigidbody) 应用力和扭矩来移动它。
+还可以向刚体 (Rigidbody) 添加关节 (Joint) 以使行为更复杂。
+例如，可以创建具有物理门或摇摆链条的起重机。
+
+还可使用刚体 (Rigidbody) 使车辆显得生动，
+例如可以使用一个刚体 (Rigidbody)、四个车轮碰撞体 (Wheel Collider) 以及一个基于用户输入应用车轮力的脚本，来创建汽车。
+
+可以通过从脚本向刚体 (Rigidbody) 应用力来创建飞机。也可以通过添加各种关节 (Joint) 并通过脚本应用力来创建特殊车辆。
+
+刚体 (Rigidbody) 最常与基元碰撞体 (Primitive Collider) 结合使用。
+
+提示：
+
+绝不应一起使用父和子刚体 (Rigidbody)
+绝不应缩放刚体 (Rigidbody) 的父级
+
+运动学刚体 (Kinematic Rigidbody)
+运动学刚体 (Kinematic Rigidbody) 是启用了“为运动学”(isKinematic) 选项的刚体 (Rigidbody)。运动学刚体 (Kinematic Rigidbody) 不受力、重力或碰撞的影响。它们通过设置变换的位置和旋转或对其进行动画处理来明确驱动，还可以与其他非运动学刚体 (non-Kinematic Rigidbody) 交互。
+
+运动学刚体 (Kinematic Rigidbody) 可在与其他刚体 (Rigidbody) 碰撞时正确唤醒它们，并会对置于其上的刚体 (Rigidbody) 应用摩擦力。
+
+下面是针对运动学刚体 (Kinematic Rigidbody) 的几个示例使用情况：
+
+有时希望对象处于物理控制下，但是在其他情况下是从脚本或动画进行明确控制。例如，您可以创建一个动画角色，其骨骼附加了与关节 (Joint) 连接的刚体 (Rigidbody)，以用作布娃娃。大多数时候该角色处于动画控制下，因而您会创建运动学刚体 (Kinematic Rigidbody)。但是当命中他时，您希望他变为布娃娃并受物理影响。为实现此目的，只需禁用“为运动学”(isKinematic) 选项。
+有时您需要可以推动其他对象、但不推动自己的移动对象。例如，如果您具有一个动画平台并且您要在其上放置一些刚体 (Rigidbody) 箱体，则应使该平台成为运动学刚体 (Kinematic Rigidbody) 而不仅仅是不带刚体 (Rigidbody) 的碰撞器 (Collider)。
+您可能要有一个经过动画处理的运动学刚体 (Kinematic Rigidbody)，并使用一个可用的关节 (Joint) 让真实刚体 (Rigidbody) 跟随其后。
+静态碰撞组件 (Static Collider)
+静态碰撞组件 (Static Collider)r是具有碰撞体 (Collider) 而不是刚体 (Rigidbody) 的游戏对象 (GameObject)。静态碰撞体 (Static Collider) 用于始终保持在相同位置并且从不四处移动的水平几何结构。可以将网格碰撞组件 (Mesh Collider) 添加到已存在的图形网格（使用导入设置 (Import Settings) 生成碰撞体 (Generate Colliders) 复选框甚至更好），也可以使用其他碰撞组件 (Collider) 类型之一。
+
+绝不应逐个帧地移动静态碰撞体 (Static Collider)。移动静态碰撞体 (Static Collider) 会导致 PhysX 内部重新进行一次计算，其成本十分高昂，还会使性能显著下降。不仅如此，基于静态碰撞体 (Static Collider) 唤醒其他刚体 (Rigidbody) 的行为未进行定义，并且移动静态碰撞体 (Static Collider) 不会对与之接触的刚体 (Rigidbody) 应用摩擦力。而是移动的碰撞体 (Collider) 应始终为运动学刚体 (Kinematic Rigidbody)。
+
+角色控制器 (Character Controller)
+如果要创建类人角色，可使用角色控制器 (Character Controller)。这可以是第三人称掌上游戏 (Third Person Platformer) 中的主角色、FPS 射击者或任何敌人角色。
+
+这些控制器因为感觉不正常，所以不遵守物理规则（Doom 中的您每小时跑 90 英里，在帧中停止然后在极小的空间中转弯）。而是由角色控制器 (Character Controller) 执行碰撞检测以确保角色可以沿墙滑动、走上和走下阶梯等。
+
+角色控制器 (Character Controller) 不受力影响，但是可以通过从脚本对刚体 (Rigidbody) 应用力来推动它们。通常，所有类人角色都使用角色控制器 (Character Controller) 来实现。
+
+角色控制器 (Character Controller) 本质上是非物理性的，因而如果要将真实物理现象（在绳索上摇摆、由大岩石推动）应用于角色，则必须使用刚体 (Rigidbody)，于是您可以对角色使用关节 (Joint) 和力。角色控制器 (Character Controller) 始终沿 Y 轴对齐，因此如果角色需要能够在空间中改变方向（例如在变化的重力下），则也需要使用刚体 (Rigidbody)。但是请注意，很难将刚体 (Rigidbody) 调整为使角色感觉正常，因为游戏角色的预期行为方式是非物理性的。另一个差异在于，角色控制器 (Character Controller) 可以平稳地滑过指定高度的台阶，而刚体 (Rigidbody) 则不能。
+
+如果使刚体 (Rigidbody) 成为角色控制器 (Character Controller) 的父级，则会获得类似于“关节”(Joint) 的行为。
+
+刚体 (Rigidbody)
+刚体 (Rigidbody) 使游戏对象 (GameObject) 在物理控制之下行动。刚体 (Rigidbody) 可以接收力和扭矩以使对象采用逼真方式移动。任何游戏对象 (GameObject) 必须包含刚体 (Rigidbody) 才能受重力影响、在添加的力作用下行动（通过脚本）或是与其他对象交互（通过 NVIDIA PhysX 物理引擎）。
+
+
+刚体 (Rigidbody) 使游戏对象 (GameObject) 在物理影响下行动
+属性
+属性：	功能：
+质量 (Mass)	对象的质量（任意单位）。不应使质量比其他刚体 (Rigidbody) 质量大或小 100 倍。
+阻力 (Drag)	在由于施加力而移动时空气阻力对对象的影响程度。0 表示无空气阻力，无穷大使对象立即停止移动。
+角阻力 (Angular Drag)	在由于施加扭矩而旋转时,空气阻力对对象的影响程度。0 表示无空气阻力。请注意：不能仅仅通过将其“角阻力”(Angular Drag) 设置为无穷大使对象停止旋转。
+使用重力 (Use Gravity	如果启用，则对象受重力影响。
+为运动学 (Is Kinematic)	如果启用，则对象不会由物理引擎驱动，而是只能通过其变换 (Transform)进行处理。对于移动平台，或是如果要对附加了铰链关节 (HingeJoint) 的刚体 (Rigidbody) 进行动画处理，这十分有用。
+插值 (Interpolate)	仅当在刚体 (Rigidbody) 移动中发现不平稳时，才尝试这些选项之一。
+无 (None)	不应用插值。
+内插 (Interpolate	变换 (Transform) 基于上一帧的变换 (Transform) 进行平滑处理。
+外插 (Extrapolate)	变换 (Transform) 基于下一帧的估计变换 (Transform) 进行平滑处理。
+碰撞检测 (Collision Detection)	用于防止快速移动的对象在不检测碰撞的情况下穿过其他对象。
+离散 (Discrete)	对场景中的所有其他碰撞体 (Collider) 使用离散 (Discreet) 碰撞检测。其他碰撞体 (Collider) 将在对其测试碰撞时使用离散 (Discreet) 碰撞检测。用于普通碰撞（这是默认值）。
+连续 (Continuous)	对动态碰撞体 (Collider)（带有刚体 (Rigidbody)）使用离散 (Discreet) 碰撞检测，对静态网格碰撞体 (MeshCollider)（不带刚体 (Rigidbody)）使用连续 (Continuous) 碰撞检测。在对刚体 (Rigidbody) 进行测试碰撞时，设置为“连续动态”(Continuous Dynamic) 的刚体 (Rigidbody) 将使用连续 (Continuous) 碰撞检测。其他刚体 (Rigidbody) 会使用离散 (Discreet) 碰撞检测。用于连续动态(Continuous Dynamic) 检测需要与之碰撞的对象。（这对物理性能具有较大影响，如果对快速对象的碰撞没有问题，请将其设置为“离散”(Discreet)）
+连续动态 (Continuous Dynamic)	对设置为“连续”(Continuous) 和“连续动态”(Continuous Dynamic) 碰撞的对象使用连续 (Continuous) 碰撞检测。它也会对静态网格碰撞体 (MeshCollider)（不带刚体 (Rigidbody)）也将使用连续 (Continuous) 碰撞检测。对于所有其他碰撞体 (Collider)，它使用离散 (Discreet) 碰撞检测。用于快速移动的对象。
+约束 (Constraints)	对刚体 (Rigidbody) 运动的限制：
+冻结位置 (Freeze Position	选择性地在世界坐标 X、Y 和 Z 轴上停止刚体 (Rigidbody) 移动。
+冻结旋转 (Freeze Rotation)	选择性地停止刚体 (Rigidbody) 围绕世界坐标 X、Y 和 Z 轴的旋转。
+详细信息
+刚体 (Rigidbody) 使游戏对象 (GameObject) 在物理控制之下行动。这样可实现逼真的碰撞、各种类型的关节 (Joint) 和其他非常棒的行为。与直接调整变换 (Transform) 组件 (Component) 相比，通过向刚体 (Rigidbody) 添加力来处理游戏对象 (GameObject) 可创造非常不同的感观。一般而言，不应处理相同游戏对象 (GameObject) 的刚体 (Rigidbody) 和变换 (Transform) - 只应处理两者之一。
+
+处理变换 (Transform) 与刚体 (Rigidbody) 之间的最大差异是力的使用。刚体 (Rigidbody) 可以接收力和扭矩，但是变换 (Transform) 不能。变换 (Transform) 可以进行平移和旋转，但是这与使用物理不同。您在自己进行尝试时将注意到明显差异。向刚体 (Rigidbody) 添加力/扭矩实际上会更改对象的变换 (Transform) 组件 (Component) 位置和旋转。这便是为何只应使用两者之一。使用物理时更改变换 (Transform) 可能会导致与碰撞和其他计算有关的问题。
+
+刚体 (Rigidbody) 必须先明确添加到游戏对象 (GameObject)，然后才会受物理引擎影响。可以通过菜单栏中的组件 (Components) -> 物理 (Physics) -> 刚体 (Rigidbody) 向所选对象添加刚体 (Rigidbody)。现在对象在物理方面准备就绪；它会因重力作用而下落，并且可以通过脚本接收力，但是您可能需要添加碰撞体 (Collider) 或关节 (Joint) 以使其行为与预期方式完全相同。
+
+父子化 (Parenting)
+当对象处于物理控制下时，其移动方式与其变换父级的移动方式半独立。如果移动任何父级，则会随它们一起拉动刚体 (Rigidbody) 子级。但是，刚体 (Rigidbody) 仍会由于重力作用而下落并对碰撞事件作出反应。
+
+脚本处理
+要控制刚体 (Rigidbody)，主要使用脚本添加力或扭矩。可通过对对象的刚体 (Rigidbody) 调用 AddForce() 和 AddTorque() 来实现此目的。请记住，不应在使用物理时直接改变对象的变换 (Transform)。
+
+动画
+对于某些情况（主要是创建布娃娃效果），需要在动画与物理之间切换对象控制。为此，刚体 (Rigidbody) 可以标记为“为运动学 (isKinematic)”。当刚体 (Rigidbody) 标记为为运动学 (isKinematic)时，它不会受碰撞、力或 physX 的任何其他部分影响。这表示您必须通过直接处理变换 (Transform) 组件 (Component) 来控制对象。运动学刚体 (Kinematic Rigidbody) 会影响其他对象，但是它们自己不会受物理影响。例如，附加到运动学 (Kinematic) 对象的关节 (Joint) 会约束附加到它们的任何其他刚体 (Rigidbody)，运动学刚体 (Kinematic Rigidbody) 会通过碰撞影响其他刚体 (Rigidbody)。
+
+碰撞组件(Collider)
+碰撞组件(Collider) 是另一种必须随刚体 (Rigidbody) 添加以便允许碰撞发生的组件 (Component)。如果两个刚体 (Rigidbody) 相互碰撞，则物理引擎不会计算碰撞，除非这两个对象都附加了碰撞组件 (Collider)。无碰撞组件 (Collider) 的刚体 (Rigidbody) 在物理模拟过程中只会穿过彼此。
+
+
+碰撞组件 (Collider) 定义刚体 (Rigidbody) 的物理边界
+使用组件 (Component) -> 物理 (Physics) 菜单添加碰撞体 (Collider)。有关更多特定信息，请查看任何个别碰撞体 (Collider) 的“组件参考”页面：
+
+箱体碰撞组件 (Box Collider) - 立方体的基元形状
+球体碰撞体 (Sphere Collider) - 球体的基元形状
+胶囊碰撞体 (Capsule Collider) - 胶囊的基元形状
+网格碰撞体 (Mesh Collider) - 通过对象的网格创建碰撞体 (Collider)，不能与其他网格碰撞体 (Mesh Collider) 碰撞
+车轮碰撞体 (Wheel Collider) - 专门用于创建汽车或其他移动交通工具
+复合碰撞体 (Compound Collider)
+复合碰撞体 (Compound Collider) 是基元碰撞体 (Collider)（共同充当单个碰撞体 (Collider)）的组合。当您要在碰撞中使用复杂网格但是无法使用网格碰撞体 (Mesh Collider) 时，它们可派上用场。要创建复合碰撞体 (Compound Collider)，请创建碰撞对象的子对象，然后向每个子对象添加基元碰撞体 (Collider)。这使您可以方便且相互独立地定位、旋转和缩放每个碰撞体 (Collider)。
+
+
+实际的复合碰撞体 (Compound Collider) 设置
+在上图中，枪模型 (Gun Model) 游戏对象 (GameObject) 附加了刚体 (Rigidbody)，并且将多个基元碰撞体 (Collider) 作为子游戏对象 (GameObject)。当父刚体 (Rigidbody) 受力四处移动时，子碰撞体 (Collider) 会随其一起移动。基元碰撞体 (Collider) 会与环境的网格碰撞体 (Mesh Collider) 碰撞，而父刚体 (Rigidbody) 会基于向其应用的力以及其子碰撞体 (Collider) 与场景中其他碰撞体 (Collider) 交互的方式而改变其移动方式。
+
+网格碰撞体 (Mesh Collider) 通常不能相互碰撞。如果某个网格碰撞体 (Mesh Collider) 标记为凸体 (Convex)，则它可以与其他网格碰撞体 (Mesh Collider) 碰撞。典型解决方案是将基元碰撞体 (Collider) 用于任何移动对象，而将网格碰撞体 (Mesh Collider) 用于静态背景对象。
+
+连续 (Continuous) 碰撞检测
+连续 (Continuous) 碰撞检测是一种防止快速移动的碰撞体 (Collider) 穿过彼此的功能。如果一个对象在一个帧中处于碰撞体 (Collider) 的一端，并且在下一帧中已穿过碰撞体 (Collider)，则使用普通（离散 (Discrete))）碰撞检测时可能会发生这种情况。要解决此问题，可以对快速移动对象的刚体 (Rigidbody) 启用连续 (Continuous) 碰撞检测。将碰撞检测模式设置为连续 (Continuous) 可防止刚体 (Rigidbody) 穿过任何静止（即非刚体 (Rigidbody)）静态网格碰撞体 (MeshCollider)。将其设置为连续动态 (Continuous Dynamic) 还可防止刚体 (Rigidbody) 穿过任何其他在碰撞检测模式设置为 连续 (Continuous) 或连续动态 (Continuous Dynamic)。将其设置为连续动态 (Continuous Dynamic) 还可防止刚体 (Rigidbody) 穿过任何其他在碰撞检测模式设置为连续 (Continuous) 或连续动态 (Continuous Dynamic) 时支持的刚体 (Rigidbody)。对于箱体碰撞体 (BoxCollider)、球体碰撞体 (Sphere Collider) 和胶囊碰撞体 (Capsule Collider) 支持连续 (Continuous) 碰撞检测。请注意，连续 (Continuous) 碰撞检测旨在用作在对象否则会穿过彼此的情况下捕获碰撞的安全网，但是不会提供物理上准确的碰撞结果，因此如果遇到与快速移动对象有关的问题，则可能仍要考虑在时间管理器 (TimeManager) 检视视图 (Inspector) 中减小固定时间步长 (Time step) 值以使模拟更加精确。
+
+使用合适大小
+游戏对象 (GameObject) 的网格大小比刚体 (Rigidbody) 的质量要重要得多。如果发现刚体 (Rigidbody) 的行为与预期方式不完全相同 - 它缓慢移动、漂浮或是未正确碰撞 - 请考虑调整网格资源的比例。Unity 的默认单位比例为 1 单位 = 1 米，因此导入的网格的比例可保持下来并应用于物理计算。例如，摇摇欲坠的摩天大楼崩塌的方式与积木搭成的塔非常不同，因此不同大小的对象应按准确比例进行建模。
+
+如果对人体进行建模，请确保他在 Unity 中大约 2 米高。要检查对象是否具有合适大小，请将其与默认立方体进行比较。可以使用游戏对象 (GameObject) -> 创建其他 (Create Other) -> 立方体 (Cube)创建立方体。立方体的高度恰好是 1 米，因此人体应是两倍高。
+
+如果无法调整网格自身，则可以更改特定网格资源的均匀比例，具体方法是在工程视图 (Project View) 中选择它并从菜单栏中选择资源 (Assets) -> 导入设置 (Import Settings)... 。在此处可以更改比例并重新导入网格。
+
+如果游戏要求游戏对象 (GameObject) 按不同比例进行实例化，则可以调整变换 (Transform) 比例轴的值。缺点是物理模拟程序在实例化对象时必须进行更多工作，并且可能会导致游戏性能下降。这不是很严重的损失，但是不如使用其他两个选项完成比例高效。另请记住，不均匀比例可能会在使用父子化 (Parenting) 时形成不需要的行为。出于这些理由，在建模应用程序中按正确比例创建对象始终是最佳选择。
+
+提示
+两个刚体 (Rigidbody) 的相对质量 (Mass) 确定它们在互相碰撞时的反应方式。
+使一个刚体 (Rigidbody) 的 质量 (Mass) 大于另一个刚体 (Rigidbody) 不会使其在自由落体过程中下落得更快。请使用阻力 (Drag) 实现此目的。
+较小阻力 (Drag)值会使对象看起来较重。较高值会使对象看起来较轻。阻力 (Drag) 的典型值介于 0.001（实心金属块）与 10（羽毛）之间。
+如果直接处理对象的变换 (Transform) 组件 (Component) ，但是仍需要物理，请附加刚体 (Rigidbody) 并将其设为运动学 (Kinematic)。
+如果通过其变换 (Transform) 组件 (Component) 移动某个游戏对象 (GameObject)，但是希望接收碰撞体 (Collider)/触发器 (Trigger) 消息，则必须将刚体 (Rigidbody) 附加到移动的对象。
+不能仅仅通过将其“角阻力”(Angular Drag) 设置为无穷大使对象停止旋转。
+恒定力 (Constant Force)
+恒定力 (Constant Force) 是用于向刚体 (Rigidbody) 添加恒定力的快速实用工具。如果您不希望单次发射对象（如火箭）以较大速率启动而是进行加速，则这十分适用于这类对象。
+
+
+由恒定力 (Constant Force) 向前推动的火箭
+属性
+属性：	功能：
+力 (Force)	在世界坐标空间中应用的力的向量。
+相对力 (Relative Force)	在对象局部坐标空间中应用的力的向量。
+扭矩 (Torque)	在世界坐标空间中应用的扭矩的向量。对象会围绕此向量开始旋转。此向量越长，旋转便越快。
+相对扭矩 (Relative Torque)	在局部坐标空间中应用的扭矩的向量。对象会围绕此向量开始旋转。此向量越长，旋转便越快。
+详细信息
+要创建向前加速的火箭，请将相对力 (Relative Force) 设置为沿正 z 轴。随后使用刚体 (Rigidbody) 的阻力 (Drag) 属性使其不超过某个最大速率（阻力越大，最大速率越低）。在刚体 (Rigidbody) 中，还需确保关闭重力以便火箭始终保持在其路径上。
+
+提示
+要使对象向上流动，请添加力 (Force) 属性具有正 Y 值的恒定力 (Constant Force)。
+要使对象向前飞行，请添加相对力 (Relative Force) 属性具有正 Z 值的恒定力 (Constant Force)。
+(Sphere Collider)
+球形碰撞体(Sphere Collider) 是基本球形碰撞基元。
+
+
+一堆球形碰撞体 (Sphere Collider)
+属性
+属性：	功能：
+为触发器 (Is Trigger)	如果启用，此碰撞体 (Collider) 则用于触发事件，会由物理引擎忽略。
+材质 (Material)	引用可确定此碰撞体 (Collider) 与其他碰撞体 (Collider) 的交互方式的物理材质 (Physics Material)。
+半径 (Radius)	碰撞体 (Collider) 大小。
+中心 (Center)	碰撞体 (Collider) 在对象局部坐标空间中的位置。
+详细信息
+球体碰撞体 (Sphere Collider) 可以按均匀比例调整大小，但是不能沿各个轴调整。它适用于下落的卵石、乒乓球、弹珠等。
+
+
+标准球体碰撞体 (Sphere Collider)
+
+碰撞体 (Collider) 与刚体 (Rigidbody) 结合使用可使 Unity 中的物理变得生动。刚体 (Rigidbody) 使对象可以受物理控制，而碰撞体 (Collider) 使对象可以相互碰撞。碰撞体 (Collider) 必须独立于刚体 (Rigidbody) 添加到对象。碰撞体 (Collider) 并不一定需要附加刚体 (Rigidbody)，但是必须刚体 (Rigidbody) 才能使对象由于碰撞而移动。
+
+当两个碰撞体 (Collider) 之间发生碰撞时并且如果其中至少一个附加了刚体 (Rigidbody)，会将三条碰撞消息向外发送给附加到它们的对象。这些事件可以在脚本中进行处理，使您可以在使用或不使用内置 NVIDIA PhysX 引擎的情况下创建独特行为。
+
+触发器 (Trigger)
+使用碰撞体 (Collider) 的备选方法是将其作为触发器 (Trigger)，只需在检视视图 (Inspector) 中选中“为触发器”(IsTrigger) 属性复选框即可。触发器 (Trigger) 实际上会被物理引擎忽略，并具有一组独有的三条触发器 (Trigger) 消息，这些消息会在与触发器 (Trigger) 发生碰撞时向外发送。触发器 (Trigger) 可用于触发游戏中的其他事件，如剧情画面、自动门打开、显示辅导消息等。请充分发挥您的想象力！
+
+请注意，要使两个触发器 (Trigger) 在碰撞时向外发送触发器 (Trigger) 事件，其中之一必须还包括刚体 (Rigidbody)。要使触发器 (Trigger) 与普通碰撞体 (Collider) 碰撞，则其中之一必须附加刚体 (Rigidbody)。有关不同类型碰撞的详细图表，请参阅下面“高级”部分中的碰撞动作矩阵。
+
+摩擦力和弹力
+摩擦力、弹力和柔软度在物理材质 (Physisc Material) 中定义。标准资源 (Standard Asset) 包含最常见的物理材质 (Physisc Material)。要使用其中之一，请单击“物理材质”(Physisc Material) 下拉菜单并选择一个，例如“冰”(Ice)。还可以创建自己的物理材质 (Physisc Material) 并调整所有摩擦力值。
+
+提示
+要为对象添加多个碰撞体(Collider)，请创建子游戏对象 (GameObject) 并向每个子游戏对象 (GameObject) 附加碰撞体(Collider)。这样便可以独立处理每个碰撞体(Collider)。
+可以在场景视图 (Scene View) 中查看小图示以了解在对象上计算碰撞体(Collider) 的方式。
+碰撞体(Collider) 会尽量匹配对象的缩放。如果您具有不均匀缩放（在各个方向上不同的缩放），则只有网格碰撞体(Mesh Collider) 才能完全匹配。
+如果通过其变换组件 (Component) 移动某个对象，但是希望接收碰撞体(Collider)/触发器 (Trigger) 消息，则必须将刚体 (Rigidbody) 附加到移动的对象。
+如果创建爆炸，则将具有大量阻力和一个球体碰撞体 (Sphere Collider) 的刚体 (Rigidbody) 添加到它，以便使其从击中的墙壁推出去一点，这会非常有效。
+高级
+碰撞体 (Collider) 组合
+在 Unity 中可以进行许多不同的碰撞体 (Collider) 组合。每个游戏都是独一无二的，不同组合可能更适合于不同类型的游戏。如果在游戏中使用物理，则了解不同基本碰撞体 (Collider) 类型、其常见用途以及与其他类型对象的交互方式会十分有帮助。
+
+静态碰撞体 (Static Collider)
+这些是未附加刚体 (Rigidbody)、但的确附加了碰撞体 (Collider) 的游戏对象 (GameObject)。这些对象应保持静态，或很少移动。这些十分适用于环境几何结构。它们在刚体 (Rigidbody) 与之碰撞时不会移动。
+
+刚体碰撞体 (Rigidbody Collider)
+这些游戏对象 (GameObject) 同时包含刚体 (Rigidbody) 和碰撞体 (Collider)。它们通过脚本编写的力和碰撞，完全受物理引擎影响。它们可以与仅包含碰撞体 (Collider) 的游戏对象 (GameObject) 碰撞。这些很可能是使用物理的游戏中的主要碰撞体 (Collider) 类型。
+
+运动学刚体碰撞体 (Kinematic Rigidbody Collider)
+此游戏对象 (GameObject) 包含碰撞体 (Collider) 和标记有“为运动学”(IsKinematic) 的刚体 (Rigidbody)。要移动此游戏对象 (GameObject)，请修改其 变换组件 (Component)，而不是应用力。它们类似于静态碰撞体 (Static Collider)，但是更适合于要经常四处移动碰撞体 (Collider) 的情况。有一些使用此游戏对象 (GameObject) 的其他专业方案。
+
+此对象可以用于通常希望静态碰撞体 (Static Collider) 发送触发器 (Trigger) 事件的情况。因为触发器 (Trigger) 必须附加刚体 (Rigidbody)，所以应添加刚体 (Rigidbody)，然后启用“为运动学”(IsKinematic)。这可防止对象脱离物理影响，并使您可以在需要时接收触发器 (Trigger) 事件。
+
+运动学刚体 (Kinematic Rigidbody) 可以方便地打开和关闭。这适合于在以下情况中创建布娃娃：通常希望角色跟随在动画之后，然后在发生碰撞时（通过爆炸或所选的任何其他事物进行提示）变为布娃娃。发生这种情况时，只需通过脚本将所有运动学刚体 (Kinematic Rigidbody) 转变为普通刚体 (Rigidbody)。
+
+如果让刚体 (Rigidbody) 静止下来以便在一段时间内不移动，它们会“入睡”。即，它们在物理更新过程中不会进行计算，因为它们不会前往任何位置。如果将运动学刚体 (Kinematic Rigidbody) 从休眠的普通刚体 (Rigidbody) 下边移走，则休眠的刚体 (Rigidbody) 将被唤醒并在物理更新中重新准确计算。因此如果您具有许多要四处移动的静态碰撞体 (Static Collider) 并且让不同对象正确落到其上，请使用运动学刚体碰撞体 (Kinematic Rigidbody Collider)。
+
+碰撞动作矩阵
+根据两个碰撞对象的配置，可能发生一些不同动作。下图概述了可以基于附加到其的组件 (Component) 对两个碰撞对象进行的预计。一些组合仅导致两个对象之一受碰撞影响，因此请记住标准规则 - 物理不会应用于未附加刚体 (Rigidbody) 的对象。
+
+进行碰撞检测并在碰撞时发送消息
+ 	静态碰撞体 (Static Collider)	刚体碰撞体 (Rigidbody Collider)	运动学刚体碰撞体 (Kinematic Rigidbody Collider)	静态触发碰撞体 (Static Trigger Collider)	刚体触发碰撞体 (Rigidbody Trigger Collider)	运动学刚体触发碰撞体 (Kinematic Rigidbody Trigger Collider)
+静态碰撞体 (Static Collider)	 	Y	 	 	 	 
+刚体碰撞体 (Rigidbody Collider)	Y	Y	Y	 	 	 
+运动学刚体碰撞体 (Kinematic Rigidbody Collider)	 	Y	 	 	 	 
+静态触发碰撞体 (Static Trigger Collider)	 	 	 	 	 	 
+刚体触发碰撞体 (Rigidbody Trigger Collider)	 	 	 	 	 	 
+运动学刚体触发碰撞体 (Kinematic Rigidbody Trigger Collider)	 	 	 	 	 	 
+碰撞时发送触发器 (Trigger) 消息
+ 	静态碰撞体 (Static Collider)	刚体碰撞体 (Rigidbody Collider)	运动学刚体碰撞体 (Kinematic Rigidbody Collider)	静态触发碰撞体 (Static Trigger Collider)	刚体触发碰撞体 (Rigidbody Trigger Collider)	运动学刚体触发碰撞体 (Kinematic Rigidbody Trigger Collider)
+静态碰撞体 (Static Collider)	 	 	 	 	Y	Y
+刚体碰撞体 (Rigidbody Collider)	 	 	 	Y	Y	Y
+运动学刚体碰撞体 (Kinematic Rigidbody Collider)	 	 	 	Y	Y	Y
+静态触发碰撞体 (Static Trigger Collider)	 	Y	Y	 	Y	Y
+刚体触发碰撞体 (Rigidbody Trigger Collider)	Y	Y	Y	Y	Y	Y
+运动学刚体触发碰撞体 (Kinematic Rigidbody Trigger Collider)	Y	Y	Y	Y	Y	Y
+基于层的碰撞检测
+在 Unity 3.x 中，我们引入了某个称为基于层的碰撞检测 (Layer-Based Collision Detection) 的功能，现在可以有选择性地告知 Unity 游戏对象 (GameObject) 与它们附加到的特定层碰撞。有关更多信息，请单击此处
+
+箱体碰撞体 (Box Collider)
+箱体碰撞体 (Box Collider) 是基本立方体形碰撞基元。
+
+
+一堆箱体碰撞体 (Box Collider)
+属性
+属性：	功能：
+为触发器 (Is Trigger)	如果启用，此碰撞体 (Collider) 则用于触发事件，会由物理引擎忽略。
+材质 (Material)	引用可确定此碰撞体 (Collider) 与其他碰撞体 (Collider) 的交互方式的物理材质 (Physics Material)。
+中心 (Center)	碰撞体 (Collider) 在对象局部坐标空间中的位置。
+大小 (Size)	碰撞体 (Collider) 在 X、Y、Z 上的大小。
+详细信息
+可以将箱体碰撞体 (Box Collider) 大小调整为不同形状的矩形棱镜。它十分适用于门、墙壁、平台等。它还可有效地作为布娃娃中的人体躯干或车辆中的车体。当然，它也可完美地就用于箱体和板条箱！！
+
+
+标准箱体碰撞体 (Box Collider)
+碰撞体 (Collider) 与刚体 (Rigidbody) 结合使用可使 Unity 中的物理变得生动。刚体 (Rigidbody) 使对象可以受物理控制，而碰撞体 (Collider) 使对象可以相互碰撞。碰撞体 (Collider) 必须独立于刚体 (Rigidbody) 添加到对象。碰撞体 (Collider) 并不一定需要附加刚体 (Rigidbody)，但是必须刚体 (Rigidbody) 才能使对象由于碰撞而移动。
+
+当两个碰撞体 (Collider) 之间发生碰撞时并且如果其中至少一个附加了刚体 (Rigidbody)，会将三条碰撞消息向外发送给附加到它们的对象。这些事件可以在脚本中进行处理，使您可以在使用或不使用内置 NVIDIA PhysX 引擎的情况下创建独特行为。
+
+触发器 (Trigger)
+使用碰撞体 (Collider) 的备选方法是将其作为触发器 (Trigger)，只需在检视视图 (Inspector) 中选中“为触发器”(IsTrigger) 属性复选框即可。触发器 (Trigger) 实际上会被物理引擎忽略，并具有一组独有的三条触发器 (Trigger) 消息，这些消息会在与触发器 (Trigger) 发生碰撞时向外发送。触发器 (Trigger) 可用于触发游戏中的其他事件，如剧情画面、自动门打开、显示辅导消息等。请充分发挥您的想象力！
+
+请注意，要使两个触发器 (Trigger) 在碰撞时向外发送触发器 (Trigger) 事件，其中之一必须还包括刚体 (Rigidbody)。要使触发器 (Trigger) 与普通碰撞体 (Collider) 碰撞，则其中之一必须附加刚体 (Rigidbody)。有关不同类型碰撞的详细图表，请参阅下面“高级”部分中的碰撞动作矩阵。
+
+摩擦力和弹力
+摩擦力、弹力和柔软度在物理材质 (Physisc Material) 中定义。标准资源 (Standard Asset) 包含最常见的物理材质 (Physisc Material)。要使用其中之一，请单击“物理材质”(Physisc Material) 下拉菜单并选择一个，例如“冰”(Ice)。还可以创建自己的物理材质 (Physisc Material) 并调整所有摩擦力值。
+
+网格碰撞体 (Mesh Collider)
+网格碰撞体 (Mesh Collider) 采用网格资源 (Mesh Asset) 并基于该网格构建其碰撞体 (Collider)。对于碰撞检测，这比将基元用于复杂网格要精确得多。标记为 凸体 (Convex) 的网格碰撞体 (Mesh Collider)可以与其他网格碰撞体 (Mesh Collider) 碰撞。
+
+
+在水平几何结构上使用的网格碰撞体 (Mesh Collider)
+属性
+属性：	功能：
+为触发器 (Is Trigger)	如果启用，此碰撞体 (Collider) 则用于触发事件，会由物理引擎忽略。
+材质 (Material)	引用可确定此碰撞体 (Collider) 与其他碰撞体 (Collider) 的交互方式的物理材质 (Physics Material)。
+网格 (Mesh)	对用于碰撞的网格的引用。
+平滑球体碰撞 (Smooth Sphere Collisions)	启用此项时，会使碰撞网格法线平滑。应对平滑表面（例如没有硬边缘的丘陵地形）启用此项以使球体滚动更平滑。
+凸体 (Convex)	如果启用，则此网格碰撞体 (Mesh Collider) 会与其他网格碰撞体 (Mesh Collider) 碰撞。凸体网格碰撞体 (Convex Mesh Collider) 限制为 255 个三角形。
+详细信息
+网格碰撞体 (Mesh Collider) 通过附加到游戏对象 (GameObject) 的网格 (Mesh) 构建其碰撞表示形式，并读取附加的变换的属性以设置其位置并正确缩放。
+
+碰撞网格使用背面剔除。如果对象与将以图形方式背面剔除的网格碰撞，则也不会以物理方式与它碰撞。
+
+使用网格碰撞体 (Mesh Collider) 时有一些限制。通常，两个网格碰撞体 (Mesh Collider) 不能相互碰撞。所有网格碰撞体 (Mesh Collider) 都可以与任何基元碰撞体 (Collider) 碰撞。如果某个网格标记为 凸体 (Convex)，则它可以与其他网格碰撞体 (Mesh Collider) 碰撞。
+
+碰撞体 (Collider) 与刚体 (Rigidbody) 结合使用可使 Unity 中的物理变得生动。刚体 (Rigidbody) 使对象可以受物理控制，而碰撞体 (Collider) 使对象可以相互碰撞。碰撞体 (Collider) 必须独立于刚体 (Rigidbody) 添加到对象。碰撞体 (Collider) 并不一定需要附加刚体 (Rigidbody)，但是必须刚体 (Rigidbody) 才能使对象由于碰撞而移动。
+
+当两个碰撞体 (Collider) 之间发生碰撞时并且如果其中至少一个附加了刚体 (Rigidbody)，会将三条碰撞消息向外发送给附加到它们的对象。这些事件可以在脚本中进行处理，使您可以在使用或不使用内置 NVIDIA PhysX 引擎的情况下创建独特行为。
+
+触发器 (Trigger)
+使用碰撞体 (Collider) 的备选方法是将其作为触发器 (Trigger)，只需在检视视图 (Inspector) 中选中“为触发器”(IsTrigger) 属性复选框即可。触发器 (Trigger) 实际上会被物理引擎忽略，并具有一组独有的三条触发器 (Trigger) 消息，这些消息会在与触发器 (Trigger) 发生碰撞时向外发送。触发器 (Trigger) 可用于触发游戏中的其他事件，如剧情画面、自动门打开、显示辅导消息等。请充分发挥您的想象力！
+
+请注意，要使两个触发器 (Trigger) 在碰撞时向外发送触发器 (Trigger) 事件，其中之一必须还包括刚体 (Rigidbody)。要使触发器 (Trigger) 与普通碰撞体 (Collider) 碰撞，则其中之一必须附加刚体 (Rigidbody)。有关不同类型碰撞的详细图表，请参阅下面“高级”部分中的碰撞动作矩阵。
+
+摩擦力和弹力
+摩擦力、弹力和柔软度在物理材质 (Physisc Material) 中定义。标准资源 (Standard Asset) 包含最常见的物理材质 (Physisc Material)。要使用其中之一，请单击“物理材质”(Physisc Material) 下拉菜单并选择一个，例如“冰”(Ice)。还可以创建自己的物理材质 (Physisc Material) 并调整所有摩擦力值。
+
+提示
+网格碰撞体 (Mesh Collider) 不能相互碰撞，除非它们标记为凸体 (Convex)。因此，它们对背景对象（如环境几何结构）最有用。
+凸体 (Convex) 网格碰撞体 (Mesh Collider) 必须少于 255 个三角形。
+基元碰撞体 (Collider) 对于处于物理控制下的对象成本较低。
+将网格碰撞体 (Mesh Collider) 附加到游戏对象 (GameObject) 时，其“网格”(Mesh) 属性会默认为所渲染的网格。可以通过分配不同网格进行更改。
+要为对象添加多个碰撞体(Collider)，请创建子游戏对象 (GameObject) 并向每个子游戏对象 (GameObject) 附加碰撞体(Collider)。这样便可以独立处理每个碰撞体(Collider)。
+可以在场景视图 (Scene View) 中查看小图示以了解在对象上计算碰撞体(Collider) 的方式。
+碰撞体(Collider) 会尽量匹配对象的缩放。如果您具有不均匀缩放（在各个方向上不同的缩放），则只有网格碰撞体(Mesh Collider) 才能完全匹配。
+如果通过其变换组件 (Component) 移动某个对象，但是希望接收碰撞体(Collider)/触发器 (Trigger) 消息，则必须将刚体 (Rigidbody) 附加到移动的对象。
+物理材质 (Physics Material)
+物理材质 (Physics Material) 用于调整碰撞对象的摩擦力和反弹效果。
+
+要创建物理材质 (Physics Material)，请从菜单栏选择资源 (Assets) -> 创建 (Create) -> 物理材质 (Physics Material)。然后将物理材质 (Physics Material) 从“工程视图”(Project View) 拖动到场景中的碰撞体 (Collider) 上。
+
+
+物理材质 (Physics Material)检视器 (Inspector)
+属性
+属性：	功能：
+动态摩擦力 (Dynamic Friction)	已在移动时使用的摩擦力。通常值为 0 至 1。值 0 的状态类似于冰，值 1 会使其非常快速的静止下来，除非有很大的力或重力推动对象。
+静态摩擦力 (Static Friction)	对象在某个表面上保持静止时使用的摩擦力。通常值为 0 至 1。值 0 的状态类似于冰，值 1 会使对象非常难以移动。
+弹力 (Bounciness)	表面的反弹程度。值 0 不会反弹。值 1 会反弹而不损失任何能量。
+摩擦力合并模式 (Friction Combine Mode	两个碰撞对象摩擦力的合并方式。
+平均值 (Average)	计算两个摩擦力值的平均值。
+最小 (Min)	使用两个值的较小值。
+最大 (Max)	使用两个值的较大值。
+相乘 (Multiply)	摩擦力值相互相乘。
+合并反弹 (Bounce Combine)	两个碰撞对象弹力的合并方式。其模式与“摩擦力合并模式”(Friction Combine Mode) 相同
+摩擦力方向 2 (Friction Direction 2)	各向异性方向。如果此方向不为零，则启用各向异性摩擦力。“动态摩擦力 2”(Dynamic Friction 2) 和“静态摩擦力 2”(Static Friction 2) 会随“摩擦力方向 2”(Friction Direction 2) 一起应用。
+动态摩擦力 2 (Dynamic Friction 2)	如果启用各向异性摩擦力，则“动态摩擦力 2”(DynamicFriction2) 会随“摩擦力方向 2”(Friction Direction 2) 一起应用。
+静态摩擦力 2 (Static Friction 2	如果启用各向异性摩擦力，则“静态摩擦力 2”(StaticFriction2) 会随“摩擦力方向 2”(Friction Direction 2) 一起应用。
+详细信息
+摩擦力是阻止表面相互滑动的量。此值在尝试堆叠对象时至关重要。摩擦力具有两种形式，即动态和静态。静态摩擦力 (Static Friction) 在对象保持静止时使用。它会阻止对象开始移动。如果将足够大的力应用于对象，则它会开始移动。此时，动态摩擦力 (Dynamic Friction) 会开始发挥作用。动态摩擦力 (Dynamic Friction)现在将试图在对象与其他对象接触时减慢其速度。
+
+提示
+请勿尝试将标准物理材质 (Physics Material) 用于主角色。请创建自定义物理材质 (Physics Material) 并使其完善。
+铰链关节 (Hinge Joint)
+铰链关节 (Hinge Joint) 将两个刚体 (Rigidbody) 组合在一起，从而将其约束为如同通过铰链连接一样进行移动。它十分适合门，也可用于对链条、钟摆等进行建模。
+
+
+铰链关节 (Hinge Joint) 检视器 (Inspector)
+Properties
+属性：	功能：
+连接体 (Connected Body)	对关节 (Joint) 所依赖的刚体 (Rigidbody) 的可选引用。如果未设置，则关节 (Joint) 连接到世界坐标。
+锚点 (Anchor)	主体围绕其摇摆的轴的位置。该位置在局部坐标空间中定义。
+轴 (Axis)	主体围绕其摇摆的轴的方向。该方向在局部坐标空间中定义。
+使用弹簧 (Use Spring)	弹簧 (Spring) 使刚体 (Rigidbody) 相对于其连接体达到特定角度。
+弹簧 (Spring)	启用使用弹簧 (Use Spring) 时使用的弹簧 (Spring) 的属性。
+弹簧 (Spring)	对象为移动到位所施加的力。
+阻尼 (Damper)	此值越高，对象减慢的幅度越大。
+目标位置 (Target Position)	弹簧 (Spring) 的目标角度。弹簧 (Spring) 会拉向此角度（以度数为单位测量）。
+使用电机 (Use Motor)	电机使对象旋转。
+电机 (Motor)	启用使用电机 (Use Motor) 时使用的电机 (Motor) 的属性。
+目标速率 (Target Velocity)	对象尝试达到的速度。
+力 (Force)	为达到该速度而应用的力。
+自由旋转 (Free Spin)	如果启用，则电机从不用于对旋转制动，仅进行加速。
+使用限制 (Use Limits)	如果启用，则铰链角度会限制在最小 (Min) 和最大 (Max) 值内。
+限制 (Limits)	启用使用限制 (Use Limits)s 时使用的限制 (Limits) 的属性。
+最小 (Min)	旋转可以达到的最小角度。
+最大 (Max)	旋转可以达到的最大角度。
+最小反弹 (Min Bounce)	对象在命中最小停止时反弹的量。
+最大反弹 (Max Bounce)	对象在命中最大停止时反弹的量。
+折断力 (Break Force)	为使此关节 (Joint) 折断而需要应用的力。
+折断扭矩 (Break Torque)	为使此关节 (Joint) 折断而需要应用的扭矩。
+详细信息
+应将单个铰链关节 (Hinge Joint) 应用于游戏对象 (GameObject). 铰链会在锚点 (Anchor) 属性指定的点处旋转，围绕指定轴 (Axis) 属性移动。无需将游戏对象 (GameObject) 分配给关节 (Joint) 的连接体 (Connected Body) 属性。仅当希望关节 (Joint) 的变换依赖于附加对象的变换时，才应将游戏对象 (GameObject) 分配给连接体 (Connected Body) 属性。
+
+请考虑门铰链的工作方式。这种情况下的轴 (Axis) 向上（沿 Y 轴正方向）。锚点 (Anchor) 置于门与墙壁相交的某处。无需将墙壁分配给连接体 (Connected Body)，因为关节 (Joint) 会在默认情况下连接到世界坐标。
+
+现在考虑小狗门铰链。小狗门的轴 (Axis) 应为横向（沿相对 X 轴的正方向）。主门应分配为连接体 (Connected Body)，因此小狗门铰链依赖于主门的刚体 (Rigidbody)。
+
+链条
+多个铰链关节 (Hinge Joint) 还可以串在一起以创建链条。向链条中的每个链环添加关节 (Joint)，然后将下一个链环作为连接体 (Connected Body) 附加。
+
+Hints
+无需将连接体 (Connected Body) 分配给关节 (Joint) 即可使其工作。
+使用折断力 (Break Force) 可创建动态损坏系统。这实在很棒，因为它允许玩家通过使用火箭发射器轰炸或使用汽车闯入，使门脱离其铰链。
+使用弹簧 (Spring)、电机 (Motor) 和限制 (Limits) 属性可以微调关节 (Joint) 的行为。
+弹簧关节 (Spring Joint)
+弹簧关节 (Spring Joint) 将两个刚体 (Rigidbody) 组合在一起，从而将其约束为如同通过弹簧连接一样进行移动。
+
+
+弹簧关节 (Spring Joint) 检视器 (Inspector)
+属性
+属性：	功能：
+连接体 (Connected Body)	对关节 (Joint) 所依赖的刚体 (Rigidbody) 的可选引用。
+锚点 (Anchor)	对象局部坐标空间中定义关节 (Joint) 中心的位置（静止时）。这不是将对象拉向的位置。
+X	关节 (Joint) 局部坐标中心沿 X 轴的位置。
+Y	关节 (Joint) 局部坐标中心沿 Y 轴的位置。
+Z	关节 (Joint) 局部坐标中心沿 Z 轴的位置。
+弹簧 (Spring)	弹簧的强度。
+阻尼 (Damper)	弹簧在处于活动状态时缩减的量
+最小距离 (Min Distance)	大于此值的距离不会使弹簧激活。
+最大距离 (Max Distance)	小于此值的距离不会使弹簧激活。
+折断力 (Break Force)	为使此关节 (Joint) 折断而需要应用的力。
+折断扭矩 (Break Torque)	为使此关节 (Joint) 折断而需要应用的扭矩。
+详细信息
+弹簧关节 (Spring Joint) 使刚体化 (Rigidbodied) 游戏对象 (GameObject) 可以被拉向特定“目标”位置。此位置为另一个刚体化 (Rigidbodied) 游戏对象 (GameObject) 或世界坐标。随着游戏对象 (GameObject) 背向此“目标”位置前进得更远，弹簧关节 (Spring Joint) 会应用力，该力将对象拉回到其原始“目标”位置。这会形成非常类似于橡皮筋或弹弓的效果。
+
+创建弹簧关节 (Spring Joint) 时或进入“播放”(Play) 模式时，弹簧的“目标”位置由锚点 (Anchor) 到连接体 (Connected Body) （或世界坐标）的相对位置确定。这使弹簧关节 (Spring Joint) 对于在编辑器中设置带关节角色或对象非常有效，但是更难以通过脚本在运行时创建推/拉弹簧行为。如果要主要使用弹簧关节 (Spring Joint) 控制游戏对象 (GameObject)，则最好创建带刚体 (Rigidbody) 的空游戏对象 (GameObject)，并将其设置为带关节对象的连接刚体 (Connected Rigidbody) 。随后在脚本中可以更改连接刚体 (Connected Rigidbody) 的位置并看到弹簧按预期方式移动。
+
+连接刚体 (Connected Rigidbody)
+无需将连接刚体 (Connected Rigidbody) 用于关节 (Joint) 即可使其工作。一般而言，仅当对象位置和/或旋转依赖于连接刚体 (Connected Rigidbody) 才应使用它。如果不存在连接刚体 (Connected Rigidbody)，则弹簧会连接到世界坐标。
+
+弹簧 (Spring) 和阻尼 (Damper)
+弹簧 (Spring) 是将对象朝其“目标”位置拉回的力的强度。如果此值为 0，则不会有拉动对象的力，行为方式如同根本未附加弹簧关节 (Spring Joint) 时一样。 阻尼 (Damper) 是弹簧 (Spring) 力遇到的阻力。此值越低，对象弹性越大。随着阻尼 (Damper) 增大，关节 (Joint) 形成的弹力量会减小。
+
+最小距离 (Min Distance) 和最大距离 (Max Distance)
+如果对象位置处于最小距离 (Min Distances) 与最大距离 (Max Distances)，之间，则不会将关节 (Joint) 应用于对象。位置必须移动超出这些值范围才能使关节 (Joint) 激活。
+
+提示
+无需将连接体 (Connected Body) 分配给关节 (Joint) 即可使其工作。
+在进入“播放”(Play) 模式之前在编辑器中设置带关节对象的理想位置。
+弹簧关节 (Spring Joint) 需要向对象附加刚体 (Rigidbody)。
+ iOS
+可在此处找到 iOS 物理优化提示。
+
+Page last updated: 2013-06-20

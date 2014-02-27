@@ -1,0 +1,45 @@
+﻿物理组件-恒定力 (Constant Force)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-ConstantForce.html
+
+恒定力 (Constant Force) 是用于向刚体 (Rigidbody) 添加恒定力的快速实用工具。
+如果您不希望单次发射对象（如火箭）以较大速率启动而是进行加速，则这十分适用于这类对象。
+
+图：由恒定力 (Constant Force) 向前推动的火箭
+
+----
+属性
+属性：	功能：
+
+力 (Force)	
+在世界坐标空间中应用的力的向量。
+
+相对力 (Relative Force)	
+在对象局部坐标空间中应用的力的向量。
+
+扭矩 (Torque)	
+在世界坐标空间中应用的扭矩的向量。
+对象会围绕此向量开始旋转。
+此向量越长，旋转便越快。
+
+相对扭矩 (Relative Torque)	
+在局部坐标空间中应用的扭矩的向量。
+对象会围绕此向量开始旋转。
+此向量越长，旋转便越快。
+
+----
+详细信息
+
+要创建向前加速的火箭，请将相对力 (Relative Force) 设置为沿正 z 轴。
+随后使用刚体 (Rigidbody) 的阻力 (Drag) 属性使其不超过某个最大速率（阻力越大，最大速率越低）。
+在刚体 (Rigidbody) 中，还需确保关闭重力以便火箭始终保持在其路径上。
+
+----
+提示
+
+要使对象向上流动，请添加力 (Force) 属性具有正 Y 值的恒定力 (Constant Force)。
+
+要使对象向前飞行，请添加相对力 (Relative Force) 属性具有正 Z 值的恒定力 (Constant Force)。
+
+
+Page last updated: 2013-06-04
+

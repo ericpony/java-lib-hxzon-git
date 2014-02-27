@@ -1,0 +1,26 @@
+﻿Unity基础-学习界面-其他视图 (Views)
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/OtherViews.html
+
+本页提到的视图 (Views) 包含 Unity 中界面的基本内容。
+Unity 中其他视图 (Views) 在其他单独页面进行说明：
+
+控制台 (Console) 显示信息日志、警告和错误。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Console.html
+
+动画视图 (Animation View) 可用于制作场景中的对象动画。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Animations40.html
+
+分析器 (Profiler) 可用于检查和寻找游戏中的性能瓶颈。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Profiler.html
+
+资源服务器视图 (Asset Server View) 可用于管理使用 Unity 资源服务器 (Asset Server) 的工程的版本控制。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/AssetServer.html
+
+光照贴图视图 (Lightmapping View) 可用于管理使用 Unity 内置光照贴图功能的光照图。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Lightmapping.html
+
+遮挡剔除视图 (Occlusion Culling View) 可用于管理遮挡剔除，改善性能。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/OcclusionCulling.html
+
+Page last updated: 2013-05-21
+

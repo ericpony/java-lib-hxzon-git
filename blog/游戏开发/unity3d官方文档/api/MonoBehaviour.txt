@@ -1,0 +1,242 @@
+﻿MonoBehaviour
+http://docs.unity3d.com/Documentation/ScriptReference/MonoBehaviour.html
+
+Namespace: UnityEngine
+Parent class: Behaviour
+
+Description
+MonoBehaviour is the base class every script derives from.
+是所有脚本的基类。
+
+Using Javascript every script automatically derives from MonoBehaviour. 
+When using C# or Boo you have to explicitly derive from MonoBehaviour.
+
+Note: The checkbox for disabling a MonoBehavior (on the editor) will only prevent Start(), Awake(), Update(), FixedUpdate(), and OnGUI() from executing. 
+If none of these functions are present, the checkbox is not displayed.
+在编辑器，可以通过复选框禁用上述函数。
+
+See Also: The chapter on scripting in the manual.
+
+----
+Variables
+
+useGUILayout	Disabling this lets you skip the GUI layout phase.
+跳过GUI布局。
+
+----
+Functions
+
+CancelInvoke	Cancels all Invoke calls on this MonoBehaviour.
+
+Invoke	Invokes the method methodName in time seconds.
+定时调用。
+
+InvokeRepeating	Invokes the method methodName in time seconds.
+
+IsInvoking	Is any invoke on methodName pending?
+
+StartCoroutine	Starts a coroutine.
+启动协程。
+
+StopAllCoroutines	Stops all coroutines running on this behaviour.
+
+StopCoroutine	Stops all coroutines named methodName running on this behaviour.
+
+----
+Static Functions
+静态函数。
+
+print	Logs message to the Unity Console. This function is identical to Debug.Log.
+
+----
+Messages
+消息。
+
+Awake	Awake is called when the script instance is being loaded.
+脚本被加载时。
+
+FixedUpdate	This function is called every fixed framerate frame, if the MonoBehaviour is enabled.
+每一“固定帧率的”帧。
+
+LateUpdate	LateUpdate is called every frame, if the Behaviour is enabled.
+每一帧。
+
+OnAnimatorIK	Callback for setting up animation IK (inverse kinematics).
+
+OnAnimatorMove	Callback for processing animation movements for modifying root motion.
+
+OnApplicationFocus	Sent to all game objects when the player gets or loses focus.
+播放器获得或失去焦点时。
+
+OnApplicationPause	Sent to all game objects when the player pauses.
+
+OnApplicationQuit	Sent to all game objects before the application is quit.
+
+OnAudioFilterRead	If OnAudioFilterRead is implemented, Unity will insert a custom filter into the audio DSP chain.
+
+OnBecameInvisible	OnBecameInvisible is called when the renderer is no longer visible by any camera.
+
+OnBecameVisible	OnBecameVisible is called when the renderer became visible by any camera.
+
+OnCollisionEnter	OnCollisionEnter is called when this collider/rigidbody has begun touching another rigidbody/collider.
+当本碰撞体/刚体碰到另一个碰撞体/刚体时。
+
+OnCollisionEnter2D	Sent when an incoming collider makes contact with this object's collider (2D physics only).
+
+OnCollisionExit	OnCollisionExit is called when this collider/rigidbody has stopped touching another rigidbody/collider.
+
+OnCollisionExit2D	Sent when a collider on another object stops touching this object's collider (2D physics only).
+
+OnCollisionStay	OnCollisionStay is called once per frame for every collider/rigidbody that is touching rigidbody/collider.
+
+OnCollisionStay2D	Sent each frame where a collider on another object is touching this object's collider (2D physics only).
+
+OnConnectedToServer	Called on the client when you have successfully connected to a server.
+连上服务器时。
+
+OnControllerColliderHit	OnControllerColliderHit is called when the controller hits a collider while performing a Move.
+当物体运动时，控制器遇到碰撞体？
+
+OnDestroy	This function is called when the MonoBehaviour will be destroyed.
+销毁时。
+
+OnDisable	This function is called when the behaviour becomes disabled () or inactive.
+
+OnDisconnectedFromServer	Called on the client when the connection was lost or you disconnected from the server.
+
+OnDrawGizmos	Implement OnDrawGizmos if you want to draw gizmos that are also pickable and always drawn.
+
+OnDrawGizmosSelected	Implement this OnDrawGizmosSelected if you want to draw gizmos only if the object is selected.
+
+OnEnable	This function is called when the object becomes enabled and active.
+
+OnFailedToConnect	Called on the client when a connection attempt fails for some reason.
+
+OnFailedToConnectToMasterServer	Called on clients or servers when there is a problem connecting to the MasterServer.
+连接主服务器异常时。
+
+OnGUI	OnGUI is called for rendering and handling GUI events.
+
+OnJointBreak	Called when a joint attached to the same game object broke.
+
+OnLevelWasLoaded	This function is called after a new level was loaded.
+
+OnMasterServerEvent	Called on clients or servers when reporting events from the MasterServer.
+
+OnMouseDown	OnMouseDown is called when the user has pressed the mouse button while over the GUIElement or Collider.
+
+OnMouseDrag	OnMouseDrag is called when the user has clicked on a GUIElement or Collider and is still holding down the mouse.
+OnMouseEnter	OnMouseEnter is called when the mouse entered the GUIElement or Collider.
+OnMouseExit	OnMouseExit is called when the mouse is not any longer over the GUIElement or Collider.
+OnMouseOver	OnMouseOver is called every frame while the mouse is over the GUIElement or Collider.
+OnMouseUp	OnMouseUp is called when the user has released the mouse button.
+
+OnMouseUpAsButton	OnMouseUpAsButton is only called when the mouse is released over the same GUIElement or Collider as it was pressed.
+
+OnNetworkInstantiate	Called on objects which have been network instantiated with Network.Instantiate.
+
+OnParticleCollision	OnParticleCollision is called when a particle hits a collider.
+
+OnPlayerConnected	Called on the server whenever a new player has successfully connected.
+
+OnPlayerDisconnected	Called on the server whenever a player disconnected from the server.
+
+OnPostRender	OnPostRender is called after a camera finished rendering the scene.
+相机渲染完场景之后。
+
+OnPreCull	OnPreCull is called before a camera culls the scene.
+（cull，扑杀。）
+
+OnPreRender	OnPreRender is called before a camera starts rendering the scene.
+
+OnRenderImage	OnRenderImage is called after all rendering is complete to render image.
+
+OnRenderObject	OnRenderObject is called after camera has rendered the scene.
+相机渲染完场景之后。
+
+OnSerializeNetworkView	Used to customize synchronization of variables in a script watched by a network view.
+
+OnServerInitialized	Called on the server whenever a Network.InitializeServer was invoked and has completed.
+
+OnTriggerEnter	OnTriggerEnter is called when the Collider other enters the trigger.
+
+OnTriggerEnter2D	Sent when another object enters a trigger collider attached to this object (2D physics only).
+
+OnTriggerExit	OnTriggerExit is called when the Collider other has stopped touching the trigger.
+
+OnTriggerExit2D	Sent when another object leaves a trigger collider attached to this object (2D physics only).
+
+OnTriggerStay	OnTriggerStay is called once per frame for every Collider other that is touching the trigger.
+
+OnTriggerStay2D	Sent each frame where another object is within a trigger collider attached to this object (2D physics only).
+
+OnValidate	This function is called when the script is loaded or a value is changed in the inspector (Called in the editor only).
+
+OnWillRenderObject	OnWillRenderObject is called once for each camera if the object is visible.
+
+Reset	Reset to default values.
+
+Start	Start is called on the frame when a script is enabled just before any of the Update methods is called the first time.
+在所有Update函数之前。
+
+Update	Update is called every frame, if the MonoBehaviour is enabled.
+每一帧。
+
+====
+Inherited members
+
+Variables
+
+enabled	Enabled Behaviours are Updated, disabled Behaviours are not.
+animation	The Animation attached to this GameObject (null if there is none attached).
+audio	The AudioSource attached to this GameObject (null if there is none attached).
+camera	The Camera attached to this GameObject (null if there is none attached).
+collider	The Collider attached to this GameObject (null if there is none attached).
+collider2D	The Collider2D component attached to the object.
+constantForce	The ConstantForce attached to this GameObject (null if there is none attached).
+gameObject	The game object this component is attached to. A component is always attached to a game object.
+guiText	The GUIText attached to this GameObject (null if there is none attached).
+guiTexture	The GUITexture attached to this GameObject (Read Only). (null if there is none attached).
+hingeJoint	The HingeJoint attached to this GameObject (null if there is none attached).
+light	The Light attached to this GameObject (null if there is none attached).
+networkView	The NetworkView attached to this GameObject (Read Only). (null if there is none attached).
+particleEmitter	The ParticleEmitter attached to this GameObject (null if there is none attached).
+particleSystem	The ParticleSystem attached to this GameObject (null if there is none attached).
+renderer	The Renderer attached to this GameObject (null if there is none attached).
+rigidbody	The Rigidbody attached to this GameObject (null if there is none attached).
+rigidbody2D	The Rigidbody2D that is attached to the Component's GameObject.
+tag	The tag of this game object.
+transform	The Transform attached to this GameObject (null if there is none attached).
+hideFlags	Should the object be hidden, saved with the scene or modifiable by the user?
+name	The name of the object.
+
+----
+Functions
+
+BroadcastMessage	Calls the method named methodName on every MonoBehaviour in this game object or any of its children.
+CompareTag	Is this game object tagged with tag?
+GetComponent	Returns the component of Type type if the game object has one attached, null if it doesn't.
+GetComponentInChildren	Returns the component of Type type in the GameObject or any of its children using depth first search.
+GetComponents	Returns all components of Type type in the GameObject.
+GetComponentsInChildren	Returns all components of Type type in the GameObject or any of its children.
+SendMessage	Calls the method named methodName on every MonoBehaviour in this game object.
+SendMessageUpwards	Calls the method named methodName on every MonoBehaviour in this game object and on every ancestor of the behaviour.
+GetInstanceID	Returns the instance id of the object.
+ToString	Returns the name of the game object.
+
+----
+Static Functions
+
+Destroy	Removes a gameobject, component or asset.
+DestroyImmediate	Destroys the object obj immediately. You are strongly recommended to use Destroy instead.
+DontDestroyOnLoad	Makes the object target not be destroyed automatically when loading a new scene.
+FindObjectOfType	Returns the first active loaded object of Type type.
+FindObjectsOfType	Returns a list of all active loaded objects of Type type.
+Instantiate	Clones the object original and returns the clone.
+
+----
+Operators
+
+bool	Does the object exist?
+operator !=	Compares if two objects refer to a different object.
+operator ==	Compares if two objects refer to the same.

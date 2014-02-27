@@ -1,0 +1,28 @@
+﻿Unity基础-学习界面-层级视图 (Hierarchy)
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Hierarchy.html
+
+层级视图 (Hierarchy) 包含当前场景中的每个游戏对象 (GameObject)。
+有些是三维模型等资源文件的直接实例，
+其余是预设 (Prefabs) 实例，
+自定义对象构成游戏的绝大部分。
+
+可在层级视图 (Hierarchy) 中选择对象并将一个对象拖到另一个对象内，以应用父子化 (Parenting)（见下图）。
+在场景中添加和删除对象后，还将在层级视图 (Hierarchy) 中显示或消失。
+
+----
+父子化 (Parenting)
+
+Unity 采用父子化 (Parenting) 这一概念。
+使任何游戏对象 (GameObject) 成为另一对象的子对象，将欲移动的子对象拖到层级视图 (Hierarchy) 的父对象中。
+子对象会继承父对象的移动和旋转路径。
+可根据需要点击父对象的折叠箭头，显示或隐藏子对象。
+
+
+图：两个非父子化对象
+
+图：一个对象是另一个的父对象
+
+如需了解父子化 (Parenting) 的更多内容，请浏览转换组件 (Transform Component) 页面。
+
+Page last updated: 2013-06-17
+

@@ -1,4 +1,4 @@
-﻿场景视图 (Scene View)
+﻿Unity基础-学习界面-场景视图 (Scene View)
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/SceneView40.html
 
 ----
@@ -13,6 +13,8 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Manual/SceneView40.
 场景视图导航 (Scene View Navigation)
 
 请参见场景视图导航 (Scene View Navigation)，了解场景视图 (Scene View) 导航的详情。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/SceneViewNavigation.html
+
 以下是对一些要点的概述：
 
 按住鼠标右键进入漫游 (Flythrough) 模式。
@@ -51,6 +53,8 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Manual/SceneView40.
 游戏对象 (GameObjects) 定位（hxzon：设置游戏对象的位置）
 
 请参阅游戏对象 (GameObjects) 定位 了解场景中游戏对象 (GameObjects) 定位的详情。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/PositioningGameObjects.html
+
 以下是对一些要点的概述：
 
 构建游戏时，会在游戏世界中放置许多不同对象。
@@ -65,6 +69,7 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Manual/SceneView40.
 可使用场景视图 (Scene View) 控制条在不同视图模式中查看场景：纹理、线框、RGB、夸张等等。
 还可以看（听）场景视图 (Scene View) 中的游戏照明、游戏元素及声音。
 请参阅视图模式 (View Modes) 了解所有详情。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/ViewModes.html
 
 
 Page last updated: 2013-06-17

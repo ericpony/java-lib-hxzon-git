@@ -1,4 +1,4 @@
-﻿使用场景视图 (Scene View)
+﻿构建场景-使用场景视图 (Scene View)
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/UsingTheSceneView.html
 
 场景视图 (Scene View) 是您的交互式沙箱。您可以使用场景视图 (Scene View) 选择和放置环境、玩家、相机、敌人和所有其他游戏对象 (GameObjects)。在场景视图 (Scene View) 中调动和操纵对象是 Unity 最重要的一些功能，因此，能够迅速使用它们至关重要。
@@ -7,5 +7,6 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Manual/UsingTheScen
 定位游戏对象 (GameObjects)
 视图模式
 小图示和图标显示控制
+
 Page last updated: 2013-05-30
 

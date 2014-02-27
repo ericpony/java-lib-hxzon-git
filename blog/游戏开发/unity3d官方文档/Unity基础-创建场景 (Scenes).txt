@@ -1,0 +1,61 @@
+﻿Unity基础-创建场景 (Scenes)
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/CreatingScenes.html
+
+场景 (Scenes) 包含游戏对象，可用于创建主菜单、独立关卡等等。
+将每个唯一的场景 (Scene) 文件视作一个唯一关卡。
+在每个场景 (Scene) 中，可放入环境、障碍和装饰物，一点点从根本上设计和构建游戏。
+
+----
+实例化预设 (Prefabs)
+
+使用最后一部分讲述的方法创建预设 (Prefab)。
+也可以在此处阅读有关预设 (Prefabs) 的更多细节。
+创建一个预设 (Prefab) 后，可轻松、快速创建该预设 (Prefab) 的副本，称之为一个实例 (Instance)。
+要创建任何预设 (Prefab) 的副本，可从工程视图 (Project View) 中将预设 (Prefab) 拖到层级视图 (Hierarchy) 或场景视图 (Scene View) 中。
+现在有了预设 (Prefab) 的唯一实例，便可随意放置和调整。
+
+----
+添加组件 (Component) 和脚本 (Scripts)
+
+有了一个预设 (Prefab) 或高亮的游戏对象 (GameObject) 后，可使用组件 (Components) 为其添加其他功能。
+请浏览组件参考部分，了解所有不同组件 (Components) 的详情。
+脚本 (Scripts) 是一种组件。
+要添加一个组件 (Component)，只需突出显示游戏对象 (GameObject) 并从组件 (Component) 菜单中选择一个组件 (Component)。
+之后，就会看到组件 (Component) 出现在游戏对象 (GameObject) 的检视器 (Inspector) 中。
+脚本 (Scripts) 也默认包含在组件 (Component) 菜单内。
+
+如果添加组件 (Component) 切断了游戏对象 (GameObject) 与预设 (Prefab) 的联系，
+可使用菜单中的游戏对象 (GameObject)->将变更应用至预设 (Apply Changes to Prefab) 重新建立链接。
+
+----
+放置游戏对象 (GameObject)
+
+游戏对象 (GameObject) 进入场景后，可使用转换工具 (Transform Tools) 将其放在任意位置。
+此外，可利用检视器 (Inspector) 中的转换 (Transform)值来微调位置和旋转角度。
+请浏览转换组件页面了解有关布置和旋转游戏对象 (GameObject) 的更多信息。
+
+----
+使用相机 (Cameras)
+
+相机 (Cameras) 是游戏的眼睛。
+玩家在玩游戏时看到的所有内容是通过一台或多台相机展示。
+可像任何其他游戏对象 (GameObject) 一样放置、旋转和父子化相机。
+相机是带相机组件 (Camera Component) 的游戏对象 (GameObject)。
+因此，它可以起到常规游戏对象 (GameObject) 的功能，还有一些相机特定的功能。
+脚本 (Scripts) 资源包中安装了一些有用的相机 (Camera) 脚本。
+创建新工程时可同时安装脚本 (Scripts) 资源包，或使用资源 (Assets)->导入资源包 (Import Package)...) 菜单实现。
+导入的脚本可在菜单中组件 (Components)->相机控制 (Camera-Control) 中找到。
+其中有一些有关相机的其他内容，很好理解。
+要阅读有关相机的内容，请浏览相机组件页面。
+
+----
+光源 (Lights)
+
+除了一些极少数情况，一般都需要在场景中添加光源 (Lights)。
+光源类型共有三种，每种各有不同。
+最重要的是它们为游戏增添气氛和感觉。
+不同光源可完全改变游戏的情境，有效使用光源将是一个重要的学习课题。
+要阅读有关不同光源的信息，请浏览光源组件页面。
+
+Page last updated: 2013-07-02
+

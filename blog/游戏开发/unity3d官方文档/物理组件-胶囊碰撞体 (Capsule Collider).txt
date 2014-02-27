@@ -1,0 +1,43 @@
+﻿物理组件-胶囊碰撞体 (Capsule Collider)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-CapsuleCollider.html
+
+胶囊碰撞体 (Capsule Collider) 由两个半球体与一个圆柱体相连接而构成。它与胶囊 (Capsule) 基元形状相同。
+
+
+图：一堆胶囊碰撞体 (Capsule Collider)
+
+----
+属性
+属性：	功能：
+
+为触发器 (Is Trigger)	
+如果启用，此碰撞体 (Collider) 则用于触发事件，会由物理引擎忽略。
+
+材质 (Material)	
+引用可确定此碰撞体 (Collider) 与其他碰撞体 (Collider) 的交互方式的物理材质 (Physics Material)。
+
+中心 (Center)	
+碰撞体 (Collider) 在对象局部坐标空间中的位置。
+
+半径 (Radius)	
+碰撞体 (Collider) 局部坐标宽度的半径。
+
+高度 (Height)	
+碰撞体 (Collider) 的总高度。
+
+方向 (Direction)	
+对象局部坐标空间中胶囊纵向方向的轴。
+
+----
+详细信息
+
+可以相互独立地调整胶囊碰撞器 (Capsule Collider) 的半径 (Radius) 和高度 (Height) 。
+它在角色控制器 (Character Controller) 中使用，适用于柱状物，也可以与其他碰撞器 (Collider) 结合用于异常形状。
+
+
+图：标准胶囊碰撞器 (Capsule Collider)
+
+（略，与 “物理组件-球形碰撞体” 同。）
+
+Page last updated: 2013-06-21
+

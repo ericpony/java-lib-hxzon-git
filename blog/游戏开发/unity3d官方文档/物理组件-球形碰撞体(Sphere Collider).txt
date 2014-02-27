@@ -1,0 +1,166 @@
+﻿物理组件-球形碰撞体(Sphere Collider)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-SphereCollider.html
+
+球形碰撞体(Sphere Collider) 是基本球形碰撞基元。
+
+
+图：一堆球形碰撞体 (Sphere Collider)
+
+----
+属性
+属性：	功能：
+
+为触发器 (Is Trigger)	
+如果启用，此碰撞体 (Collider) 则用于触发事件，会由物理引擎忽略。
+
+材质 (Material)	
+引用可确定此碰撞体 (Collider) 与其他碰撞体 (Collider) 的交互方式的物理材质 (Physics Material)。
+
+半径 (Radius)	
+碰撞体 (Collider) 大小。
+
+中心 (Center)	
+碰撞体 (Collider) 在对象局部坐标空间中的位置。
+
+----
+详细信息
+
+球体碰撞体 (Sphere Collider) 可以按均匀比例调整大小，但是不能沿各个轴调整。
+它适用于下落的卵石、乒乓球、弹珠等。
+
+
+图：标准球体碰撞体 (Sphere Collider)
+
+碰撞体 (Collider) 与刚体 (Rigidbody) 结合使用可使 Unity 中的物理变得生动。
+刚体 (Rigidbody) 使对象可以受物理控制，而碰撞体 (Collider) 使对象可以相互碰撞。
+碰撞体 (Collider) 必须独立于刚体 (Rigidbody) 添加到对象。
+碰撞体 (Collider) 并不一定需要附加刚体 (Rigidbody)，但是必须刚体 (Rigidbody) 才能使对象由于碰撞而移动。
+
+当两个碰撞体 (Collider) 之间发生碰撞时并且如果其中至少一个附加了刚体 (Rigidbody)，
+会将三条碰撞消息向外发送给附加到它们的对象。
+这些事件可以在脚本中进行处理，使您可以在使用或不使用内置 NVIDIA PhysX 引擎的情况下创建独特行为。
+
+----
+触发器 (Trigger)
+
+使用碰撞体 (Collider) 的备选方法是将其作为触发器 (Trigger)，只需在检视视图 (Inspector) 中选中“为触发器”(IsTrigger) 属性复选框即可。
+触发器 (Trigger) 实际上会被物理引擎忽略，并具有一组独有的三条触发器 (Trigger) 消息，
+这些消息会在与触发器 (Trigger) 发生碰撞时向外发送。
+触发器 (Trigger) 可用于触发游戏中的其他事件，如剧情画面、自动门打开、显示辅导消息等。
+请充分发挥您的想象力！
+
+请注意，要使两个触发器 (Trigger) 在碰撞时向外发送触发器 (Trigger) 事件，其中之一必须还包括刚体 (Rigidbody)。
+要使触发器 (Trigger) 与普通碰撞体 (Collider) 碰撞，则其中之一必须附加刚体 (Rigidbody)。
+有关不同类型碰撞的详细图表，请参阅下面“高级”部分中的碰撞动作矩阵。
+
+----
+摩擦力和弹力
+
+摩擦力、弹力和柔软度在物理材质 (Physisc Material) 中定义。
+标准资源 (Standard Asset) 包含最常见的物理材质 (Physisc Material)。
+要使用其中之一，请单击“物理材质”(Physisc Material) 下拉菜单并选择一个，例如“冰”(Ice)。
+还可以创建自己的物理材质 (Physisc Material) 并调整所有摩擦力值。
+
+提示
+
+要为对象添加多个碰撞体(Collider)，请创建子游戏对象 (GameObject) 并向每个子游戏对象 (GameObject) 附加碰撞体(Collider)。
+这样便可以独立处理每个碰撞体(Collider)。
+
+可以在场景视图 (Scene View) 中查看小图示以了解在对象上计算碰撞体(Collider) 的方式。
+
+碰撞体(Collider) 会尽量匹配对象的缩放。
+如果您具有不均匀缩放（在各个方向上不同的缩放），则只有网格碰撞体(Mesh Collider) 才能完全匹配。
+
+如果通过其变换组件 (Component) 移动某个对象，但是希望接收碰撞体(Collider)/触发器 (Trigger) 消息，
+则必须将刚体 (Rigidbody) 附加到移动的对象。
+
+如果创建爆炸，则将具有大量阻力和一个球体碰撞体 (Sphere Collider) 的刚体 (Rigidbody) 添加到它，
+以便使其从击中的墙壁推出去一点，这会非常有效。
+
+----
+高级
+
+碰撞体 (Collider) 组合
+
+在 Unity 中可以进行许多不同的碰撞体 (Collider) 组合。
+每个游戏都是独一无二的，不同组合可能更适合于不同类型的游戏。
+如果在游戏中使用物理，则了解不同基本碰撞体 (Collider) 类型、其常见用途以及与其他类型对象的交互方式会十分有帮助。
+
+静态碰撞体 (Static Collider)
+
+这些是未附加刚体 (Rigidbody)、但的确附加了碰撞体 (Collider) 的游戏对象 (GameObject)。
+这些对象应保持静态，或很少移动。
+这些十分适用于环境几何结构。
+它们在刚体 (Rigidbody) 与之碰撞时不会移动。
+
+刚体碰撞体 (Rigidbody Collider)
+
+这些游戏对象 (GameObject) 同时包含刚体 (Rigidbody) 和碰撞体 (Collider)。
+它们通过脚本编写的力和碰撞，完全受物理引擎影响。
+它们可以与仅包含碰撞体 (Collider) 的游戏对象 (GameObject) 碰撞。
+这些很可能是使用物理的游戏中的主要碰撞体 (Collider) 类型。
+
+运动学刚体碰撞体 (Kinematic Rigidbody Collider)
+
+此游戏对象 (GameObject) 包含碰撞体 (Collider) 和标记有“为运动学”(IsKinematic) 的刚体 (Rigidbody)。
+要移动此游戏对象 (GameObject)，请修改其 变换组件 (Component)，而不是应用力。
+它们类似于静态碰撞体 (Static Collider)，但是更适合于要经常四处移动碰撞体 (Collider) 的情况。
+有一些使用此游戏对象 (GameObject) 的其他专业方案。
+
+此对象可以用于通常希望静态碰撞体 (Static Collider) 发送触发器 (Trigger) 事件的情况。
+因为触发器 (Trigger) 必须附加刚体 (Rigidbody)，所以应添加刚体 (Rigidbody)，
+然后启用“为运动学”(IsKinematic)。
+这可防止对象脱离物理影响，并使您可以在需要时接收触发器 (Trigger) 事件。
+
+运动学刚体 (Kinematic Rigidbody) 可以方便地打开和关闭。
+这适合于在以下情况中创建布娃娃：通常希望角色跟随在动画之后，
+然后在发生碰撞时（通过爆炸或所选的任何其他事物进行提示）变为布娃娃。
+发生这种情况时，只需通过脚本将所有运动学刚体 (Kinematic Rigidbody) 转变为普通刚体 (Rigidbody)。
+
+如果让刚体 (Rigidbody) 静止下来以便在一段时间内不移动，它们会“入睡”。
+即，它们在物理更新过程中不会进行计算，因为它们不会前往任何位置。
+如果将运动学刚体 (Kinematic Rigidbody) 从休眠的普通刚体 (Rigidbody) 下边移走，
+则休眠的刚体 (Rigidbody) 将被唤醒并在物理更新中重新准确计算。
+因此如果您具有许多要四处移动的静态碰撞体 (Static Collider) 并且让不同对象正确落到其上，
+请使用运动学刚体碰撞体 (Kinematic Rigidbody Collider)。
+
+----
+碰撞动作矩阵
+
+根据两个碰撞对象的配置，可能发生一些不同动作。
+下图概述了可以基于附加到其的组件 (Component) 对两个碰撞对象进行的预计。
+一些组合仅导致两个对象之一受碰撞影响，因此请记住标准规则 - 
+物理不会应用于未附加刚体 (Rigidbody) 的对象。
+
+--
+表：进行碰撞检测并在碰撞时发送消息
+
+ 	静态碰撞体 (Static Collider)	刚体碰撞体 (Rigidbody Collider)	运动学刚体碰撞体 (Kinematic Rigidbody Collider)	静态触发碰撞体 (Static Trigger Collider)	刚体触发碰撞体 (Rigidbody Trigger Collider)	运动学刚体触发碰撞体 (Kinematic Rigidbody Trigger Collider)
+静态碰撞体 (Static Collider)	 	Y	 	 	 	 
+刚体碰撞体 (Rigidbody Collider)	Y	Y	Y	 	 	 
+运动学刚体碰撞体 (Kinematic Rigidbody Collider)	 	Y	 	 	 	 
+静态触发碰撞体 (Static Trigger Collider)	 	 	 	 	 	 
+刚体触发碰撞体 (Rigidbody Trigger Collider)	 	 	 	 	 	 
+运动学刚体触发碰撞体 (Kinematic Rigidbody Trigger Collider)	 	 	 	 	 	 
+
+--
+表：碰撞时发送触发器 (Trigger) 消息
+
+ 	静态碰撞体 (Static Collider)	刚体碰撞体 (Rigidbody Collider)	运动学刚体碰撞体 (Kinematic Rigidbody Collider)	静态触发碰撞体 (Static Trigger Collider)	刚体触发碰撞体 (Rigidbody Trigger Collider)	运动学刚体触发碰撞体 (Kinematic Rigidbody Trigger Collider)
+静态碰撞体 (Static Collider)	 	 	 	 	Y	Y
+刚体碰撞体 (Rigidbody Collider)	 	 	 	Y	Y	Y
+运动学刚体碰撞体 (Kinematic Rigidbody Collider)	 	 	 	Y	Y	Y
+静态触发碰撞体 (Static Trigger Collider)	 	Y	Y	 	Y	Y
+刚体触发碰撞体 (Rigidbody Trigger Collider)	Y	Y	Y	Y	Y	Y
+运动学刚体触发碰撞体 (Kinematic Rigidbody Trigger Collider)	Y	Y	Y	Y	Y	Y
+
+----
+基于层的碰撞检测
+
+在 Unity 3.x 中，我们引入了某个称为基于层的碰撞检测 (Layer-Based Collision Detection) 的功能，
+现在可以有选择性地告知 Unity 游戏对象 (GameObject) 与它们附加到的特定层碰撞。
+有关更多信息，请单击此处
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/LayerBasedCollision.html
+
+Page last updated: 2013-06-21
+

@@ -1,4 +1,4 @@
-﻿游戏对象 (GameObjects)
+﻿构建场景-游戏对象 (GameObjects)
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/GameObjects.html
 
 游戏对象 (GameObjects) 是 Unity 中最重要的对象。

@@ -1,4 +1,4 @@
-﻿工具栏 (Toolbar)
+﻿Unity基础-学习界面-工具栏 (Toolbar)
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Toolbar.html
 
 工具栏 (Toolbar) 包含五个基本控件。每个控件针对编辑器 (Editor) 的不同部分。
@@ -10,3 +10,4 @@ http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Toolbar.html
  布局 (Layout) 下拉列表 -- 控制所有视图 (View) 的排列
 
 Page last updated: 2013-05-20
+

@@ -1,0 +1,80 @@
+﻿Meteor为增强扩展性弃用轮询和差异机制
+作者 吴海星 发布于 二月 25, 2014
+http://www.infoq.com/cn/news/2014/02/meteor
+
+一直活跃在Meteor社区的Tom Coleman最近发表了一篇文章：《扩展Meteor：实时程序的挑战》，
+https://www.discovermeteor.com/blog/scaling-meteor-the-challenges-of-realtime-apps/
+介绍了Meteor为增强扩展性而在实时处理机制上作出的调整。
+
+----
+Oplog tailing
+
+自2012年Meteor问世以来，人们就在询问它的扩展性如何。
+虽然Meteor的实时处理特性很吸引人，但人们也很关心它的处理能力，关心它能否驾驭得了更多资源。
+Tom Coleman在他的这篇文章中介绍了传统的、单页的和实时的三种不同的web程序模型，
+并指出三种模型实现扩展性时所面临的问题也是不同的；
+阐述了轮询和差异机制的处理特点及不足；
+接着又讲解了Meteor采用的新机制：Oplog tailing，以及这种机制的源起和优势；
+最后又给出了一些增强程序扩展性的策略性建议。
+同时他也提醒说：“... Meteor的扩展性领域仍处于快速变化的状态下，所以在这个主题上很难做到盖棺定论 ”。
+最后，在一个实时的单页程序中(比如Meteor程序)，客户端不仅能请求更多数据，
+服务器还可以把数据推送给客户端 (比如当数据库中的数据发生变化时)。 
+
+这引发了一些有趣的问题：服务器怎么知道数据什么时候发生了变化？
+还有，服务器怎么知道该把那些变化发送给哪个用户？
+这些问题是掌握实时程序性能特点的关键。
+Meteor最开始用轮询及差异的机制监测数据库的变化，虽然这一机制很快就会被Oplog tailing取代，
+但我们还是很有必要了解它。
+
+Meteor会为每个订阅了结果集的用户建立一个LiveResultsSet（LRS），并由它负责轮询数据库。
+得到数据库的查询结果后，并不会把全部内容都送回客户端，而是要通过比较找出新结果和之前结果的差异。
+但这种比较通常是非常昂贵的计算，所以经常是CPU先成为Meteor程序的性能瓶颈。
+导致同时有很多差异计算发生的原因主要有两个：
+
+有很多不同的LRS。
+尽管Meteor会尽最大努力在用户间共享LRS，但有时做不到这一点。
+
+数据库的写入操作很多，这反过来又会导致更多的轮询。
+
+Meteor 0.7.0中使用了新的Oplog tailing机制监测数据库，这一机制是基于MongoDB的Oplog实现的，
+Oplog是Mongo用来同步副本集的。
+但它只能告诉Meteor集合层面的变化，所以Meteor还要做大量工作来确定查询层面的变化，
+并确定这些变化是否应该发给订阅了查询的客户端。
+
+尽管Oplog tailing技术比粗陋的轮询和差异算法效率高得多，但要实现实时仍然会有很高的CPU负载。
+所以尽管Oplog tailing真的带来了改善，但我们依然要铭记，它跟你对你的发布/预订策略的正确思考是分不开的。
+此外，即便你启用了Oplog tailing，现在也只有一部分查询适用此项技术。
+https://github.com/meteor/meteor/wiki/Oplog-Observe-Driver
+
+----
+数据推送方式
+
+除了介绍监测数据变化的机制，Tom Coleman还讲解了Meteor如何确定该将数据变化发送给哪些用户。
+这意味着要为每个已连接客户端维持一个“内存数据库”（在Meteor中，即Minimongo中的内容）。
+Meteor中包含这个的数据结构是Merge Box。 
+https://www.eventedmind.com/tracks/feed-archive/meteor-livedatasession
+
+这样的直接影响是每个已连接客户端都要在服务器上占用一部分内存。
+并且你向客户端发布的数据越多，服务器上追踪它们所用的内存越多。
+文章还给出了几个增强程序扩展能力的策略：
+
+尽量将用户独有的预订数量降到最低，让Meteor可以最大限度地跨用户汇集工作。
+
+使用更简单的查询，因为这通常意味着Meteor在决定变化是否会影响到它时所做的工作更少。
+
+限制数据库的写操作（特别是那些被重度观察的集合），这样Meteor做有限的工作就可以保证这些观察可以及时更新。
+
+文章最后还给出了几个监测工具，比如监测每个集合上打开LRS状态的 Server Info，
+https://github.com/percolatestudio/meteor-server-info
+收集打开的观察器相关数据的Facts包，性能监测服务MeteorAPM，
+http://meteorapm.com/
+测试程序扩展能力的Load Test。
+https://github.com/alanning/meteor-load-test
+
+在最终的结论部分，Tom Coleman说：就像我们看到的，
+实时程序之所以比传统的web程序对服务器有更高要求，是有些根本原因的。
+希望本文能帮你理解各种起作用的因素，让你在扩展Meteor程序时更容易一点儿。
+
+感谢水羽哲对本文的审校。
+
+

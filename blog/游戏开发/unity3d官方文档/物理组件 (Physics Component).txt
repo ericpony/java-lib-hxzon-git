@@ -1,6 +1,8 @@
 ﻿物理组件 (Physics Component)
 http://edu.china.unity3d.com/learning_document/getData?file=/Components/comp-DynamicsGroup.html
 
+创建游戏-物理
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Physics.html 同
 
 Unity 有内置 NVIDIA PhysX 物理引擎。
 允许出现独特的突发行为还有许多有用的功能。

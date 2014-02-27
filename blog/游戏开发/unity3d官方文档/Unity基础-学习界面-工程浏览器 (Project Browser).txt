@@ -1,4 +1,4 @@
-﻿工程浏览器 (Project Browser)
+﻿Unity基础-学习界面-工程浏览器 (Project Browser)
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/ProjectView40.html
 
 在该视图中，您可以访问和管理属于工程的资源。

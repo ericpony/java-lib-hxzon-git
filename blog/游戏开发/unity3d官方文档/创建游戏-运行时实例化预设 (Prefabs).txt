@@ -1,0 +1,370 @@
+﻿创建游戏-运行时实例化预设 (Prefabs)
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/InstantiatingPrefabs.html
+
+此时您应当能够从基本层面上了解预设 (Prefabs) 的概念。
+它们是预定义游戏对象 (GameObjects) 和组件 (Components) 的集合，可在游戏中重复使用。
+如果您不了解预设 (Prefab)，建议您阅读预设 (Prefabs) 页面，了解更多基本介绍。
+
+在运行时想要实例化复杂的游戏对象 (GameObjects)，可以方便使用预设 (Prefabs)。
+实例化预设 (Prefabs) 的另一种选择是使用代码从头开始创建游戏对象 (GameObjects)。
+相比替代方法，实例化预设 (Prefabs) 有多个优势：
+
+可以使用一行代码实例化预设 (Prefab)，并具有完整功能。
+使用代码创建等效游戏对象 (GameObjects)，平均需要五行代码，还有可能要更多。
+
+可在场景 (Scene) 和检视器 (Inspector) 中轻松快速设置、测试和修改预设 (Prefab)。
+可以更改已实例化的预设 (Prefab)，无需更改实例化预设的代码。
+一个简单的火箭可以更改成超级火箭，但无需更改代码。
+
+一般情况
+
+为说明预设 (Prefabs) 的强大，让我们来看看可用得上预设的一些基本情况：
+
+在不同位置，多次使用单块“砖”预设 (Prefab) 创建一堵墙。
+发射时，火箭发射器实例化一个飞行的火箭预设 (Prefab)。
+预设 (Prefab) 包含一个网格 (Mesh)、刚体 (Rigidbody)、碰撞器 (Collider) 和带有自己的拖尾粒子系统 (Particle System) 的子游戏对象 (GameObject)。
+
+机器人爆炸成许多碎片。
+完整的操作机器人已毁坏，替换成一个残破的机器人预设 (Prefab)。
+该预设 (Prefab) 包含分成多个部分的机器人，所有部分均设有自己的刚体 (Rigidbodies) 和粒子系统 (Particle Systems)。
+仅用一行代码，将一个对象替换成预设 (Prefab)，该技术就可让您将机器人炸成许多碎片。
+
+创建一堵墙
+
+该示例说明与使用代码创建对象相比，使用预设 (Prefab) 的优势。
+
+首先，使用代码创建一堵砖墙：
+
+// JavaScript
+function Start () {
+    for (var y = 0; y < 5; y++) {
+        for (var x = 0; x < 5; x++) {
+            var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.AddComponent(Rigidbody);
+            cube.transform.position = Vector3 (x, y, 0);
+        }
+    }
+}
+
+
+// C#
+public class Instantiation :MonoBehaviour {
+
+	void Start() {
+		for (int y = 0; y < 5; y++) {
+			for (int x = 0; x < 5; x++) {
+				GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+				cube.AddComponent<Rigidbody>();
+				cube.transform.position = new Vector3(x, y, 0);
+			}
+		}
+	}
+}
+
+要使用上方脚本，只需保存该脚本，然后将其拖到空游戏对象 (GameObject)。
+通过游戏对象 (GameObject)->创建空游戏对象 (Create Empty) 创建一个空游戏对象。
+进入播放模式 (Play Mode) 后，如果执行该代码，您将看到程序创建整堵砖墙。
+有两行与每块砖的功能相关：CreatePrimitive() 行和 AddComponent() 行。
+现在没有那么糟糕，只是每块砖没有纹理。
+想在砖上执行的每个附加操作，例如更改纹理、摩擦力或刚体质量，都是额外行。
+
+如果创建预设 (Prefab) 并预先设置好，您将使用一行代码创建和设置每块砖。
+在决定想要进行修改时，这样可以减少维护和更改大量代码。
+只需要修改预设 (Prefab) 即可，无需修改代码。
+
+如果针对每块砖使用预设 (Prefab)，以下则是创建墙所需的代码。
+
+// JavaScript
+
+var brick :Transform;
+function Start () {
+    for (var y = 0; y < 5; y++) {
+        for (var x = 0; x < 5; x++) {
+            Instantiate(brick, Vector3 (x, y, 0), Quaternion.identity);
+        }
+    }
+}
+
+
+// C#
+public Transform brick;
+
+void Start() {
+	for (int y = 0; y < 5; y++) {
+		for (int x = 0; x < 5; x++) {
+			Instantiate(brick, new Vector3(x, y, 0), Quaternion.identity);
+		}
+	}
+}
+
+代码不仅非常干净，而且可重复使用。
+没有什么规范规定，我们要实例化一个立方体，或者它必须包含刚体。
+所有这一切都在预设 (Prefab) 中定义，且可以在编辑器 (Editor) 中快速创建。
+
+现在我们只需在编辑器 (Editor) 中创建预设 (Prefab)。
+
+方法如下：
+
+选择游戏对象 (GameObject)->创建其他对象 (Create Other)->立方体 (Cube)
+选择组件 (Component)->物理 (Physics)->刚体 (Rigidbody)
+选择资源 (Assets)->创建 (Create)->预设 (Prefab)
+
+在工程视图 (Project View) 中，将新预设 (Prefab) 的名称更改为“砖 (Brick)”
+将您在层级视图 (Hierarchy) 中创建的立方体拖到工程视图 (Project View) 中的“砖 (Brick)” 预设 (Prefab) 上
+创建预设 (Prefab) 后，可以从层级视图 (Hierarchy) 安全删除立方体 (Cube)（Windows 上的删除 (Delete)，Mac 上的回退命令 (Command-Backspace)）
+
+我们已经创建砖预设 (Brick Prefab)，现在需将其附加到脚本的砖变量上。
+选择包含脚本的空游戏对象 (GameObject)。
+请注意，检视器 (Inspector) 中将出现一个新变量，名为“砖”。
+
+
+这个变量可以接受任何游戏对象 (GameObject) 或预设 (Prefab)
+
+现在从工程视图 (Project View) 将“砖 (Brick)” 预设 (Prefab) 拖到检视器 (Inspector) 中的砖变量上。
+按下“播放 (Play)”，将会看到使用预设创建的墙。
+
+这是工作流模式，可在 Unity 中重复使用。
+在刚开始，您可能想知道为什么如此方便，因为脚本创建立方体只需 2 行代码。
+
+但是由于现在使用预设 (Prefab)，您可以在数秒之内调整预设。
+想要更改所有实例的质量？
+只需在预设 (Prefab) 中调整一次刚体 (Rigidbody)。
+想为所有实例使用不同的材质 (Material)？
+只需将材质 (Material) 拖到预设 (Prefab) 上一次。
+想要更改摩擦力？
+在预设 (Prefab) 碰撞器中使用不同的物理材质 (Physic Material)。
+想为所有立方体添加一个粒子系统 (Particle System)？
+向预设 (Prefab) 添加一次子对象。
+
+实例化火箭和爆炸
+
+以下是预设 (Prefabs) 适合该应用场景的方式：
+
+用户按下“发射”时，火箭发射器实例化一个火箭预设 (Prefab) 。
+预设 (Prefab) 包含一个网格 (Mesh)、刚体 (Rigidbody)、碰撞器 (Collider) 和包含拖尾粒子系统的子游戏对象 (GameObject)。
+
+火箭撞击后，实例化一个爆炸预设 (Prefab)。
+该爆炸预设 (Prefab) 包含一个粒子系统 (Particle System)、一个随时间渐暗的光源和一个向周围游戏对象 (GameObjects) 施加破坏的脚本。
+
+尽管有可能完全用代码创建一个火箭游戏对象 (GameObject)，手动添加组件 (Components) 并设置属性，实例化预设 (Prefab) 要简单得多。
+不管火箭预设 (Prefab) 多么复杂，可以只用一行代码实例化火箭。
+实例化预设 (Prefab) 后，还可以修改实例化的对象的任何属性（例如设置火箭刚体 (Rigidbody) 的速度）。
+
+除了使用方便之外，随后还可以更新预设。
+因此，创建火箭之后，无需立即给它添加粒子 (Particle) 拖尾，可在以后添加。
+将拖尾作为子游戏对象 (GameObject) 添加到预设 (Prefab) 后，所有实例化的火箭将拥有粒子拖尾。
+最后，可以在检视器 (Inspector) 中快速调节火箭预设 (Prefab) 的属性，使得微调游戏变得更简单。
+
+该脚本演示如何使用 Instantiate() 函数发射火箭。
+
+// JavaScript
+
+// Require the rocket to be a rigidbody.
+// This way we the user can not assign a prefab without rigidbody
+var rocket :Rigidbody;
+var speed = 10.0;
+
+function FireRocket () {
+var rocketClone :Rigidbody = Instantiate(rocket, transform.position, transform.rotation);
+rocketClone.velocity = transform.forward * speed;
+// You can also acccess other components / scripts of the clone
+rocketClone.GetComponent(MyRocketScript).DoSomething();
+}
+
+// Calls the fire method when holding down ctrl or mouse
+function Update () {
+if (Input.GetButtonDown("Fire1")) {
+FireRocket();
+    }
+}
+
+
+// C#
+
+// Require the rocket to be a rigidbody.
+// This way we the user can not assign a prefab without rigidbody
+public Rigidbody rocket;
+public float speed = 10f;
+
+void FireRocket () {
+	Rigidbody rocketClone = (Rigidbody) Instantiate(rocket, transform.position, transform.rotation);
+	rocketClone.velocity = transform.forward * speed;
+
+	// You can also acccess other components / scripts of the clone
+	rocketClone.GetComponent<MyRocketScript>().DoSomething();
+}
+
+// Calls the fire method when holding down ctrl or mouse
+void Update () {
+	if (Input.GetButtonDown("Fire1")) {
+		FireRocket();
+	}
+}
+
+用布娃娃或破坏物替换角色
+
+假设您有一个完全绑定的敌人角色且已死亡。
+可播放一段角色死亡动画，然后禁用通常控制敌人逻辑的所有脚本。
+您可能需要小心删除一些脚本，然后添加一些自定义逻辑，以确保不再继续攻击该死亡的敌人角色，并执行一些其他清理工作。
+
+更好的做法是立即删除整个角色，并使用实例化的破坏预设将其替换。
+这就为您提供很大的灵活性。
+您可以将不同的材质用于死亡角色，附加完全不同的脚本，
+创建包含碎成多块的对象的预设 (Prefab) 以模拟消灭的敌人，或只实例化包含该版本角色的预设。
+
+通过单个调用 Instantiate() 就可实现所有这些操作，只需将其挂载到正确的预设即可。
+
+需记住的是，用来实例化 (Instantiate()) 的破坏物可由完全不同的对象（而非原始对象）构成。
+例如，如果有架飞机，则要准备两个版本的模型。
+其中一个版本，飞机包含带有网格渲染器 (Mesh Renderer) 的单个游戏对象和飞机物理学的脚本。
+只在一个游戏对象 (GameObject) 保留该模型，游戏将运行得更快，因为使用较少三角形就可以制作模型，包含的对象减少，
+因此渲染比使用很多小部件的模型更快。
+此外，当飞机良好飞行时，也没有理由将其分成单独的部件。
+
+要创建一个破坏的飞机预设 (Prefab)，一般步骤如下：
+
+在喜欢的建模软件中，使用许多不同部件制作飞机模型
+创建一个空场景 (Scene)
+将模型拖入空场景 (Scene)
+选定所有部件，然后选择组件 (Component)->物理 (Physics)->刚体 (Rigidbody)，为所有部件添加刚体。
+选定所有部件，然后选择组件 (Component)->物理 (Physics)->箱体碰撞器 (Box Collider)，为所有部件添加箱体碰撞器。
+对于额外特效，为每个部件添加如烟的粒子系统 (Particle System) 作为子游戏对象 (GameObject)
+
+现在有一架具有多个爆炸部件的飞机，它们在物理作用下坠落到地面，由于附加的粒子系统创建出粒子 (Particle) 拖尾。
+点击“播放 (Play)”，预览模型的反应，并做一些必要的调整。
+
+选择资源 (Assets)->创建预设 (Create Prefab)
+将包含所有飞机部件的根游戏对象 (GameObject) 拖到预设 (Prefab)
+
+// JavaScript
+
+var wreck :GameObject;
+
+// As an example, we turn the game object into a wreck after 3 seconds automatically
+function Start () {
+yield WaitForSeconds(3);
+KillSelf();
+}
+
+// Calls the fire method when holding down ctrl or mouse
+function KillSelf () {
+// Instantiate the wreck game object at the same position we are at
+var wreckClone = Instantiate(wreck, transform.position, transform.rotation);
+
+// Sometimes we need to carry over some variables from this object
+// to the wreck
+wreckClone.GetComponent(MyScript).someVariable = GetComponent(MyScript).someVariable;
+
+// Kill ourselves
+Destroy(gameObject);
+
+
+// C#
+
+public GameObject wreck;
+
+// As an example, we turn the game object into a wreck after 3 seconds automatically
+IEnumerator Start() {
+	yield return new WaitForSeconds(3);
+	KillSelf();
+}
+
+// Calls the fire method when holding down ctrl or mouse
+void KillSelf () {
+	// Instantiate the wreck game object at the same position we are at
+	GameObject wreckClone = (GameObject) Instantiate(wreck, transform.position, transform.rotation);
+
+	// Sometimes we need to carry over some variables from this object
+	// to the wreck
+	wreckClone.GetComponent<MyScript>().someVariable = GetComponent<MyScript>().someVariable;
+
+	// Kill ourselves
+	Destroy(gameObject);
+}
+
+} 
+
+第一人称射击游戏 (First Person Shooter) 教程介绍了如何使用布娃娃版替换角色，并且四肢也同步动画的最后状态。
+可在教程页面找到该教程。
+
+将一组对象放入特定图形
+
+假如您想将一组对象放入一个网格或圆形图形，通常可通过以下方式完成：
+
+完全用代码构建一个对象，这样非常乏味！而且从脚本输入值非常慢、不直观，也得不偿失。
+制作完全绑定的对象，复制并多次放入场景中。这样非常乏味，而且很难将对象准确放入网格。
+所以相反，使用预设 (Prefab) 进行实例化 (Instantiate())！
+我们相信，您已经明白预设 (Prefabs) 在这些应用场景中非常有用的原因。
+以下是这些应用场景所需的代码：
+
+// JavaScript
+
+// Instantiates a prefab in a circle
+
+var prefab :GameObject;
+var numberOfObjects = 20;
+var radius = 5;
+
+function Start () {
+for (var i = 0; i < numberOfObjects; i++) {
+var angle = i * Mathf.PI * 2 / numberOfObjects;
+var pos = Vector3 (Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
+Instantiate(prefab, pos, Quaternion.identity);
+    }
+}
+
+
+// C#
+// Instantiates a prefab in a circle
+
+public GameObject prefab;
+public int numberOfObjects = 20;
+public float radius = 5f;
+
+void Start() {
+	for (int i = 0; i < numberOfObjects; i++) {
+		float angle = i * Mathf.PI * 2 / numberOfObjects;
+		Vector3 pos = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
+		Instantiate(prefab, pos, Quaternion.identity);
+	}
+}
+
+// JavaScript
+
+// Instantiates a prefab in a grid
+
+var prefab :GameObject;
+var gridX = 5;
+var gridY = 5;
+var spacing = 2.0;
+
+function Start () {
+for (var y = 0; y < gridY; y++) {
+for (var x=0;x<gridX;x++) {
+var pos = Vector3 (x, 0, y) * spacing;
+Instantiate(prefab, pos, Quaternion.identity);
+        }
+    }
+}
+
+
+// C#
+
+// Instantiates a prefab in a grid
+
+public GameObject prefab;
+public float gridX = 5f;
+public float gridY = 5f;
+public float spacing = 2f;
+
+void Start() {
+	for (int y = 0; y < gridY; y++) {
+		for (int x = 0; x < gridX; x++) {
+			Vector3 pos = new Vector3(x, 0, y) * spacing;
+			Instantiate(prefab, pos, Quaternion.identity);
+		}
+	}
+} 
+
+Page last updated: 2013-06-20
+

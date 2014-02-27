@@ -1,4 +1,4 @@
-﻿光源
+﻿构建场景-光源
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Lights.html
 
 光源 (Lights) 是每个场景的重要组成部分。

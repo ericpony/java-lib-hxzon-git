@@ -1,0 +1,135 @@
+﻿GameObject
+http://docs.unity3d.com/Documentation/ScriptReference/GameObject.html
+
+Namespace: UnityEngine
+Parent class: Object
+
+Description
+Base class for all entities in Unity scenes.
+存在于场景中的所有实体的基类。
+
+See Also: Component.
+
+====
+Variables
+
+activeInHierarchy	Is the GameObject active in the scene?
+
+activeSelf	The local active state of this GameObject. (Read Only)
+
+animation	The Animation attached to this GameObject (Read Only). (null if there is none attached).
+
+audio	The AudioSource attached to this GameObject (Read Only). (null if there is none attached).
+
+camera	The Camera attached to this GameObject (Read Only). (null if there is none attached).
+
+collider	The Collider attached to this GameObject (Read Only). (null if there is none attached).
+
+collider2D	The Collider2D component attached to this object.
+
+constantForce	The ConstantForce attached to this GameObject (Read Only). (null if there is none attached).
+
+guiText	The GUIText attached to this GameObject (Read Only). (null if there is none attached).
+
+guiTexture	The GUITexture attached to this GameObject (Read Only). (null if there is none attached).
+
+hingeJoint	The HingeJoint attached to this GameObject (Read Only). (null if there is none attached).
+
+isStatic	Editor only API that specifies if a game object is static.
+是否是静态的。
+
+layer	The layer the game object is in. A layer is in the range [0...31].
+
+light	The Light attached to this GameObject (Read Only). (null if there is none attached).
+
+networkView	The NetworkView attached to this GameObject (Read Only). (null if there is none attached).
+
+particleEmitter	The ParticleEmitter attached to this GameObject (Read Only). (null if there is none attached).
+
+particleSystem	The ParticleSystem attached to this GameObject (Read Only). (null if there is none attached).
+
+renderer	The Renderer attached to this GameObject (Read Only). (null if there is none attached).
+
+rigidbody	The Rigidbody attached to this GameObject (Read Only). (null if there is none attached).
+
+rigidbody2D	The Rigidbody2D component attached to this GameObject. (Read Only)
+
+tag	The tag of this game object.
+
+transform	The Transform attached to this GameObject. (null if there is none attached).
+
+----
+Constructors
+
+GameObject	Creates a new game object, named name.
+
+----
+Functions
+
+AddComponent	Adds a component class named className to the game object.
+
+BroadcastMessage	Calls the method named methodName on every MonoBehaviour in this game object or any of its children.
+
+CompareTag	Is this game object tagged with tag?
+
+GetComponent	Returns the component of Type type if the game object has one attached, null if it doesn't. You can access both builtin components or scripts with this function.
+
+GetComponentInChildren	Returns the component of Type type in the GameObject or any of its children using depth first search.
+
+GetComponents	Returns all components of Type type in the GameObject.
+
+GetComponentsInChildren	Returns all components of Type type in the GameObject or any of its children.
+
+SampleAnimation	Samples an animation at a given time for any animated properties.
+
+SendMessage	Calls the method named methodName on every MonoBehaviour in this game object.
+
+SendMessageUpwards	Calls the method named methodName on every MonoBehaviour in this game object and on every ancestor of the behaviour.
+
+SetActive	Activates/Deactivates the GameObject.
+激活或取消激活本游戏对象。
+
+----
+Static Functions
+
+CreatePrimitive	Creates a game object with a primitive mesh renderer and appropriate collider.
+（appropriate，适当的。）
+创建一个游戏对象，带有基本网格渲染器和适当的碰撞体。
+
+Find	Finds a game object by name and returns it.
+根据name查找指定游戏对象。
+
+FindGameObjectsWithTag	Returns a list of active GameObjects tagged tag. Returns empty array if no GameObject was found.
+根据tag查找游戏对象，只限已激活，返回列表。
+
+FindWithTag	Returns one active GameObject tagged tag. Returns null if no GameObject was found.
+根据tag查找游戏对象，只限已激活，且只返回一个。
+
+====
+Inherited members
+
+Variables
+
+hideFlags	Should the object be hidden, saved with the scene or modifiable by the user?
+name	The name of the object.
+
+----
+Functions
+
+GetInstanceID	Returns the instance id of the object.
+ToString	Returns the name of the game object.
+Static Functions
+Destroy	Removes a gameobject, component or asset.
+DestroyImmediate	Destroys the object obj immediately. You are strongly recommended to use Destroy instead.
+DontDestroyOnLoad	Makes the object target not be destroyed automatically when loading a new scene.
+FindObjectOfType	Returns the first active loaded object of Type type.
+FindObjectsOfType	Returns a list of all active loaded objects of Type type.
+Instantiate	Clones the object original and returns the clone.
+
+----
+Operators
+
+bool	Does the object exist?
+operator !=	Compares if two objects refer to a different object.
+operator ==	Compares if two objects refer to the same.
+

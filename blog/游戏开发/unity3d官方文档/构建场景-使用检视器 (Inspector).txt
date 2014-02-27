@@ -1,4 +1,4 @@
-﻿使用检视器 (Inspector)
+﻿构建场景-使用检视器 (Inspector)
 http://edu.china.unity3d.com/learning_document/getData?file=/Manual/UsingTheInspector.html
 
 检视器 (Inspector) 用于查看和编辑许多不同类型的属性 (Properties)。

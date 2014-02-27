@@ -1,0 +1,77 @@
+﻿物理组件-物理材质 (Physics Material)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-PhysicMaterial.html
+
+物理材质 (Physics Material) 用于调整碰撞对象的摩擦力和反弹效果。
+
+要创建物理材质 (Physics Material)，请从菜单栏选择
+资源 (Assets) -> 创建 (Create) -> 物理材质 (Physics Material)。
+然后将物理材质 (Physics Material) 从“工程视图”(Project View) 拖动到场景中的碰撞体 (Collider) 上。
+
+
+图：物理材质 (Physics Material)检视器 (Inspector)
+
+----
+属性
+属性：	功能：
+
+动态摩擦力 (Dynamic Friction)	
+已在移动时使用的摩擦力。通常值为 0 至 1。
+值 0 的状态类似于冰，值 1 会使其非常快速的静止下来，除非有很大的力或重力推动对象。
+
+静态摩擦力 (Static Friction)	
+对象在某个表面上保持静止时使用的摩擦力。通常值为 0 至 1。
+值 0 的状态类似于冰，值 1 会使对象非常难以移动。
+
+弹力 (Bounciness)	
+表面的反弹程度。值 0 不会反弹。值 1 会反弹而不损失任何能量。
+
+--
+摩擦力合并模式 (Friction Combine Mode	
+两个碰撞对象摩擦力的合并方式。
+
+平均值 (Average)	
+计算两个摩擦力值的平均值。
+
+最小 (Min)	
+使用两个值的较小值。
+
+最大 (Max)	
+使用两个值的较大值。
+
+相乘 (Multiply)	
+摩擦力值相互相乘。
+
+--
+合并反弹 (Bounce Combine)	
+两个碰撞对象弹力的合并方式。其模式与“摩擦力合并模式”(Friction Combine Mode) 相同
+
+--
+摩擦力方向 2 (Friction Direction 2)	
+各向异性方向。如果此方向不为零，则启用各向异性摩擦力。
+“动态摩擦力 2”(Dynamic Friction 2) 和“静态摩擦力 2”(Static Friction 2) 会随“摩擦力方向 2”(Friction Direction 2) 一起应用。
+
+动态摩擦力 2 (Dynamic Friction 2)	
+如果启用各向异性摩擦力，则“动态摩擦力 2”(DynamicFriction2) 会随“摩擦力方向 2”(Friction Direction 2) 一起应用。
+
+静态摩擦力 2 (Static Friction 2)	
+如果启用各向异性摩擦力，则“静态摩擦力 2”(StaticFriction2) 会随“摩擦力方向 2”(Friction Direction 2) 一起应用。
+
+----
+详细信息
+
+摩擦力是阻止表面相互滑动的量。
+此值在尝试堆叠对象时至关重要。
+摩擦力具有两种形式，即动态和静态。
+静态摩擦力 (Static Friction) 在对象保持静止时使用。
+它会阻止对象开始移动。
+如果将足够大的力应用于对象，则它会开始移动。
+此时，动态摩擦力 (Dynamic Friction) 会开始发挥作用。
+动态摩擦力 (Dynamic Friction)现在将试图在对象与其他对象接触时减慢其速度。
+
+提示
+
+请勿尝试将标准物理材质 (Physics Material) 用于主角色。
+请创建自定义物理材质 (Physics Material) 并使其完善。
+
+Page last updated: 2013-06-21
+

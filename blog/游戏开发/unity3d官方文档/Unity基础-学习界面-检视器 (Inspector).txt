@@ -1,0 +1,63 @@
+﻿Unity基础-学习界面-检视器 (Inspector)
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Inspector.html
+
+Unity 中的游戏是以包含网格、脚本、声音或灯光 (Lights) 等其他图形元素的多个游戏对象 (GameObjects) 组成。
+检视器 (Inspector) 显示当前所选游戏对象 (GameObjects) 的详细信息，包括所有附加组件 (Components) 及其属性。
+在此，可修改场景中游戏对象 (GameObjects) 的函数。
+请参阅游戏对象与组件的关系 (GameObject-Component relationship)，深入理解。
+
+检视器 (Inspector) 中显示的任何属性可直接更改。
+甚至不修改脚本本身，就可以更改脚本变量。
+可在运行时通过检视器 (Inspector) 更改变量进行测试，找到适合游戏的神奇玩法。
+如果在脚本中定义对象类型（如游戏对象 (GameObjects) 或转换 (Transform) ）的一个公共变量，
+可将游戏对象 (GameObjects) 或预设 (Prefab) 拖放至检视器 (Inspector) 中，完成任务。
+
+
+单击检视器 (Inspector) 中任一组件 (Component) 名称旁边的问号，加载其组件参考 (Component Reference) 页面。
+请浏览组件参考 (Component Reference)，详细阅读 Unity 所有组件 (Component) 的说明。
+
+
+从组件 (Component) 菜单添加组件 (Component)
+
+可单击小齿轮图标（或右击组件 (Component) 名称），显示特定组件 (Component) 的上下文菜单。
+
+
+检视器 (Inspector) 还将显示选定资源文件的任何导入设置 (Import Settings)。
+
+
+单击应用 (Apply) 重新导入资源。
+
+单击层 (Layer) 下拉列表给游戏对象 (GameObjects) 分配一个渲染层 (Layer)。
+单击选项卡 (Tag) 下拉列表给该游戏对象 (GameObjects) 分配一个选项卡 (Tag)。
+
+----
+预设 (Prefabs)
+
+如果选定了一个预设 (Prefabs)，检视器 (Inspector) 中将显示一些额外按钮。
+有关预设 (Prefabs) 的更多详情，请浏览预设 (Prefabs) 手册页面。
+
+----
+标签 (Labels)
+
+Unity 允许给资源标注标签 (Labels)，便于查找和分类。
+检视器 (Inspector) 最下方的项为资源标签 (Asset Labels) 面板。
+
+
+该面板的右下角为标题中含有省略号 ("...") 字符的按钮。
+单击该按钮显示可用标签菜单。
+
+
+可从标签菜单中选择一项或多项，用这些标签来标记资源。
+标签还将显示在标签 (Labels) 面板上。
+如果第二次点击一个活动标签，此标签将从资源上移除。
+
+
+该菜单还有一个文本框，可用来给菜单中的标签指定一个搜索筛选器。
+如果输入不存在的标签名称并按返回/Enter 键，新标签将添加到列表中并应用到所选资源。
+如果从工程的所有资源中删除一个自定义标签，该标签将从列表中消失。
+
+一旦将标签应用到资源中，可用来精简工程浏览器 (Project Browser) 中的搜索（参阅本页了解更多详情）。
+可通过资源数据库 (AssetDatabase) 类从编辑器脚本中访问资源的标签。
+
+Page last updated: 2013-07-02
+

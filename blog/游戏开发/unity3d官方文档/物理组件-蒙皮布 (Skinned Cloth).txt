@@ -1,0 +1,144 @@
+﻿物理组件-蒙皮布 (Skinned Cloth)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-SkinnedCloth.html
+
+场景视图和监视器 (Inspector) 中的蒙皮布 (Skinned Cloth)。
+
+蒙皮布 (SkinnedCloth) 组件 (Component) 与蒙皮网格渲染器 (SkinnedMeshRenderer) 结合作用以对角色模拟衣物。
+如果具有使用蒙皮网格渲染器 (SkinnedMeshRenderer) 的动画角色，
+则可以将蒙皮布 (SkinnedCloth) 组件 (Component) 添加到具有蒙皮网格渲染器 (SkinnedMeshRenderer) 的游戏对象 (Game Object)，
+使其表现得更加栩栩如生。
+只需选择具有蒙皮网格渲染器 (SkinnedMeshRenderer) 的游戏对象 (GameObject)，
+然后使用组件 (Component) -> 物理 (Physics) -> 蒙皮布 (Skinned Cloth)添加蒙皮布。
+
+蒙皮布 (SkinnedCloth) 组件 (Component) 执行的操作
+是从蒙皮网格渲染器 (SkinnedMeshRenderer) 接收顶点输出并向其应用衣物模拟。
+蒙皮布 (SkinnedCloth) 组件 (Component) 具有一组每顶点系数，这些系数定义模拟布相对于蒙皮网格可以移动的自由程度。
+
+选择具有蒙皮布 (SkinnedCloth) 组件 (Component) 的游戏对象 (Game Object) 时，
+这些系数可以使用场景视图和监视器 (Inspector) 以视觉方式进行编辑。
+有两种编辑模式，即选择和顶点绘制。
+在选择模式中，可在场景视图中单击顶点以选择它们，然后在监视器 (Inspector) 中编辑其系数。
+在顶点绘制模式中，可在监视器 (Inspector) 中设置所需系数值，启用要更改的系数旁的“绘制”按钮，然后单击顶点以将值应用于它们。
+
+请注意：蒙皮布 (Skinned Cloth) 模拟仅由蒙皮网格渲染器 (SkinnedMeshRenderer) 进行蒙皮的顶点来驱动，
+不会以其他方式与任何碰撞器 (Collider) 交互。
+这使蒙皮布 (Skinned Cloth) 模拟比完全物理交互布 (Interactive Cloth) 组件 (Component) 快得多，
+因为它无需按与其余物理模拟相同的帧速率和相同线程上进行模拟。
+
+可以随时禁用或启用蒙皮布 (Skinned Cloth) 组件 (Component) 以打开或关闭。
+关闭可将渲染切换到普通蒙皮网格渲染器 (SkinnedMeshRenderer)，
+因此只要需要便可在这些选择之间切换以针对变化的性能进行动态调整。
+还可以使用 SkinnedCloth.SetEnabledFading() 方法从脚本在两个模式之间平滑地交叉淡变，使玩家无法察觉到转换。
+
+请注意，布模拟会生成法线，但不生成切线。
+如果源网格具有切线，则这些切线会不进行修改地传递给着色器 - 因此如果使用依赖于切线的着色器（如碰撞贴图着色器），
+则光照对于从其初始位置移动的布会显示不正确。
+
+----
+布系数
+
+每个顶点有四个系数，这些系数定义布顶点可以如何相对于蒙皮顶点和法线进行移动。
+这些系数有：
+
+最大距离 (Max Distance)	
+允许顶点相对于蒙皮网格顶点位置行进的距离。
+蒙皮布 (SkinnedCloth) 组件 (Component) 确保布顶点相对于蒙皮网格顶点位置保持在最大距离 (maxDistance) 内。
+如果“最大距离”(maxDistance) 为零，则顶点不会进行模拟，但是会设置为蒙皮网格顶点位置。
+此行为可用于将布顶点固定到动画角色的皮肤 - 您需要对不应蒙皮的任何顶点或以某种方式固定到角色身体的部分（如通过皮带固定的裤腰）执行该操作。
+但是，如果角色有较大部分不应使用布模拟（如脸或手），那么为了实现最佳性能，
+请将这些部分设置为没有蒙皮布 (SkinnedCloth) 组件 (Component) 的单独蒙皮网格。
+
+距离偏移 (Distance Bias)	
+距离偏移 (Distance Bias)基于蒙皮网格法线使通过“最大距离”(maxDistance) 定义的球体变形。
+值 0.0（默认）表示禁用该功能。
+在此情况下，不变形最大距离球体。
+朝 -1.0 减小“最大距离偏差”(maxDistanceBias) 会减小允许顶点在切线方向上行进的距离。
+对于 -1.0，顶点必须保持在通过蒙皮网格顶点位置的法线上，并相对于蒙皮网格顶点位置处于“最大距离”(maxDistance) 内。
+朝 1.0 增大“最大距离偏差”(maxDistanceBias) 会减小允许顶点在法线方向上行进的距离。
+1.0 时，顶点只能在切线平面内移动并相对于蒙皮网格顶点位置处于“最大距离”(maxDistance) 内。
+
+“碰撞球体半径”(Collision Sphere Radius) 和“碰撞球体距离”(Collision Sphere Distance)	不允许顶点进入的球体的定义。
+这允许与动画布碰撞。该对（“碰撞球体半径”(collisionSphereRadius)、“碰撞球体距离”(collisionSphereDistance)）为每个布顶点定义球体。
+球体中心位于位置“约束位置”(constrainPosition) -“约束法线”(constrainNormal) * (“碰撞球体半径”(collisionSphereRadius) +“碰撞球体距离”(collisionSphereDistance)) 上，
+其半径为“碰撞球体半径”(collisionSphereRadius)，
+其中“约束位置”(constrainPosition) 和“约束法线”(constrainNormal) 是蒙皮网格渲染器 (SkinnedMeshRenderer) 生成的顶点位置和法线。
+蒙皮布 (SkinnedCloth) 确保布顶点不进入此球体。
+这意味着“碰撞球体距离”(collisionSphereDistance) 定义布可以穿透蒙皮网格的深度。
+它通常设置为零。
+“碰撞球体半径”(collisionSphereRadius) 应设置为大于相邻顶点之间距离的值，以确保布顶点无法在碰撞球体上滑动。
+在这类设置中，布会表现为与蒙皮网格碰撞。
+
+有关对于不同“最大距离偏差”(maxDistanceBias) 值的蒙皮顶点和法线，这些系数如何发挥作用的可视表示形式，请参阅此图。
+红色区域是“碰撞球体半径”(collisionSphereRadius) 和“碰撞球体距离”(collisionSphereDistance) 定义的碰撞球体，这是布顶点无法进入的球体。
+因而绿色区域（由“最大距离”(maxDistance) 定义并从红色区域中减去“最大距离偏差”(maxDistanceBias)）定义布顶点可以在其中移动的空间。
+
+（图。）
+
+----
+蒙皮布 (SkinnedCloth) 检视器 (Inspector)
+
+选择具有蒙皮布 (SkinnedCloth) 组件 (Component) 的游戏对象 (GameObject) 时，
+可以使用蒙皮布 (SkinnedCloth) 监视器 (Inspector) 编辑布顶点系数以及其他属性。
+该监视器 (Inspector) 具有三个选项卡：
+
+--
+图：顶点选择工具 (Vertex Selection Tool)
+
+在此模式中，可以在场景视图中选择顶点，然后在监视器 (Inspector) 中设置其系数（有关布系数工作原理的说明，请参阅前一部分）。
+可以通过按住 Shift 键或使用鼠标拖动矩形来设置多个系数。
+选择多个顶点时，监视器 (Inspector) 会显示顶点系数的平均值。
+不过更改这些值时，该系数对于所有顶点会设置为相同值。
+如果将场景视图切换为线框模式，则还能查看并选择背向顶点，这在要选择角色的所有部分时十分有用。
+
+为帮助您了解系数对所有顶点所具有的值，可以单击系数字段旁的眼睛图标以便让编辑器在场景视图中显示该系数。
+这样可采用绿色显示具有该系数的最小值的顶点，中间值为黄色，最大值为蓝色。
+颜色比例始终相对于该系数的使用值范围进行选择，并且独立于绝对值。
+
+--
+图：顶点绘制工具 (Vertex Painting Tool)
+
+类似于顶点选择，这是可帮助配置顶点系数值的工具。
+与顶点选择不同的是，无需在更改值之前单击顶点 - 在此模式中，只需输入要设置的值，
+启用要更改的系数旁的画笔开关，然后单击要对其设置该值的所有顶点。
+
+----
+配置 (Configuration)
+
+图：第三个选项卡可用于配置蒙皮布的各种属性：
+
+弯曲刚度 (Bending Stiffness)	
+布的弯曲刚度
+伸展刚度 (Stretching Stiffness)	布的伸展刚度。
+
+阻尼 (Damping)	
+对布运动进行阻尼处理
+
+厚度 (Thickness)	
+布表面的厚度。 (0.001 - 10000)
+
+使用重力 (Use Gravity)	
+如果启用，则重力会影响布模拟。
+
+自碰撞 (Self Collision)	
+如果启用，则布可以与自己碰撞。
+
+外部加速度 (External Acceleration)	
+应用于布的恒定外部加速度。
+
+随机加速度 (Random Acceleration)	
+应用于布的随机外部加速度。
+
+世界坐标速率比例 (World Velocity Scale)	
+角色的世界坐标空间移动对布顶点的影响程度。
+此值越大，布为响应游戏对象 (GameObject) 世界坐标空间移动而进行的移动便越多。
+这基本上定义蒙皮布 (SkinnedCloth) 的空气摩擦力。
+
+世界坐标加速度比例 (World Acceleration Scale)	
+角色的世界坐标空间加速度对布顶点的影响程度。
+此值越大，布为响应游戏对象 (GameObject) 世界坐标空间加速度而进行的移动便越多。
+如果布不生动，请尝试增大此值。
+如果在角色加速时布不太稳定，请尝试减小此值。
+
+
+Page last updated: 2013-06-21
+

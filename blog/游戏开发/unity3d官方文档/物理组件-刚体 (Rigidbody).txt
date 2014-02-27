@@ -1,0 +1,218 @@
+﻿物理组件-刚体 (Rigidbody)
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-Rigidbody.html
+
+刚体 (Rigidbody) 使游戏对象 (GameObject) 在物理控制之下行动。
+刚体 (Rigidbody) 可以接收力和扭矩以使对象采用逼真方式移动。
+任何游戏对象 (GameObject) 必须包含刚体 (Rigidbody) 才能受重力影响、
+在添加的力作用下行动（通过脚本）或是与其他对象交互（通过 NVIDIA PhysX 物理引擎）。
+
+
+刚体 (Rigidbody) 使游戏对象 (GameObject) 在物理影响下行动。
+
+----
+属性
+
+属性：	功能：
+
+质量 (Mass)	
+对象的质量（任意单位）。不应使质量比其他刚体 (Rigidbody) 质量大或小 100 倍。
+
+阻力 (Drag)	
+在由于施加力而移动时空气阻力对对象的影响程度。0 表示无空气阻力，无穷大使对象立即停止移动。
+
+角阻力 (Angular Drag)	
+在由于施加扭矩而旋转时,空气阻力对对象的影响程度。
+0 表示无空气阻力。
+请注意：不能仅仅通过将其“角阻力”(Angular Drag) 设置为无穷大使对象停止旋转。
+
+使用重力 (Use Gravity	
+如果启用，则对象受重力影响。
+
+为运动学 (Is Kinematic)	
+如果启用，则对象不会由物理引擎驱动，而是只能通过其变换 (Transform)进行处理。
+对于移动平台，或是如果要对附加了铰链关节 (HingeJoint) 的刚体 (Rigidbody) 进行动画处理，这十分有用。
+
+--
+插值 (Interpolate)	
+仅当在刚体 (Rigidbody) 移动中发现不平稳时，才尝试这些选项之一。
+
+无 (None)	不应用插值。
+
+内插 (Interpolate	变换 (Transform) 基于上一帧的变换 (Transform) 进行平滑处理。
+
+外插 (Extrapolate)	变换 (Transform) 基于下一帧的估计变换 (Transform) 进行平滑处理。
+
+--
+碰撞检测 (Collision Detection)	用于防止快速移动的对象在不检测碰撞的情况下穿过其他对象。
+
+离散 (Discrete)	
+对场景中的所有其他碰撞体 (Collider) 使用离散 (Discreet) 碰撞检测。
+其他碰撞体 (Collider) 将在对其测试碰撞时使用离散 (Discreet) 碰撞检测。
+用于普通碰撞（这是默认值）。
+
+连续 (Continuous)	
+对动态碰撞体 (Collider)（带有刚体 (Rigidbody)）使用离散 (Discreet) 碰撞检测，
+对静态网格碰撞体 (MeshCollider)（不带刚体 (Rigidbody)）使用连续 (Continuous) 碰撞检测。
+在对刚体 (Rigidbody) 进行测试碰撞时，设置为“连续动态”(Continuous Dynamic) 的刚体 (Rigidbody) 将使用连续 (Continuous) 碰撞检测。
+其他刚体 (Rigidbody) 会使用离散 (Discreet) 碰撞检测。
+用于连续动态(Continuous Dynamic) 检测需要与之碰撞的对象。
+（这对物理性能具有较大影响，如果对快速对象的碰撞没有问题，请将其设置为“离散”(Discreet)）
+
+连续动态 (Continuous Dynamic)	
+对设置为“连续”(Continuous) 和“连续动态”(Continuous Dynamic) 碰撞的对象使用连续 (Continuous) 碰撞检测。
+它也会对静态网格碰撞体 (MeshCollider)（不带刚体 (Rigidbody)）也将使用连续 (Continuous) 碰撞检测。
+对于所有其他碰撞体 (Collider)，它使用离散 (Discreet) 碰撞检测。用于快速移动的对象。
+
+--
+约束 (Constraints)	对刚体 (Rigidbody) 运动的限制：
+
+冻结位置 (Freeze Position	选择性地在世界坐标 X、Y 和 Z 轴上停止刚体 (Rigidbody) 移动。
+冻结旋转 (Freeze Rotation)	选择性地停止刚体 (Rigidbody) 围绕世界坐标 X、Y 和 Z 轴的旋转。
+
+----
+详细信息
+
+刚体 (Rigidbody) 使游戏对象 (GameObject) 在物理控制之下行动。
+这样可实现逼真的碰撞、各种类型的关节 (Joint) 和其他非常棒的行为。
+与直接调整变换 (Transform) 组件 (Component) 相比，通过向刚体 (Rigidbody) 添加力来处理游戏对象 (GameObject) 可创造非常不同的感观。
+一般而言，不应处理相同游戏对象 (GameObject) 的刚体 (Rigidbody) 和变换 (Transform) - 只应处理两者之一。
+
+处理变换 (Transform) 与刚体 (Rigidbody) 之间的最大差异是力的使用。
+刚体 (Rigidbody) 可以接收力和扭矩，但是变换 (Transform) 不能。
+变换 (Transform) 可以进行平移和旋转，但是这与使用物理不同。
+您在自己进行尝试时将注意到明显差异。
+向刚体 (Rigidbody) 添加力/扭矩实际上会更改对象的变换 (Transform) 组件 (Component) 位置和旋转。
+这便是为何只应使用两者之一。
+使用物理时更改变换 (Transform) 可能会导致与碰撞和其他计算有关的问题。
+
+刚体 (Rigidbody) 必须先明确添加到游戏对象 (GameObject)，然后才会受物理引擎影响。
+可以通过菜单栏中的组件 (Components) -> 物理 (Physics) -> 刚体 (Rigidbody) 向所选对象添加刚体 (Rigidbody)。
+现在对象在物理方面准备就绪；它会因重力作用而下落，并且可以通过脚本接收力，
+但是您可能需要添加碰撞体 (Collider) 或关节 (Joint) 以使其行为与预期方式完全相同。
+
+----
+父子化 (Parenting)
+
+当对象处于物理控制下时，其移动方式与其变换父级的移动方式半独立。
+如果移动任何父级，则会随它们一起拉动刚体 (Rigidbody) 子级。
+但是，刚体 (Rigidbody) 仍会由于重力作用而下落并对碰撞事件作出反应。
+
+脚本处理
+
+要控制刚体 (Rigidbody)，主要使用脚本添加力或扭矩。
+可通过对对象的刚体 (Rigidbody) 调用 AddForce() 和 AddTorque() 来实现此目的。
+请记住，不应在使用物理时直接改变对象的变换 (Transform)。
+
+动画
+
+对于某些情况（主要是创建布娃娃效果），需要在动画与物理之间切换对象控制。
+为此，刚体 (Rigidbody) 可以标记为“为运动学 (isKinematic)”。
+当刚体 (Rigidbody) 标记为为运动学 (isKinematic)时，它不会受碰撞、力或 physX 的任何其他部分影响。
+这表示您必须通过直接处理变换 (Transform) 组件 (Component) 来控制对象。
+运动学刚体 (Kinematic Rigidbody) 会影响其他对象，但是它们自己不会受物理影响。
+例如，附加到运动学 (Kinematic) 对象的关节 (Joint) 会约束附加到它们的任何其他刚体 (Rigidbody)，
+运动学刚体 (Kinematic Rigidbody) 会通过碰撞影响其他刚体 (Rigidbody)。
+
+----
+碰撞组件(Collider)
+
+碰撞组件(Collider) 是另一种必须随刚体 (Rigidbody) 添加以便允许碰撞发生的组件 (Component)。
+如果两个刚体 (Rigidbody) 相互碰撞，则物理引擎不会计算碰撞，除非这两个对象都附加了碰撞组件 (Collider)。
+无碰撞组件 (Collider) 的刚体 (Rigidbody) 在物理模拟过程中只会穿过彼此。
+
+
+碰撞组件 (Collider) 定义刚体 (Rigidbody) 的物理边界
+
+使用组件 (Component) -> 物理 (Physics) 菜单添加碰撞体 (Collider)。
+有关更多特定信息，请查看任何个别碰撞体 (Collider) 的“组件参考”页面：
+
+箱体碰撞组件 (Box Collider) - 立方体的基元形状
+球体碰撞体 (Sphere Collider) - 球体的基元形状
+胶囊碰撞体 (Capsule Collider) - 胶囊的基元形状
+网格碰撞体 (Mesh Collider) - 通过对象的网格创建碰撞体 (Collider)，不能与其他网格碰撞体 (Mesh Collider) 碰撞
+车轮碰撞体 (Wheel Collider) - 专门用于创建汽车或其他移动交通工具
+
+--
+复合碰撞体 (Compound Collider)
+
+复合碰撞体 (Compound Collider) 是基元碰撞体 (Collider)（共同充当单个碰撞体 (Collider)）的组合。
+当您要在碰撞中使用复杂网格但是无法使用网格碰撞体 (Mesh Collider) 时，它们可派上用场。
+要创建复合碰撞体 (Compound Collider)，请创建碰撞对象的子对象，然后向每个子对象添加基元碰撞体 (Collider)。
+这使您可以方便且相互独立地定位、旋转和缩放每个碰撞体 (Collider)。
+
+
+实际的复合碰撞体 (Compound Collider) 设置
+
+在上图中，枪模型 (Gun Model) 游戏对象 (GameObject) 附加了刚体 (Rigidbody)，
+并且将多个基元碰撞体 (Collider) 作为子游戏对象 (GameObject)。
+当父刚体 (Rigidbody) 受力四处移动时，子碰撞体 (Collider) 会随其一起移动。
+基元碰撞体 (Collider) 会与环境的网格碰撞体 (Mesh Collider) 碰撞，
+而父刚体 (Rigidbody) 会基于向其应用的力以及其子碰撞体 (Collider) 与场景中其他碰撞体 (Collider) 交互的方式而改变其移动方式。
+
+--
+网格碰撞体 (Mesh Collider) 通常不能相互碰撞。
+如果某个网格碰撞体 (Mesh Collider) 标记为凸体 (Convex)，则它可以与其他网格碰撞体 (Mesh Collider) 碰撞。
+典型解决方案是将基元碰撞体 (Collider) 用于任何移动对象，而将网格碰撞体 (Mesh Collider) 用于静态背景对象。
+
+--
+连续 (Continuous) 碰撞检测
+
+连续 (Continuous) 碰撞检测是一种防止快速移动的碰撞体 (Collider) 穿过彼此的功能。
+如果一个对象在一个帧中处于碰撞体 (Collider) 的一端，并且在下一帧中已穿过碰撞体 (Collider)，则使用普通（离散 (Discrete))）碰撞检测时可能会发生这种情况。
+要解决此问题，可以对快速移动对象的刚体 (Rigidbody) 启用连续 (Continuous) 碰撞检测。
+
+将碰撞检测模式设置为连续 (Continuous) 可防止刚体 (Rigidbody) 穿过任何静止（即非刚体 (Rigidbody)）静态网格碰撞体 (MeshCollider)。
+
+将其设置为连续动态 (Continuous Dynamic) 还可防止刚体 (Rigidbody) 穿过任何其他在碰撞检测模式设置为 连续 (Continuous) 或连续动态 (Continuous Dynamic)。
+
+将其设置为连续动态 (Continuous Dynamic) 还可防止刚体 (Rigidbody) 穿过任何其他在碰撞检测模式设置为连续 (Continuous) 或连续动态 (Continuous Dynamic) 时支持的刚体 (Rigidbody)。
+
+对于箱体碰撞体 (BoxCollider)、球体碰撞体 (Sphere Collider) 和胶囊碰撞体 (Capsule Collider) 支持连续 (Continuous) 碰撞检测。
+请注意，连续 (Continuous) 碰撞检测旨在用作在对象否则会穿过彼此的情况下捕获碰撞的安全网，
+但是不会提供物理上准确的碰撞结果，因此如果遇到与快速移动对象有关的问题，
+则可能仍要考虑在时间管理器 (TimeManager) 检视视图 (Inspector) 中减小固定时间步长 (Time step) 值以使模拟更加精确。
+
+----
+使用合适大小
+
+游戏对象 (GameObject) 的网格大小比刚体 (Rigidbody) 的质量要重要得多。
+如果发现刚体 (Rigidbody) 的行为与预期方式不完全相同 - 它缓慢移动、漂浮或是未正确碰撞 - 请考虑调整网格资源的比例。
+Unity 的默认单位比例为 1 单位 = 1 米，因此导入的网格的比例可保持下来并应用于物理计算。
+例如，摇摇欲坠的摩天大楼崩塌的方式与积木搭成的塔非常不同，因此不同大小的对象应按准确比例进行建模。
+
+如果对人体进行建模，请确保他在 Unity 中大约 2 米高。
+要检查对象是否具有合适大小，请将其与默认立方体进行比较。
+可以使用游戏对象 (GameObject) -> 创建其他 (Create Other) -> 立方体 (Cube)创建立方体。
+立方体的高度恰好是 1 米，因此人体应是两倍高。
+
+如果无法调整网格自身，则可以更改特定网格资源的均匀比例，
+具体方法是在工程视图 (Project View) 中选择它并从菜单栏中选择资源 (Assets) -> 导入设置 (Import Settings)... 。
+在此处可以更改比例并重新导入网格。
+
+如果游戏要求游戏对象 (GameObject) 按不同比例进行实例化，则可以调整变换 (Transform) 比例轴的值。
+缺点是物理模拟程序在实例化对象时必须进行更多工作，并且可能会导致游戏性能下降。
+这不是很严重的损失，但是不如使用其他两个选项完成比例高效。
+另请记住，不均匀比例可能会在使用父子化 (Parenting) 时形成不需要的行为。
+出于这些理由，在建模应用程序中按正确比例创建对象始终是最佳选择。
+
+----
+提示
+
+两个刚体 (Rigidbody) 的相对质量 (Mass) 确定它们在互相碰撞时的反应方式。
+
+使一个刚体 (Rigidbody) 的 质量 (Mass) 大于另一个刚体 (Rigidbody) 不会使其在自由落体过程中下落得更快。
+请使用阻力 (Drag) 实现此目的。
+
+较小阻力 (Drag)值会使对象看起来较重。较高值会使对象看起来较轻。
+阻力 (Drag) 的典型值介于 0.001（实心金属块）与 10（羽毛）之间。
+
+如果直接处理对象的变换 (Transform) 组件 (Component) ，但是仍需要物理，
+请附加刚体 (Rigidbody) 并将其设为运动学 (Kinematic)。
+
+如果通过其变换 (Transform) 组件 (Component) 移动某个游戏对象 (GameObject)，
+但是希望接收碰撞体 (Collider)/触发器 (Trigger) 消息，则必须将刚体 (Rigidbody) 附加到移动的对象。
+
+不能仅仅通过将其“角阻力”(Angular Drag) 设置为无穷大使对象停止旋转。
+
+Page last updated: 2013-06-21
+
