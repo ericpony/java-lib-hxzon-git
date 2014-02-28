@@ -4,18 +4,34 @@ by hxzon
 
 ===========
 1，Cocos2D，Cocos2D-x
+http://www.cocos2d-x.org/wiki/Cocos2d-x
 
 《iOS cocos2d 2游戏开发实战(第3版)》
+
+Cocos2d-x is an open-source mobile 2D game framework, released under MIT License. 
+移动2d游戏框架。
+It is a C*+ version of cocos2d-iphone project. 
+Our focus for cocos2d-x development is around making cocos2d cross platforms. 
+我们的关注点是使得cocos2d跨平台。
+On top of the framework provided by cocos2d-x, mobile games can be written in C*+, Lua or JavaScript, 
+using API that is COMPLETELY COMPATIBLE with that of cocos2d-iphone. 
+api与cocos2d-iphone保持兼容。
+Cocos2d-x project can easily be built and run on iOS, Android, Samsung Bada, BlackBerry Qnx, Marmalde etc. 
+Cocos2d-x also supports Windows and Linux, therefore we can debug source code easily and write editors on desktop operating systems. 
+“X” means CROSS, The goal of this open-source project is to allow its users to create cross-platform code.
+名字中的X即“跨平台”。
 
 ===========
 2，unity3d（即unity）
 
 Unity是由Unity Technologies开发的一个让玩家轻松创建诸如三维视频游戏、建筑可视化、实时三维动画等类型互动内容的多平台的综合型游戏开发工具，
 是一个全面整合的专业游戏引擎。
+
 Unity类似于Director,Blender game engine, Virtools 或 Torque Game Builder等利用交互的图型化开发环境为首要方式的软件其编辑器，
 运行在Windows 和Mac OS X下，可发布游戏至Windows、Mac、Wii、iPhone和Android平台。
 也可以利用Unity web player插件发布网页游戏手机游戏，支持Mac 和Windows的网页浏览。
 它的网页播放器也被Mac widgets所支持。
+
 2013年4月25日Unity公司CEO David Helgason发布消息称，游戏引擎Unity今后将不再支持Flash平台，且于今天起不再销售针对Flash开发者的软件授权。
 
 特色介绍
@@ -51,7 +67,7 @@ Unity3D的坐标系统及向量概念如果不理解清楚，不理解世界坐�
 第四步学习资源导入方面的一些基本元素：网格，材质，贴图，动画等。
 
 第五步学习脚本的生命周期，Start,UpDate,ONGUI这些基本的方法。
-了解，预制，时间，数学等常用的类及相关方法。
+了解，预制体，时间，数学等常用的类及相关方法。
 理解游戏对象，组件，脚本彼此之间的关系。
 
 第六步进一步学习摄像机，灯光，地形，渲染，粒子系统，物理系统等等，
@@ -62,4 +78,17 @@ Unity3D入门容易，真的要精通，那是相当难的。
 
 ===========
 3，DirectX
+
+===========
+4，jMonkey Engine
+
+http://jmonkeyengine.org/features/introduction/
+http://jmonkeyengine.org/features/graphics/
+http://jmonkeyengine.org/features/utilities/
+http://bulletphysics.org/wordpress/ 实时物理模拟，开源，java
+
+Easy: It’s a free, open source game engine, made especially for Java game developers who want to create 3D games using modern technology. 
+The software is programmed entirely in Java, intended for wide accessibility and quick deployment.
+
+免费，开源，纯java实现的游戏引擎。
 

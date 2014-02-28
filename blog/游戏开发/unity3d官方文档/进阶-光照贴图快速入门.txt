@@ -1,0 +1,60 @@
+﻿进阶-光照贴图快速入门
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/Lightmapping.html
+
+本部分介绍了 Unity 中光照贴图的概况。
+如果想了解更多高级功能，请参阅深入了解 Unity 中的光照贴图。
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/LightmappingInDepth.html
+
+Unity 拥有完整的集成光照烘培贴图工具，即 Illuminate Labs 的 Beast。
+这意味着 Beast 可根据场景在 Unity 中的设置并考虑到网格、材质、纹理和灯光，烘培场景中的光照贴图。
+也意味着光照贴图是渲染引擎中不可缺少的一部分。
+创建光照贴图后无需进行任何操作，就会被对象自动应用。
+
+
+准备场景并烘培光照贴图
+
+从菜单中选择窗口 (Window) – 光照贴图 (Lightmapping)，打开光照贴图 (Lightmapping) 窗口：
+
+确保想要进行光照映射的任何网格都有适当的 UV 供进行光照映射。
+最简单的方法是从网格导入设置 (mesh import settings) 中选择生成光照贴图 UV (Generate Lightmap UVs) 选项。
+
+在对象 (Object) 窗格中将任何网格渲染器 (Mesh Renderer)、蒙皮网格渲染器 (Skinned Mesh Renderer) 或地形 (Terrain) 标记为静态 (static) 
+– 告诉 Unity 这些对象不会移动或更改，可进行光照贴图。
+
+要控制光照贴图的分辨率，请转到烘培 (Bake) 窗格并调整分辨率 (Resolution) 值。
+（如要更好地了解如何安排光照贴图的纹元，请查看场景视图 (Scene View) 中的光照贴图显示 (Lightmap Display)小窗口，
+并选择显示分辨率 (Show Resolution)）。
+
+点击烘培 (Bake) 按钮
+
+Unity 编辑器 (Editor) 的状态栏上出现一个进度条（右下角）。
+烘培完成时可在光照贴图编辑器 (Lightmap Editor) 窗口底部看到所有已烘培的光照贴图。
+场景和游戏视图将更新，场景已完成光照映射！
+
+调整烘培设置
+
+场景的最终外观效果在较大程度上取决于光照设置和烘培设置。
+我们来看一个可以改善光照质量的基本设置示例。
+
+下图是一个带几个立方体的基本场景，中心有一个点光源。
+灯光投射出硬阴影，效果非常昏暗，不自然。
+
+
+选择灯光并打开光照贴图 (Lightmapping) 窗口中的对象 (Object) 窗格，
+出现阴影半径 (Shadow Radius) 和阴影样本 (Shadow Samples) 属性。
+将阴影半径 (Shadow Radius) 设置为 1.2，阴影样本 (Shadow Samples) 设置为 100，
+重新烘培产生带有宽半阴影的软阴影，图片看起来效果就好很多。
+ 
+
+在 Unity 专业版中可启用全局照明 (Global Illumination) 并添加天光 (Sky Light)，进一步处理场景。
+在烘培 (Bake) 窗格中将反弹 (Bounces) 值设置为 1，天光强度 (Sky Light Intensity) 设为 0.5。
+结果使灯光更软，稍稍带漫反射相互反射效果（从绿色和蓝色立方体中渗色）。
+虽然还是 3 个立方体和一盏灯，但更加美观！
+
+ 
+深入了解光照贴图
+
+如需获得不同光照贴图相关设置的更多详细信息，请参阅深入了解 Unity 中的光照贴图。
+
+Page last updated: 2013-06-30
+

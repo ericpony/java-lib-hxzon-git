@@ -1,0 +1,14 @@
+﻿（hxzon）eclipse配置
+
+by hxzon
+====
+1，配置某类文件使用xml编辑器
+
+General-Content Types
+选中树Text-XML和XML(Illformed)，添加对应的后缀。
+
+2，
+
+
+
+

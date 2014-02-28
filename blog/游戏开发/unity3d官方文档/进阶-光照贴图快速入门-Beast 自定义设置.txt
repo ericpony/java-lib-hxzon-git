@@ -1,0 +1,186 @@
+﻿进阶-光照贴图快速入门-Beast 自定义设置
+http://edu.china.unity3d.com/learning_document/getData?file=/Manual/LightmappingCustomSettings.html
+
+如果想让烘培设置与 Unity 默认使用的不同，可通过 Beast 自定义设置指定。
+
+Beast 读取 XML 格式定义的烘培设置。一般来说，Unity 会根据您在光照贴图编辑器 (Lightmap Editor) 窗口的烘培 (Bake) 窗格中选择的配置及若干其他内部设置来生成 XML 文件。可在 Beast 的 XML 格式中指定自己的设置来覆盖这些设置。
+
+要让 Unity 自动生成 XML 文件，可单击光照贴图编辑器 (Lightmap Editor) 窗口右上角的标签菜单并选择生成 Beast 设置文件 (Generate Beast settings file)。您会注意到 BeastSettings.xml 文件出现在光照贴图旁的工程当中，且光照贴图编辑器 (Lightmap Editor) 会通知您 XML 设置将在下次烘培时覆盖 Unity 的设置。单击打开 (open) 按钮编辑自定义设置。
+
+
+Beast 配置文件示例如下：
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<ILConfig>
+  <AASettings>
+    <samplingMode>Adaptive</samplingMode>
+    <clamp>false</clamp>
+    <contrast>0.1</contrast>
+    <diagnose>false</diagnose>
+    <minSampleRate>0</minSampleRate>
+    <maxSampleRate>2</maxSampleRate>
+    <filter>Gauss</filter>
+    <filterSize>
+      <x>2.2</x>
+      <y>2.2</y>
+    </filterSize>
+  </AASettings>
+  <RenderSettings>
+    <bias>0</bias>
+    <maxShadowRays>10000</maxShadowRays>
+    <maxRayDepth>6</maxRayDepth>
+  </RenderSettings>
+  <EnvironmentSettings>
+    <giEnvironment>SkyLight</giEnvironment>
+    <skyLightColor>
+      <r>0.86</r>
+      <g>0.93</g>
+      <b>1</b>
+      <a>1</a>
+    </skyLightColor>
+    <giEnvironmentIntensity>0</giEnvironmentIntensity>
+  </EnvironmentSettings>
+  <FrameSettings>
+    <inputGamma>1</inputGamma>
+  </FrameSettings>
+  <GISettings>
+    <enableGI>true</enableGI>
+    <fgPreview>false</fgPreview>
+    <fgRays>1000</fgRays>
+    <fgContrastThreshold>0.05</fgContrastThreshold>
+    <fgGradientThreshold>0</fgGradientThreshold>
+    <fgCheckVisibility>true</fgCheckVisibility>
+    <fgInterpolationPoints>15</fgInterpolationPoints>
+    <fgDepth>1</fgDepth>
+    <primaryIntegrator>FinalGather</primaryIntegrator>
+    <primaryIntensity>1</primaryIntensity>
+    <primarySaturation>1</primarySaturation>
+    <secondaryIntegrator>None</secondaryIntegrator>
+    <secondaryIntensity>1</secondaryIntensity>
+    <secondarySaturation>1</secondarySaturation>
+    <fgAOInfluence>0</fgAOInfluence>
+    <fgAOMaxDistance>0.223798</fgAOMaxDistance>
+    <fgAOContrast>1</fgAOContrast>
+    <fgAOScale>2.0525</fgAOScale>
+  </GISettings>
+  <SurfaceTransferSettings>
+    <frontRange>0.0</frontRange>
+    <frontBias>0.0</frontBias>
+    <backRange>2.0</backRange>
+    <backBias>-1.0</backBias>
+    <selectionMode>Normal</selectionMode>
+  </SurfaceTransferSettings>
+  <TextureBakeSettings>
+    <bgColor>
+      <r>1</r>
+      <g>1</g>
+      <b>1</b>
+      <a>1</a>
+    </bgColor>
+    <bilinearFilter>true</bilinearFilter>
+    <conservativeRasterization>true</conservativeRasterization>
+    <edgeDilation>3</edgeDilation>
+  </TextureBakeSettings>
+</ILConfig>
+顶层的 XML 元素及其子元素描述见下文。
+
+自适应采样 (Adaptive Sampling)（<AASettings> 元素）
+Beast 在光照贴图采样时使用自适应采样方案。灯光差异必须超过用户设定的对比度阈值，以便 Beast 将额外的样本放到一个区域。样本区域由最小采样率 (Min sample rate) 和最大采样率 (Max sample rate) 定义。用户将采样率设置在 -4..4 范围内，意味着 Beast 采样数目在 1/256 个样本/像素到 256 个样本/像素之间（公式为：4 ^采样率）。建议至少使用一个样本/像素用于制作（最小采样率 (Min sample rate) = 0）。相机渲染或用大的 UV 贴图烘培纹理时欠采样是最有用的。Beast 已为一个区域抽取所有必要的样本时，最终像素值使用过滤器进行权衡。过滤器产生的外观根据使用的过滤器类型和过滤器内核大小而定。可用的过滤器有：
+
+Box：每个样本都同等重要。执行最快的过滤器，但结果模糊。
+Triangle：过滤器内核是暂时的，意味着远处的样本不太重要。
+Gauss：将高斯 (Gauss) 函数用作过滤器内核，结果最佳（去除噪点，保留细节）。
+还有一些过滤器可用，但这三种的用处最大。（过滤器）内核大小以像素为单位，范围在 1..3 之间。事实上，过滤时 Beast 使用所有子像素，结果比后续在 Photoshop 中处理的效果要好。
+
+AASettings
+samplingMode	使用的采样策略。默认为自适应 (Adaptive)。自适应 (Adaptive)：用于欠/过采样（从 1/256 到 256 个样本/像素）的自适应 (Adaptive) 抗锯齿方案。超级采样 (SuperSampling)：用于超级采样的抗锯齿方案（从 1 到 128 个样本/像素）。
+minSampleRate	设置最小采样率，默认为 0（如 1 个样本/像素）。
+maxSampleRate	设置最大采样率，公式为 4^maxSampleRate（1、4、16、64、256 个样本/像素）。
+contrast	对比度值，控制是否需要更多样本，值越低，样本越多。
+filter	设置使用的过滤器类型。用于烘培的最佳类型为 Box、Triangle 和 Gauss。
+filterSize	设置过滤器的像素大小，值在 1 至 3 之间。
+diagnose	启用可诊断采样情况。像素越亮，该位置的抽样越多。
+纹理烘培 (Texture Bake)（<TextureBakeSettings> 元素）
+这些设置有助于避免完全与光照贴图如何栅格化及从纹理中读取有关的任何人工处理。
+
+TextureBakeSettings
+edgeDilation	以指定像素数量扩展渲染区域。该步骤是必需的，以防止 GPU 从周围的已渲染区域过滤空像素时出现人工痕迹。应设置为 0，因为不错的运算是导入管道的一部分。
+bilinearFilter	用于确定 GPU 应用双线性过滤时光照贴图中的数据“正确”。图集紧凑时最为明显。如果两个不同 UV 贴图之间只有一个像素，Beast 中的双线性功能将确保该像素用正确贴图中的颜色进行填充，从而最大限度减少光照缝隙。
+conservativeRasterization	UV 图表未覆盖整个像素时使用。如果采用这种布局，Beast 可能会错误地错过该像素。如果采用保守光栅化，Beast 将保证其找到存在的 UV 布局。注意，Beast 将接受任何 UV 布局的像素。如果 UV 图集以低分辨率紧凑打包或存在非常薄的对象，通常需要开启保守光栅化。
+bgColor	光照贴图的背景色。应设为白色 (1,1,1,1)。
+环境 (Environment)（<EnvironmentSettings> 元素）
+Beast 中的环境设置控制光线错过场景中所有几何体时出现的情况。对于基于图像的照明 (Image Based Lighting (IBL))，环境可为恒定颜色或 lat-long 格式的 HDR 图像。注意，环境应只用于可视为无限远的效果，即只有方向组件的事项。
+
+定义环境通常是获得美观室外照明效果的良好办法，但也会增加烘培次数。
+
+EnvironmentSettings
+giEnvironment	环境类型：无 (None)、天光 (Skylight) 或 IBL。
+giEnvironmentIntensity	强度的比例因子，用于避免伽马校正错误并将 HDR 纹理缩放到适合场景的大小。（在 Unity 中：天光强度 (Sky Light Intensity)）
+skyLightColor	恒定的环境颜色。类型为天光 (Skylight) 时使用。将颜色的强度值保持在 1.0 以下通常可避免伽马校正增加，通过 giEnvironmentIntensity 设置来增加强度。（在 Unity 中：天光颜色 (Sky Light Color)）
+iblImageFile	Long-Lat 格式的高动态范围 IBL 背景图像，.HDR 或 .EXR，绝对路径。
+渲染设置/阴影 (Render Settings/Shadows)（<RenderSettings> 元素）
+光线跟踪阴影的设置。
+
+RenderSettings
+bias	避免阴影光线双交叉的错误阈值。例如，阴影光线不应像主光线一样与相同的三角形相交，但由于数值精度有限，也有可能相交。偏移值移动相交点，可解决该问题。如果设为 0，该值将根据场景大小自动计算。
+maxShadowRays	用于生成任何光源的软阴影的每点最大阴影光线数目。使用该选项可减少渲染次数，但会降低软阴影的质量。这会减少任何 shadowSamples 设置比该值高的光源发出的最大光线数，但如果 shadowSamples 设置比该值低，就不会增加该光线数目。
+maxRayDepth	视为完成前光线的最大反弹次数。反弹可以是反射，也可以是折射。如果光线在触及不透明对象前穿过多个透明三角形，请增加该值，应该为阴影的区域会出现光线。常见故障：树叶经过 alpha 测试的树木被放在山峰阴影处。
+giTransparencyDepth	全局照明光线的最大透明深度，如假定光线被吸收前可穿过的透明表面数目。值较低可加快渲染速度，比如在有茂密树林的场景中，但会引起透明对象重叠，投射过多阴影。默认值为 2。
+全局照明 (Global Illumination)（<GISettings> 元素）
+全局照明 (Global Illumination) 系统允许使用两个单独的运算式来计算间接照明。例如，可用快速运算式计算多级光线反弹，如路径跟踪器 (Path Tracer)；用最终聚集 (Final Gather) 计算最终反弹，从而进行快速、高质量的全局照明渲染。两个子系统都有单独的强度 (Intensity) 和饱和度 (Saturation) 控制，必要时可加强效果。
+
+建议使用最终聚集 (FinalGather) 作为主积分器，无 (None) 或路径跟踪器 (PathTracer) 作为次积分器。Unity 默认第一个选项（因而仅限最终聚集），因为它能在大多数情况下实现最佳质量渲染。如果需要许多间接反弹，应采用路径跟踪器 (Path Tracer)，且质量合格、仅限最终聚集 (Final Gather) 解决方案的渲染时间太长。
+
+GISettings
+enableGI	设置为 true 启用全局照明 (Global Illumination)。
+primaryIntegrator	用于最终计算间接光线的积分器。默认为最终聚集 (FinalGather) 。
+secondaryIntegrator	用于计算间接光线初始反弹量的积分器。默认为无 (None)，可选路径跟踪器 (PathTracer)。
+primaryIntensity	后续过程，将主积分器结果的颜色从 RGB 转为 HSV，缩放 V 值。（在 Unity 中：反弹强度 (Bounce Intensity)）
+primarySaturation	后续过程，将主积分器结果的颜色从 RGB 转为 HSV，缩放 S 值。
+secondaryIntensity	后续过程，将次积分器结果的颜色从 RGB 转为 HSV，缩放 V 值。
+secondarySaturation	后续过程，将次积分器结果的颜色从 RGB 转为 HSV，缩放 S 值。
+diffuseBoost	该设置可用于增强黑暗场景中的光线反弹。设置为大于 1 的值，将材质的漫反射颜色值推向 1，用于 GI 计算。典型用例为以黑暗材质设计的场景，仅进行直接照明时容易发生这种情况，因为以强光源补充黑暗材质比较容易。在这些场景中间接光线非常微弱，因为反弹光线会快速消失。设置漫反射增强可弥补这一点。注意，值在 0-1 之间会以相似方式降低漫反射设置，使光线反弹少于材质的效果，0 以下的值无效。实际计算按照每个组件的 pow(colorComponent, (1.0/diffuseBoost)) 进行。（在 Unity 中：反弹增强 (Bounce Boost)）
+fgPreview	启用可快速预览最终图像照明。
+最终聚集 (Final Gather)
+以下设置可控制最终聚集 (Final Gather) 解决方案的质量或正确性。常见用法为：
+
+对于每个烘培设置，对比度阈值 (Contrast Threshold) 和光线数量 (Number of Rays) 可能有所调整。因为要根据几何体的复杂度和灯光设置来定，所以没有哪种设置是最完美的。
+检查可见性 (Check Visibility) 和减少漏光 (Light Leakage) 操作时性能消耗大，应只在纠正真正存在的漏光问题时才使用。这些设置只有在因全局照明计算引起漏光的情况下才有用。将墙作为一个无厚度的单一面板时经常发生漏光现象。这种情况下的漏光并非从 GI 中泄漏。
+只有在各角落出现白色光晕时才更改梯度阈值。
+在大多数场景中不需要过多调整第 2 步和第 3 步。
+
+GISettings
+fgContrastThreshold	控制预计算期间对于各点之间的对比度差异最终聚集应有的敏感度。如果邻近点之间的对比度差异超过该阈值，该区域将创建更多点。从而告诉算法将点放在真正需要的位置，如放在阴影边缘或间接光线迅速变化的区域。因而该阈值能自适应控制场景中创建的点数。注意，如果使用的最终聚集光线较少，点的分布会非常不均匀，造成明暗对比很大。在这种情况下，需要调高对比度阈值，防止各点聚在一起或每个样本使用的光线过多。（在 Unity 中：对比度阈值 (Contrast Threshold)）
+fgRays	每个最终聚集 (Final Gather) 样本使用的最大光线数。数量越大，效果越好，评估时间越长。（在 Unity 中：最终聚集光线 (Final Gather Rays)）
+fgCheckVisibility	开启该选项可减少墙壁漏光。收集点插入中间时，部分点可能位于几何体的另一边，从而使光渗过几何体。为防止出现这种情况，Beast 可滤过不可见的点。
+fgCheckVisibilityDepth	控制可见性检查应执行多少次反弹。只有在使用多次反弹最终聚集 (Final Gather) 时出现漏光的情况下才进行调整。
+fgLightLeakReduction	使用最终聚集作为主 GI 且路径跟踪作为次 GI 时，该设置可用于减少墙壁的漏光。例如路径跟踪器在墙壁另一边过滤值的情况下会出现漏光，靠近墙壁或角落采样时可通过使用最终聚集作为次 GI 回退来减少漏光情况发生。启用后将自动使用最终聚集深度 3，只有在靠近墙壁或角落时才使用更高的深度值。注意，该选项只有在路径跟踪用作次 GI 时才可使用。
+fgLightLeakRadius	控制再次调用最终聚集（而非次 GI）时到墙壁的距离。如果设为 0.0，Beast 将尝试估计一个较好的值。如果未消除漏光，可手动设为较高的值。
+fgGradientThreshold	控制光照渐变如何在插值中使用。每个点保存其光照渐变，可用于改善插值。在某些情况下，使用渐变会导致出现白“斑”和其他人工痕迹。该阈值可用于减少人工痕迹（设置为低值或 0）（在 Unity 中：插值 (Interpolation)）
+fgInterpolationPoints	设置要插入的最终聚集点数。值越高，效果越平滑，但也会消除细节。如果增加该值时墙壁漏光，检查样本可见性可解决该问题。（在 Unity 中：插值点 (Interpolation Points)）
+fgNormalThreshold	针对各点法线之间的差异，控制最终聚集应有的敏感度。值越低，高曲率区域的点越多。
+fgDepth	控制间接光线反弹的数量。值越高，结果越准确，但渲染时间也会加长。对于性能消耗低的多次反弹 GI，可将路径跟踪器 (Path Tracer) 用作次积分器，而不增加深度。（在 Unity 中：反弹 (Bounces)）
+fgAttenuationStart	衰减开始的距离。在该距离之前不会出现衰减。可用来将衰减效果添加到最终聚集照明中。将 fgAttenuationStop 设为高于 0.0 的值时启用该选项。
+fgAttenuationStop	设置衰减停止的距离（淡出到零）。在该距离之外有一个零强度。要启用衰减，请将该值设为高于 0.0 的值。默认值为 0.0。
+fgFalloffExponent	可用来调整光照在一定距离内逐步衰减的速率。速率越高，衰退越快。
+fgAOInfluence	将最终聚集 (Final Gather) 与环境光遮挡 (Ambient Occlusion) 融合在一起。范围在 0..1 之间。 0 为无遮挡，1 为完全遮挡。如果最终聚集 (Final Gather) 使用多种深度或路径跟踪 (Path Tracing) 作为次 GI (Secondary GI)，结果会变得有点“平”。把许多环境光遮挡因素计入运算当中是获得更多照明对比度的一个不错方法。环境光遮挡 (Ambient Occlusion) 算法只影响最终聚集计算。光照贴图窗口中出现的环境光遮挡 (Ambient Occlusion) 计算方式不同，通过一个单独的仅限几何体的通道进行。
+fgAOMaxDistance	遮挡光线的最大距离。在该距离之外，光线视为不被遮挡。可用于避免封闭场景中的完全遮挡，如房间或限制环境光遮挡的褶皱区域。
+fgAOContrast	可用于调整环境光遮挡的对比度。
+fgAOScale	遮挡值的比例缩放。可用于增加或减少阴影效果。
+路径跟踪器 (Path Tracer)
+使用路径跟踪功能获得快速的多点反弹全局照明。不应用作主积分器来进行烘培，因为效果非常杂乱，在光照贴图中不美观。可用作主积分器来调整设置，确保缓存间距和准确度高。预定用法为将其设为次积分器，将单反射最终聚集作为主积分器。精确度和点大小可进行调整，以确保缓存足够细致。
+
+GISettings
+ptAccuracy	设置每个样本元素（像素、纹素或顶点）被跟踪路径的数目。对于预览渲染，可使用 0.5 - 0.1 等低值。这意味着 1/2 至 1/10 像素会生成一个路径。进行制作时，如果需要获得较好质量，渲染值可在 1.0 以上。
+ptPointSize	设置路径跟踪器缓存中各点之间的最大距离。如果设置为 0，将根据场景大小自动计算出一个值。渲染时自动计算的值会显示出来。如果需要调整点大小，可将其作为一个不错的初值。
+ptCacheDirectLight	启用该项后，路径跟踪器也将缓存光源中的直接照明。因为需要计算的直接照明较少，这么做会提高性能。得到一个大概结果，因而可影响照明的质量。例如，高光反弹的间接光反弹可能会丢失。
+ptCheckVisibility	开启该选项可减少墙壁漏光。收集点插入中间时，部分点可能位于几何体的另一边，从而使光渗过几何体。为防止出现这种情况，Beast 可滤过不可见的点。注意：如果使用该项，请关闭最终聚集 (Final Gather) 的减少漏光。
+帧设置 (Frame Settings)（<FrameSettings> 元素）
+允许控制 Beast 使用的线程数量及输入和输出的伽马收集。
+
+FrameSettings
+inputGamma	保留为 1，该值是根据每个纹理适当设置。
+表面转移 (Surface Transfer)（<SurfaceTransferSettings> 元素）
+SurfaceTransferSettings 用于允许将照明从 LOD0（相机靠近对象时显示的细节程度）转移至保真度较低的 LOD。保留默认设置。
+
+Page last updated: 2013-06-30

@@ -1,0 +1,131 @@
+﻿寻路
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/comp-AIGroup.html
+
+此部分介绍 Unity 对寻路的支持（寻路是在两点之间规划高效路线，同时避免沿途出现障碍的过程）。
+
+导航网格代理(NavMesh Agent)（仅限专业版）
+分离网格链接 (OffMeshLink）（仅限专业版）
+导航网格障碍
+
+Page last updated: 2013-05-31
+
+====
+导航网格代理(NavMesh Agent)（仅限专业版）
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-NavMeshAgent.html
+
+
+导航网格代理组件与寻路结合使用，是放置有关此代理如何对导航网格进行导航的信息的位置。
+可以在组件 (Component)->导航 (Navigation)->导航网格代理 (Nav Mesh Agent) 中访问它。
+
+（图）
+
+属性：	功能:
+
+半径 (Radius)	
+代理半径（仅用于寻路，可以与实际对象半径不同，通常较大)。
+
+速度 (Speed)	
+代理朝着目的地穿越世界坐标时可以采用的最大移动速度。
+
+加速度 (Acceleration)	最大加速度。
+
+角速度 (Angular Speed)	最大旋转速度 (deg/s)。
+
+停止距离 (Stopping distance)	
+停止距离与目的地之间的距离小于此距离时，代理将减速。
+
+自动穿越分离网格链接 (Auto Traverse OffMesh Link)	
+自动采用和不采用 OffMeshLink 进行移动。
+
+自动重新寻路 (Auto Repath)	
+如果现有路径是部分路径或无效路径，则获取新路径。
+
+高度 (Height)	
+代理高度(在调试图形中使用)。
+
+基础偏移 (Base offset)	
+碰撞几何结构相对于实际几何结构的垂直偏移。
+
+障碍回避类型 (Obstacle Avoidance Type)	
+回避质量级别。
+
+回避优先级 (Avoidance Priority)	
+执行回避时，此代理将忽略较低优先级代理。
+该值应处于范围 0..99 内，其中较小数字指示较高优先级。
+
+可行走的导航网格 (NavMesh Walkable)	
+指定代理可以穿越的导航网格层类型。
+
+
+Page last updated: 2013-06-04
+
+====
+分离网格链接 (OffMeshLink）（仅限专业版）
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-OffMeshLink.html
+
+请注意，此部分主要与手动分离网格链接（即用户通过 OffMeshLink 组件设置的链接）有关。
+有关自动生成的分离网格链接, 请参阅 导航网格简介
+
+
+场景中的导航网格静态 (navmesh static) 几何结构可能会断开连接，从而使代理无法从世界坐标的一个部分到另一个部分。
+
+为了解决此问题，Unity 具有分离网格链接系统
+
+
+图：OffMeshLink 组件
+
+分离网格链接是可以置于任何对象上的组件，具有以下属性
+
+属性:	功能:
+
+开始 (Start)	
+分离网格链接的开始对象。
+
+结束 (End)	
+分离网格链接的结束对象。
+
+成本覆盖 (Cost Override)	
+如果值为正，则在路径请求处理中计算路径成本时使用该属性。
+否则，我们使用默认成本（此游戏对象所属的层的成本）。
+如果“成本覆盖”(Cost Override) 设置为值 3.0，则在分离网格链接上移动的成本比在默认导航网格区域中移动相同距离的成本高三倍。 此属性可在运行时编辑，无需重新烘焙。
+
+双向 (Bi Directional)	
+如果此属性为“开”(on)，则可以双向穿越链接，
+如果它为“关”(off)，则只能按从“开始”(Start) 到“结束”(End) 的方向穿越链接。
+
+已激活 (Activated)	
+指定寻路器是否实际使用此链接。此属性可在运行时编辑，无需重新烘焙。
+
+--
+有关 OffMeshLink 属性的特殊备注：
+
+"已激活"(Activated) 和"成本覆盖" (Cost Override) 属性可以在运行时进行更改并可立即生效。
+所有其他属性在生效之前需要进行导航网格重新烘焙。
+
+如果在烘焙时未分配开始或结束变换，或是如果开始或结束变换的位置距离导航网格太远而无法找到有效位置，则不会生成分离网格链接。
+在这种情况下，会在“控制台”(Console) 窗口中显示错误。
+
+
+Page last updated: 2013-06-19
+
+====
+导航网格障碍
+http://edu.china.unity3d.com/learning_document/getData?file=/Components/class-NavMeshObstacle.html
+
+可以设置导航网格上的固定障碍为烘焙过程的一部分。
+不过，场景中还可以具有代理在四处移动时将回避的动态障碍。
+这类动态障碍可以使用导航网格障碍组件进行指定。
+这可以添加到任何游戏对象 (GameObject)，将随该对象移动而移动。
+
+
+属性:	功能:
+
+半径 (Radius)	
+障碍圆柱体半径。
+
+高度 (Height)	
+障碍圆柱体高度。
+
+
+Page last updated: 2013-06-19
+
