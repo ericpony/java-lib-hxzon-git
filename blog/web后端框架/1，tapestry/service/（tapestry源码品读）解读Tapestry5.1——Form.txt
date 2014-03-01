@@ -1,11 +1,11 @@
-﻿解读Tapestry5.1——Form
-
-学中修订部分字眼。
+﻿（tapestry源码品读）解读Tapestry5.1——Form
 http://blog.csdn.net/mindhawk/archive/2009/12/21/5045815.aspx
 
-tapestry源码品读
-
-之前，我已经介绍过了Tapestry的请求调用链（《解读Tapestry5.1——请求调用链》），页面渲染（《解读Tapestry5.1——页面渲染》），和事件分派（《Tapestry5 事件分派机制》）这几个方面的内容。本文将进一步讲述有关Form及其相关组件的内容，构成一个完整的页面渲染和交互的体系，阐述清楚Tapestry的基本工作原理。
+修订部分字眼by hxzon。
+====
+之前，我已经介绍过了Tapestry的请求调用链（《解读Tapestry5.1——请求调用链》），页面渲染（《解读Tapestry5.1——页面渲染》），
+和事件分派（《Tapestry5 事件分派机制》）这几个方面的内容。
+本文将进一步讲述有关Form及其相关组件的内容，构成一个完整的页面渲染和交互的体系，阐述清楚Tapestry的基本工作原理。
 
 1.介绍
 

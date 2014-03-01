@@ -1,10 +1,22 @@
-﻿解读Tapestry5.1——页面渲染
-
-学中修订部分字眼。
-
+﻿（tapestry源码品读）解读Tapestry5.1——页面渲染
 http://blog.csdn.net/mindhawk/archive/2009/12/16/5021371.aspx
 
-tapestry源码品读
+修订部分字眼by hxzon。
+====
+contributeTypeCoercer
+DefaultRequestExceptionHandler
+ui展示，数据模型，事件处理
+生成html，或改变生命周期
+pageResponseRendererImpl
+pageMarkupRendererImpl
+管道组织服务 6个过滤器：
+文档链接，渲染支持，默认风格，客户端行为，心跳，默认验证修饰
+ComponentResources
+ComponentPageElement
+PageRenderQueueImpl
+RenderCommand 渲染，或添加新的RenderCommand到队列
+
+====
 
 本文旨在介绍Tapestry5.1的页面渲染(render)过程，希望最终能给出一个完整清晰的页面渲染流程，以便大家能更好的理解Tapestry页面渲染的过程，构架出更漂亮的Tapestry组件。
 

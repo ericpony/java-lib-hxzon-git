@@ -1,11 +1,9 @@
-﻿解读Tapestry5.1——请求调用链
-
-学中修订部分字眼。
-
+﻿（tapestry源码品读）解读Tapestry5.1——请求调用链
 http://blog.csdn.net/mindhawk/archive/2009/12/15/5009381.aspx
 
-tapestry源码品读
+修订部分字眼by hxzon。
 
+====
 本文的目的旨在详细解读Tapestry 5.1的调用链设计，以清晰的反映出Tapestry是如何将一个HTTP请求转变为其内部的组件处理的。但阅读本文之前，您最好能对Tapestry5 的使用有所了解，本文将不详细讨论Tapestry的使用方法。
 
 下面，直接切入主题，谈一下Tapestry调用链的大体设计思想。

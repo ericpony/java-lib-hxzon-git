@@ -1,0 +1,31 @@
+﻿（hxzon读书笔记）《java nio》
+
+by hxzon
+====
+1，
+ServerSocketChannel ssc=ServerSocketChannel.open();
+ssc.socket().bind(port);
+DatagramChannel
+SocketChannel
+
+object blockingLock() 取得阻塞设置权限，不被其它线程修改。
+accept() 阻塞魔术，非阻塞模式
+
+客户端
+SocketChannel.open(serverPort)
+
+selector=Selector.open();
+key=channel1.register(selector,SelectionKey.OP_READ);
+selector.select(10000);
+
+ByteBuffer.slice 子分区，共享底层缓存数组。
+selector.wakeup() 使一个还未返回的select()方法立即返回。
+buffer.flip() 读之前（将limit设为pos，pos设为0）
+buffer.rewind() 用于已flip之后重读（将pos设为0）
+hasRemaining() 和 remaining()
+compact() 压缩，即去除已读数据，未读部分又从0开始
+mark() 和 reset() 设置和清除mark标记位（很多操作会丢弃mark）。
+get(array) put(array) 会抛出异常，当没有足够的数据可读，或没有足够空间可写。
+channels不能复用。
+
+

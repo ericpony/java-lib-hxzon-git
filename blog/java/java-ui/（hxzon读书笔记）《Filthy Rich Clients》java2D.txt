@@ -1,0 +1,92 @@
+﻿（hxzon读书笔记）《Filthy Rich Clients》java2D
+
+by hxzon
+====
+1，affineTransform 映射变换：
+rotate旋转
+scale缩放
+shear形变
+translate位移
+
+2，Graphics2D.drawImage(BufferedImage,bufferedImageOp,x,y)
+swing线程:main thread,edt,capturing systems thread
+
+chapter11 倒映效果
+chapter9 
+JFrame,JRootPane,Component glassPane,JLayeredPane Component contentPane,JMenuBar
+
+可见性与透明是两个概念。
+
+chapter10 layered panes
+look and feel（laf）
+
+chapter16 模糊，示例：模糊标签（使得注意力集中到选项）
+box模糊
+高斯模糊（box模糊不适应高对比度）
+利用java2D缩小再还原进行模糊
+
+倒映 swingX中的工具类：ReflectionRenderer
+阴影 swingX中的工具类：ShadowRenderer
+高亮 HSB（色度、饱和度、亮度）
+聚光 示例：椭圆白图片
+文本高亮
+
+锐化
+chapter3 反锯齿（在边缘附近使用渐变色）
+RenderingHints.KEY_AMIALIASING
+
+rotate(a,x,y) a为角度，xy为中心点。
+
+始终用g的拷贝，避免对g进行修改。
+
+chapter8
+AffineTransformOp 形状变换
+ColorConvertOp 颜色变换 灰度
+ConvolveOp 矩阵 kernel
+核和加起来表示光度。
+核最好为单数长度。
+核大小表示强度。
+
+LookupOp
+RescaleOp RGB偏移
+dstR=(srcR*scaleFactor)+offset
+
+chapter5
+CompatibleImages
+使用g.drawLine而不是g.draw(new Line()) 。性能原因。
+命令行 -Dsun.java2d.trace=[log],[count],[help],[out:filename]
+
+====
+timing framework
+
+animator 动画
+callbacks —— TimingTarget 动画实现者 timingEvent(fraction) fraction为时间分数，0到1之间。
+duration 持续时间
+repetition 重复 重复次数，重复形式（循环或逆退）
+resolution 速率（多久触发一次，通知时间分数）
+starting behavior,end behavior（保持结束状态，或者复归）
+interpolation 插值（非线性，加速，减速）
+
+animator=》timingTarget.timingEvent(fraction)
+开始延迟，开始方向，开始时间分数
+interpolator.interpolate(fraction);
+
+触发器 focus，mouse，timing（没有键盘）
+PropertySetter 设置swing组件的属性值
+Evaluator 
+evaluate(v0,v1,fraction){//起点，终点，分数
+    return v0+(v1-v0)*fraction;
+}
+
+计算当前值
+KeyValues.create(Evaluator,T... params);
+KeyTimes 帧，以分数表示，0到1之间，单调递增。例如总时间为10s，0.5即第5s时。
+Intepolater LinearInterpolator 线性插值
+KeyFrames
+
+
+
+
+
+
+
