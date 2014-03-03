@@ -1,4 +1,4 @@
-﻿tapestry5体验
+﻿（hxzon学习笔记）tapestry5体验
 
 by hxzon
 
@@ -27,10 +27,11 @@ by hxzon
 6，客户端校验类型少。
 7，tapestry使用/assets/来处理css，js，图片路径，但是js中的图片路径无法被处理。
 不过这个问题可以用URLRewriterRule来解决，即把对图片的请求改写为/assets/请求。
-同时，，/assets/存在安全漏洞，可以用它输出WEB-INF下的文件。
+同时，/assets/存在安全漏洞，可以用它输出WEB-INF下的文件。
 这个问题也可以用URLRewriterRule来解决，即把对WEN-INF下的文件请求改写到其它路径。 
 
 ====================
 click 喜欢的地方：
 0，面向组件。
 1，提供许多高级通用组件。
+
