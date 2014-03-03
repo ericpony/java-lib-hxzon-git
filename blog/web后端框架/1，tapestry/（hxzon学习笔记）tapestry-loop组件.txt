@@ -1,0 +1,299 @@
+﻿（hxzon学习笔记）tapestry-loop组件
+http://tapestry.apache.org/current/apidocs/org/apache/tapestry5/corelib/components/Loop.html
+
+注释by hxzon。
+
+摘要：
+1，注意encoder的使用，见最后的示例。
+2，formState
+3，EventConstants.SYNCHRONIZE_VALUES 事件。
+
+====
+A basic looping component; 
+loops over a number of items (provided by its source parameter), rendering its body for each one. 
+When a Loop is inside a Form, it records quite a bit of state into the Form 
+to coordinate access to the same (or equivalent) objects during the form submission as during the render. 
+当loop组件包含在form中时，需要记录状态到form组件中，使得表单提交时，能得到渲染期所对应的对象。
+This is controlled by the formState parameter (of type LoopFormState) 
+这是通过 formState 参数控制的。
+and can be 'none' (nothing stored into the form), 
+“none”表示不存储任何信息。
+'values' (which stores the individual values looped over, or via a ValueEncoder, just the value's ids), 
+“values”存储每个对象，或者通过ValueEncoder，只存储标识符。
+and 'iteration' (which just stores indexes to the values within the source parameter, 
+which means that the source parameter will be accessed during the form submission).
+“iteration”存储索引，意味着在表单提交期，会再次获取source参数值。
+
+For a non-volatile Loop inside the form, the Loop stores a series of commands that start and end heartbeats, 
+and stores state for each value in the source parameter 
+(either as full objects when the encoder parameter is not bound, or as client-side objects when there is an encoder). 
+如果未绑定encoder，则是整个对象，否则使用客户端值。
+For a Loop that doesn't need to be aware of the enclosing Form (if any), the formState parameter should be bound to 'none'.
+如果表单数据不必提交，formState需为“none”，避免存储不必要的数据到客户端。
+
+When the Loop is used inside a Form, 
+it will generate an EventConstants.SYNCHRONIZE_VALUES event to inform its container what values were submitted and in what order; 
+this can allow the container to pre-load the values in a single batch form external storage, if that is appropriate.
+当loop用于form中时，它会触发 EventConstants.SYNCHRONIZE_VALUES 事件，用来通知它的容器，什么值在提交，且是什么样的顺序。
+
+/**
+     * Event triggered by the {@link org.apache.tapestry5.corelib.components.Loop} component to
+     * inform its container of
+     * all the values that were supplied from the client during a form submission. The event handler
+     * method should have
+     * a single parameter, of type Object[] or type List, to receive the values.
+     *
+     * @since 5.1.0.0
+     */
+容器可使用这个事件，来得到表单提交时的所有客户端数据。
+（hxzon：已经通过encoder转成服务端对象。）
+
+    @OnEvent(value = EventConstants.SYNCHRONIZE_VALUES)
+    void synchronizeValues(Object[] values) {
+        //values is server objects,not client strings
+        for (Object value : values) {
+            logger.debug(value.toString());
+        }
+    }
+
+====
+Component Parameters
+
+Name	Description	Type	Flags	Default	Default Prefix	Since
+
+--
+element	
+The element to render. 
+If not null, then the loop will render the indicated element around its body (on each pass through the loop). 
+The default is derived from the component template.	
+
+String			
+literal	
+
+--
+empty	
+A Block to render instead of the loop when the source is empty. 
+The default is to render nothing.	
+
+org.apache.tapestry5.Block			
+literal	
+
+--
+encoder	
+
+A ValueEncoder used to convert server-side objects (provided by the "value" parameter) into unique client-side strings (typically IDs) and back. 
+In general, when using a non-volatile Loop in a Form, 
+you should either provide a ValueEncoder with the encoder parameter 
+or use a "value" type for which Tapestry is configured to provide a ValueEncoder automatically. 
+（volatile，易变的，挥发的。）
+必须使用编码器，或者使用值类型。
+
+Otherwise Tapestry must fall back to using the plain index of each loop iteration, 
+rather than the ValueEncoder-provided unique ID, 
+for recording state into the form.	
+
+org.apache.tapestry5.ValueEncoder			
+prop	
+
+--
+formState	
+Controls what information, if any, is encoded into an enclosing Form. 
+The default value is org.apache.tapestry5.corelib.LoopFormState#VALUES. 
+This parameter is only used if the component is enclosed by a Form.	
+只在loop含有表单控件时使用，默认值是values。
+
+org.apache.tapestry5.corelib.LoopFormState	
+Not Null		
+literal	
+
+--
+index	
+The index into the source items.	
+int			
+prop	
+
+--
+source	
+Defines the collection of values for the loop to iterate over. 
+If not specified, defaults to a property of the container whose name matches the Loop cmponent's id.	
+Iterable	
+Required		
+prop	
+
+--
+value	
+The current value, set before the component renders its body.	
+本轮循环的元素值。
+T			
+prop	
+
+====
+Events:
+synchronizeValues
+
+====
+Basic Example:
+
+This example is based around a NavBar component that generates a set of links to other pages in the applilcation.
+
+NavBar.tml
+
+<table class="navigation" xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+
+   <tr>
+        <t:loop source="pageNames" value="pageName">
+            <td class="${tabClass}">
+                <t:pagelink page="pageName">${pageName}</t:pagelink>
+            </td>
+        </t:loop>
+    </tr>
+
+</table>
+
+We are assuming that the NavBar component has a pageNames property (possibly a parameter). 
+The Loop will iterate over those page names and store each into its value parameter.
+
+NavBar.java
+
+public class NavBar
+{
+    @Parameter(defaultPrefix="literal", required=true)
+    private String pages;
+
+    @Inject
+    private ComponentResources resources;
+
+    @Property
+    private String _pageName;
+
+    public String[] getPageNames()
+    {
+        return pages.split(",");
+    }
+
+    public String getTabClass()
+    {
+        if (pageName.equalsIgnoreCase(resources.getPageName()){
+            return "current";
+        }
+        return null;
+    }
+}
+
+The component converts its pages parameter into the pageNames property by splitting it at the commas. 
+It tracks the current pageName of the loop not just to generate the links, 
+but to calculate the CSS class of each element on the fly. 
+This way we can give the tab corresponding to the current page a special look or highlight.
+
+====
+Invisible Instrumentation:
+
+We can fold together the Loop component and the element:
+
+NavBar.tml
+
+<table class="navigation" xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+
+   <tr>
+        <td t:type="loop" source="pageNames" value="pageName" class="${tabClass}">
+            <t:pagelink page="pageName">${pageName}</t:pagelink>
+        </td>
+    </tr>
+
+</table>
+
+Using the t:type="loop" attribute, the other way to identify a template element as a component, 
+allows the Loop component to render the element's tag, the on each iteration, along with informal parameters (the class attribute). 
+This is calledinvisible instrumentation, and it is more concise and more editor/preview friendly than Tapestry's typical markup.
+
+====
+Forms and Loops Example:
+
+Tapestry form control element components (TextField, etc.) work inside loops. 
+However, some additional configuration is needed to make this work efficiently.
+在loop中的表单控件，需要一些额外设施才能正常工作。
+
+With no extra configuration, each value object will be serialized into the form 
+(if you view the rendered markup, you'll see a hidden form field containing serialized data needed by Tapestry to process the form). 
+This can become very bloated, or may not work if the objects being iterated are not serializable.
+如果不使用额外的设施，迭代中的每个对象必须序列化到表单数据中。
+
+The typical case is database driven; 
+you are editting objects from a database and need those objects back when the form is submitted. 
+All that should be stored on the client is the ids of those objects. 
+Thats what the encoder parameter is for.
+注意encoder的使用。
+
+EditOrder.tml
+
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+    <body>
+
+        <h1>Edit Order Quantities</h1>
+
+        <t:form>
+
+            <t:errors/>
+
+            <t:loop source="items" value="item" encoder="encoder">
+                <div class="line-item">
+                    <t:label for="quantity">${item.product.name}</t:label>
+                    <t:textfield t:id="quantity" value="item.quantity"/>
+                </div>
+            </t:loop>
+
+            <input type="submit" value="Update"/>
+        </t:form>
+    </body>
+</html>
+
+The TextField component is rendered multiple times, once for each LineItem in the Order.
+
+EditOrder.java
+
+public class EditOrder
+{
+    @Inject
+    private OrderDAO orderDAO;
+
+    @Property
+    private final ValueEncoder<LineItem> encoder = new ValueEncoder<LineItem>()
+    {
+        public String toClient(LineItem value) { return String.valueOf(value.getId()); }
+
+        public LineItem toValue(String clientValue)
+        {
+            long id = Long.parseLong(clientValue);
+            
+            return orderDAO.getLineItem(id);
+        }
+    };
+
+    @Persist
+    private long orderId;
+
+    @Property
+    private LineItem item;
+
+    public List<LineItem> getItems()
+    {
+        return orderDAO.getLineItemsForOrder(orderId);
+    }
+}
+
+Here, we expect the OrderDAO service to do most of the work, and we create a wrapper around it, in the form of the ValueEncoder instance.
+
+We've glossed over a few issues here, including how to handle the case that a particular item has been deleted or changed 
+between the render request and the form submission, 
+as well as how the orderId property gets set in the first place.
+
+====
+Constructor Summary
+
+Loop() 
+ 
+Method Summary
+ int	getIndex() 
+           
+ T	getValue() 
+

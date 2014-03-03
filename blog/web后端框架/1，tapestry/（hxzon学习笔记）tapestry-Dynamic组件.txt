@@ -1,0 +1,47 @@
+﻿（hxzon学习笔记）tapestry-Dynamic组件
+http://tapestry.apache.org/current/apidocs/org/apache/tapestry5/corelib/components/Dynamic.html
+
+注释by hxzon。
+
+====
+@SupportsInformalParameters
+public class Dynamic
+extends Object
+
+The Dynamic component allows a component to render itself differently at different times, 
+by making use of an external template file.
+Dynamic组件允许组件通过额外的模板文件，在不同的时期渲染不同的内容。
+
+The content of the template file replaces the Dynamic component entirely with one exception: 
+certain elements will be replaced with Blocks passed to the Dynamic component as informal parameters; 
+this is triggered by id of the element. 
+When the id attribute has the prefix param:, the remainder is the name of a Block parameter. 
+There are no limitations on what can appear inside such a Block: text, components, forms, even the <t:body/> directive.
+
+Dynamic templates emulate how expansions work in standard Tapestry templates: 
+Expansions (the ${ ... } syntax) can appear in attribute values or interspersed in element text. 
+This allows container properties, messages, assets, and so forth to be referenced within the external template. 
+It should be noted that such access is quite a bit less efficient than putting such expansions inside a referenced Block, 
+but this should not be a big concern outside of some kind of tight rendering loop.
+
+Since:
+5.3
+See Also:
+DynamicTemplate, DynamicTemplateParser
+http://tapestry.apache.org/current/apidocs/org/apache/tapestry5/services/dynamic/DynamicTemplate.html
+http://tapestry.apache.org/current/apidocs/org/apache/tapestry5/services/dynamic/DynamicTemplateParser.html
+
+====
+Component Parameters
+
+Name	Description	Type	Flags	Default	Default Prefix	Since
+
+template	
+The dynamic template containing the content to be rendered by the component.	
+动态模板。
+
+org.apache.tapestry5.services.dynamic.DynamicTemplate	
+Required, Not Null	
+	
+asset	
+

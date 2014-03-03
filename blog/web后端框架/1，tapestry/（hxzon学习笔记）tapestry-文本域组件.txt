@@ -1,0 +1,182 @@
+﻿（hxzon学习笔记）tapestry-文本域组件
+http://tapestry.apache.org/current/apidocs/org/apache/tapestry5/corelib/components/TextField.html
+
+注释by hxzon。
+
+====
+TextField
+extends AbstractTextField
+
+TextField component corresponds to <input> element. 
+The value parameter will be edited (read when the containing Form is rendered, and updated when the form is submitted). 
+TextField is generally used with string values, but other values are acceptable, 
+as long as they can be freely converted back and forth to strings.
+
+Includes the size attribute, if a Width annotation is present on the property bound to the value parameter.
+
+====
+Component Parameters
+
+Name	Description	Type	Flags	Default	Default Prefix	Since
+
+--
+annotationProvider	
+
+Provider of annotations used for some defaults. 
+Annotation are usually provided in terms of the value parameter 
+(i.e., from the getter and/or setter bound to the value parameter).	
+
+org.apache.tapestry5.ioc.AnnotationProvider			
+prop	
+
+--
+clientId	
+
+The id used to generate a page-unique client-side identifier for the component. 
+If a component renders multiple times, a suffix will be appended to the to id to ensure uniqueness. 
+The uniqued value may be accessed via the clientId property.	
+
+String		
+prop:componentResources.id	
+literal	
+
+--
+disabled	
+
+If true, then the field will render out with a disabled attribute (to turn off client-side behavior). 
+When the form is submitted, the bound value is evaluated again and, 
+if true, the field's value is ignored (not even validated) and the component's events are not fired.	
+
+boolean		
+false	
+prop	
+
+--
+label	
+
+The user presentable label for the field. If not provided, a reasonable label is generated from the component's id, 
+first by looking for a message key named "id-label" (substituting the component's actual id), 
+then by converting the actual id to a presentable string (for example, "userId" to "User Id").	
+
+String			
+literal	
+
+--
+nulls	
+
+Defines how nulls on the server side, or sent from the client side, are treated. 
+The selected strategy may replace the nulls with some other value. 
+The default strategy leaves nulls alone. 
+Another built-in strategy, zero, replaces nulls with the value 0.	
+
+org.apache.tapestry5.NullFieldStrategy		
+default	
+nullfieldstrategy	
+
+--
+translate	
+
+The object which will perform translation between server-side and client-side representations. 
+If not specified, a value will usually be generated based on the type of the value parameter.	
+服务端与客户端表示之间的转换。
+
+org.apache.tapestry5.FieldTranslator	
+Required, Not Null		
+translate	
+
+--
+type	
+
+Sets the type attribute of the element. 
+The default is "text", but this can be overriden when using HTML5 types such as "number".	
+
+String	
+Not Null	
+text	
+literal	
+
+--
+validate	
+
+The object that will perform input validation (which occurs after translation). 
+The validate binding prefix is generally used to provide this object in a declarative fashion.	
+
+org.apache.tapestry5.FieldValidator			
+validate	
+
+--
+value	
+
+The value to be read and updated. 
+This is not necessarily a string, a translator may be provided to convert between client side and server side representations. 
+值不一定得是字符串类型。translator会完成转换。
+If not bound, a default binding is made to a property of the container matching the component's id. 
+If no such property exists, then you will see a runtime exception due to the unbound value parameter.	
+
+Object	
+Required		
+prop	
+
+====
+Events:
+
+parseClient
+toClient
+validate
+
+====
+public interface FieldTranslator<T>
+
+A wrapper around Translator that combines the translator for a specific Field 
+and (sometimes) an override of the default validation message (used when an input value can't be parsed).
+
+----
+Method Detail
+
+--
+Class<T> getType()
+
+Returns the type of the server-side value.
+
+Returns:
+a type
+
+--
+T parse(String input)
+        throws ValidationException
+
+Invoked after the client-submitted value has been translated to check that the value conforms to expectations 
+(often, in terms of minimum or maximum value). 
+If and only if the value is approved by all Validators is the value applied by the field.
+
+Throws:
+ValidationException - if the value violates the constraint
+
+--
+String toClient(T value)
+
+Converts a server-side value to a client-side string. 
+This allows for formatting of the value in a way appropriate to the end user.
+
+Parameters:
+value - the server side value (which will not be null)
+
+Returns:
+client-side value to present to the user
+
+See Also:
+Translator.toClient(Object)
+
+--
+void render(MarkupWriter writer)
+
+Invokes Translator.render(Field, String, MarkupWriter,org.apache.tapestry5.services.FormSupport). 
+This is called at a point "inside" the tag, so that additional attributes may be added. 
+In many cases, the underlying Validator may write client-side JavaScript to enforce the constraint as well.
+
+Parameters:
+writer - markup writer to direct output to.
+
+See Also:
+MarkupWriter.attributes(Object[])
+

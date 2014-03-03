@@ -36,4 +36,10 @@ zone：
 
 
 ----
-6，
+6，组件不允许自递归。
+
+The template for component org.hxzon.xx.web.components.Xx is recursive (contains another direct or indirect reference to component org.hxzon.xx.web.components.Xx). This is not supported (components may not contain themselves).
+
+----
+7，
+
