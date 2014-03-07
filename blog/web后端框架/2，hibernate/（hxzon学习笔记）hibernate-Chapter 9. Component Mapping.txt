@@ -1,4 +1,4 @@
-﻿hibernate学习笔记-Chapter 9. Component Mapping
+﻿（hxzon学习笔记）hibernate-Chapter 9. Component Mapping
 
 by hxzon
 

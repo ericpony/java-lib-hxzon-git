@@ -1,4 +1,4 @@
-﻿hibernate学习笔记-Chapter 8. Association Mappings
+﻿（hxzon学习笔记）hibernate-Chapter 8. Association Mappings
 
 by hxzon
 

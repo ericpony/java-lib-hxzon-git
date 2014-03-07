@@ -1,4 +1,4 @@
-﻿hibernate学习笔记-Chapter 16. HQL The Hibernate Query Language（10-18）
+﻿（hxzon学习笔记）hibernate-Chapter 16. HQL The Hibernate Query Language（10-18）
 
 by hxzon
 

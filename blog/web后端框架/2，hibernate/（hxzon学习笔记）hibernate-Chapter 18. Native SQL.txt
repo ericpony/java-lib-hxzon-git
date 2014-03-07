@@ -1,4 +1,4 @@
-﻿hibernate学习笔记-Chapter 18. Native SQL
+﻿（hxzon学习笔记）hibernate-Chapter 18. Native SQL
 
 by hxzon
 

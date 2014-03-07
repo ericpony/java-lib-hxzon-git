@@ -1,4 +1,4 @@
-﻿hibernate学习笔记-20.1. Fetching strategies
+﻿（hxzon学习笔记）hibernate-20.1. Fetching strategies
 
 by hxzon
 

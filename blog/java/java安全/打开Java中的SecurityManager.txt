@@ -1,0 +1,63 @@
+﻿打开Java中的SecurityManager
+  
+原文链接： Pixelstech 翻译： ImportNew.com - ImportNew读者
+译文链接： http://www.importnew.com/9751.html
+
+本文由 Tang 投稿至ImportNew。
+
+====
+SecurityManager在Java中被用来检查应用程序是否能访问一些有限的资源，例如文件、套接字(socket)等等。
+它可以用在那些具有高安全性要求的应用程序中。
+通过打开这个功能， 我们的系统资源可以只允许进行安全的操作。
+
+当Java虚拟机启动时，它首先通过检查系统属性java.security.manager来确定SecurityManager是否打开了。
+如果打开了，那么SecurityManager实例将被创建，它可以被用来检查不同的权限。
+默认情况下，SecurityManager是关闭的，但是这里有一些方法可以打开SecurityManager。
+
+1. 指定 -Djava.security.manager
+
+当我们运行一个程序，我们可以指定JVM命令 -Djava.security.manager 使SecurityManager运行。
+
+java -Djava.security.manager <class_name>
+
+这是打开SecurityManager最常见的方式。
+java.security.manager是一个系统属性，您可以使用System.getProperty(“java.security.manager”)检查该系统属性是否被设置。
+
+在这里，你可能会认为，我们可以使用System.setProperty(“java.security.manager”)打开SecurityManager，但是并不能这么设置。
+因为先前我们提到，这个系统属性是在当JVM启动时进行检查的。
+如果我们用程序手动设置该属性，并不能奏效，因为JVM已经启动了，已经过了检查系统属性的步骤了。
+
+2. 通过程序打开SecurityManager
+
+现在，如果我们真的想通过我们的程序打开SecurityManager，我们也能做到。 
+System类中有一个叫 setSecurityManager() 的方法可以做到这一点。
+这个方法的参数是一个SecurityManager实例。
+
+
+SecurityManager sm=new SecurityManager();
+System.setSecurityManager(sm);
+
+通过这个,我们可以打开SecurityManager。
+如果之后我们想要关闭SecurityManager, 我们该怎么做? 下面的代码能做到吗？
+
+SecurityManager sm=System.getSecurityManager();
+if(sm!=null){
+    System.setSecurityManager(null);
+}
+
+上面的代码只有你在位于${JAVA_HOME}/lib/security目录下或者其他指定目录下的java.policy文件中指定了一个权限才会奏效。 
+这个权限是:
+
+permission java.lang.RuntimePermission "setSecurityManager";
+
+上面的一行将被用来允许代码设置SecurityManager
+
+3. 在build文件中
+
+我们想打开SecurityManager，如果我们使用Ant构建应用程序时, 我们可以加上
+
+<sysproperty key="java.security.manager" value="" />
+
+我们通过Ant创建单元测试的时候非常有用。
+
+ 

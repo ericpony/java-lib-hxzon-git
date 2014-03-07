@@ -1,4 +1,4 @@
-﻿hibernate学习笔记-dev-Chapter 11. HQL and JPQL（11.5至11.10）
+﻿（hxzon学习笔记）hibernate-dev-Chapter 11. HQL and JPQL（11.5至11.10）
 
 by hxzon
 

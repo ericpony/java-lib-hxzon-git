@@ -1,4 +1,4 @@
-﻿org.hibernate.annotations-Enum
+﻿（hxzon学习笔记）hibernate-org.hibernate.annotations-Enum
 
 by hxzon
 

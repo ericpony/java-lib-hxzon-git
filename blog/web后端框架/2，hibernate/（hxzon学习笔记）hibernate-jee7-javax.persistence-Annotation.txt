@@ -1,4 +1,4 @@
-﻿jee7-javax.persistence-Annotation
+﻿（hxzon学习笔记）hibernate-jee7-javax.persistence-Annotation
 
 by hxzon
 

@@ -1,0 +1,137 @@
+﻿Less vs Sass？是时候选择Sass了
+
+
+话说我之前也是Less党，觉得很容易上手，使用也方便，
+但是网上Less和Sass的争论一直就没停过，不过随着年初bootstrap也转用Sass，
+我也开始考虑Sass了，今天看到一篇文章，是时候考虑用Sass了，
+以下是全文：
+
+Sass和Less的争论可以结束了.
+在本文我将解释为什么Sass真的比较好以及为什么你应该从现在开始使用Sass如果你还没准备好的话。
+如果你对这个感兴趣的话，我之前也写过关于sass的一些文章《怎样开始使用Sass》和《Problems with pre-processor》
+
+在我开始我的长篇大论之前，让我先提一下我也是先开始使用Less的。
+Less很容易入手，它真的很简单也很快.和原来的css非常的像，所以写起来也比较直观.
+和css相比,任何关于Less的东西都非常简单和友好,我曾经非常短暂的喜欢Less直到我发现这个真正非常棒的Sass.
+
+不过回过头来看,我能想到Less作为很多初学者的学习是一个比较好的css预处理器。
+而Sass是下一个层次的选择，适合稍微有经验的前端开发者的工具。
+
+----
+为什么Sass比Less好：
+
+Sass能让你写出重复利用的方法,可以用逻辑语句,条件语句和循环语句。
+虽然Less也可以做这些事情但是Less的方式效率比较低而且不直观。
+Less和Sass都内置了大量的颜色处理,数学,参数列表等方便的功能。
+
+Sass用户能够利用Compass这个非常棒的库，提供给Less用户的库虽然也多，
+但是远不能和Compass比,Compass定期有人维护对社会的贡献也非常大。
+Compass有些非常棒的功能，
+比如:生成动态雪碧(dynamicsprite-map ),对就浏览器有Hack功能，跨浏览器支持css3特性。
+
+Compass也能让你添加一个第三方框架比如:Blueprint ,Foundation，Bootstrap。
+这意味着你可以很容易的利用你喜欢的框架不需要去处理使用多个工具带来的麻烦.
+
+----
+Less的问题
+
+Less的目标是在外型，语法和结构上更像css。
+这是一个非常棒的想法对于使用它的初级用户来说，不过Less有些问题是它用起来比Sass少了很多乐趣：
+
+逻辑语句： 在less里你可以用“guarded mixin”写一个基本的逻辑声明：
+
+.lightswitch(@colour) when (lightness(@colour) > 40%) {
+color: @colour;
+background-color: #000;
+.box-shadow(0 3px 4px #ddd);
+}
+.lightswitch(@colour) when (lightness(@colour) < 41%) {
+color: @colour;
+background-color: #fff;
+.box-shadow(0 1px 1px rgba(0,0,0,0.3));
+}
+
+同样的意思在Sass里用if声明：
+
+@mixin lightswitch($colour) {
+color: $colour;
+@if(lightness($colour) > 40%) {
+background-color: #000;
+@include box-shadow(0 3px 4px #ddd);
+}
+@if(lightness($colour) <= 40%) {
+background-color: #fff;
+@include box-shadow(0 1px 1px rgba(#000,0.3));
+}
+}
+
+循环： 在less里你可以用递归函数通过数值来循环：
+
+.looper (@i) when (@i > 0) {
+.image-class-@{i} {
+background: url(“../img/@{i}.png”) no-repeat;
+}
+
+.looper(@i – 1);
+}
+
+.looper(0);
+
+.looper(3);
+//————— Outputs: ——————–
+//.image-class-3 {
+// background: url(“../img/10.png”) no-repeat;
+//}
+//.image-class-2 {
+// background: url(“../img/9.png”) no-repeat;
+//}
+//.image-class-1 {
+// background: url(“../img/8.png”) no-repeat;
+//}
+
+在Sass里你可以通过任何数据来迭代：
+
+@each $beer in stout, pilsner, lager {
+.#{$beer}-background {
+background: url(“../img/beers/#{$beer}.png”) no-repeat;
+}
+}
+// ——————- Outputs: ———————
+//.stout-background {
+// background: url(“../img/beers/stout.png”) no-repeat;
+//}
+//.pilsner-background {
+// background: url(“../img/beers/pilsner.png”) no-repeat;
+//}
+//.lager-background {
+// background: url(“../img/beers/porter.png”) no-repeat;
+//}
+
+自定义功能
+
+在sass里，你可以写你自己方便的函数，如:
+
+//Courtesy of Foundation…
+$em-base: 16px !default;
+@function emCalc($pxWidth) {
+@return $pxWidth / $em-base * 1em;
+}
+
+再看看在Less里
+
+@em-base: 16px;
+.emCalc(@pxWidth) {
+//Ah. Crap…
+}
+
+----
+你更倾向于用哪个呢？
+
+开始学习Sass和Compass的一些问题 看起来转用到Sass最大的问题有以下几个：
+
+增加设置Ruby环境的麻烦
+恐怖的命令行
+转换到另一个工具带来的不便和多花出的时间
+
+英文地址：http://www.zingdesign.com/less-vs-sass-its-time-to-switch-to-sass/ 
+中文地址：http://dyygtfx.com/3933.html

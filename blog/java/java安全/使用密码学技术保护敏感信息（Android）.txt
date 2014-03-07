@@ -1,0 +1,126 @@
+﻿使用密码学技术保护敏感信息（Android）
+
+原文作者：Trevor Johns, 翻译：ImportNew-赵荣
+译文地址：http://www.importnew.com/3456.html
+
+====
+从去年Google I/O大会上讨论了“Android应用的安全和隐私”以来，很多人对如何在Android上使用密码学技术有些疑问。
+大多数问题都是围绕在为了某一特定目的该使用哪一个API上。
+因此，我们在这里就是来探讨一下如何在本地存储中保护用户的敏感信息，比如说密码和auth token
+(【译者】授权标记，这里直接用auth token更自然)。
+
+ 
+====
+一种反模式（错误的做法——译者注）
+
+通常我们都能意识到应该使用SecureRandom类来产生密钥，用来对本地的敏感信息进行加密，
+这样的例子很容易找到，你可以点这里，这里，这里，
+http://www.androidsnippets.com/encryptdecrypt-strings
+http://stackoverflow.com/questions/13433529/android-4-2-broke-my-encrypt-decrypt-code-and-the-provided-solutions-dont-work
+http://stackoverflow.com/questions/13383006/encryption-error-on-android-4-2
+还有其他地方都可以找到，实际上这种做法是欠妥的。
+
+在这种方法中，不将密钥作为一个字符串直接存储在APK文件中，而是通过另外一个字符串来生成密钥–有点类似于通过用户口令生成加密密钥。
+这种必要的混淆手段可以使攻击者不容易破解加密信息，
+但是对于一个有经验的攻击者而言，这种策略很容易被绕过，因此我们不推荐这种方法。
+
+事实上，Android现有的安全机制中已经为这种数据提供了很好的保护，敏感数据应该标记上MODE_PRIVATE，
+http://developer.android.com/reference/android/content/Context.html#MODE_PRIVATE
+然后存储在内部存储中，
+请注意，千万不能存储在SD卡中，因为访问控制没法强制在外部存储上起作用。
+
+结合设备加密措施，这种方法可以杜绝绝大部分攻击。
+
+除此之外，像我们上面描述的那样使用SecureRandom类还存在另外一个问题。
+从Android4.2开始，SecureRandom的默认实现是OpenSSL，开发者无法覆盖SecureRandom的内部状态信息，例如下面这段代码:
+
+
+SecureRandom secureRandom = new SecureRandom();
+ byte[] b = new byte[]{(byte)1};
+ secureRandom.setSeed(b);
+ //在Android4.2上，下面这行代码总是返回同一个数字。
+System.out.println(secureRandom.nextInt());
+
+(【译者注】这段代码可以看到通过程序覆盖了random对象中的种子，造成每次生成的随机数序列都是一样的)
+
+在以前的Android版本中，SecureRandom是基于Bouncy Castle实现的，
+它允许像上面代码这样的操作，每个SecureRandom类的实例产生伪随机数时使用的种子是从/dev/urandom获取的。
+（【译者注】/dev/urandom是类Unix系统中根据当前计算机混乱状态，如内存使用，CPU占用率等信息计算出来的随机数，
+读者可以在Linux下试试cat /dev/urandom，它会不停地输出乱码，一般用“熵”这个专业术语形容计算机的混乱状态）。
+那些试图使用产生随机数的开发者通常是通过替换现有的种子来产生随机数序列的（参考相关实现文档），
+如果种子固定，那么产生的随机数列就是可预测的，这一点是不安全的。
+现在通过OpenSSL实现，使得这种错误的行为不再可能出现。
+
+不幸的是，那些依赖老的SecureRandom类的应用程序会发现每次程序启动时产生的随机数都不一样了
+（事实上，这就应该是随机数发生器的期望行为）。
+想要通过这种方法对加密密钥混淆已经不可行了。
+
+（【译者注】原作者的意思是有些应用对敏感信息做加密，加密的话需要密钥，但是密钥如果直接存起来觉得很不放心，
+于是通过产生随机数的方式来对密钥混淆一下，那么每次程序启动时都要用相同的密钥去解密数据，
+于是通过一个固定的信息，比如一个密码，或者记住某个随机数字，
+通常很多人用当前时间，然后通过这个固定的信息作为种子产生随机数，用这个随机数做密钥，相当于对这个固定信息做了一次混淆操作。
+实际上这种方法还是不安全，安全性就变成了如何保证这个种子的安全性，治标不治本。
+下面的部分作者的意思是应该直接将密钥打上MODE_PRIVATE的标记存起来，通过系统的访问控制机制保证密钥的安全性。）
+
+====
+正确的方法
+
+一种更加合理的解决方案很简单，就是当应用程序第一次启动时产生一个随机的AES算法的密钥：
+
+
+public static SecretKey generateKey() throws NoSuchAlgorithmException {
+    // 生成一个256位密钥
+    final int outputKeyLength = 256;
+ 
+    SecureRandom secureRandom = new SecureRandom();
+    // Do *not* seed secureRandom! Automatically seeded from system entropy.
+    //不要给secureRandom一个固定的种子！通过系统熵值产生随机的种子
+    KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+    keyGenerator.init(outputKeyLength, secureRandom);
+    SecretKey key = keyGenerator.generateKey();
+    return key;
+}
+
+注意这种方法的安全性依赖于如何保证密钥的安全性，这可以依赖于Android系统的内部存储的安全性。
+将密钥直接存放在文件中，标记为MODE_PRIVATE存在内部存储器。
+
+（【译者注】我们很多人的Android手机都被Root过的，
+好多应用也会取得Root权限，Root权限用户是可以做任何事情的。。。这怎么办呢？）
+
+ 
+====
+更加安全的方法
+
+如果你的应用还需要额外的加密操作，那么一个推荐的方法是每次进入你的应用时需要输入一个口令或者PIN码。
+然后将这个口令传给 PBKDF2
+（PBKDF2，基于口令的密钥导出函数版本2，是RSA安全公司提出的密钥导出算法，
+通常用来根据口令取得密钥，通过一种叫做密钥拉伸的专业技术），
+Android在SecretKeyFactory类中提供了一个叫做PBKDF2WithHmacSHA1的实现：
+
+public static SecretKey generateKey(char[] passphraseOrPin, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    //PBKDF2算法执行轮数，这个数字越大，计算时间越长，你应该让这个数字
+    //足够大，以至于这个算法执行时间超过100毫秒以保证安全性
+    final int iterations = 1000;
+ 
+    // 产生一个256位的密钥
+    final int outputKeyLength = 256;
+ 
+    SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+    KeySpec keySpec = new PBEKeySpec(passphraseOrPin, salt, iterations, outputKeyLength);
+    SecretKey secretKey = secretKeyFactory.generateSecret(keySpec);
+    return secretKey;
+}
+
+加密盐应该是一个通过SecureRandom产生的随机字符串，和加密密文一起存放在内部存储器中。
+使用加密盐很重要，它可以有效防止字典攻击。
+
+（【译者注】看PBKDF2WithHmacSHA1这个名字也可以知道该算法是基于SHA1算法的，
+经常攻击这种单向函数方法就是字典攻击，预先计算好大量的明文对应的密文，
+就像是明文对应密文的字典，然后再进行逐一对比，
+如果明文字符串在加密前和一个随机字符串做个连接操作，那么那些预先计算的字典就没用了。）
+
+检查你的应用是不是正确的使用SecureRandom
+
+如本文以及Jelly Bean的新安全特性所述，Android4.2的SecureRandom默认实现发生了变化，用它产生固定密钥已经行不通了。
+
+如果你也用了这种错误方法的话，我们建议现在就更新你的应用，防止当用户升级到Android4.2或以上版本后发生一些莫名其妙的错误。

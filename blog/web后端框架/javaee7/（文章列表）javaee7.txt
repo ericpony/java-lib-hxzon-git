@@ -1,0 +1,26 @@
+﻿（文章列表）javaee7
+
+by hxzon
+
+====
+1，Java EE 7 三大新特性的介绍
+（hxzon：没什么有用信息）
+http://www.ibm.com/developerworks/cn/java/j-lo-javaee7/index.html
+2013 年 6 月中旬甲骨文公司发布了 Java EE 7，
+该版本的新特性主要集中在提高开发人员的生产力、加强对 HTML5 动态可伸缩应用程序的支持和进一步满足苛刻的企业需求这三个方面。
+Java EE 7 使得开发人员可以写更少的样板代码，
+通过丰富的组件来提供一个完整、全面、集成的堆栈来支持和构建最新的 Web 应用程序和框架，
+同时提供更具扩展性、丰富性和简易的功能。
+企业将会从便捷式批处理、改进的扩展性等新功能中获益。 
+本文将通过对这个版本中新增组件 WebSocket 1.0、JSON Processing 1.0、JAX-RS 2.0、
+JSF 2.2 和 JMS 2.0 的介绍及若干示例的展示，来对以上三个特性进行详细的剖析。
+
+林 宝川, 软件工程师, IBM
+唐 学波, 软件工程师, IBM
+杨 平, 软件工程师, IBM
+2014 年 3 月 06 日
+
+----
+2，http://docs.oracle.com/javaee/7/tutorial/doc/javaeetutorial7.pdf
+
+3，

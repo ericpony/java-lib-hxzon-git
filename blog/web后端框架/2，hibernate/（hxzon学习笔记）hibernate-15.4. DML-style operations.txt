@@ -1,4 +1,4 @@
-﻿hibernate学习笔记-15.4. DML-style operations
+﻿（hxzon学习笔记）hibernate-15.4. DML-style operations
 
 ======================================
 http://docs.jboss.org/hibernate/orm/4.1/manual/en-US/html/ch15.html#batch-direct

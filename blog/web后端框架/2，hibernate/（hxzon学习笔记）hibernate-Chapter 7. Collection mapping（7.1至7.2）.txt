@@ -1,4 +1,4 @@
-﻿hibernate学习笔记-Chapter 7. Collection mapping（7.1至7.2）
+﻿（hxzon学习笔记）hibernate-Chapter 7. Collection mapping（7.1至7.2）
 
 
 by hxzon

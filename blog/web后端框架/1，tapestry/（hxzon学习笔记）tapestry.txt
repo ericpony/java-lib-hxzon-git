@@ -41,5 +41,6 @@ zone：
 The template for component org.hxzon.xx.web.components.Xx is recursive (contains another direct or indirect reference to component org.hxzon.xx.web.components.Xx). This is not supported (components may not contain themselves).
 
 ----
-7，
+7，tapestry的渲染器和表单提交期是完全分开的，而不像别的框架是连续的（数据容器放在会话中），
+所以表单提交前需要重新准备数据容器。
 

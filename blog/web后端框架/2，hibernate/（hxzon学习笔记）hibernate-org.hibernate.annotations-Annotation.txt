@@ -1,4 +1,4 @@
-﻿org.hibernate.annotations-Annotation
+﻿（hxzon学习笔记）hibernate-org.hibernate.annotations-Annotation
 
 by hxzon
 

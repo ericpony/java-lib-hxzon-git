@@ -2,36 +2,59 @@
 
 by hxzon
 
+====
 喜欢的地方：
+
 0，面向组件。
+
 1，url是rest风格的。
+
 2，用onActivate获取rest参数，用onPassivate输出rest url。
+
 3，onException捕获异常，其它方法不用捕获异常。
+
 4，url使用Unicode字符，解决了很多中文字符，空格字符的url转义问题。
+
 5，图片，模板都可国际化。
+
 6，注入服务非常方便。
+
 7，客户端校验漂亮友好。
+
 8，写特定应用的组件很容易。
-9，提供URLRewriterRule
+
+9，提供URLRewriterRule（新版本已去除）
+
 10，@Persist和@SessionState来存储会话数据很方便。
  
+----
 一些不足：
+
 1，只提供基本通用组件，没有高级通用组件。
 官网上的第三方组件全是空洞的。不过自己写特定应用的组件很容易。
+
 2，自动rest风格还不够灵活。
-3，tapestry模板表达式稍弱，为了性能。
+
+3，tapestry模板表达式稍弱，为了性能。（通过编译而不是动态调用，也就是说需要声明类型）
+
 4，是否提供一个集中的地方，可对所有HTTP request参数统一处理，如过滤，截除首尾空格。
 不过通过对textfield组件的值处理，以及用URLRewriterRule对url处理，也能完成上诉任务。
+
 5，使用@Property注解，省掉了很多getter和setter方法，看起来比较简洁，不过也有一定不便。
 @Property强制为private，是否可以放宽至protected，并且当存在getter或setter时就不要再动态生成该方法，而不是抛出错误。
+
 6，客户端校验类型少。
+
 7，tapestry使用/assets/来处理css，js，图片路径，但是js中的图片路径无法被处理。
 不过这个问题可以用URLRewriterRule来解决，即把对图片的请求改写为/assets/请求。
 同时，/assets/存在安全漏洞，可以用它输出WEB-INF下的文件。
 这个问题也可以用URLRewriterRule来解决，即把对WEN-INF下的文件请求改写到其它路径。 
+（新版本已去除URLRewriterRule）
 
 ====================
 click 喜欢的地方：
+
 0，面向组件。
+
 1，提供许多高级通用组件。
 
