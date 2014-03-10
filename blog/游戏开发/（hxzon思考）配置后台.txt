@@ -1,0 +1,89 @@
+﻿（hxzon）配置后台
+
+1，数据类型：
+
+原始类型：字符串，整数，实数，布尔
+
+结构体：映射，maps，列表
+
+2，数据源：
+
+任意输入
+预定义项
+来自其它对象的数据
+开放性约束（字符串长短，数值范围）
+
+3，渲染：
+
+原始类型渲染成输入控件。
+映射，maps，列表作为子元素时，渲染为页面链接。
+映射渲染为结构体。
+maps，列表渲染为已有元素项列表。
+maps，列表的元素项作为子元素时，渲染为页面链接。
+maps，列表的元素项，渲染成输入控件（原始类型时）或结构体（map时）。
+
+4，输入控件
+
+下拉列表
+多选框
+文本框：字符串
+
+5，配置文件示例：
+
+<?xml version="1.0" encoding="UTF-8"?>
+<root label="配置后台">
+
+	<testAttr1 label="属性1-整数" type="i" />
+	<testAttr2 label="属性2-实数" type="r" />
+	<testAttr3 label="属性3-布尔" type="b" />
+	<testAttr4 label="属性4-字符串" type="s" />
+	<testAttr5 label="属性5-字符串，文本框" type="s" textarea="true" />
+
+	<appbase>
+		<appname label="应用名" type="s" />
+		<appVersion label="应用版本" type="s" />
+	</appbase>
+
+	<testMap label="测试映射" type="m">
+		<map1 label="属性1" type="s" />
+		<map2 label="属性2" type="i" />
+		<map3 label="属性3" type="b" />
+	</testMap>
+
+	<testMaps1 label="测试映射集合1" type="ms" etype="s">
+	</testMaps1>
+
+	<testMaps2 label="测试映射集合2" type="ms" etype="s">
+		<map1 label="属性1" type="s" />
+		<map2 label="属性2" type="i" />
+		<map3 label="属性3" type="b" />
+	</testMaps2>
+
+	<testList1 label="测试列表1" type="l" etype="s">
+	</testList1>
+
+	<testList2 label="测试列表2" type="l" etype="m" labelKey="map1">
+		<a1 label="attr1" type="s" />
+		<a2 type="i" />
+		<a3 type="b" />
+		<list4 type="l" etype="m" labelKey="lm1">
+			<lm1 type="s"/>
+		</list4>
+		<maps5 type="ms" etype="s">
+			<mm1 type="s" />
+			<mm2 type="i" />
+			<mm3 type="b" />
+		</maps5>
+	</testList2>
+
+	<testError type="xx"/>
+</root>
+
+6，
+元信息CfgInfo
+配置数据CfgValue
+
+按元信息浏览，对于list和maps较复杂。
+按配置数据浏览，较简单。
+
+

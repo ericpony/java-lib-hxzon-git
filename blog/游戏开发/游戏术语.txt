@@ -6,6 +6,8 @@ by hxzon
 
 http://baike.baidu.com/view/96213.htm
 
+俗称“网游”。
+
 MMORPG，是英文Massive（或Massively）Multiplayer Online Role-PlayingGame的缩写。
 至今尚未有MMORPG的正式中文译名，而在中国比较常见的译法则是"大型多人在线角色扮演游戏"，是网络游戏的一种。
 在所有角色扮演游戏中，玩家都要扮演一个虚构角色，并控制该角色的许多活动。
@@ -68,4 +70,72 @@ http://baike.baidu.com/view/944697.htm
 这类游戏通常会被强烈要求的精巧的人物与招式设定，以达到公平竞争的原则。
 操作和微操作，是格斗游戏中的重要组成部分。
 另外，有些同类型的游戏注重拳脚的比试，而有些就使用兵器
+
+3，RPG，Roleplaying Game，角色扮演。
+
+4，AVG，Adventure Game，冒险游戏。
+
+AVG强调故事线索的挖掘，主要考验玩家的观察力和分析力，故事情节往往是以完成一个任务或解开某些谜题的形式出现的，而且可以强调谜题的重要性。
+AVG也可再细分为动作类和解密类两种。
+
+5，SLG，strategy game，策略游戏。
+
+SLG一般都较为自由和开放，玩家需要在游戏认可的限度内想尽办法完成目标。
+SLG可分为回合制和即时制两种。
+
+6，FTG，fighting game，格斗游戏。
+
+FTG通常会有精巧的人物与招式设定，玩家主要依靠迅速的判断和操作打败对手从而取得胜利。
+FTG还可分为2D和3D两种。
+
+7，STG，shooting game，射击游戏。
+
+强调利用“射击”才能完成目标。
+
+8，FPS，first personal shooting game，第一人称射击游戏。
+
+FPS严格来说属于动作游戏的一个分支。
+典型的有DOOM系列。
+
+9，PUZ，puzzle game，益智游戏。
+
+10，RAC，racing game，竞速游戏。
+
+各类赛车游戏，现在也有赛艇、赛马等。
+
+11，SPT，sports game，体育游戏。
+
+《实况足球》系列。
+
+12，EDU，education game，养成玉溪。
+
+是一种造梦的游戏类型。
+
+13，CAG，card game，卡片游戏。
+
+CAG也称为TCG（trading card game，几换式卡牌游戏）。
+玩家通过卡片战斗模式来进行。
+
+《游戏王》。
+
+14，TAB，table game，桌面游戏。
+
+从以前的桌面游戏脱胎到计算机的游戏。
+《大富翁》《三国杀》。
+棋牌类也属于TAB游戏。
+
+15，MUG，music game，音乐游戏。
+
+跟随音乐节奏，通过按键发出相应音效的一类游戏，有的要求玩家跳舞，有的要求玩家手指体操。
+《劲乐团》《劲舞团》。
+
+====
+16，按游戏运行平台划分：
+
+手游，手机登各类手持设备。
+页游web game：基于web浏览器的在线多人互动游戏。
+端游client game：下载客户端。
+主机游戏：运行在PS3、Xbox、Wii系列主机。
+
+
 

@@ -68,7 +68,7 @@ The property is backed by one or more columns that are exported as part of autom
 The property is read-write, not read-only.
 该字段可读可写，而衍生字段是只读的。
 The write expression, if specified, must contain exactly one '?' placeholder for the value.
-如果指定写表达式，必须使用问号来做占位符。
+如果指定了“写表达式”，必须使用问号来做占位符。
 
 ---------------------------------
 18.3. Custom SQL for create, update and delete
