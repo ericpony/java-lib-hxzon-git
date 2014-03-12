@@ -41,9 +41,9 @@
 3.2透视除法 
 3.3背面剔除操作 
 3.4再访坐标系统 
-3.4.13ds Max至OpenGL——翻转坐标轴 
-3.4.2OpenGL至Direct3D——反射 
-3.4.3OpenGL至Direct3D——顶点重排列 
+3.4.1 3ds Max至OpenGL——翻转坐标轴 
+3.4.2 OpenGL至Direct3D——反射 
+3.4.3 OpenGL至Direct3D——顶点重排列 
 3.5视口转换 
 3.6扫描转换 
 3.7应用：对象拾取操作 
