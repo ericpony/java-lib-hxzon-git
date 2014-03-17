@@ -8,6 +8,17 @@ Ian Millington (作者), 徐明亮 (作者), 李强 (作者), 宋伟 (作者)
 开本: 16
 
 ====
+有英文电子版。已购。
+
+http://procyclone.com/ 
+https://github.com/idmillington/cyclone-physics
+Game Physics Engine Development by Ian Millington
+
+https://github.com/idmillington/aicore
+The Artificial Intelligence for Games system.
+Copyright (c) Ian Millington 2003-2009. All Rights Reserved.
+
+====
 编辑推荐
 
 米灵顿编著的《游戏物理引擎开发》是一本全面、深入、系统介绍游戏物理引擎的专业教程。
