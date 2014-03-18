@@ -34,8 +34,8 @@ http://maven.apache.org/plugins/maven-surefire-plugin/
 
 build-helper-maven-plugin
 
-http://mojo.codehaus.org/build-helper-maven-plugin/Maven
-默认只允许指定一个主Java代码目录和一个测试Java代码目录，
+http://mojo.codehaus.org/build-helper-maven-plugin/
+Maven默认只允许指定一个主Java代码目录和一个测试Java代码目录，
 虽然这其实是个应当尽量遵守的约定，但偶尔你还是会希望能够指定多个源码目录
 （例如为了应对遗留项目），
 build-helper-maven-plugin的add-source目标就是服务于这个目的，

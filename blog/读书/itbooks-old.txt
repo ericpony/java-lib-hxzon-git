@@ -120,3 +120,44 @@ http://www.amazon.cn/C-Primer%E4%B8%AD%E6%96%87%E7%89%88-%E6%9D%8E%E6%99%AE%E6%9
 C++ Primer (4th Edition),February 24, 2005,Stanley B. Lippman (Author), Josée Lajoie (Author), Barbara E. Moo (Author)
 http://www.amazon.com/Primer-4th-Edition-Stanley-Lippman/dp/0201721481/ref=sr_1_3?ie=UTF8&qid=1347429437&sr=8-3&keywords=C%2B%2B+Primer
 
+================================
+数据库-Oracle（暂时不再关注）
+
+----
+181，Oracle DBA实战攻略:运维管理、诊断优化、高可用与最佳实践
+
+----
+129，Oracle性能优化求生指南
+http://www.ituring.com.cn/book/772?q=Oracle
+74.20(7.5折)，48.50(49折)，观望
+
+----
+128，Oracle Database 11g完全参考手册
+罗尼(Kevin Loney) (作者), 刘伟琴 (译者), 张格仙 (译者) 
+118.50(7.5折)，77.40(49折)，
+
+----
+134，Oracle PL/SQL最佳实践
+Steven Feuerstein (作者), 龚波 (译者), 张平 (译者), 潘显俊 (译者) 
+36.00(7.5折)，33.60(49折)，
+
+----
+135，Oracle Database 11g SQL开发指南
+皮拉斯 (Price.J.) (作者), 史新元 (译者), 北英 (译者) 
+61.40(7.9折)，38.20(49折)，观望
+
+----
+136，Oracle PL/SQL程序设计(第5版)(套装上下册)
+弗伊尔斯坦(Steven Feuerstein) (作者), 普瑞拜尔(Bill Pribyl) (作者), 张晓明 (译者) 
+111.80(7.5折)，73.00(49折)，对翻译评价较差
+
+----
+131，Oracle索引技术
+http://www.ituring.com.cn/book/951?q=Oracle
+
+----
+132，DBA的思想天空：感悟Oracle数据库本质
+http://www.ituring.com.cn/book/972?q=Oracle
+http://www.amazon.cn/DBA的思想天空-感悟Oracle数据库本质-白鳝/dp/B009PIQ99E
+44.50(5折)，43.60(49折)，
+

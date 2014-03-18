@@ -1,0 +1,33 @@
+﻿（hxzon学习笔记）maven常见问题
+
+1，
+Eclipse提示pom.xml错误：
+Plugin execution not covered by lifecycle configuration: org.codehaus.mojo:build-helper-maven-plugin:1.8:add-source (execution: add-source, phase:
+
+解决方法：
+配置选项，maven Discovery，点击open catelog按钮。
+安装m2e connectors buildhelper
+
+hxzon：成功。另外，执行maven compile的异常也解决。
+
+2，Missing artifact org.springframework:spring-beans:jar:4.0.2.RELEASE
+
+但本地库确实有该jar。
+
+hxzon：本地私服的配置问题。
+
+3，maven update Project时，jdk版本自动跳变。
+
+是因为pom.xml中写错了。
+<plugin>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.1</version>
+    <configuration>
+        <source>${myjava.version}</source>
+        <target>${myjava.version}</target>
+        <encoding>UTF-8</encoding>
+    </configuration>
+</plugin>
+
+4，
+

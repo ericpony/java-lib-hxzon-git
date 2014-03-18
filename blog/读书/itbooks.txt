@@ -12,7 +12,7 @@ nosql
 工具实践，编程语言
 架构设计，软件工程，it视野
 ====================================================
-C++，VC++
+工具实践-编程语言-C++，VC++
 
 
 ----
@@ -158,9 +158,21 @@ http://www.amazon.com/Windows-via-C-softcover/dp/0735663777/ref=sr_1_1?s=books&i
 ----
 174，Windows并发编程指南
 
+===========================================================
+C#
+
+----
+精通C#(第6版)
+Jolt大奖提名图书
+2013年7月1日
+《Pro C# and the .NET 4.5 Framework, Sixth Edition》
+
+----
+C#入门经典(第6版)
+56.80(58折)，有中文第5版电子书。
 
 ===========================================================
-c和linux，服务器搭建优先
+工具实践-服务器-linux，服务器搭建优先
 
 
 ----
@@ -198,6 +210,9 @@ http://product.dangdang.com/product.aspx?product_id=20645962
 ----
 91，国外计算机科学经典教材Unix & Linux大学教程
 78.40
+
+===========================================================
+工具实践-编程语言-c
 
 ----
 210，C Primer Plus(中文版)(第5版)
@@ -237,10 +252,6 @@ http://product.dangdang.com/product.aspx?product_id=22543344
 95.90，不买
 
 ----
-11，Java编程思想（第4版）
-81.00，观望，有中文电子版
-
-----
 13，编程之魂：与27位编程语言创始人对话
 44.90
 
@@ -270,6 +281,10 @@ http://product.dangdang.com/product.aspx?product_id=21006215
 原理，算法，数学
 
 ----
+25，黑客大曝光:Web应用程序安全(原书第3版)(Web安全技术人员必备参考)
+46.20(67折)，31.80(49折)，想买
+
+----
 164，推荐系统
 Dietmar Jannach ， Markus Zanker ， Alexander Felfernig ， Gerhard Friedrich (作者) ，蒋凡 (译者)
 http://www.ituring.com.cn/book/1078
@@ -293,7 +308,7 @@ http://product.dangdang.com/product.aspx?product_id=22606834
 44.30(75折)，观望
 
 ----
-146，具体数学:计算机科学基础(第2版) [平装]
+146，具体数学:计算机科学基础(第2版)
 ~ Ronald L. Graham (作者), Donald E. Knuth (作者), Oren Patashnik (作者), 张明尧 (译者), 张凡 (译者) 
 74.20(75折)，48.50(49折)，想买
 
@@ -349,6 +364,23 @@ http://product.dangdang.com/product.aspx?product_id=9320416
 http://product.dangdang.com/product.aspx?product_id=9272815
 56.20(75折)
 
+----
+46，虚拟机系统与进程的通用平台
+http://product.dangdang.com/product.aspx?product_id=20518616
+58.50(75折)
+
+----
+51，数据库系统实现
+44.20 (75折)
+
+
+=======================================================
+编程语言，工具实践
+
+----
+11，Java编程思想（第4版）
+81.00，观望，有中文电子版
+
 -----
 36，并行性：状态模型与Java程序 Concurrency: State Models and Java Programs
 http://product.dangdang.com/product.aspx?product_id=20029732
@@ -357,11 +389,6 @@ http://product.dangdang.com/product.aspx?product_id=20029732
 ----
 40，Java 实时编程
 36.80(75折)
-
-----
-46，虚拟机系统与进程的通用平台
-http://product.dangdang.com/product.aspx?product_id=20518616
-58.50(75折)
 
 ----
 24，深入理解Java虚拟机:JVM高级特性与最佳实践（第2版）
@@ -376,12 +403,8 @@ http://product.dangdang.com/product.aspx?product_id=20518616
 23.00，2002年台湾
 
 ----
-51，数据库系统实现
-44.20 (75折)
-
-
-=======================================================
-编程语言，工具实践
+26，Java语言程序设计 进阶篇（原书第6版）
+46.20(68折)
 
 ----
 166，Python基础教程(第2版)
@@ -446,24 +469,6 @@ Aaron Hillegass
 
 
 ----
-161，多核应用编程实战
-39.50 (5折)，较底层，暂不考虑
-
-----
-25，黑客大曝光:Web应用程序安全(原书第3版)(Web安全技术人员必备参考)
-46.20(67折)，31.80(49折)，想买
-
-----
-163，云端代码：Google App Engine编程指南
-Mark C. Chu-Carroll (作者), 刘姝 (译者), 管雪涛 (译者)
-22.50(5折)，
-
-----
-165，GAE编程指南
-桑德森(Dan Sanderson) (作者), 唐学韬 (译者), 何继业 (译者), 等 (译者)
-32.50 (5折)
-
-----
 201，Clojure编程乐趣
 福格斯 (Michael Fogus) (作者), 豪泽 (Chris Houser) (作者), 郑晔 (译者)
 40.70(69折)
@@ -482,19 +487,28 @@ Haskell:the Craft of Functional Programming(third Edition)
 77.40(6折)，
 
 
+
+================
+工具实践-框架，库，开发工具
+
 ----
 92，Git权威指南
 53.40(60折)
 
-----
-26，Java语言程序设计 进阶篇（原书第6版）
-46.20(68折)
 
 ----
-27，计算机图形学 应用Java 2D和3D
-http://product.dangdang.com/product.aspx?product_id=20192214
-41.20(75折)
+161，多核应用编程实战
+39.50 (5折)，较底层，暂不考虑
 
+----
+163，云端代码：Google App Engine编程指南
+Mark C. Chu-Carroll (作者), 刘姝 (译者), 管雪涛 (译者)
+22.50(5折)，
+
+----
+165，GAE编程指南
+桑德森(Dan Sanderson) (作者), 唐学韬 (译者), 何继业 (译者), 等 (译者)
+32.50 (5折)
 
 ==================
 工具实践-数据库
@@ -520,45 +534,6 @@ Joe Celko (作者)米全喜 (译者)
 ~ 查理斯·贝尔 (Bell.C.) (作者), 迈茨·肯德尔 (Kindahl.M.) (作者), 拉尔斯·塞尔曼 (Thalann.L.) (作者), 
 宁青 (译者), 唐李洋 (译者), 诸云萍 (译者) 
 73.90(7.5折)，56.80(5.8折)，47.80(4.9折)
-
-
-----
-181，Oracle DBA实战攻略:运维管理、诊断优化、高可用与最佳实践
-
-----
-129，Oracle性能优化求生指南
-http://www.ituring.com.cn/book/772?q=Oracle
-74.20(7.5折)，48.50(49折)，观望
-
-----
-128，Oracle Database 11g完全参考手册
-罗尼(Kevin Loney) (作者), 刘伟琴 (译者), 张格仙 (译者) 
-118.50(7.5折)，77.40(49折)，
-
-----
-134，Oracle PL/SQL最佳实践
-Steven Feuerstein (作者), 龚波 (译者), 张平 (译者), 潘显俊 (译者) 
-36.00(7.5折)，33.60(49折)，
-
-----
-135，Oracle Database 11g SQL开发指南
-皮拉斯 (Price.J.) (作者), 史新元 (译者), 北英 (译者) 
-61.40(7.9折)，38.20(49折)，观望
-
-----
-136，Oracle PL/SQL程序设计(第5版)(套装上下册)
-弗伊尔斯坦(Steven Feuerstein) (作者), 普瑞拜尔(Bill Pribyl) (作者), 张晓明 (译者) 
-111.80(7.5折)，73.00(49折)，对翻译评价较差
-
-----
-131，Oracle索引技术
-http://www.ituring.com.cn/book/951?q=Oracle
-
-----
-132，DBA的思想天空：感悟Oracle数据库本质
-http://www.ituring.com.cn/book/972?q=Oracle
-http://www.amazon.cn/DBA的思想天空-感悟Oracle数据库本质-白鳝/dp/B009PIQ99E
-44.50(5折)，43.60(49折)，
 
 
 =============================================================
@@ -628,7 +603,7 @@ javascript
 36.80，有第1版中文（2006,2007），不买
 
 ==============================================================
-
+其它
 
 ----
 189，数学解题策略
@@ -637,6 +612,13 @@ javascript
 
 ========
 游戏开发（3D，大型多人在线游戏，人工智能）
+
+
+
+----
+27，计算机图形学 应用Java 2D和3D
+http://product.dangdang.com/product.aspx?product_id=20192214
+41.20(75折)
 
 ----
 190，Processing语言权威指南（混彩）
