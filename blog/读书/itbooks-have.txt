@@ -31,6 +31,13 @@ http://product.dangdang.com/product.aspx?product_id=20833536
 64.50(9.3折)，47.60(6.9折)，
 292页，41.40(6折)，已购
 
+----
+80，UNIX编程艺术
+http://product.dangdang.com/product.aspx?product_id=21006214
+http://product.dangdang.com/product.aspx?product_id=9149115
+http://www.amazon.cn/UNIX%E7%BC%96%E7%A8%8B%E8%89%BA%E6%9C%AF-%E5%A7%9C%E5%AE%8F/dp/B0050CRP0Q/ref=reg_hu-rd_add_1_dp
+67.20(85折)-20，已购
+
 ======================================
 游戏开发
 
@@ -76,26 +83,14 @@ http://product.dangdang.com/product.aspx?product_id=21029060
 http://www.amazon.cn/gp/product/B003BY6PLK/ref=ox_ya_os_product
 48.40，39.5，已购，有电子书2010.4月版
 
-----
-80，UNIX编程艺术
-http://product.dangdang.com/product.aspx?product_id=21006214
-http://product.dangdang.com/product.aspx?product_id=9149115
-http://www.amazon.cn/UNIX%E7%BC%96%E7%A8%8B%E8%89%BA%E6%9C%AF-%E5%A7%9C%E5%AE%8F/dp/B0050CRP0Q/ref=reg_hu-rd_add_1_dp
-67.20(85折)-20，已购
-
 
 ======================================
-算法和原理
+算法，数据结构
 
 ----
 16，计算机程序的构造和解释：原书第2版
 http://product.dangdang.com/product.aspx?product_id=8793968
 33.80，22.00(49折)，有电子书，思维锻炼，36.80-20=16.80，已购
-
-----
-18，实用Common Lisp编程(第16届Jolt生产效率大奖得主)
-http://product.dangdang.com/product.aspx?product_id=22508163
-61.30(69折)，48.00(43折)，思维锻炼，66.80-20=46.80，已购
 
 ----
 97，编程语言实现模式
@@ -168,8 +163,10 @@ Clojure Programming，O'Reilly Media, Inc, USA (2012年4月19日)
 69.30，48.50(49折)，74.20(75折)-20=54.20，已购，受益匪浅，改变思维方式。
 
 ----
-17，Windows7脚本编程和命令行工具指南(详尽讲解微软最新命令行自动化工具Windows PowerShell)
-59.20，已购
+18，实用Common Lisp编程(第16届Jolt生产效率大奖得主)
+http://product.dangdang.com/product.aspx?product_id=22508163
+61.30(69折)，48.00(43折)，思维锻炼，66.80-20=46.80，已购
+
 
 
 ----
@@ -185,35 +182,12 @@ OTP:oper telecom platform，是一个应用操作系统和一堆函数库，
 207，快学scala
 39.50(5折)，38.50(49折)
 
-
 =======================================
-工具实践-编程语言-c和linux
-
-----
-3，Linux Shell脚本攻略
-36.80(75折)，已购，不错
+工具实践-编程语言-c和c++
 
 ----
 69，C和指针
 40.5，已购
-
-----
-77，Linux程序设计(第4版)
-http://product.dangdang.com/product.aspx?product_id=20856718
-74.20 (75折)，26.5，已购
-
-----
-76，UNIX环境高级编程（第2版）
-68.30 (69折)，已购
-
-----
-81，深入理解LINUX内核（第三版）
-http://product.dangdang.com/product.aspx?product_id=20046247
-76.40(78折)，已购
-
-
-=======================================
-工具实践-windows和C++
 
 ----
 100，C++ Primer中文版(第5版)
@@ -235,14 +209,41 @@ http://www.amazon.cn/C%E5%92%8CC-%E7%BB%8F%E5%85%B8%E8%91%97%E4%BD%9C%E2%80%A2C-
 《Ruminations on C++》，1997
 36.30，41.30(75折)，中文版2008.2，已购，C++的一些实践。
 
+
+=======================================
+工具实践-编程环境-windows和linux
+
 ----
 116，VC++深入详解
+windows MFC编程。
 http://www.amazon.cn/VC-%E6%B7%B1%E5%85%A5%E8%AF%A6%E8%A7%A3-%E5%AD%99%E9%91%AB/dp/B00114KKB8/ref=pd_sim_b_6
 http://www.amazon.cn/VC-%E6%B7%B1%E5%85%A5%E8%AF%A6%E8%A7%A3-%E5%AD%99%E9%91%AB/dp/B00114KKB8/ref=pd_rhf_se_p_t_2
 
+----
+17，Windows7脚本编程和命令行工具指南(详尽讲解微软最新命令行自动化工具Windows PowerShell)
+59.20，已购
+
+----
+3，Linux Shell脚本攻略
+36.80(75折)，已购，不错
+
+----
+77，Linux程序设计(第4版)
+http://product.dangdang.com/product.aspx?product_id=20856718
+74.20 (75折)，26.5，已购
+
+----
+76，UNIX环境高级编程（第2版）
+68.30 (69折)，已购
+
+----
+81，深入理解LINUX内核（第三版）
+http://product.dangdang.com/product.aspx?product_id=20046247
+76.40(78折)，已购
+
 
 =======================================
-工具实践-javascript和css，html
+工具实践-编程环境-web
 
 
 ----
@@ -271,7 +272,6 @@ css和html
 ----
 62，Lucene实战(第2版)
 51.80(75折)，已购
-
 
 ----
 137，中文版Excel 2010高级VBA编程宝典

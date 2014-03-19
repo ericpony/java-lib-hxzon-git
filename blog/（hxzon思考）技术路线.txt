@@ -52,7 +52,7 @@ lisp的宏强大。更高的抽象能力，更好的复用。
 
 common lisp：
 scheme：抽象能力最强大？直接编译成可执行文件时比clojure更快？
-clojure：对java友好。改善lisp（不过度使用括号）。
+clojure：对java友好。改善lisp（不过度使用括号，简化概念）。
 
 7，haskell
 
@@ -133,8 +133,6 @@ sql分散，修改字段名工作量多。（对比hibernate这是最大的缺�
 传参数使用map，bean，很不方便（自定义一个方法使用可变参数来生成参数map？）。
 
 
-
-
 3，spring jdbc
 观望。
 
@@ -150,14 +148,14 @@ sql分散，修改字段名工作量多。（对比hibernate这是最大的缺�
 
 1，mysql
 简单好用。流行，开源。分支更优。
-
+存储过程。
 
 2，postgreSQL
 开源，据说比mysql强大。
 
 3，oracle
 收费。庞大。功能多，但用到的机会可能不多。
-
+plsql。
 
 
 -----------------
@@ -285,7 +283,7 @@ swt，jfaces：
 
 eclipse rcp：
 
-javaFx：功能和api比swing有所改善，但性能仍存在问题。
+javaFx：功能和api比swing有所改善，但仍存在性能问题。
 
 
 3，flash，flex
