@@ -1,0 +1,45 @@
+﻿JDK 8 Is Released
+https://blogs.oracle.com/thejavatutorials/entry/jdk_8_is_released
+By Raymond Gallardo on Mar 18, 2014
+
+====
+Java SE 8 has gone live! Download it from the Java SE Downloads page.
+
+For this release, the Java SE 8 landing page has been revamped and the Java Tutorials have been updated.
+http://docs.oracle.com/javase/8
+http://docs.oracle.com/javase/tutorial/
+
+See the JDK 8 Release Notes http://www.oracle.com/technetwork/java/javase/8train-relnotes-latest-2153846.html
+for detailed information about this release. Highlights include the following:
+
+--
+Lambda expressions, a new language feature, enable you to treat functionality as a method argument, or code as data.
+
+Other significant enhancements and changes to the Java language and standard libraries have been added, 
+including default methods, 
+http://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html
+the new java.util.stream package, 
+http://docs.oracle.com/javase/8/docs/api/java/util/stream/package-summary.html
+and the Date-Time API.
+http://docs.oracle.com/javase/tutorial/datetime/index.html
+
+Compact Profiles （http://docs.oracle.com/javase/8/docs/technotes/guides/compactprofiles/）
+contain predefined subsets of the Java SE platform and enable applications that do not require the entire Platform to be deployed and run on small devices.
+
+Security enhancements （http://download.java.net/jdk8/docs/technotes/guides/security/enhancements-8.html）
+include updates to the Java Cryptography Architecture; 
+limited doPrivileged, 
+http://download.java.net/jdk8/docs/technotes/guides/security/doprivileged.html#asserting_a_subset_of_privileges
+a mechanism that enables code to assert a subset of its privileges; 
+SSL/TLS Server Name Indication (SNI) Extension; 
+http://download.java.net/jdk8/docs/technotes/guides/security/jsse/JSSERefGuide.html#SNIExtension
+and keystore enhancements.
+
+JavaFX documentation has been updated for this release.
+http://docs.oracle.com/javase/8/javase-clienttechnologies.htm
+
+A new JavaScript engine, Nashorn, is included in JDK 8.
+http://docs.oracle.com/javase/8/docs/technotes/guides/scripting/nashorn/
+
+Java Mission Control 5.3 is included in JDK 8.
+http://docs.oracle.com/javase/8/docs/webnotes/releasenotes/jmc/jmc53-release-notes.html

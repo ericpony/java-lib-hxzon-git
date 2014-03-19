@@ -1,0 +1,325 @@
+﻿<!-- 
+（hxzon学习笔记）maven配置样例
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.hxzon</groupId>
+	<artifactId>xxx</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+
+	<properties>
+		<fileencoding>UTF-8</fileencoding>
+		<myjava.version>1.7</myjava.version>
+		<tapestry.version>5.4-beta-3</tapestry.version>
+		<spring.version>4.0.2.RELEASE</spring.version>
+		<hibernate.version>4.3.4.Final</hibernate.version>
+		<hibernate.validator.version>5.1.0.Final</hibernate.validator.version>
+		<zk.version>7.0.1</zk.version>
+		<slf4j.version>1.7.6</slf4j.version>
+		<logback.version>1.1.1</logback.version>
+	</properties>
+
+	<build>
+		<sourceDirectory>src_web</sourceDirectory>
+
+		<resources>
+		<!-- 控制资源文件的复制 -->
+			<resource>
+				<directory>src_web</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<!--描述存放资源的目录，该路径相对POM路径 -->
+				<targetPath>${project.build.directory}</targetPath>
+				<!-- 描述了资源的目标路径。该路径相对target/classes目录（例如${project.build.outputDirectory}）。举个例 
+					子，如果你想资源在特定的包里(org.apache.maven.messages)，你就必须该元素设置为org/apache/maven /messages。然而，如果你只是想把资源放到源码目录结构里，就不需要该配置。 -->
+				<filtering>true</filtering>
+				<!--是否使用参数值代替参数名。参数值取自properties元素或者文件里配置的属性，文件在filters元素里列出。 -->
+				<excludes>
+				<!--排除的模式列表，例如**/*.xml -->
+					<exclude>log4j.properties</exclude>
+				</excludes>
+				<includes />
+				<!--包含的模式列表，例如**/*.xml. -->
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<!-- 额外增加源文件目录 -->
+						<id>add-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src_web_test</source>
+								<source>src_web_zk</source>
+								<source>src_service</source>
+								<source>org.hxzon.util</source>
+								<source>org.hxzon.tapestry5</source>
+								<source>fix</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<!-- 
+					<defaultLibBundleDir>lib</defaultLibBundleDir>
+					 -->
+					<source>${myjava.version}</source>
+					<target>${myjava.version}</target>
+					<encoding>${fileencoding}</encoding>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<webappDirectory>WebContent</webappDirectory>
+					<warSourceDirectory>WebContent</warSourceDirectory>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+				</configuration>
+			</plugin>
+
+			<plugin>
+			<!-- 打包jar文件时，配置manifest文件，加入lib包的jar依赖 -->
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+							<mainClass>org.hxzon.app.AppMain</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<encoding>${fileencoding}</encoding>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.15</version>
+				<configuration>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.8</version>
+				<executions>
+					<execution>
+					<!-- 拷贝依赖的jar包到lib目录 -->
+						<id>copy</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>
+								${project.build.directory}/lib
+							</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>9.0.2.v20130417</version>
+				<configuration>
+					<webAppSourceDirectory>WebContent</webAppSourceDirectory>
+				</configuration>
+			</plugin>
+
+			<plugin>
+			<!-- 打包source文件为jar文件 -->
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<configuration>
+					<attach>true</attach>
+					<encoding>${fileencoding}</encoding>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+			<!-- ANT任务 -->
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>ant-package</id>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<ant antfile="build.xml">
+									<target name="${ant.exec.target}"></target>
+								</ant>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+				<!-- 插件本身的依赖 -->
+					<dependency>
+						<groupId>commons-net</groupId>
+						<artifactId>commons-net</artifactId>
+						<version>3.3</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.ant</groupId>
+						<artifactId>ant-commons-net</artifactId>
+						<version>1.9.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+		</plugins>
+
+		<pluginManagement>
+		<!--子项目可以引用的默认插件信息。该插件配置项直到被引用时才会被解析或绑定到生命周期。
+		给定插件的任何本地配置都会覆盖这里的配置。 -->
+			<plugins>
+				<!-- Ignore/Execute plugin execution -->
+
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+								<!-- 解决eclipse报错：maven-dependency-plugin (goals “copy-dependencies”, 
+									“unpack”) is not supported by m2e -->
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>copy-dependencies</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+								<!-- 解决eclipse报错：maven-antrun-plugin: "Plugin execution not covered 
+									by lifecycle configuration" -->
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-antrun-plugin</artifactId>
+										<versionRange>[1.7,)</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+								<!-- 解决eclipse报错：Plugin execution not covered by lifecycle configuration -->
+									<pluginExecutionFilter>
+										<groupId>org.hxzon.mvnplugins.game</groupId>
+										<artifactId>myhxzon-maven-plugin</artifactId>
+										<versionRange>[1.0,)</versionRange>
+										<goals>
+											<goal>mergeDefs</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+
+
+	</build>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.apache.tapestry</groupId>
+			<artifactId>tapestry-core</artifactId>
+			<version>${tapestry.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.tapestry</groupId>
+			<artifactId>tapestry-spring</artifactId>
+			<version>${tapestry.version}</version>
+			<exclusions>
+			<!-- 移除依赖，包括子孙依赖 -->
+				<exclusion>
+					<artifactId>spring-web</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+	</dependencies>
+
+
+	<distributionManagement>
+	<!--项目分发信息，在执行mvn deploy后表示要发布的位置。
+	有了这些信息就可以把网站部署到远程服务器或者把构件部署到远程仓库。 -->
+		<repository>
+			<id>nexus-releases</id>
+			<name>Nexus Releases Repository</name>
+			<url>http://192.168.1.120:8081/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<name>Nexus Snapshots Repository</name>
+			<url>http://192.168.1.120:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+</project>
