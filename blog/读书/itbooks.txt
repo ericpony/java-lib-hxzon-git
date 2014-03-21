@@ -1,16 +1,21 @@
 ﻿itbooks.txt
 
-C++
-windows(VC++，系统核心，MFC)
-linux服务器
-linux c编程
-js
-css，html
-算法，数学
-sql数据库
-nosql
-工具实践，编程语言
-架构设计，软件工程，it视野
+web前端开发（通用）：js，css，html
+
+web后端开发-大众：java，C#/ASP.NET，php，
+web后端开发-较大众：ruby/rails，Python，Perl
+
+桌面开发-大众：windows环境，VC++，C#，java，C++，Qt
+特定环境：Object-C（苹果），Android
+
+游戏开发：C#（unity3D），C++，Object-C（苹果），js，Android，java，
+
+通用语言-小众：clojure，scala，groovy，erlang，go
+
+通用：算法，安全，交互设计，数学，架构设计，软件工程，it视野
+通用-工具：Linux，sql数据库，nosql，开发工具
+
+
 ====================================================
 工具实践-编程语言-C++
 
@@ -193,8 +198,9 @@ http://www.ituring.com.cn/book/411
 2008-09
 
 ----
-22，LINUX技术手册（影印版）（第5版）
-72.00(73折)，不买，已出第6版
+22，Linux技术手册(第6版)
+埃伦•斯沃尔 (Ellen Siever) (作者), 斯蒂芬•费金斯 (Stephen Figgins) (作者), 罗伯特•拉乌 (Robert Love) (作者), 阿诺德•罗宾斯 (Arnold Robbins) (作者), 秦云川 (译者)
+111.00 (75折)，简体中文
 
 ----
 91，国外计算机科学经典教材Unix & Linux大学教程
