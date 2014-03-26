@@ -1,4 +1,4 @@
-﻿书评：领域驱动设计与模式实战
+﻿（书评）领域驱动设计与模式实战
 
 作者 张逸 发布于 六月 08, 2010
 http://www.infoq.com/cn/articles/bookreview-A3D-Pattern

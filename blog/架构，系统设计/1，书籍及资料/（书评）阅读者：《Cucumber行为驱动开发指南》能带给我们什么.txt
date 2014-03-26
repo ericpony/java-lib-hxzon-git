@@ -1,4 +1,4 @@
-﻿阅读者：《Cucumber行为驱动开发指南》能带给我们什么
+﻿（书评）阅读者：《Cucumber行为驱动开发指南》能带给我们什么
 
 http://www.infoq.com/cn/articles/cucumber-behavior-driven-development-guide-bring-something
 

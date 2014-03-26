@@ -1,0 +1,10 @@
+﻿（文章列表）java8
+
+by hxzon
+====
+
+1，获取方法的参数名
+Obtaining Names of Method Parameters
+http://docs.oracle.com/javase/tutorial/reflect/member/methodparameterreflection.html
+
+2，

@@ -59,7 +59,10 @@ http://www.amazon.cn/Modern-C-Design-Applied-Generic-and-Design-Patterns-Alexand
 110，泛型编程与STL
 http://product.china-pub.com/9864
 作者: Matthew H. Austern 译者: 侯捷 中国电力出版社2003-1
-本书阐述了泛型编程的中心思想：concepts、modeling、refinement，并为你展示这些思想如何导出STL的基础概念：iterators、containers、function Objects。循此路线，你可以把STL想像为一个由concepts(而非明确之functions或classes)组成的程序库。你将学习其正式结构并因此获得其潜在威力所带采的完整优势。
+本书阐述了泛型编程的中心思想：concepts、modeling、refinement，
+并为你展示这些思想如何导出STL的基础概念：iterators、containers、function Objects。
+循此路线，你可以把STL想像为一个由concepts(而非明确之functions或classes)组成的程序库。
+你将学习其正式结构并因此获得其潜在威力所带采的完整优势。
 已缺货，观望，暂缓
 
 ----

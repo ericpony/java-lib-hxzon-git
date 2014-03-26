@@ -1,0 +1,8 @@
+@echo off
+set MAIN_CLASS=org.app.AppMain
+set APP_HOME=.
+set TCP=%APP_HOME%/classes
+for /R %APP_HOME%/lib %%p in (*.jar) do call set TCP=%%TCP%%;%%p
+echo %TCP%
+java -Xmx512m -cp %TCP% %MAIN_CLASS%
+PAUSE

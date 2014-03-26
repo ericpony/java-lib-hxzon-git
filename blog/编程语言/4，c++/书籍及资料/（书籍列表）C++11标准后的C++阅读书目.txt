@@ -1,4 +1,4 @@
-﻿C++11标准后的C++阅读书目
+﻿（书籍列表）C++11标准后的C++阅读书目
 
 http://blog.jobbole.com/47357/
 本文由 伯乐在线 - 翻译自 drdobbs。欢迎加入技术翻译小组。转载请参见文章末尾处的要求。
@@ -15,6 +15,7 @@ C++ 新标准 C++11 的发布导致了大批新书的出现，还有一些经典
 Andrew Binstock 在 Dr.dobbs 上给大家推介一些学习 C++ 必需的核心书籍。
 
 1. 《C++程序设计语言》英文第四版，作者： Bjarne Stroustrup
+C++ Programming Language 4th Edition
 
 这本书已经被正式列为C++编程的权威书籍。
 它堪称语言界的权威，独具特色，书面清晰，由设计C++的Stroustup所著。 
@@ -31,9 +32,6 @@ Stroustrup对于库给了很少的介绍，这些数字足以说明C++已经变�
 对于C++程序员来说，不管使用这门语言的新特性有多困难，他们都得坚持，唯有这样，才能前进。 极力推荐此书!
 
 （第四版的中文版还没有出，目前《C++程序设计语言(特别版·十周年中文纪念版)》）
-
-C++ Programming Language 4th Edition
-
 
 
 2. 《C++ Primer 第 5 版（英文版）》由 Stanley Lippman，Josee Laoie 和 Barbara Moo合著
@@ -65,6 +63,7 @@ Stroustrup的书主要是一本注重讲解的参考书，也可以偶尔查询�
 
 
 3. 《C++标准库:自学教程与参考手册(第2版)(英文版)》Nicolai Josuttis著
+The C++ Standard Library 2nd Edition
 
 这是C++标准库的经典教程和参考的第二版，根据新标准C++11进行了更新。
 不像其他许多书，包含了库和API，这不是对一大堆函数调用的美化解释。
@@ -82,8 +81,6 @@ Stroustrup的书主要是一本注重讲解的参考书，也可以偶尔查询�
 这本书的第一版被许多的C++程序员视为真正的经典。我觉得第二版没有道理不受欢迎。
 对此不熟悉的读者，不管是把它看作是第一本书的升级版还是另一本新书，我都强力推荐。
 这篇简短的介绍也算是对这本是的一个很好的补充。
-
-The C++ Standard Library 2nd Edition
 
 
 
@@ -116,11 +113,10 @@ William的这本书非常棒，至少在未来的很长一段时间里都能称�
 
 如果你想更仔细地看下这本书的内容，我们最近在一篇很受欢迎的文章里”Waiting for One-Off Events with Futures。”有摘选了一些片段。
 
-C++ Concurrency in Action
-
 
 
 5. 《C和C++安全编码(英文版第2版) 》 （中文版的还是第一版）Robert Seacord著
+Secure Coding in C and C++ 2nd Edition
 
 这本书主要写关于C和C++的安全编码。
 新版的内容几乎是2005年原版的两倍，展示了我们究竟学习了多少关于攻击代码的知识。
@@ -140,7 +136,7 @@ C++ Concurrency in Action
 该书的实践本质就是让你频繁地使用一些推荐的工具去验证代码，并锁定黑客喜欢探索的访问机制。
 这本书真的很棒，绝对让你受益匪浅，当然，也会使你成为一名更优秀的程序员。
 
-Secure Coding in C and C++ 2nd Edition
+
 
 
 
@@ -158,7 +154,7 @@ Secure Coding in C and C++ 2nd Edition
 总之，对于想要进行嵌入式编程的C++开发人员来说，这本书是很好的教程。
 但是它所选的一些案例项目，可能对于那些活跃在该领域的开发者来说，没有什么吸引力。
 
-Real-Time C++
+
 
 
 
