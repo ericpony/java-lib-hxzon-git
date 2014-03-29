@@ -3,6 +3,7 @@
 ===========
 Java 下一代: Groovy、Scala 和 Clojure
 在日益壮大的多语言世界中使用 Groovy、Scala 和 Clojure
+
 Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
 http://www.ibm.com/developerworks/cn/java/j-jn1/index.html
 
@@ -15,9 +16,11 @@ http://www.ibm.com/developerworks/library/j-jn1/index.html
 ---------
 Java 下一代: Groovy、Scala 和 Clojure 中的共同点，第 1 部分
 探究这些下一代 JVM 语言如何处理操作符重载
+
 （Java 下一代语言（Groovy、Scala 和 Clojure）的共同点多于不同点，主要集中于很多功能和方便性上的共同点。
 本期文章探究它们各自如何克服 Java 语言中长期存在的一个缺点 -- 无法重载操作符。
 还要讨论关联性和优先级等相关概念。）
+
 Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
 2013 年 5 月 13 日 
 http://www.ibm.com/developerworks/cn/java/j-jn2/index.html
@@ -26,9 +29,11 @@ http://www.ibm.com/developerworks/cn/java/j-jn2/index.html
 ---------
 Java 下一代: Groovy、Scala 和 Clojure 中的共同点，第 2 部分
 了解Java 下一代语言如何减少样板代码和降低复杂性
+
 （与 Java 语言相关的常见抱怨包括，简单的任务涉及到太多的步骤，默认设置有时难以理解。
 所有 3 种 Java 下一代语言在这些领域都采取了更加明智的方法。
 这一期 Java 下一代展示 Groovy、Scala 和 Clojure 如何消除 Java 语言的瑕疵。）
+
 http://www.ibm.com/developerworks/cn/java/j-jn3/index.html
 
 Java.next: Common ground in Groovy, Scala, and Clojure, Part 2
@@ -41,9 +46,11 @@ http://www.ibm.com/developerworks/library/j-jn3/index.html
 ----------
 Java 下一代: Groovy、Scala 和 Clojure 中的共同点，第 3 部分
 反思异常、表达式和空
+
 （本文是由三个部分组成的介绍 Clojure、Scala 和 Groovy 的共同点的系列文章的最后一篇，
 调查了这些语言如何处理异常、表达式和 null —— 这些都是 Java™ 语言容易出问题的地方。
 每种 Java 下一代语言都通过突出语言特征的独特实现消除了 Java 语言的瑕疵。）
+
 Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
 http://www.ibm.com/developerworks/cn/java/j-jn4/index.html
 
@@ -57,8 +64,10 @@ http://www.ibm.com/developerworks/library/j-jn4/
 ----------
 Java 下一代: 没有继承性的扩展，第 1 部分
 了解 Groovy、Scala 和 Clojure 如何将行为融入到类中
+
 （Groovy、Scala 和 Clojure 提供了许多扩展机制，但继承几乎是 Java 语言的惟一选择。
 这一期文章将介绍类别类、ExpandoMetaClass、隐式转换和协议，借助它们来使用 Java.next 语言扩展 Java 类。）
+
 Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks Inc.
 2013 年 8 月 15 日
 http://www.ibm.com/developerworks/cn/java/j-jn5/index.html
@@ -66,9 +75,11 @@ http://www.ibm.com/developerworks/cn/java/j-jn5/index.html
 ----------
 Java 下一代: 没有继承性的扩展，第 2 部分
 探索 Clojure 协议
+
 （Java 语言受制于扩展机制的固有限制，主要依靠继承和接口。
 Groovy、Scala 和 Clojure 提供了其他许多扩展替代方案。
 这期文章进一步探索了 Clojure 将协议用作扩展机制的方法。）
+
 2013 年 9 月 23 日
 http://www.ibm.com/developerworks/cn/java/j-jn6/index.html
 
@@ -76,7 +87,9 @@ http://www.ibm.com/developerworks/cn/java/j-jn6/index.html
 ----------
 Java 下一代: 没有继承性的扩展，第 3 部分
 Groovy 元编程为您提供常见问题的简单解决方案
+
 （ExpandoMetaClass；AST转换）
+
 Neal Ford, Director / Software Architect / Meme Wrangler, ThoughtWorks
 2013 年 10 月 24 日
 http://www.ibm.com/developerworks/cn/java/j-jn7/index.html
@@ -99,5 +112,21 @@ Java.next: Currying and partial application
 http://www.ibm.com/developerworks/java/library/j-jn9/index.html
 
 ----------
+Java 下一代: 函数式编码风格
+Groovy、Scala 和 Clojure 共享的函数结构及其优势
+
+（命令式处理对比函数式处理，容易改成并行）
+
+Neal Ford, 软件架构师, ThoughtWorks Inc.
+2014 年 3 月 27 日
+http://www.ibm.com/developerworks/cn/java/j-jn10/index.html
+
 Java.next: Functional coding styles
 http://www.ibm.com/developerworks/java/library/j-jn10/index.html
+
+----------
+
+
+
+
+

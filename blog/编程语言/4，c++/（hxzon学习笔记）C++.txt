@@ -1,0 +1,23 @@
+﻿（hxzon学习笔记）C++
+
+by hxzon
+====
+1，函数中的变量使用static修饰，
+该变量仍然是局部作用域，但是生命周期变为整个程序运行期间。
+该变量只在函数第一次调用时初始化一次。
+《C++ Primer中文版第3版》
+
+#include <iostream> 
+int traceGcd( int v1, int v2 ) 
+{ 
+ static int depth = 1; 
+ cout << "depth #" << depth++ << endl; 
+ if ( v2 == 0 ) { 
+  depth = 1; 
+    return v1; 
+ } 
+ return traceGcd( v2, v1%v2 ); 
+} 
+
+====
+2，

@@ -1,0 +1,67 @@
+﻿JEP 192（String Deduplication in G1）简介（字符串去重）
+作者 臧秀涛 发布于 2014年3月25
+http://www.infoq.com/cn/news/2014/03/JEP_192
+
+http://openjdk.java.net/jeps/192
+http://mail.openjdk.java.net/pipermail/hotspot-dev/2014-March/012815.html
+
+JEP，即JDK Enhancement Proposals，指的是为增强JDK而引入的一些提案，
+比如Nashorn JavaScript引擎就是在JEP 174中提出的。
+
+2013年11月22日，来自Oracle的Per Liden创建了JEP 192（String Deduplication in G1），
+意在增强G1垃圾收集器，去掉堆中重复的String对象，从而减少堆内存的占用。
+该文档近日又有更新，Per Liden也提交了相应代码实现，目前还处于审校和讨论中。 
+应该注意的是该特性只针对G1垃圾收集器，不适用于其他收集器。 
+很多大规模Java应用都受限于内存瓶颈，测量表明，这类应用中，String对象大概占了Java堆中活数据集的25%。
+而这些String 对象中，又大约有一半是重复的，
+这里的重复是指，对两个字符串string1和string2而言，string1.equals(string2)为true。
+存在重复的String对象本质上是对内存的浪费。
+JEP 192打算在G1收集器中实现自动和连续的String去重操作，以避免内存浪费，进而减少总的内存占用量。 
+目前String类有两个字段： private final char[] value; private int hash;
+使用旧版本Java的读者可能有点诧异，其实早期版本中的count、offset等实例字段已经去掉了，InfoQ之前也曾报道过。 
+value字段是特定于实现的，在String类之外看不到。
+因为String类不会修改该数组的内容，也不会将其用于同步，所以我们可以安全且透明地将其在多个String对象之间共享。
+也就是说我们可以将一个String对象的value指向另一个String对象的value。
+尽管该字段是final的，但因为去重操作是在虚拟机内部实现的，所以这不是问题。
+有兴趣的读者可以查看一下java.lang.System类的实现，
+其中的 public final static InputStream in = null;一句，就是先将final字段in设置为null，然后在native代码中重新赋值的。
+
+这里需要注意的是，实现并没有真的去掉重复的String对象，去掉的只是对象中的char数组。
+这样对应用才是透明的。
+去掉实际的String对象并不安全，因为应用可能将该对象用于同步等操作。
+这种实现不需要修改JDK类库或其他任何现有的Java代码。 
+Per Liden对大量大大小小的Java应用进行了测量，发现了下列结果：
+String对象平均占活数据的25%
+重复的String对象平均占活数据的13.5%
+String的平均长度为45个字符
+
+经过分析计算，通过去重、复用char数组，平均大概能减少10%的堆内存占用。 
+JEP 192文档中介绍了实现思路。
+垃圾收集执行时会访问堆上的活对象，在访问对象时可以判断一下该对象是否可以作为字符串去重的候选。
+如果是，将其插入一个队列。有一个负责去重的线程在后台运行，处理该队列。
+使用一个哈希表来记录String对象使用的所有唯一的char数组（即value）。
+在处理候选的String对象时，先查找哈希表，看是不是存在和当前处理对象内容相同的char数组。
+如果存在，则更新当前对象的value值，使其指向在哈希表中找到的char数组，
+这样垃圾收集器就可以在某个时间把当前对象原来的char数组回收掉了。
+如果不存在，则将当前对象的char数组插到哈希表中，供以后处理。
+对于哈希表中的某个char数组，如果引用它的所有对象都已经不可达了，即可将其移除。
+该哈希表会根据当前表项的数目动态调整，使用链表处理冲突。 
+
+这里有一个重要的参数：去重年龄阈值。
+对象的存活时间长短不一。对于存活时间很短的对象，执行去重操作其实是浪费资源。
+为避免这种情况，可以设置一个年龄阈值。
+在String对象的年龄等于该阈值时，才考虑对其进行去重操作，大于该阈值则是已经处理过的。
+该阈值应该提供一个合理的默认值，同时支持通过虚拟机选项来配置。 
+
+实际的去重操作在去重线程中完成。
+它会等待String对象引用出现在去重队列中，然后一个一个地将其从队列中去掉。
+在去掉时进行处理，计算字符串的哈希值，在哈希表中查找，如果可能的话执行去重操作。
+去重线程负责维护一些统计信息（已检查的候选对象数，去重的字符串数等），这些信息可以打印到GC日志中。 
+
+需要提供新的虚拟机命令行选项：
+UseStringDeduplication (bool) ——支持字符串去重
+PrintStringDeduplicationStatistics (bool) ——打印详细的去重统计信息
+StringDeduplicationAgeThreshold (uintx) ——设置String对象的年龄阈值
+
+文档中还对比评价了其他方案存在的一些问题，感兴趣的读者可以参考。
+
