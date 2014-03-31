@@ -1,17 +1,44 @@
-﻿（hxzon学习笔记）java位操作
+﻿（hxzon学习笔记）
 
-    public static final int TestNone = 0;
-    public static final int Test1 = 1 << 1;
-    public static final int Test2 = 1 << 2;
-    public static final int Test3 = 1 << 3;
-    public static final int Test4 = 1 << 4;
-    public static final int Test5 = 1 << 5;
+1，java位操作
 
-    public static boolean isSet(int value, int test) {
-        return (value & test) != 0;
-    }
+public static final int TestNone = 0;
+public static final int Test1 = 1 << 0;
+public static final int Test2 = 1 << 1;
+public static final int Test3 = 1 << 2;
+public static final int Test4 = 1 << 3;
+public static final int Test5 = 1 << 4;
 
-    public static int remove(int value, int remove) {
-        return ~((~value) | remove);
-    }
+public static boolean isSet(int value, int test) {
+    return (value & test) != 0;
+}
+
+public static int remove(int value, int remove) {
+    return ~((~value) | remove);
+}
+
+====
+2，java比较
+
+Collections.sort为升序。
+
+如果本对象要比参数对象靠前，则应返回-1。
+
+public int compareTo(Integer anotherInteger) {
+    return compare(this.value, anotherInteger.value);
+}
+
+public static int compare(int x, int y) {
+    return (x < y) ? -1 : ((x == y) ? 0 : 1);
+}
+
+逆序，即大数在前：
+public int compareTo(int o)
+{
+    return o - this;
+}
+
+====
+3，
+
 

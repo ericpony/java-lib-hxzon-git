@@ -1,0 +1,262 @@
+﻿3D渲染引擎
+
+by hxzon
+====
+开源
+
+1，orge
+http://www.ogre3d.org/
+http://www.ogre3d.org/docs/manual/
+https://www.packtpub.com/ogre-3d-1-7-beginners-guide-for-real-time-3d-applications/book 书籍《OGRE 3D 1.7 Beginner's Guide》
+
+Since 2001, OGRE has grown to become one of the most popular open-source graphics rendering engines, 
+and has been used in a large number of production projects, 
+in such diverse areas as games, simulators, educational software, 
+interactive art, scientific visualisation, and others. 
+
+不是游戏引擎。
+畅游的《天龙八部》。
+
+2，irrlicht
+
+3，fly3d
+
+4，NeoEngine
+
+5，revolution3d
+
+6，Nebula2
+
+7，Genesis3d
+
+
+====
+商业
+
+1，Crytek表示CryEngine是全球唯一实时渲染引擎
+《上古卷轴5：天际》
+
+2，Epic
+
+3，Unity
+
+4，游戏引擎Bigworld
+
+5，虚幻3
+
+6，黑火，畅游自主开发。
+
+
+====
+典型开源3D引擎分类比较
+http://www.cnblogs.com/cyberchen-net/archive/2007/03/04/663597.html
+ 
+常见的3D引擎有：Unreal,Quake,Lithtech,OGRE,Nebula,Irrlicht,Truevision3D...等，
+其中开源免费的有：orge,irrlicht,fly3d, NeoEngine, revolution3d, Nebula2，Genesis3d等。
+OGRE 在免费、开源的引擎中评价最高，
+一个原因是作为一个图形渲染引擎，它支持的图形特性最多，所以渲染质量也不错；
+另一个原因是设计模式的清晰；
+另外，速度也不错。
+OGRE 将专注于向一个纯粹的、然而富于协作和扩展性的图形引擎发展，这得益于它的庞大的社群支持，
+使得很多事情可以通过外挂一些更专业的引擎来实现，
+物理引擎使用 ODE 、 Tokamak 、 NovodeX ，
+网络引擎使用 openTNL 、 RakNet 、 eNet ，
+声音引擎使用 FMod 、 OpenAL ，
+以及界面引擎使用 CEGUI 。
+ 
+ 
+Standard
+
+OGRE
+
+IrrLicht
+
+Truevision3D
+
+General
+Type
+Only rendering engine
+ 
+Game engine
+Include TV3DEngine,TV3DMedia,TV3DNet……
+Languages
+Written in pure C++, totally object orientated.
+Written in pure C++, totally object orientated.
+Written in C++ and VB6 with DirectX8.1
+License
+LGPL
+zlib/libpng License(totally free)
+·   Free TV3DSDK
+·   Registered Developer License
+·   group or site licenses
+Develop platforms
+·   C++
+·   .NET
+·   C++
+·   .NET language binding
+VB/VC++/DELPHI/
+C#/vb.net
+Platforms
+Windows
+ü         Support
+ü         Support
+ü         Support
+Linux
+ 
+ü         Support
+ü         Support
+ 
+MacOS
+ü         Support
+ü         Support
+ 
+3D API
+Direct3D
+ü         Support
+ü         Support
+ü         Support
+OpenGL
+ü         Support
+ü         Support
+ 
+Other
+ 
+·   The Irrlicht Engine software renderer.
+·   The Apfelbaum Software Renderer
+ 
+Architecture
+Extensibility
+·   Extensible example framework
+·   Flexible plugin architecture allows engine to be extended without recompilation
+·   Use some other professional engines to achieve other features
+ 
+ 
+Scripting
+ 
+ 
+ 
+Materials & Textures
+Materials
+·   Powerful material declaration language
+·   Multiple material
+·   Material LOD
+·   Multi-texture and multi-pass blending
+·   Projective texturing
+·   Textures can be provided and updated in real-time by plugins
+·   Provide common built in materials based on fixed function pipeline or programmable pipeline
+·   add new materials to Irrlicht at runtime, without the need of modifying/recompiling the engine
+ 
+Textures and Mapping
+自动产生MipMap；
+ 
+自动调整纹理大小以满足硬件需求。
+ 
+支持可程序控制的纹理坐标生成和转换。
+·   Bump mapping
+·   Parallax mapping
+·   Light maps
+·   Sphere mapping
+DOT3 Bump mapping
+ 
+没有提供多层纹理和混合模式
+Shaders
+·   Supports vertex and fragment programs, both written in assembler, and in Cg, DirectX9 HLSL, or GLSL
+·   Support many commonly bound constant parameters like worldview matrices, light state information, object space eye position etc
+·   Pixel and Vertex Shaders 1.1 to 3.0
+·   ARB Fragment and Vertex Programs
+·   HLSL
+·   GLSL
+·   Hardware Vertex Shaders
+·   HLSL
+Scene Management
+General
+·   Highly customizable, flexible scene management, not tied to any single scene type.
+·   Hierarchical scene graph; nodes allow objects to be attached to each other and follow each others movements, articulated structures etc
+·   Scene querying
+·   Using a hierarchical scene graph, can mix indoor and outdoor scene seamless together
+·   Extensible hierarchical scene management
+ 
+ 
+BSP Support
+BSP 场景的天空穹、粒子特效、高级材质属性，乃至 BSP 的空间分割规则都会被正确识别、自动实现
+·   对 BSP 的特性支持比较贫乏
+对 BSP 的读取存在 BUG
+Other
+ 
+ 
+ 
+Special effects
+Particle System
+ 
+·   easily extensible emitters, affectors and renderers
+·   can be defined in text scripts for adjusting in real-time
+·   particle pooling
+·   Customizeable Particle systems for snow, smoke, fire, ...
+Atmospheric effects like fog, cloud, sky (box and sphere), stars.
+Light & Shadow
+ 
+当前支持三种阴影：调整纹理阴影,调整模版阴影,附加模板阴影。不支持软阴影
+Multiple shadow rendering techniques,
+·   Dynamic lights
+·   Dynamic shadows using the stencil buffer
+·   Optimized dynamic stencil shadows
+·   DirectX Hardware Lighting
+Other
+·   Support for skyboxes, skyplanes and skydomes
+·   Billboarding for sprite graphics
+·   Transparent objects automatically managed
+ 
+·   Realistic water surfaces
+·   Billboards
+·   Transparent objects
+·   Skyboxes
+·   Fog
+·   Texture animation
+Billboard
+Character Animation
+ 
+·   Skeletal animation
+·   blending of multiple animations
+·   variable bone weight skinning
+·   hardware-accelerated skinning
+ 
+·   Morph target animation:
+·   Skeletal animation
+·   Skeleton based, Key frame based, morph based animations
+·   Animations that can be enhanced by bone attaching or custom bone rotations.
+Supported Formats
+textures file formats
+·   PNG, JPEG, TGA, BMP or DDS
+·   1D textures, volumetric textures, cubemaps and compressed textures (DXT/S3TC)
+·   PSD,JPG,PNG,TGA,BMP,PCX 
+ 
+ 
+mesh file formats
+Milkshape3D, 3D Studio Max, Maya, Blender and Wings3D
+·   3DS,OBJ,CSM,DAE,DMF,OCT,X,MS3D,MY3D,LMTS,BSP,MD2
+3DS, X, MDL, MD2, MD3
+Document
+ 
+Great number of users and well documented.
+well documented API with lots of examples and tutorials.
+ 
+Other
+GUI
+ 
+ 
+ 
+2D Drawing
+ 
+ 
+ 
+XML
+ü         Support
+XML Converter: convert efficient runtime binary formats to/from XML for interchange or editing
+ü        Support
+快速的XML分析器
+ 
+Web Site
+ 
+http://www.ogre3d.org
+http://irrlicht.sourceforge.net
+http://www.truevision3d.com

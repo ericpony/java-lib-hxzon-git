@@ -149,6 +149,9 @@ sql分散，修改字段名工作量多。（对比hibernate这是最大的缺�
 1，mysql
 简单好用。流行，开源。分支更优。
 存储过程。
+MariaDB
+
+
 
 2，postgreSQL
 开源，据说比mysql强大。

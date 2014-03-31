@@ -3,105 +3,147 @@ http://blog.itpub.net/14466241/viewspace-629438/ 朱先忠
 
 转载自http://morxio.blogbus.com/logs/60316985.html
 
+----
+hxzon摘要：
+
+开源3D：Bullet，ODE
+开源2D：Box2D
+
+====
 1. Havok:
-老牌的君 王，支持功能如下：
+老牌的君王，支持功能如下：
 http://www.havok.com
-·         Collision Detection - including Continuous Physics?
-·         MOPP? Technology - for compact representation of large collision meshes
-·         Dynamics and Constraint Solving
-·         Vehicle Dynamics
-·         Data Serialization and Art Tool Support
-·         Visual Debugger for in-game diagnostic feedback
-有不少游戏和软件都选择了他做物理引擎，比如HOLO3，失落星球，HL2， 细胞分裂，指环王Online ..etc现在Havok被Intel收购了，以后可能对Intel的CPU会有特别的优化。
+·Collision Detection - including Continuous Physics?
+·MOPP? Technology - for compact representation of large collision meshes
+·Dynamics and Constraint Solving
+·Vehicle Dynamics
+·Data Serialization and Art Tool Support
+·Visual Debugger for in-game diagnostic feedback
+
+有不少游戏和软件都选择了他做物理引擎，比如HOLO3，失落星球，HL2， 细胞分裂，指环王Online ..etc
+现在Havok被Intel收购了，以后可能对Intel的CPU会有特别的优化。
+
 (Tip: HL2的泄漏源代码中包含了SDK，就是版本比较老了吧。)
 
+----
 2. NovodeX --- AGEIA PhysX
 
-新兴的王 者，支持功能如下：
+新兴的王者，支持功能如下：
 http://www.ageia.com/
-·           Massively Parallel Physics Architecture
-·           High-speed GDDR3 Memory Interface
-·           AGEIA Universal Continuous Collision Detection
-·           AGEIA Physical Smart Particle Technology
-·           AGEIA Complex Object Physics System
-·           AGEIA Scalable Terrain Fidelity
-·           AGEIA Dynamic Gaming Framework
+·  Massively Parallel Physics Architecture
+·  High-speed GDDR3 Memory Interface
+·  AGEIA Universal Continuous Collision Detection
+·  AGEIA Physical Smart Particle Technology
+·  AGEIA Complex Object Physics System
+·  AGEIA Scalable Terrain Fidelity
+·  AGEIA Dynamic Gaming Framework
+
 因为特有的硬件卡(物理加速卡-PPU)支持，所以能处理大量的物理运算，其他几款暂时没得比。
 Unreal3，GameBryo， Reality Engine等多款商业引擎和游戏都使用了他。
+
 (Tip: NovodeX2.2及以前的版本，可以在没有硬件卡的情况下使用所有功能，网上能下载到)
 
+----
 3. Bullet
 
 开源届的霸主，支持功能如下：
 http://www.bulletphysics.com
-·           Multi Platform. support
-·           Supports various shape types:
-·           Discrete Collision Detection for Rigid Body Simulation
-·           Single Queries:
-·           Sweep and Prune Broadphase
-·           Documentation and Support
-·           Auto generation of MSVC project files, comes with Jam build system
-·           Bullet Collision Detection works with Bullet Dynamics, but there is also a sample integration with Open Dynamics Engine.
-·           Framework with 2 different Constraint Solvers
-·           Hinge, Point to Point Constraint, Twist Cone Constraint (ragdolls)
-·           Automatic de-activation (sleeping)
-·           Generic 6 Degree of Freedom Constraint , Motors, Limits
-·           LCP Warm starting of contact points
-·           Collada 1.4 Physics Import using FCollada and COLLADA-DOM
-·           Convex Decomposition Code
+http://bulletphysics.org/wordpress/
+
+Bullet is a professional free 3D Real-Time Multiphysics Library
+
+·  Multi Platform. support
+·  Supports various shape types:
+·  Discrete Collision Detection for Rigid Body Simulation
+·  Single Queries:
+·  Sweep and Prune Broadphase
+·  Documentation and Support
+·  Auto generation of MSVC project files, comes with Jam build system
+·  Bullet Collision Detection works with Bullet Dynamics, but there is also a sample integration with Open Dynamics Engine.
+·  Framework with 2 different Constraint Solvers
+·  Hinge, Point to Point Constraint, Twist Cone Constraint (ragdolls)
+·  Automatic de-activation (sleeping)
+·  Generic 6 Degree of Freedom Constraint , Motors, Limits
+·  LCP Warm starting of contact points
+·  Collada 1.4 Physics Import using FCollada and COLLADA-DOM
+·  Convex Decomposition Code
+
 这款物理引擎的历史也比较久了，但似乎国内知道的ODE的人更多一些，
 这款物理引擎被Nvidia的开发人员所关注(Nvidia前些时候说过，要用GPU来实现物理加速，可能会最先在这款物理引擎上实现。)
+
 (Tip: 这款引擎是开源的，有兴趣的朋友，可以看看。)
 
+----
 4. ODE
 
 开源的名角，支持功能如下：
 http://www.ode.org/
-·           Rigid bodies with arbitrary mass distribution.
-·           Joint types: ball-and-socket, hinge, slider (prismatic), hinge-2, fixed, angular motor, linear motor, universal.
-·           Collision primitives: sphere, box, cylinder, capsule, plane, ray, and triangular mesh, convex.
-·           Collision spaces: Quad tree, hash space, and simple.
-·           Simulation method: The equations of motion are derived from a Lagrange multiplier velocity based model due to Trinkle/Stewart and Anitescu/Potra.
-·           A first order integrator is being used. It's fast, but not accurate enough for quantitative engineering yet. Higher order integrators will come later.
-·           Choice of time stepping methods: either the standard ``big matrix'' method or the newer iterative QuickStep method can be used.
-·           Contact and friction model: This is based on the Dantzig LCP solver described by Baraff, although ODE implements a faster approximation to the Coloumb friction model.
-·           Has a native C interface (even though ODE is mostly written in C++).
-·           Has a C++ interface built on top of the C one.
-·           Many unit tests, and more being written all the time.
-·           Platform. specific optimizations.
-·           Other stuff I forgot to mention...
+http://ode-wiki.org/wiki/index.php?title=Manual
+源码
+http://sourceforge.net/projects/opende/
+https://bitbucket.org/odedevs/ode/
+
+ODE is an open source, high performance library for simulating rigid body dynamics. 
+It is fully featured, stable, mature and platform independent with an easy to use C/C++ API. 
+It has advanced joint types and integrated collision detection with friction. 
+ODE is useful for simulating vehicles, objects in virtual reality environments and virtual creatures. 
+It is currently used in many computer games, 3D authoring tools and simulation tools.
+
+·  Rigid bodies with arbitrary mass distribution.
+·  Joint types: ball-and-socket, hinge, slider (prismatic), hinge-2, fixed, angular motor, linear motor, universal.
+·  Collision primitives: sphere, box, cylinder, capsule, plane, ray, and triangular mesh, convex.
+·  Collision spaces: Quad tree, hash space, and simple.
+·  Simulation method: The equations of motion are derived from a Lagrange multiplier velocity based model due to Trinkle/Stewart and Anitescu/Potra.
+·  A first order integrator is being used. It's fast, but not accurate enough for quantitative engineering yet. Higher order integrators will come later.
+·  Choice of time stepping methods: either the standard ``big matrix'' method or the newer iterative QuickStep method can be used.
+·  Contact and friction model: This is based on the Dantzig LCP solver described by Baraff, although ODE implements a faster approximation to the Coloumb friction model.
+·  Has a native C interface (even though ODE is mostly written in C++).
+·  Has a C++ interface built on top of the C one.
+·  Many unit tests, and more being written all the time.
+·  Platform. specific optimizations.
+·  Other stuff I forgot to mention...
 
 嘿嘿，这个就不用做过多的介绍了，国内使用和学习这个的人比较多了。
 只是最近看到他的网页上有这么一句话：“Russell Smith is the primary author of ODE.”不知道是谁又伤害了这位仁兄。
+
 (Tip: Google一下，中文文章一大把。)
 
+----
 5. TOKAMAK
 
 最近想通了，决定开源了。支持功能如下：
 http://www.tokamakphysics.com/
-·           Joints
-·           Friction
-·           Stacking
-·           Collision Detection
-·           Rigid Particle
-·           Breakage
+·  Joints
+·  Friction
+·  Stacking
+·  Collision Detection
+·  Rigid Particle
+·  Breakage
 
 这个物理引擎出现也比较早了，作者是日本人，其实日本的游戏也很发达的，能把技术共享出来，难得啊。（日文的技术网站还是很多的。）
 
+----
 6. Newton
 
 更多的专注于生活中的实例模拟。
 http://www.newtondynamics.com
 
-这款物理引擎名声可能不是很响，但是功能上绝对不差。比较出名的作品有：TV3D, Quest3D
-(Tip:这款引擎支持Delphi;在后面这个非官方的Wiki上，有一套不错的教程: http://walaber.com/newton_wiki/index.php?title=Main_Page )
+这款物理引擎名声可能不是很响，但是功能上绝对不差。
+比较出名的作品有：TV3D, Quest3D
 
+(Tip:这款引擎支持Delphi;在后面这个非官方的Wiki上，
+有一套不错的教程: http://walaber.com/newton_wiki/index.php?title=Main_Page )
+
+----
 7. Simple Physics Engine
-国产精品，支持功能如下：
-http://spehome.cn/
+国产精品，非开源，C++，适用于游戏和虚拟现实。
+http://spehome.com/
+http://spehome.com/SPE_SDK_3.20.zip
+
+Simple Physics Engine (SPE) is a lightweight but still powerful physics engine for games and virtual reality programs.
 
 · 使用独创的快速而稳定的Tri-Mesh碰撞检测算法，使载入模型数据异常简单。
-SPE的碰撞检测系统从一开始就是针对三角形网格（Tri-Mesh）而 设计，
+SPE的碰撞检测系统从一开始就是针对三角形网格（Tri-Mesh）而设计，
 所以用户可以方便地使用mesh文件创建任意形状的刚体，SPE内部将自动处理所有工作。
 同时，SPE支持球和胶囊两种基本几何形状，方便用户创建 粒子特效和ragdoll系统。
 此外，SPE支持一定条件下的连续碰撞检测，可以正确地处理大多数情况下的高速运动物体。
@@ -115,10 +157,12 @@ SPE生成的模型中包括用于区分原始表面与切面的属性信息，�
 · 高并行计算。SPE已经完成了多线程化以充分利用多核心CPU的性能. 90％以上的计算任务都可均匀地分配到任意数量的线程中去. 与单线程相比，双线程至少能提供60％的性能提升，而四线程可以带来150％以上的性能提升。使用SPEWorld::SetNumThreads( )即可在任何时候开启多线程计算。
 · 简单易用而人性化的接口，极大地降低了SPE与其他软件系统结合的难度，使用户在瞬间即可建立一个具有真实物理属性的世界。
 · 更多的功能正在不断开发中……
+
 呵呵，国人做的一款物理引擎，关注.......
 
 随便补充一下孤岛危机的物理引擎是CryteK自主研发的，通过CPU完成物理运算
-（不要以为CPU完成运算的都是HAVOK）还有红色派系游击战的物理引擎是GEO-MOD 2.0，
+（不要以为CPU完成运算的都是HAVOK）
+还有红色派系游击战的物理引擎是GEO-MOD 2.0，
 是由游戏製作公司 Volition 所开发出的最新物理引擎，可以实现即时的物理破坏运算，完全比照现实的物理环境，
 在重力、加速度、碰撞及结构上都有非常拟真的运算效果。
 
