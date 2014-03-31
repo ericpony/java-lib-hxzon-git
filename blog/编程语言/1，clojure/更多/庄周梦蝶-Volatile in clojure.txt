@@ -1,0 +1,33 @@
+﻿庄周梦蝶-Volatile in clojure
+30 三月, 2014 (23:32) | Clojure | By: dennis_zhuang
+http://blog.fnil.net/index.php/archives/284
+
+====
+Java 1.5重新理顺了内存模型，使得volatile关键字的行为更清晰和明确。
+怎么在Java里使用volatile，可以看看这篇旧文《Java理论与实践：正确使用Volatile》。
+http://www.ibm.com/developerworks/cn/java/j-jtp06197.html
+
+在Clojure里又怎么声明一个volatile变量呢？答案是volatile-mutable的metadata。
+
+一段Java代码：
+
+public class Person {
+  volatile long age;
+}
+
+等价的Clojure代码是：
+
+(deftype Person [^:volatile-mutable ^long age])
+
+也可以写成：
+
+(deftype Person [^{:volatile-mutable true :tag long} age])
+
+具体到编译器：
+
+boolean isVolatile(LocalBinding lb){
+    return RT.booleanCast(RT.contains(fields, lb.sym)) &&
+           RT.booleanCast(RT.get(lb.sym.meta(), Keyword.intern("volatile-mutable")));
+}
+
+如果有volatile-mutable标记，就给access modifier加上AC_VOLATILE。

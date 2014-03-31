@@ -1,0 +1,80 @@
+﻿庄周梦蝶-Type hint in macro
+30 三月, 2014 (23:14) | Clojure | By: dennis_zhuang
+http://blog.fnil.net/index.php/archives/282
+
+====
+Type hint（类型提示）是Clojure性能优化的关键手段之一，
+关于type hint可以看看我过去写的这篇博客《Clojure笔记：用好Type Hint》。
+http://www.blogjava.net/killme2008/archive/2012/07/10/382738.html
+
+不过旧文里没有提到怎么在宏里面使用type hint，我们试试：
+
+
+user=> (set! *warn-on-reflection* true)
+true
+
+user=> (defmacro str-len
+         [s]
+         `(.length ^String ~s))
+#'user/str-len
+
+user=> (str-len "test")
+4
+
+user=> (def a "test")
+#'user/a
+
+user=> (str-len a)
+Reflection warning, NO_SOURCE_PATH:11:1 - reference to field length can't be resolved.
+4
+
+我们打开了反射警告，定义了一个宏用来获取参数字符串的长度，里面用了Type Hint标记s的类型为String。
+然后获取字符串”test”的长度。
+当直接传入”test”的没有反射警告，返回长度4。
+当绑定了”test”到a，然后获取a长度的时候，反射警告产生了
+reference to field length can't be resolved
+。
+
+为什么字面量(literal)的字符串”test”就不会产生反射警告，而var a却会呢？
+道理很简单，macro会在编译的时候展开，因此
+(str-len "test")
+等价于
+(.length "test")
+，
+这个表达式无需type hint就可以得到答案4。
+事实上如果你给字面量加上type hint，clojure会报错：
+
+
+user=> (.length ^String "test")
+IllegalArgumentException Metadata can only be applied to IMetas....
+
+最关键的是，str-len里的type hint其实被“忽略”了，所以当定义a的时候去调用str-len，反射仍然产生。
+
+正确在宏里使用type hint的方法是使用metadata，
+所谓type hint宏本质上是给var的metadata加上tag值，因此我们可以用with-meta函数来给符号s加上type hint:
+
+
+user=> (defmacro str-len
+     [s]
+     `(.length ~(with-meta s {:tag `String})))
+user=> (str-len a)
+4
+
+Cool! It works。但是：
+
+
+user=> (str-len "test")
+ClassCastException java.lang.String cannot be cast to clojure.lang.IObj
+
+这是因为with-meta只能作用在clojure的对象上，而Java的String是没有实现IObj接口的，因此无法打上tag。
+有没有两全其美的办法呢？
+答案是有的，我们知道，任何问题都可以通过抽象一层来解决：
+
+
+(defmacro str-len
+  [s]
+  `(let [^String x# ~s]
+         (.length x#)))
+
+引入中间symbol来打上tag。
+

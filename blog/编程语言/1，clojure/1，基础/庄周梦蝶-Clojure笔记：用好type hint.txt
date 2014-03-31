@@ -1,4 +1,4 @@
-Clojure笔记：用好type hint
+庄周梦蝶-Clojure笔记：用好type hint
 
 http://www.blogjava.net/killme2008/archive/2012/07/10/382738.html
 
