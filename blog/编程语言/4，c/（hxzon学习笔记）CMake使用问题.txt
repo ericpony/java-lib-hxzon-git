@@ -1,0 +1,17 @@
+﻿（hxzon学习笔记）CMake使用问题
+
+by hxzon
+http://net.pku.edu.cn/~webg/src/paradise/reference/CMake%20Practice.pdf‎ CMake实践，中文
+====
+1，
+CMake Error: CMake was unable to find a build program corresponding to "Visual Studio 12". CMAKE_MAKE_PROGRAM is not set. You probably need to select a different build tool.
+
+VS2012对应的是Visual Studio 11，而不是12。
+
+2，
+CMake Error: Cannot open file for write: E:/work-my/XXX/CMakeCache.txt.tmp
+The C compiler identification is unknown
+The CXX compiler identification is unknown
+
+这是因为含有中文路径，去掉即可。
+

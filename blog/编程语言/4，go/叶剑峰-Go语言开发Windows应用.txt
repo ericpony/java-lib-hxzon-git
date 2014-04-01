@@ -1,0 +1,180 @@
+﻿叶剑峰-Go语言开发Windows应用
+http://www.cnblogs.com/yjf512/archive/2012/07/05/2578113.html
+2012-07-05 16:48 by 轩脉刃
+
+https://github.com/lxn/walk
+====
+当第一次看到Go程序在windows平台生成可执行的exe文件，就宣告了windows应用也一定是Go语言的战场。
+Go不是脚本语言，但却有着脚本语言的轻便简单的特性。
+相较于php和python之类以服务器控制台为主要战场的脚本语言来说，Go语言是真正的圆了“动态语言的应用开发梦”。
+
+====
+Windows Api
+
+Windows桌面应用依赖于win api，画出各种应用界面和控件本质上就是调用windows提供的api。
+Go开发Windows App要做的第一件事情就是封装这些windows api。
+
+https://github.com/lxn/go-winapi
+
+这个项目已经实现了对winapi的封装。
+比如你会在go-winapi/user32.go中找到CreateWindowEx的封装：
+
+clip_image001
+
+这里是使用了syscall包。
+这里要说明一下，golang的官方文档没有对syscall.Syscall12的说明，需要查看代码，
+这里的Syscall12代表了createWindowEx传入的参数有12个，已经实现的Syscall方法还有
+
+Syscall, Syscall6, Syscall9, Syscall12, Syscall15。
+
+具体代码参照（$goroot/src/pkg/syscall/dll_windows.go, 
+这里http://codereview.appspot.com/1578041/#ps2001 你能看到Syscall12的代码增加过程和有关讨论）
+
+====
+控件
+
+下一步，有基本的winapi之后，需要的是各个控件的使用接口。官方并没有提供标准库，但是有许多开源项目已经完成了这个封装，下面就是几个开源项目：
+
+gform: https://github.com/AllenDang/gform
+
+go-iup: https://github.com/jcowgar/go-iup
+
+go.uik: https://github.com/skelterjohn/go.uik/
+
+walk: https://github.com/lxn/walk
+
+这里推荐和使用的是lxn的walk项目（Windows Application Library Kit），
+walk封装的控件应该是这几个里面最全的了，并且也在不断的完善中。
+
+比如bitmap, radiobutton, checkbox, pushbutton等。在walk/example中能看到几个例子提供参考
+
+====
+实现
+
+好了，有了go-winapi和walk两个开源项目，就可以开始做一个windows app了
+
+界面如下：
+
+clip_image002
+
+这个是一个简易的socket im, 在一台机子上开启两个端口，8000和8001，两个端口相互监听和发送消息。
+
+（之前实现过一个C#版本的，请看这里http://www.cnblogs.com/yjf512/archive/2012/06/17/2552816.html）
+
+go版本的socket im 源码：
+
+https://github.com/jianfengye/MyWorks/tree/master/go_socketim
+
+实现总是简单的，说几个代码片段：
+
+1 创建窗口：
+  1  walk.Initialize(walk.InitParams{PanicOnError: true})
+
+
+ 2     defer walk.Shutdown()
+ 3     
+ 4     mainWnd, err := walk.NewMainWindow()
+ 5     if err != nil {
+ 6         return
+ 7     }
+ 8     
+ 9     mw := &MainWindow{MainWindow: mainWnd}
+10         
+11          mw.SetSize(walk.Size{120, 150})
+12          mw.Show()
+13          mw.Run()
+
+2 创建控件：
+     button1, _ := walk.NewPushButton(mw)
+
+
+    button1.SetText("start port 8000")
+    button1.SetX(10)
+    button1.SetY(10)
+    button1.SetWidth(100)
+    button1.SetHeight(30)
+        
+    button1.Clicked().Attach(func() {
+        go NewTalkWindow(mw, 8000, 8001)
+        button1.SetEnabled(false)
+
+})
+
+创建UI基本就靠这两步就行了，当然walk还有更为复杂的控件使用方法，这里没有使用。
+
+3 业务逻辑
+
+
+func (this *TalkWindow)Send() error {
+    txt := this.SendText.Text()
+    conn, err := net.Dial("tcp", "localhost:" + strconv.Itoa(this.SendPort))
+    if err != nil {
+        return err
+    }
+    
+    lenth := len([]byte(txt))
+    pre := Int32ToStream(int32(lenth),BigEndian)
+    
+    fmt.Fprintf(conn, string(pre) + txt)
+    this.SendText.SetText("")
+    return nil
+}
+
+func (this *TalkWindow)Listen() error {
+    ln, err := net.Listen("tcp", ":" + strconv.Itoa(this.ListenPort))
+    if err != nil {
+        return err
+    }
+    for {
+        conn, err := ln.Accept()
+        if err != nil {
+            continue
+        }
+        go func(){
+            buffer := make([]byte, 4)
+            conn.Read(buffer)
+            lenth := StreamToInt32(buffer, BigEndian)
+            
+            contentBuf := make([]byte, lenth)
+            conn.Read(contentBuf)
+            
+            text := strings.TrimSpace(string(contentBuf))
+            fmt.Println(text)
+            this.ShowText.SetText(this.ShowText.Text() + time.Now().Format("2006-01-02 10:13:40") + breakChars + strconv.Itoa(this.SendPort) + ":" + text + "\r\n")
+        }()
+    }
+    return nil
+
+} 
+
+UI创建完成后就是具体的业务逻辑了，这里的业务逻辑比较简单，主要使用了net包建立和监听tcp端口。
+
+====
+总结
+
+使用Go相较于C#获益更多的是在逻辑实现方面，
+比如在C#中开启多进程，一个进程监听消息一个进程收取消息，这样的实现是比较麻烦和繁琐的，需要使用thread库。
+但是在Go中是使用goroutine实现的，直接开一个goroutine来监听消息，主进程发送消息，很符合思维逻辑的编程方式。
+
+
+Go相较于C#不足的应该说是IDE方面了，Go还没有能可视化编程应用IDE。
+但是walk库使用熟练了，我想这应该不是问题，而且也有理由相信在不久会出现类似的IDE。
+
+
+Go在将来有没有可能支持移动终端应用的开发呢？Android，IOS？
+据说能使用Go开发Android应用的要求已经提上议程了，毕竟都是google的孩子嘛。至于IOS可能还有很长的路要走。
+
+ 
+
+ps: 截止至2012/11/6，walk的更新版本已经把 walk.Initialize去掉了，换成其他函数了，故本文中的例子请做相应修改
+
+具体可以看这个comment
+
+https://github.com/lxn/walk/commit/731093ca2543db32cba2327bce91e71aa49b6a11 
+ 
+====
+Creative Commons License
+本文基于署名-非商业性使用 3.0许可协议发布，欢迎转载，演绎，
+但是必须保留本文的署名叶剑峰（包含链接http://www.cnblogs.com/yjf512/），且不得用于商业目的。
+如您有任何疑问或者授权方面的协商，请与我联系。
+

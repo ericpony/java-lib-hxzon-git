@@ -1,0 +1,307 @@
+﻿ActiveJPA——针对JPA的活动记录模式
+作者 Ganesh Subramanian ，译者 张卫滨 发布于 2014年3月31日
+http://www.infoq.com/cn/articles/ActiveJPA
+
+====
+ActiveRecord是Ruby on Rails的ORM层，大体上类似于Java中的Hibernate。
+ActiveRecord基于约定优于配置的原则，所以它使用起来比Hibernate更容易。
+在简化基本的数据操作方面，如创建、读取、更新和删除，它确实是非常棒的。
+
+借助于ActiveRecord，你的模型类也会作为数据访问对象（Data Access Object，DAO）来执行CRUD操作。
+在初步探究之后，我对ActiveRecord产生了浓厚的兴趣，因此开始寻找一种解决方案来简化基于Java持久化API（Java Persistence API，JPA）的ORM框架的使用。
+
+大多数JPA应用都会有某种类型的数据访问层（Data Access Layer，DAL）来与数据库进行交互。
+通常DAL会包含数据访问对象或符合Repository设计模式的类。
+
+
+DAO的实现与实体对象通常是一对一的关系，而Repository则是针对每个聚合根（aggregate root）实现一个。
+不管是哪种场景，应用最后都会创建多个类与数据库进行交互。
+尽管适当的抽象能够有效限制所创建类的数量，但是它终究还是会在应用中引入一个额外的层，这都是需要维护和测试的。
+
+ActiveJPA基于JPA，提供了Martin Fowler所提出的活动记录模式（Active Record pattern）的Java实现。
+借助于ActiveJPA，模型本身会作为DAO并与数据库交互，这样就不需要额外的代码作为数据访问层了。
+
+ActiveJPA使用到了JPA规范，因此所有JPA的ORM实现（Hibernate、EclipseLink、OpenJPA等）都可以与ActiveJPA协同使用。
+
+----
+将已有的JPA模型转换为ActiveJPA
+
+要将已有的模型转换为ActiveJPA，只需让你的模型实现扩展org.activejpa.entity. Model即可：
+
+@java.persistence.Entity   
+public class YourModel extends org.activejpa.entity.Model {   
+}
+
+----
+执行CRUD操作
+
+你的模型将会从ActiveJPA的模型类中继承得到很多的CRUD功能。
+
+//根据id获得订单    
+Order order = Order.findById(12345L);
+
+// 根据customer获得其已发货的订单   
+List orders = Order.where("customerEmail", "dummyemail@dummy.com",
+ "status", "shipped");
+
+// 得到匹配过滤条件的第一条订单记录 
+Long count = Order.first("customerEmail", "dummyemail@dummy.com", 
+"status", "shipped");
+
+// 得到匹配过滤条件的唯一一条订单记录
+Long count = Order.one("customerEmail", "dummyemail@dummy.com", 
+"status", "shipped");
+
+// 得到所有的记录   
+List orders = Order.all();
+
+// 检查指定标识符的订单是否存在   
+boolean exists = Order.exists(1234L);
+
+// 保存订单   
+order.persist();
+
+// 删除订单   
+order.delete();
+
+// 刷新订单
+order.refresh();
+
+// 与持久化上下文中已有的订单进行合并
+order.merge();
+
+----
+过滤与分页
+
+对记录进行过滤时，你并不需要创建JPQL或criteria查询。
+ActiveJPA提供了一个复杂的过滤器，用于在不同的操作间进行连接（conjunction）：
+
+// 获取匹配指定Email地址且账单额大于1000的所有订单，并且要进行分页 
+Filter filter = new Filter();    
+filter.setPageNo(1);    
+filter.setPerPage(25);    
+filter.addCondition(new Condition("customerEmail", Operator.eq,
+ "dummyemail@dummy.com");
+
+filter.addCondition(new Condition("billingAmount", Operator.gt, 
+1000.00);   
+List orders = Order.where(filter);
+
+// 对满足过滤条件的订单进行计数   
+Long count = Order.count(filter);
+
+// 删除匹配这个过滤器的订单   
+Long count = Order.deleteAll(filter);
+
+----
+嵌套查询
+
+ActiveJPA允许嵌套过滤参数。这样的话就能更容易地在运行时创建动态查询。
+例如，你获取的订单中，至少要有一个订单项是基于“book”类别的产品创建的。
+
+// 得到至少包含一个book项的所有订单 
+Filter filter = new Filter();    
+filter.setPageNo(1);    
+filter.setPerPage(25);    
+filter.addCondition(new Condition("orderItems.product.category",
+ Operator.eq, "books");    
+List orders = Order.where(filter);
+
+----
+使用集合
+
+上面讨论的所有CRUD操作同时可以在集合级别执行。
+将查询范围设置到集合类的用法如下所示：
+
+// 在订单中，根据id查找订单项    
+order.collections("orderItems").findById(123L);
+
+// 得到第一个已发货的订单项
+order.collections(“orderItems”).first(“status”, “shipped”);
+
+// 得到所有取消的订单项   
+order.collections(“orderItems”).where(“status”, “cancelled”);
+
+// 得到集合中的所有项   
+order.collections(“orderItems”).all();
+
+// 往集合中添加一项   
+order.collections(“orderItems”).add(orderItem);
+
+// 移除集合中的一项   
+order.collections(“orderItems”).remove(orderItem);
+
+过滤和分页也可以使用到集合之中
+
+// 对一个订单中的订单项基于过滤器进行查询并进行分页
+Filter filter = new Filter();   
+filter.setPageNo(1);    
+filter.setPerPage(25);
+
+filter.addCondition(new Condition(“status”, “shipped”);   
+order.collections("orderItems").where(filter);
+
+// 在订单中，得到匹配过滤器的订单项的数量
+
+order.collections(“orderItems”).count(filter);
+
+----
+动态更新
+
+ActiveJPA支持对模型的动态更新。在有些场景下这是很有用的，例如用户通过浏览器更新一个表单。
+你可以传递一个包含属性的map来进行更新，而不是调用每个属性的setter方法：
+
+// 更新属性    
+
+Map attributes = new HashMap();    
+attributes.put("billingAmount", 1000.0);  
+order.updateAttributes(attributes);
+
+你也可以更新非原始/非包装类型的域，只需给这些对象传递map即可。
+以下的样例展现了更新一个订单的收获地址和账单金额。
+
+// 更新一个订单的收获地址和账单金额
+
+Map attributes = new HashMap();
+
+Map address = new HashMap();
+
+address.put(“city”, “Bangalore”);
+
+address.put(“state”, “Karnataka”);
+
+attributes.put(“shippingAddress”, address);
+
+attributes.put("billingAmount", 1000.0);
+
+order.updateAttributes(attributes);
+
+注意：目前尚不支持更新list/set/array域，未来的版本将会提供支持。
+
+----
+事务处理
+
+默认情况下，如果没有事务，ActiveJPA将会为所有的更新操作启动一个事务，不过你也可以将整个工作单元包装到一个事务之中：
+
+JPAContext context = JPA.instance.getDefaultConfig().getContext();    
+context.beginTxn();    
+boolean failed = true;    
+try {    
+ // 你的工作单元置于此处    
+failed = false;    
+} finally {    
+ // 提交或回滚事务    
+context.closeTxn(failed);    
+}
+
+如果已经存在了外部的事务，那么ActiveJPA将会使用这个事务，但是不会进行提交或回滚。应该由应用来负责关闭该事务。
+
+----
+测试你的模型
+
+ActiveJPA为TestNG提供了一个基本的测试类，它会将ActiveJPA以挂钩（hook）的方式添加到测试运行时之中。
+只需让你的测试类扩展自org.activejpa.entity.testng.BaseModelTest类即可。以下为一个样例代码：
+
+public class OrderTest extends BaseModelTest {
+     @Test
+     public void testCreateOrder() {
+       Order order = new Order();
+       order.setCustomerEmail("dummyemail@dummy.com");
+       ...
+       ...
+       order.persist();
+       Assert.assertEquals(Order.where("customerEmail",
+ "dummyemail@dummy.com").get(0), order);
+    }
+  }
+}
+
+====
+使用起步
+
+搭建Maven
+
+ActiveJPA可以以Maven artifact的方式来获取，能够非常容易地集成到你的应用之中。
+只需在你的pom.xml文件中添加如下的maven依赖：
+
+<dependencies>    
+<dependency>    
+<groupId>org.activejpa</groupId>    
+<artifactId>activejpa-core</artifactId>    
+<version>0.1.5</version>    
+</dependency>    
+</dependencies>
+
+<repositories>   
+<repository>    
+<id>activejpa-repo</id>    
+<url>https://raw.github.com/ActiveJpa/activejpa/mvn-repo/releases</url>    
+<snapshots>    
+<enabled>true</enabled>    
+<updatePolicy>always</updatePolicy>    
+</snapshots>    
+</repository>    
+</repositories>
+
+----
+嵌入到你的应用之中
+
+ActiveJPA需要在实体类加载前就嵌入到你的应用之中。
+如果你使用Tomcat的话，那么ServletContextListener就是做这件事的一个很好的地方。
+你可以将以下的代码编写到上下文监听器的contextInitialized()方法之中。
+
+// 动态加载Java代理   
+ActiveJpaAgentLoader.instance().loadAgent();
+
+// 添加定义在persistence.xml中的持久化单元，以“order”名进行标识。persistence.xml应该位于类路径下   
+JPA.addPersistenceUnit("order");
+
+// 如果你已经创建了实体管理工厂的话，可以将其关联到ActiveJpa上  
+// JPA.addPersistenceUnit("order", entityManagerFactory);
+
+----
+与Spring框架集成
+
+将ActiveJPA与Spring这样的框架进行集成是很容易的。
+大多数的应用都会使用Spring的注解来配置JPA和管理事务。
+ActiveJPA能够以两种方式来进行配置——你可以让它来创建实体管理工厂也可以传入一个已存在的对象。
+在Spring配置JPA的情况下，我们可以使用Spring所创建的实体管理工厂。
+这样就能保证ActiveJPA使用Spring所创建的相同的连接和事务，从而提供无缝的集成。
+
+以下的代码展现了如何将ActiveJPA集成到Spring应用之中，这个应用是部署在servlet容器里面的。
+它使用了一个自定义的上下文加载监听器，从而将ActiveJPA嵌入到应用之中。
+需要注意的是，这很类似与上面的servlet样例，区别在于这里使用了Spring框架的ContextLoaderListener：
+
+public class CustomContextListener extends ContextLoaderListener {
+  @Override
+  public void contextInitialized(ServletContextEvent event) {
+          try {
+                    // 在这里动态加载Java代理
+                    ActiveJpaAgentLoader.instance().loadAgent();
+          } catch (Exception e) {
+                    throw new RuntimeException(e);
+          }
+          super.contextInitialized(event);
+          JPA.instance.addPersistenceUnit("default", 
+getCurrentWebApplicationContext().getBean(EntityManagerFactory.
+class), true);
+   }
+}
+
+----
+样例应用
+
+在GitHub的ActiveJPA工程页面上有一个示例应用，包含了很多更具体的样例，展现了Spring-ActiveJPA的集成。
+https://github.com/ActiveJpa/activejpa
+https://github.com/ActiveJpa/activejpa/tree/master/activejpa-examples/activejpa-examples-spring
+
+====
+关于作者
+
+Ganesh Subramanian是Hightail的架构师，在构建高扩展、低延迟的跨域分布式应用架构方面有超过十年的工作经验。
+Ganesh曾经参与Flipkart（印度最大的电子商务厂商）的供应链管理平台的架构，
+他还是活跃的开源社区（ActiveJPA, Minnal, AutoPojo等）贡献者以及技术博客的作者，
+在业余时间，他喜欢看电影（各种流派）以及陪伴家人。
+
+原文英文链接：ActiveJPA – Active Record Pattern for JPA
+

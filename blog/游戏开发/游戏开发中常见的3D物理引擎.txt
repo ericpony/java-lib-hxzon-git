@@ -10,23 +10,15 @@ hxzon摘要：
 开源2D：Box2D
 
 ====
-1. Havok:
-老牌的君王，支持功能如下：
-http://www.havok.com
-·Collision Detection - including Continuous Physics?
-·MOPP? Technology - for compact representation of large collision meshes
-·Dynamics and Constraint Solving
-·Vehicle Dynamics
-·Data Serialization and Art Tool Support
-·Visual Debugger for in-game diagnostic feedback
+1，PhysX
+https://developer.nvidia.com//gameworks-physx-overview
+https://developer.nvidia.com/gameworksdownload
 
-有不少游戏和软件都选择了他做物理引擎，比如HOLO3，失落星球，HL2， 细胞分裂，指环王Online ..etc
-现在Havok被Intel收购了，以后可能对Intel的CPU会有特别的优化。
+读音与Physics相同，是一套由AGEIA（音译为“阿吉亚”或“奥加”）公司开发的物理运算引擎；
+也是世界三大物理运算引擎之一，另外两种是Havok和Bullet。
+PhysX物理引擎的演示程序 的另外一种含义是指专门计算PhysX引擎的物理加速卡。
 
-(Tip: HL2的泄漏源代码中包含了SDK，就是版本比较老了吧。)
-
-----
-2. NovodeX --- AGEIA PhysX
+NovodeX --- AGEIA PhysX
 
 新兴的王者，支持功能如下：
 http://www.ageia.com/
@@ -44,7 +36,23 @@ Unreal3，GameBryo， Reality Engine等多款商业引擎和游戏都使用了�
 (Tip: NovodeX2.2及以前的版本，可以在没有硬件卡的情况下使用所有功能，网上能下载到)
 
 ----
-3. Bullet
+2，Havok:
+老牌的君王，支持功能如下：
+http://www.havok.com
+·Collision Detection - including Continuous Physics?
+·MOPP? Technology - for compact representation of large collision meshes
+·Dynamics and Constraint Solving
+·Vehicle Dynamics
+·Data Serialization and Art Tool Support
+·Visual Debugger for in-game diagnostic feedback
+
+有不少游戏和软件都选择了他做物理引擎，比如HOLO3，失落星球，HL2， 细胞分裂，指环王Online ..etc
+现在Havok被Intel收购了，以后可能对Intel的CPU会有特别的优化。
+
+(Tip: HL2的泄漏源代码中包含了SDK，就是版本比较老了吧。)
+
+----
+3，Bullet
 
 开源届的霸主，支持功能如下：
 http://www.bulletphysics.com
