@@ -1,0 +1,43 @@
+﻿七天LLVM零基础入门（Linux版本）第1天
+
+七天LLVM零基础入门（Linux版本）------第一天
+分类： 编译技术及LLVM 2013-02-20 10:22
+http://blog.csdn.net/snsn1984/article/details/8593380
+
+LLVM文档编译器入门零基础
+作者：snsn1984
+
+====
+开篇语：
+学习LLVM的过程是一个漫长而艰巨的过程，需要大量的时间和精力。不仅仅如此，开始的过程也不轻松。一个好的开始就是成功的一半。我结合了自己学习的过程，以及给别人推荐学习的过程，整理出了这个七天LLVM零基础入门的系列博客。主要的目标是让没有LLVM基础的人，经过这一系列的学习，可以完成一些Pass的工作，并且可以成功的自己去自主学习，知道自己该怎么学习，知道自己该去学些什么。如果你有什么建议，欢迎反馈，欢迎探讨。
+
+第一步，要对LLVM有一个初步的印象
+这里，http://llvm.org/  是LLVM的官方网站，如果英语足够好，又有足够的耐心，从这里可以找到你想要的一切。
+另外，可以参考我之前的博文： http://blog.csdn.net/snsn1984/article/details/8036032    它简明的告诉你，LLVM是什么。
+
+第二步，看看LLVM到底是什么
+我们对LLVM有了一个初步的印象之后，我们还是不知道LLVM具体是什么，那么我们就来看一下。
+从    http://llvm.org/releases/download.html#3.2   这里，选择Download LLVM 3.2（3.2是目前发布版本的最新版本，在这个页面也可以看到以前的历史版本）下的
+LLVM source code
+Clang source code
+Compiler RT source code
+这三项进行下载，下载后进行解压，解压后应该得到三个名字分别为llvm-3.2.src、clang-3.2.src、compiler-rt-3.2.src。这时候，需要对这三个文件夹进行重命名，llvm-3.2.src重命名可以根据自己习惯，此处推荐重命名为llvm-3.2；clang-3.2.src重命名为clang，并且将此文件夹整体放到llvm-3.2/tools下，包含clang这个顶层文件夹；compiler-rt-3.2.src重命名为compiler-rt，并且将包含顶层文件夹的整体文件夹放到llvm-3.2/projects/下。
+此时，打开一个终端，切换到llvm-3.2目录下，依次输入如下命令：
+mkdir build
+cd build
+cmake ../
+make
+然后就可以在llvm-3.2/build/bin目录下看到一大堆的可执行文件。（此处不使用make install是方便在系统上使用多版本的llvm进行研究和修改。）
+这个时候可以运行如下命令，来看看clang:
+./clang -v
+./clang -help
+可以写一个简单的helloworld程序，使用clang进行编译，使用方法和gcc相同：
+./clang hello.c
+./a.out
+
+第三步：clang是什么
+我们刚才编译出来了自己的LLVM，但是我们使用的确是clang。clang到底是什么，我们接下来就来看看：
+Clang is an "LLVM native" C/C++/Objective-C compiler, which aims to deliver amazingly fast compiles (e.g. about3x faster than GCC when compiling Objective-C code in a debug configuration), extremely usefulerror and warning messages and to provide a platform for building great source level tools. TheClang Static Analyzer is a tool that automatically finds bugs in your code, and is a great example of the sort of tool that can be built using the Clang frontend as a library to parse C/C++ code.
+这是官方对clang的简要介绍。
+也可参加我之前的博文： http://blog.csdn.net/snsn1984/article/details/8232943   这里简要的介绍了clang的相关知识。
+到这个时候，应该可以熟练的使用clang去编译自己的程序了。

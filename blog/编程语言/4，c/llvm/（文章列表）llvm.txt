@@ -1,0 +1,16 @@
+﻿（文章列表）llvm
+
+by hxzon
+====
+1，使用 LLVM 框架创建一个工作编译器，第 1 部分
+使用 LLVM 及其中间表示构建一个自定义编译器
+http://www.ibm.com/developerworks/cn/opensource/os-createcompilerllvm1/
+
+LLVM 编译器基础架构提供了一种强大的方法来优化您使用任何编程语言编写的应用程序。
+了解本系列文章（由两部分组成）第一部分中有关 LLVM 的基础知识。构建一个自定义编译器会变得更轻松！
+
+Arpan Sen, 作家, Independent
+2012 年 7 月 17 日
+
+====
+2，

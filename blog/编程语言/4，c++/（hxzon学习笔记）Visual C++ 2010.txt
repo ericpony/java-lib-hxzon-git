@@ -1,0 +1,56 @@
+﻿（hxzon学习笔记）Visual C++ 2010
+
+by hxzon
+====
+《Visual C++ 2010入门经典，第5版》第1章
+
+----
+项目：构成某个程序的全部组件的容器。
+某个项目所有的文件都存储在相应的项目文件夹中。
+关于该项目的详细信息存储在.vcxproj的xml文件中。
+编译和链接项目时产生测输出而在该文件夹中。
+
+解决方案：一种将所有程序和其它资源聚集到一起的机制。
+解决方案就是存储一个或多个项目的所有信息的文件夹。
+某个解决方案中的项目有关的信息存储在.sln和.suo两个文件中。
+suo文件记录应用于该解决方案的用户选项。
+项目总是属于某个解决方案。
+
+.sdf文件，记录与解决方案的Intellisense有关的数据，即编辑器的自动完成和提示功能。
+
+.opensdf文件，记录着项目状态信息，只有项目处于打开状态时才有。
+
+----
+构建解决方案 F7键，或build->build solution
+
+----
+程序的debug版本和release版本 p35
+
+产生具体可执行程序版本所对应的选项集合称为“配置”。
+build-》configuration manager菜单项可以添加其他配置。
+
+----
+执行程序 ctrl+f5
+
+----
+Project-》properties菜单项
+
+general选项，选择character set属性，选择not set值，可以关闭Unicode库。p39
+
+创建CLR控制台项目 p40
+
+====
+设置 Visual C++ 2010选项 p42
+
+Tools->options菜单项。
+
+projects and solutions-》VC++ project settings，可应用于所有C++项目。
+
+project-》properties菜单项，设置当前项目所特有的选项。
+
+
+
+
+
+
+

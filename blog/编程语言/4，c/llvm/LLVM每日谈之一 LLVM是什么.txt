@@ -1,0 +1,43 @@
+﻿LLVM每日谈之一 LLVM是什么
+
+分类： 编译技术及LLVM 2012-10-02 00:03 
+作者：snsn1984
+http://blog.csdn.net/snsn1984/article/details/8036032
+
+====
+写在前面的话：
+最近接触llvm比较多，在这个上面花了不少的时间。感觉llvm要完全理解透是个很不容易的事情，需要在学习过程中好好的整理下自己的思路。刚好又阅读了开源项目Storm的作者Nathan Marz的博客《You should blog even if you have no readers》，就打开自己的blog，开始了这个llvm每日谈的系列。希望自己能坚持的久一点，多写写llvm的每个方面，多写写自己的理解。
+
+欢迎感兴趣的人一起探讨研究。
+
+llvm是什么？
+
+llvm是low level virtual machine的简称，其实是一个编译器框架。llvm随着这个项目的不断的发展，已经无法完全的代表这个项目了，只是这种叫法一直延续下来。
+llvm是一个开源的项目。它最早的时候是Illinois的一个研究项目，主要负责人是Chris Lattner，他现在就职于Apple. Apple 目前也是llvm项目的主要赞助者之一。
+llvm的主要作用是它可以作为多种语言的后端，它可以提供可编程语言无关的优化和针对很多种CPU的代码生成功能。此外llvm目前已经不仅仅是个编程框架，它目前还包含了很多的子项目，比如最具盛名的clang.
+llvm的优点是开源，有一个表达形式很好的IR语言，模块化作的特别好。
+llvm这个框架目前已经有基于这个框架的大量的工具可以使用。
+llvm的官方网站地址是：llvm.org。在这里可以下载最新的发布代码，也可以找到介绍llvm的相关文档。
+
+附录：llvm目前支持的工具(描述来自网络)
+llvm-as 将人类可读的 .ll 文件汇编成字节代码
+llvm-dis 将字节代码文件反编成人类可读的 .ll 文件
+opt 在一个字节代码文件上运行一系列的 LLVM 到 LLVM 的优化
+llc 为一个字节代码文件生成本机器代码
+lli 直接运行使用 JIT 编译器或者解释器编译成字节代码的程序
+llvm-link 将几个字节代码文件连接成一个
+llvm-ar 打包字节代码文件
+llvm-ranlib 为 llvm-ar 打包的文件创建索引
+llvm-nm 在 字节代码文件中打印名字和符号类型
+llvm-prof 将 'llvmprof.out' raw 数据格式化成人类可读的报告
+llvm-ld 带有可装载的运行时优化支持的通用目标连接器
+llvm-config 打印出配置时 LLVM 编译选项、库、等等
+llvmc 一个通用的可定制的编译器驱动
+llvm-diff 比较两个模块的结构
+bugpoint 自动案例测试减速器
+llvm-extract 从 LLVM 字节代码文件中解压出一个函数
+llvm-bcanalyzer 字节代码分析器 （分析二进制编码本身，而不是它代表的程序）
+FileCheck 灵活的文件验证器，广泛的被测试工具利用
+tblgen 目标描述阅读器和生成器
+lit        LLVM 集成测试器，用于运行测试
+

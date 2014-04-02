@@ -1,0 +1,67 @@
+﻿Eclipse + MinGW 开发环境搭建
+http://blog.sina.com.cn/s/blog_be3afa050101jp6c.html
+
+ (2013-08-10 19:08:21)
+
+hxzon学习笔记：
+
+将minggw/bin添加到环境变量path，重启Eclipse即可。
+
+====
+写这篇文章的时间是2013年8月4日
+目前所用到的开发组建版本为：
+Eclipse Kepler Release (with CDT)
+MinGW with GCC 4.8.1 (Fully support ISO C++11 standard)
+JRE(Java Runtime Environment)7Update25
+
+其次是MinGW，目前MinGW的官网和Sourceforge的官方项目已经不再更新了，
+倒是有两个项目组/个人（我所知道的）还在更新：
+一个是MinGW-Builds（Sourceforge上搜索）项目组（http://sourceforge.net/projects/mingwbuilds/files/host-windows/releases/），
+这个组更新的很快，
+GNU GCC官方新版本发布后第二天就能发布更新后的MinGW，而且线程模式有POSIX和Win32，
+异常处理有sjlj/dwarf (x86) 和sjlj/seh (x86_64)；
+
+另一个是Distro MinGW（http://nuwen.net/mingw.html），只有Win32线程模式，但是包含了很多第三方库，例如Boost.
+
+安装（解压）完毕后（假定我的MinGW是安装在C:\MinGW，Eclipse放在D:\eclipse），那么首先设置环境变量：
+path里加上“C:\MinGW\bin;”其他的似乎不用加，eclipse会自动识别，如果不能识别则可以按照其他文章所讲的办法，设置环境变量。
+
+字体在“Window -> Preference -> General -> Appearance -> Color and Fonts”中设置；
+语法高亮在“Window -> Preference -> C/C++ -> Editor -> Syntax Coloring”中设置；
+代码格式化在“Window -> Preference -> C/C++ -> Code Style -> Formatter”中设置。
+
+====
+新建一个项目之后，要设置一下项目属性，这样才能保证正常编译、调试。
+
+首先是编译选项。
+右键工程名，在弹出菜单中选择“Properties”，
+然后在“C/C++ Build -> settings -> Tool Settings”的“Command”栏加上需要的编译选项，
+譬如要支持C++11标准，则加上“ -std=c++11”即可。
+对于有经验的用户可以在下面的详细选项中对自己的工程进行设置，譬如设置链接库等。
+
+另一个选项卡“Binary Parser”中，只选中“PE Windows Parser”，不然总会提示“文件不是可执行程序”
+（本文假定只是为PC开发应用，其他环境请参考别的文章）。
+
+如果你的机器上只有MinGW编译器，并已经正确的设置了环境变量，那么“Tool Chain Editor”这一项可以不管。
+
+按照默认设置，C++11的一些函数（譬如我遇见的stoi，还有别人遇到的stof等声明在<string>里的函数）是不能解析的。
+做法是：工程的“Properties”下寻找到“C/C++ Build -> settings”，在右边的选项卡“Tool Settings”中选择“Cross G++ Compiler”下的“Preprocessor”，
+在第一栏（Defined Symbols(-D)）中加上“__cplusplus=201103L”，即可。
+这一句实际上是是给内置编译器看的，如果内置编译器找不到这一句，会把当前工程当做遵循C++98/03标准看待。
+实际上Eclipse是靠内置编译器来寻找当前代码的错误的，估计VS的做法也差不多。
+
+ 
+假定新建工程叫做“test”，那么“Debug Configuration”中，
+左边的选项卡选择“C/C++ Application”，
+在右边的的“main”标签下“C/C++ Application”这一栏只要填上“debug/test.exe”（首先要编译一遍，并且编译目标是debug）。
+
+“Run”的设置和这个差不多，只不过“Run”是直接启动，
+而“Debug”是用gdb进行调试（如果没有gdb的话，从网上下载之后放到“C:\MinGW\bin”目录下。
+如果要显示STL容器中的内容，在你的用户路径下创建.gdbinit，例如C:\MinGW\GDB.gdbinit，并在里面加上：
+
+python
+import sys 
+sys.path.insert(0, '/root/python') (这个是Linux系统，Windows对应为
+from libstdcxx.v6.printers import register_libstdcxx_printers register_libstdcxx_printers (None) 
+end
+
