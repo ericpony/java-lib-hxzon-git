@@ -7,6 +7,8 @@ hxzon学习笔记：
 
 将minggw/bin添加到环境变量path，重启Eclipse即可。
 
+将C:\MinGW\bin下的文件“mingw32-make.exe”改名成“make.exe”，便于Eclipse直接调用此进行编译。
+
 ====
 写这篇文章的时间是2013年8月4日
 目前所用到的开发组建版本为：

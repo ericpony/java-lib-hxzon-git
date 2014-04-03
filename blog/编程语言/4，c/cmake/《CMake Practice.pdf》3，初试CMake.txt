@@ -1,0 +1,297 @@
+﻿《CMake Practice.pdf》3，初试CMake
+
+三 ， 初试 cmake
+
+====
+1，编写文件。
+
+main.c 文件内容：
+//main.c
+#include <stdio.h>
+int main()
+{
+printf(“Hello Worldfromt1Main!\n”);
+return 0;
+}
+
+
+CmakeLists.txt 文件内容：
+
+PROJECT (HELLO)
+SET(SRC_LIST main.c)
+MESSAGE(STATUS"This is BINARYdir" ${HELLO_BINARY_DIR})
+MESSAGE(STATUS"This is SOURCEdir"${HELLO_SOURCE_DIR})
+ADD_EXECUTABLE(hello SRC_LIST)
+
+----
+2，开始构建
+
+所有的文件创建完成后，t1 目录中应该存在 main.c 和 CMakeLists.txt 两个文件
+接下来我们来构建这个工程，在这个目录运行：
+
+cmake. (注意命令后面的点号，代表本目录)。
+
+输出大概是这个样子：
+
+-- Check for working C compiler: /usr/bin/gcc
+-- Check for working C compiler: /usr/bin/gcc-- works
+-- Check sizeof void*
+-- Check sizeof void*- done
+-- Check for working CXX compiler:/usr/bin/c++
+-- Check for working CXX compiler:/usr/bin/c++ -- works
+-- This isBINARYdir/backup/cmake/t1
+-- This isSOURCEdir/backup/cmake/t1
+-- Configuringdone
+-- Generatingdone
+-- Build fileshave been written to: /backup/cmake/t1
+
+再让我们看一下目录中的内容：
+
+你会发现，系统自动生成了：
+CMakeFiles, CMakeCache.txt, cmake_install.cmake 等文件，并且生成了
+Makefile.
+
+现在不需要理会这些文件的作用，以后你也可以不去理会。
+最关键的是，它自动生成了Makefile.
+
+然后进行工程的实际构建，在这个目录输入 make 命令，大概会得到如下的彩色输出：
+
+Scanning dependenciesof target hello
+[100%]Building Cobject CMakeFiles/hello.dir/main.o
+Linking Cexecutable hello
+[100%]Built target hello
+
+如果你需要看到 make 构建的详细过程，可以使用 make VERBOSE=1 或者 VERBOSE=1
+make 命令来进行构建。
+
+这时候，我们需要的目标文件 hello 已经构建完成，位于当前目录，尝试运行一下：
+./hello
+
+得到输出：
+HelloWorld from Main
+
+====
+3，我们来重新看一下 CMakeLists.txt，这个文件是 cmake 的构建定义文件，文件名是大小写相关的，
+如果工程存在多个目录，需要确保每个要管理的目录都存在一个CMakeLists.txt。
+(关于多目录构建，后面我们会提到，这里不作过多解释)。
+
+上面例子中的 CMakeLists.txt 文件内容如下：
+
+PROJECT (HELLO)
+SET(SRC_LIST main.c)
+MESSAGE(STATUS"This is BINARYdir" ${HELLO_BINARY_DIR})
+MESSAGE(STATUS"This is SOURCEdir"${HELLO_SOURCE_DIR})
+ADD_EXECUTABLE(hello ${SRC_LIST})
+
+----
+PROJECT 指令的语法是：
+PROJECT(projectname [CXX][C][Java])
+
+你可以用这个指令定义工程名称，并可指定工程支持的语言，支持的语言列表是可以忽略的，
+默认情况表示支持所有语言。
+这个指令隐式的定义了两个 cmake 变量:
+<projectname>_BINARY_DIR 以及<projectname>_SOURCE_DIR，这里就是
+HELLO_BINARY_DIR 和 HELLO_SOURCE_DIR
+(所以 CMakeLists.txt 中两个 MESSAGE指令可以直接使用了这两个变量)，
+因为采用的是内部编译，两个变量目前指的都是工程所在路径/backup/cmake/t1，
+后面我们会讲到外部编译，两者所指代的内容会有所不同。
+
+同时 cmake 系统也帮助我们预定义了 PROJECT_BINARY_DIR 和 PROJECT_SOURCE_DIR变量，
+他们的值分别跟 HELLO_BINARY_DIR 与 HELLO_SOURCE_DIR 一致。
+
+为了统一起见，建议以后直接使用 PROJECT_BINARY_DIR，PROJECT_SOURCE_DIR，
+即使修改了工程名称，也不会影响这两个变量。
+如果使用了
+<projectname>_SOURCE_DIR   ，修改工程名称后，需要同时修改这些变量。
+
+----
+SET 指令的语法是：
+SET(VAR [VALUE] [CACHETYPE DOCSTRING[FORCE]])
+
+现阶段，你只需要了解 SET 指令可以用来显式的定义变量即可。
+比如我们用到的是 SET(SRC_LIST main.c)，如果有多个源文件，也可以定义成：
+SET(SRC_LIST main.c t1.c t2.c)。
+
+----
+MESSAGE 指令的语法是：
+MESSAGE([SEND_ERROR |STATUS | FATAL_ERROR] "message to display"
+...)
+
+这个指令用于向终端输出用户定义的信息，包含了三种类型:
+SEND_ERROR，产生错误，生成过程被跳过。
+SATUS — ，输出前缀为 的信息。
+FATAL_ERROR，立即终止所有 cmake 过程.
+
+我们在这里使用的是 STATUS 信息输出，演示了由 PROJECT 指令定义的两个隐式变量
+HELLO_BINARY_DIR 和 HELLO_SOURCE_DIR。
+
+----
+ADD_EXECUTABLE(hello ${SRC_LIST})
+
+定义了这个工程会生成一个文件名为 hello 的可执行文件，相关的源文件是 SRC_LIST 中
+定义的源文件列表， 本例中你也可以直接写成 ADD_EXECUTABLE(hellomain.c)。
+
+在本例我们使用了${}来引用变量，这是 cmake 的变量应用方式，
+但是，有一些例外，比如在 IF 控制语句，变量是直接使用变量名引用，而不需要${}。
+如果使用了${}去应用变量，其实 IF 会去判断名为${}所代表的值的变量，那当然是不存在的了。
+
+将本例改写成一个最简化的 CMakeLists.txt：
+PROJECT(HELLO)
+ADD_EXECUTABLE(hello main.c)
+
+====
+4，基本语法规则
+
+前面提到过，cmake ” 其实仍然要使用 cmake ” 语言和语法 去构建，上面的内容就是所谓的
+”cmake ” 语言和语法 ，最简单的语法规则是：
+
+1，变量使用${}方式取值，但是在 IF 控制语句中是直接使用变量名
+
+2，指令(参数 1 参数 2...)
+参数使用括弧括起，参数之间使用空格或分号分开。
+
+以上面的 ADD_EXECUTABLE 指令为例，如果存在另外一个 func.c 源文件，就要写成：
+ADD_EXECUTABLE(hello main.c func.c)或者
+ADD_EXECUTABLE(hello main.c;func.c)
+
+3，指令是大小写无关的，参数和变量是大小写相关的。
+但，推荐你全部使用大写指令。
+
+上面的 MESSAGE 指令我们已经用到了这条规则：
+MESSAGE(STATUS“This is BINARYdir” ${HELLO_BINARY_DIR})
+
+也可以写成：
+MESSAGE(STATUS“This is BINARYdir${HELLO_BINARY_DIR}”)
+
+这里需要特别解释的是作为工程名的 HELLO 和生成的可执行文件 hello 是没有任何关系的。
+
+hello 定义了可执行文件的文件名，你完全可以写成：
+
+ADD_EXECUTABLE(t1main.c)
+
+编译后会生成一个 t1 可执行文件。
+
+====
+5，关于语法的疑惑
+
+cmake 的语法还是比较灵活而且考虑到各种情况，比如
+SET(SRC_LIST main.c)也可以写成 SET(SRC_LIST “main.c”)
+是没有区别的，但是假设一个源文件的文件名是 func.c(文件名中间包含了空格)。
+这时候就必须使用双引号，
+如果写成了 SET(SRC_LIST fu nc.c)，就会出现错误，提示
+你找不到 fu 文件和 nc.c 文件。
+这种情况，就必须写成:
+SET(SRC_LIST “fu nc.c”)
+
+此外，你可以可以忽略掉 source 列表中的源文件后缀，比如可以写成
+ADD_EXECUTABLE(t1main)，cmake 会自动的在本目录查找 main.c 或者 main.cpp
+等，当然，最好不要偷这个懒，以免这个目录确实存在一个 main.c 一个 main.
+同时参数也可以使用分号来进行分割。
+
+下面的例子也是合法的：
+
+ADD_EXECUTABLE(t1main.c t1.c)可以写成 ADD_EXECUTABLE(t1
+main.c;t1.c).
+
+我们只需要在编写 CMakeLists.txt 时注意形成统一的风格即可。
+
+====
+6，清理工程：
+跟经典的 autotools 系列工具一样，运行:
+make clean
+即可对构建结果进行清理。
+
+====
+7，问题
+
+“我尝试运行了 make distclean，这个指令一般用来清理构建过程中产生的中间文件的，
+如果要发布代码，必然要清理掉所有的中间文件，但是为什么在 cmake 工程中这个命令是无效的？
+
+是的，cmake 并不支持 make distclean，关于这一点，官方是有明确解释的:
+因为 CMakeLists.txt 可以执行脚本并通过脚本生成一些临时文件，但是却没有办法来跟
+踪这些临时文件到底是哪些。
+因此，没有办法提供一个可靠的 make distclean 方案。
+
+Some buildtrees created withGNUautotools have a "make
+distclean"targetthatcleansthebuild and also removes Makefiles
+and otherparts ofthegenerated buildsystem.CMake doesnot
+generate a "make distclean" targetbecauseCMakeLists.txtfiles
+can run scripts and arbitrarycommands; CMakehasno way of
+tracking exactly whichfiles are generatedaspartofrunning
+
+CMake.Providing a distclean target wouldgiveusers the false
+impressionthat itwould workas expected.(CMakedoesgenerate a
+"makeclean" target toremovefiles generatedby the compilerand
+linker.) 
+A"make distclean"targetis onlynecessary iftheuser performs
+anin-source build. CMakesupportsin-source builds, but we
+strongly encourageusers to adoptthenotion of anout-of-source
+build.Using a build treethatisseparatefrom the sourcetree
+will prevent CMakefrom generatinganyfiles in the sourcetree.
+Because CMakedoesnotchangethesource tree,there is noneed
+for adistclean target. One can starta freshbuild bydeleting
+the buildtreeorcreatinga separatebuild tree.
+
+同时，还有另外一个非常重要的提示，就是：我们刚才进行的是内部构建(in-source
+build)，而 cmake 强烈推荐的是外部构建(out-of-sourcebuild)。
+
+====
+8，内部构建与外部构建:
+
+上面的例子展示的是 内部构建 ，相信看到生成的临时文件比您的代码文件还要多的时候，
+估计这辈子你都不希望再使用内部构建:-D
+
+举个简单的例子来说明外部构建，以编译 wxGTK 动态库和静态库为例，在 Everest 中打包
+方式是这样的：
+
+解开 wxGTK 后。
+
+在其中建立 static 和 shared 目录。
+
+进入 static 目录，运行../configure–enable-static;make 会在 static 目录生成 wxGTK 的静态库。
+
+进入 shared 目录，运行../configure–enable-shared;make 就会在 shared 目录生成动态库。
+
+这就是外部编译的一个简单例子。
+
+对于 cmake，内部编译上面已经演示过了，它生成了一些无法自动删除的中间文件，所以，
+引出了我们对外部编译的探讨，外部编译的过程如下：
+
+1，首先，请清除 t1 目录中除 main.c CmakeLists.txt 之外的所有中间文件，最关键
+的是 CMakeCache.txt。
+
+2，在 t1 目录中建立 build 目录，当然你也可以在任何地方建立 build 目录，不一定必
+须在工程目录中。
+
+3，进入 build 目录，运行 cmake..(注意,..代表父目录，因为父目录存在我们需要的
+CMakeLists.txt，如果你在其他地方建立了 build 目录，需要运行 cmake<工程的全
+路径>)，查看一下 build 目录，就会发现了生成了编译需要的 Makefile 以及其他的中间
+文件.
+
+4，运行 make 构建工程，就会在当前目录(build 目录)中获得目标文件 hello。
+
+上述过程就是所谓的 out-of-source 外部编译，
+一个最大的好处是，对于原有的工程没有任何影响，所有动作全部发生在编译目录。
+通过这一点，也足以说服我们全部采用外部编译方式构建工程。
+
+这里需要特别注意的是：
+
+通过外部编译进行工程构建，HELLO_SOURCE_DIR 仍然指代工程路径，即
+/backup/cmake/t1
+而 HELLO_BINARY_DIR 则指代编译路径，即/backup/cmake/t1/build
+
+====
+9，小结：
+
+本小节描述了使用 cmake 构建 Hello World 程序的全部过程，并介绍了三个简单的指令：
+
+PROJECT/MESSAGE/ADD_EXECUTABLE 以及变量调用的方法，
+同时提及了两个隐式变量
+<projectname>_SOURCE_DIR 及<projectname>_BINARY_DIR，
+演示了变量调用的方法，
+从这个过程来看，有些开发者可能会想，这实在比我直接写 Makefile 要复杂多了，
+甚至我都可以不编写 Makefile，直接使用 gcc main.c 即可生成需要的目标文件。
+
+是的，正如第一节提到的，如果工程只有几个文件，还是直接编写 Makefile 最简单。
+但是，kdelibs 压缩包达到了 50 多 M，您认为使用什么方案会更容易一点呢？
+
