@@ -1,0 +1,94 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>人机对决</title>
+<script type="text/javascript" src="人机对决.js"></script>
+</head>
+<body>
+
+	<table class="scoreTable lazy ">
+		<tbody>
+			<tr>
+				<td></td>
+				<td class="grey lazy ">分数</td>
+				<td class="grey lazy ">成功率</td>
+				<td class="grey lazy ">领先者</td>
+			</tr>
+			<tr class="man lazy ">
+				<td>人</td>
+				<td id="manscore">0</td>
+				<td id="manper">0.00</td>
+				<td class="grey lazy " id="manwin">-</td>
+			</tr>
+			<tr class="machine lazy ">
+				<td>机器</td>
+				<td id="machscore">0</td>
+				<td id="machper">0.00</td>
+				<td class="grey lazy " id="machwin">-</td>
+			</tr>
+		</tbody>
+	</table>
+	<p>&nbsp;</p>
+	<table class="board lazy " id="board">
+		<tbody>
+			<tr class="grey lazy ">
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr class="man lazy ">
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr class="machine lazy ">
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
+	<p>
+		<input id="b0" onclick="Move(0);" type="button" value="零" />&nbsp;<input
+			id="b1" onclick="Move(1);" type="button" value="壹" />&nbsp;<input
+			id="res" onclick="Reset();" type="button" value="重置" />
+	</p>
+	<p>10111000</p>
+</body>
+</html>
