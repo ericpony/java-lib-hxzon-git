@@ -1,0 +1,98 @@
+﻿Makefile常用信息查询页
+http://roclinux.cn/?p=3162
+
+
+本原创文章属于《Linux大棚》博客。
+文章作者为roc
+
+====
+
+这是博主第一次尝试在博客中使用markdown来写博文，目前感觉还不错。大家也可以尝试尝试。
+
+符号说明
+
+符号	作用
+
+\	换行符
+@	放在命令前面隐藏命令输出
+-	放在命令前面忽略命令错误
+
+:	以来规则定义符号，即目标:依赖
+.PHONY	显式声明伪目标
+
+$@	表示规则中的目标文件集
+
+$%	仅当目标是函数库文件时，表示规则中的目标成员名
+
+$<	依赖目标中的第一个目标名字，如果依赖目标是以模式（%）定义的，那么$<将是符合模式的一系列的文件集。
+注意，其是一个一个取出来的
+
+$?	所有同目标相比“更新的”依赖目标的集合。以空格间隔
+
+$^	所有的依赖目标的集合。以空格间隔，且会去重
+
+$+	和$^作用相似，但不会去重
+
+$*	表示目标模式中%及其之前的部分
+
+D/F	表示路径和文件名部分。$(@F)表示$@的文件部分
+
+====
+函数说明
+
+
+函数	说明
+
+$(subst <from>, <to>, <text>)	把text中的from替换为to
+
+$(patsubst <pattern>,<replacement>,<text>)	模式替换
+
+$(strip <string>)	去掉string字串中开头和结尾的空字符
+
+$(findstring <find>,<in>)	在in中找find字串
+
+$(filter <pattern>,<text>)	过滤text，并保留符合pattern模式的字符串
+
+$(filter-out <pattern>,<text>)	和filter相反
+
+$(sort <list>)	给字串list中的单词升序排序
+
+$(word <n>,<text>)	取字串\<text>中第n个单词
+
+$(wordlist <s>,<e>,<text>)	从text中取从开始到的字符串。s和e是数字
+
+$(words <text>)	统计text的单词个数
+
+$(firstword <text>)	取text的第一个单词
+
+$(dir <names>)	从文件名names中取出目录部分
+
+$(notdir <names>)	从文件名names种取出非目录部分
+
+$(suffix <names>)	取出文件名后缀
+
+$(basename <names>)	取出文件名部分
+
+$(addsuffix <suffix>,<names>)	把后缀suffix加到names中每个单词后面
+
+$(addprefix <prefix>,<names>)	把前缀prefix加到names每个单词前面
+
+$(join <list1>,<list2>)	把list1加到list2后面
+
+$(foreach <var>,<list>,<text>)	
+把list里的单词一一取出，放到var中，然后执行text所包含的表达式，表达式会返回一个字符串。
+多个字符串用空格间隔。
+foreach会返回这样一个字符串列表。
+
+$(if <condition>,<then-part>)	if语句
+
+$(call <expression>,<parm1>,<parm2>,<parm3>)	调用表达式，表达式中的$(1),$(2),$(3)会替换为三个参数。
+
+$(origin <variable>)	origin会告诉我们这个变量是哪里来的。
+
+$(error <text>)	产生一个致命错误，text是错误信息，退出
+
+$(waring <text>)	输出一个警告信息，而make继续执行
+
+$(shell <command>)	使用shell执行command命令
+
