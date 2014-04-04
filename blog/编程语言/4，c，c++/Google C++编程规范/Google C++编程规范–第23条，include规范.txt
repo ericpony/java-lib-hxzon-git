@@ -1,0 +1,68 @@
+﻿Google C++编程规范–第23条，include规范
+http://roclinux.cn/?p=3422
+
+Google C++编程规范 – 第二十三条 -《include规范》
+本原创文章属于《Linux大棚》博客。
+文章作者为roc wu
+
+==
+
+【规范】
+
+建议使用如下的include顺序，既具有可读性，又可以避免隐含依赖。
+
+1 C库头文件
+2 C++库头文件
+3 其他库的头文件
+4 你自己项目的头文件
+
+【详解】
+
+一个项目的所有头文件应该按照项目的源代码目录结构来排列，
+不应该使用 .（当前目录）和 ..（上一级目录）两个符号。
+
+例如，google-awesome-project/src/base/logging.h这个头文件应该这样被引用：
+
+#include "base/logging.h"
+
+另外的一个规则是，假如我们定义了一个头文件dir2/foo2.h，
+而dir/foo.cc是用来实现这个头文件中的方法和函数的，
+而dir/foo_test.cc是用来实现单元测试的，那么在这两个cc文件中，引用头文件的顺序应该是这样：
+
+dir2/foo2.h
+C库头文件
+C++库头文件
+其他库头文件
+你的项目的头文件
+
+dir2/foo2.h排在第一位的好处在于，一旦这个头文件被遗忘掉，程序编译就会失败，
+而且会在报错中首先提示缺少了foo2.h头文件，这样有利于排查和定位问题，从而也消除了隐含依赖。
+
+而在头文件的每一个子块里面，应该按照字母序排序。比如C++库头文件子块中fstream应该排在ostream前面。
+
+举一个实际的例子：
+
+
+#include "foo/public/fooserver.h"
+
+#include <sys/types.h>
+#include 
+
+#include <hash_map>
+#include 
+
+#include "base/basictypes.h"
+#include "base/commandlineflags.h"
+#include "foo/public/bar.h"
+
+而对于一些有条件引用的代码，可以将条件引用放在其他include之后，看看下面的例子：
+
+#include "foo/public/fooserver.h"
+
+#include "base/port.h"  // For LANG_CXX11.
+
+#ifdef LANG_CXX11
+#include <initializer_list>
+#endif  // LANG_CXX11
+
+谢谢！
