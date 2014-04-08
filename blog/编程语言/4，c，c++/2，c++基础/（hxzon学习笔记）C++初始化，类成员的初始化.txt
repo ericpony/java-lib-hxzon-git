@@ -1,0 +1,272 @@
+﻿（hxzon学习笔记）C++初始化，类成员的初始化
+
+注释by hxzon
+
+Class member initialization
+====
+Member initializer list
+成员初始化列表
+http://en.cppreference.com/w/cpp/language/initializer_list
+
+In the definition of a constructor of a class, specifies initializers for direct and virtual base subobjects and non-static data members. 
+作为类的构造函数的一部分，描述直接基类（的成员），虚基类的成员，自己的非静态成员，如何初始化。
+( Not to be confused with std::initializer_list )
+
+Syntax
+语法
+
+Appears as part of function definition syntax, for class constructors only, 
+as the first part of the function body (before the opening brace of the compound statement)
+
+The first character is the colon :, followed by the comma-separated list of one or more member-initializers, 
+each of which has the following syntax
+
+class-or-identifier ( expression-list(optional) )	 (1)	
+class-or-identifier brace-init-list	 (2)	(since C++11)
+parameter-pack ...	 (3)	(since C++11)
+
+1) Initializes the base or member named by class-or-identifier using direct initialization or, if expression-list is empty, value-initialization
+直接初始化，或者如果表达式列表为空，值初始化。
+2) Initializes the base or member named by class-or-identifier using list-initialization 
+(which becomes value-initialization if the list is empty and aggregate-initialization when initializing an aggregate)
+
+3) Initializes multiple bases using a pack expansion
+
+class-or-identifier	 -	 any identifier, class name, or decltype expression that names a non-static data member, 
+a direct or virtual base, or (for delegating constructors) the class itself
+
+expression-list	 -	 possibly empty, comma-separated list of the parameters to pass to the constructor of the base or member
+
+brace-init-list	 -	 brace-enclosed list of comma-separated initializers and nested braced-init-lists
+
+parameter-pack	 -	 name of a variadic template parameter pack
+
+----
+Explanation
+
+Before the compound statement that forms the function body of the constructor begins executing, 
+initialization of all direct bases, virtual bases, and non-static data members is finished. 
+Member initializer list is the place where non-default initialization of these objects can be specified. For members that cannot be default-initialized, such as members of reference and const-qualified types, member initializers must be specified.
+
+The initializers where class-or-identifier names a virtual base class are ignored during execution of constructors of any class that is not the most derived class of the object that's being constructed.
+
+Names that appear in expression-list or brace-init-list are evaluated in scope of the constructor:
+
+class X {
+    int a, b, i, j;
+public:
+    const int& r;
+
+    X(int i)
+      : r(a) // initializes X::r to refer to X::a
+      , b(i) // initializes X::b to the value of the parameter i
+      , i(i) // initializes X::i to the value of the parameter i
+      , j(this->i) // initializes X::j to the value of X::i
+    { }
+};
+
+Member functions (including virtual member functions) can be called from member initializers, but the behavior is undefined if not all direct bases are initialized at that point.
+
+For virtual calls (if the bases are initialized), the same rules apply as the rules for the virtual calls from constructors and destructors: virtual member functions behave as if the dynamic type of *this is the class that's being constructed (dynamic dispatch does not propagate down the inheritance hierarchy) and virtual calls (but not static calls) to pure virtual member functions are undefined behavior.
+
+If a non-static data member has an in-class brace-or-equal initializer and also appears in a member initializer list, then member initializer list is executed and brace-or-equal initializer is ignored:
+
+struct S {
+    int n = 42;
+    S() : n(7) {} // will set n to 7, not 42
+};
+(since C++11)
+
+----
+Delegating constructor
+委托构造函数
+
+If the name of the class itself appears as class-or-identifier in the member initializer list, then the list must consist of that one member initializer only; such constructor is known as the delegating constructor, and the constructor selected by the only member of the initializer list is the target constructor
+
+In this case, the target constructor is selected by overload resolution and executed first, then the control returns to the delegating constructor and its body is executed.
+
+Delegating constructors cannot be recursive.	(since C++11)
+
+Initialization order
+初始化顺序
+
+The order of member initializers in the list is irrelevant: the actual order of initialization is as follows:
+
+1) If the constructor is for the most-derived class, virtual base classes are initialized in the order in which they appear in depth-first left-to-right traversal of the base class declarations (left-to-right refers to the appearance in base-specifier lists)
+2) Then, direct base classes are initialized in left-to-right order as they appear in this class's base-specifier list
+3) Then, non-static data members are initialized in order of declaration in the class definition.
+4) Finally, the body of the constructor is executed
+
+(Note: if initialization order was controlled by the appearance in the member initializer lists of different constructors, 
+then the destructor wouldn't be able to ensure that the order of destruction is the reverse of the order of construction)
+
+----
+Example
+
+struct Class : public Base
+{
+    int x;
+    int y;
+ 
+    Class ( int x )
+      : Base ( 123 ), // initialize base class
+        x ( x ),      // x (member) is initialized with x (parameter)
+        y ( 0 )       // y initialized to 0
+    {}                // empty constructor body
+ 
+    Class ( double a )
+      : y ( a+1 ),
+        x ( y ) // x will be initialized before y, this means that its value here is undefined
+    {}          // No base class constructor in list, this is the same as calling Base()
+ 
+    Class()
+    try
+      : Base ( 789 ),
+        x ( 0 ),
+        y ( 0 )
+    {
+        // no exception
+    }
+    catch (...)
+    {
+        // exception occurred on initialization
+    }
+};
+
+References
+C++11 standard (ISO/IEC 14882:2011):
+12.6.2 Initializing bases and members [class.base.init]
+C++98 standard (ISO/IEC 14882:1998):
+12.6.2 Initializing bases and members [class.base.init]
+
+====
+Non-static data members
+非静态数据成员
+http://en.cppreference.com/w/cpp/language/data_members#Member_initialization
+
+Non-static data members are the variables that are declared in a member specification of a class.
+
+class S {
+    int n; // non-static data member
+    int& r; // non-static data member of reference type
+    int a[10] = {1,2}; // non-static data member with initializer (C++11)
+    std::string s, *ps; // two non-static data members
+    struct NestedS {
+        std::string s;
+    } d5, *d6; // two non-static data members of nested type
+    char bit : 2; // two-bit bitfield
+};
+
+Any simple declarations are allowed, except
+extern and register storage class specifiers are not allowed
+thread_local storage class specifier is not allowed (but it is allowed for static data members)
+
+incomplete types are not allowed: in particular, a class C cannot have a non-static data member of class C, although it can have a non-static data member of type C& (reference to C) or C* (pointer to C)
+
+a non-static data member cannot have the same name as the name of the class if at least one user-declared constructor is present.
+
+In addition, bit field declarations are allowed.
+
+Layout
+布局
+
+When an object of some class C is created, each non-static data member of non-reference type is allocated in some part of the object representation of C. Whether reference members occupy any storage is implementation-defined.
+
+For non-union class types, members with the same member access are always allocated so that the members declared later have higher addresses within a class object. Members with different access control are allocated in unspecified order (the compiler may group them together). Alignment requirements may necessitate padding between members, or after the last member of a class.
+
+Standard layout
+标准布局
+
+A class where all non-static data members have the same access control and certain other conditions are satisfied is known as standard layout type (see StandardLayoutType for the list of requirements).
+
+Two standard-layout struct types are called layout-compatible if they have the same number of non-static data members and the corresponding non-static data members, in declaration order, are themselves layout-compatible.
+
+Two standard-layout struct types have a common initial sequence of non-static data members, if, for a sequence of one or more initial members (in order of declaration), the members have layout-compatible types.
+
+Standard layout types have the following special properties:
+
+If a standard-layout union holds two (or more) standard-layout structs as members, and these stucts have a common initial sequence of data members, it is well-defined to examine any member of that common initial sequence regardless of which member of the union is active.
+
+A pointer to an object of standard-layout struct type can be reinterpret_cast to pointer to its first non-static data member, and vice versa. (padding is not allowed before the first data member). Note that strict aliasing rules still apply to the result of such cast.
+
+The macro offsetof may be used to determine the offset of any member from the beginning of a standard-layout struct
+
+Member initialization
+成员初始化
+
+Non-static data members may be initialized in one of two ways:
+1) In the member initializer list of the constructor.
+struct S {
+    int n;
+    std::string s;
+    S() : n(7) // direct-initializes n, default-initializes s
+    { }
+};
+
+2) (since C++11) Through a brace-or-equal initializer, which is simply an initializer included in the member declaration, which is used if the member is omitted in the member initializer list
+struct S {
+    int n = 7;
+    std::string s{'a', 'b', 'c'};
+    S() // copy-initializes n, list-initializes s
+    { }
+};
+
+If a member has a brace-or-equal initializer and also appears in the member initialization list in a constructor, the brace-or-equal initializer is ignored.
+
+#include <iostream>
+int x = 0;
+struct S {
+    int n = ++x;
+    S() {} // uses brace-or-equal initializer
+    S(int arg) : n(arg) {} // uses member initializer list
+};
+
+int main()
+{
+    std::cout << x << '\n'; // prints 0
+    S s1;
+    std::cout << x << '\n'; // prints 1
+    S s2(7);
+    std::cout << x << '\n'; // prints 1
+}
+
+Usage
+The name of a non-static data member or a non-static member function can only appear in the following three situations:
+1) As a part of class member access expression, in which the class either has this member or is derived from a class that has this member, including the implicit this-> member access expressions that appear when a non-static member name is used in any of the contexts where this is allowed (inside member function bodies, in member initializer lists, in the in-class brace-or-equal initializers)
+
+struct S {
+   int m;
+   int n;
+   int x = m;  // OK: implicit this allowed in brace-or-equal initializers (C++11)
+   S(int init) : m(init),
+                 n(m) // OK:implicit this allowed in member initializer lists
+   {
+       this->f();  // explicit member access expression
+       f(); // implicit this allowed in member functions
+   }
+   void f();
+};
+
+2) To form a pointer to member
+struct S {
+   int m;
+   void f();
+};
+int S::*p = &S::m; // OK, use of m to make a pointer to member
+void (S::*fp)() = &S::f; // OK, use of f to make a pointer to member
+
+3) (since C++11) in unevaluated operands
+struct S {
+   int m;
+   static const std::size_t sz = sizeof m; // OK, m in unevaluated operand
+};
+std::size_t j = sizeof(S::m + 42); // OK, even though there is no "this" object for m
+
+See also
+参见：
+classes
+static data members
+member functions
+std::is_standard_layout
+offsetof
+

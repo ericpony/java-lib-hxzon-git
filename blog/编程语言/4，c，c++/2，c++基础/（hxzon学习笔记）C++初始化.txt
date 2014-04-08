@@ -1,0 +1,790 @@
+﻿（hxzon学习笔记）C++初始化
+
+注释by hxzon
+
+====
+Initialization
+初始化
+http://en.cppreference.com/w/cpp/language/initialization
+
+Initialization of a variable provides its initial value at the time of construction.
+在变量构建时提供初始值。
+The initial value may be provided in the initializer section of a declarator. 
+It also takes place during function calls: function parameters and the function return values are also initialized.
+
+For each declarator, the initializer may be one of the following:
+( expression-list )	 (1)	
+= expression	 (2)	
+{ initializer-list }	 (3)	
+
+1) comma-separated list of arbitrary expressions in parentheses
+圆括号。
+2) the equals sign followed by an expression
+等号，复制初始化。
+3) braced-init-list: possibly empty, comma-separated list of expressions and other braced-init-lists
+花括号，列表初始化。
+
+Depending on context, initializer may invoke one of the following:
+
+Value initialization, e.g. std::string s{};
+Direct initialization, e.g. std::string s("hello");
+Copy initialization, e.g. std::string s = "hello";
+List initialization, e.g. std::string s{'a', 'b', 'c'};
+Aggregate initialization, e.g. char a[3] = {'a', 'b'};
+Reference initialization, e.g. char& c = a[0];
+
+If no initializer is provided, the rules of default initialization apply.
+如果没有提供值，使用默认初始化。
+
+----
+Non-local variables
+非本地变量。
+
+All variables with static storage duration are initialized as part of program startup, before the execution of the main function begins. 
+所有静态存储变量，在程序启动时初始化。
+All variables with thread-local storage duration are initialized as part of thread launch, before the execution of the thread function begins. 
+所有线程本地变量，在线程开始运行时初始化。
+For both of these classes of variables, initialization occurs in stages:
+1) Static initialization of non-local variables happens first, and consists of two steps
+a) Zero initialization takes place before anything else (in practice, 
+variables that are going to be zero-initialized, are typically placed in the .bss segment, which is zeroed out by the OS when loading the program)
+b) Constant initialization takes place where applicable. (in practice, this stage is usually performed at compile time, and pre-calculated values are stored as part of the program image. If the compiler doesn't do that, it still has to guarantee that this takes place before any dynamic initialization)
+
+2) Dynamic initialization of non-local variables, which takes place after all static initialization is completed, can be one of:
+
+b) Unordered dynamic initialization, which applies only to (static/thread-local) class template data members that aren't explicitly specialized. Initialization of such static variables is undeterminately sequenced with respect to all other dynamic initialization. Initialization of such thread-local variables is unsequenced with respect to all other dynamic initialization.
+
+a) Ordered dynamic initialization, which applies to all other non-local variables: within a single translation unit, these variables are initialized in exact order their definitions appear in the source code. Initialization of static variables in different translation units is indeterminately sequenced. Initialization of thread-local variables in different translation units is unsequenced.
+
+The compilers are allowed to initialize dynamically-initialized variables as part of static initialization (essentially, at compile time), if both of these are true:
+1) the dynamic version of the initialization does not change the value of any other object of namespace scope prior to its initialization
+2) the static version of the initialization produces the same value in the initialized variable as would be produced by the dynamic initialization if all variables not required to be initialized statically were initialized dynamically.
+
+This section is incomplete
+Reason: when ambiguous, examples
+
+----
+Class members
+
+Non-static data members can be initialized with member initializer list or with a in-class brace-or-equal initializer.
+
+====
+list initialization
+列表初始化
+http://en.cppreference.com/w/cpp/language/list_initialization
+
+Initializes an object from braced-init-list
+使用花括号。
+
+Syntax
+
+T object { arg1, arg2, ... };	 (1)	
+T { arg1, arg2, ... };	 (2)	
+new T { arg1, arg2, ... };	 (3)	
+return { arg1, arg2, ... } ;	 (4)	
+function( { arg1, arg2, ... } ) ;	 (5)	
+object[ { arg1, arg2, ... } ] ;	 (6)	
+T( { arg1, arg2, ... } )	 (7)	
+Class { T member = { arg1, arg2, ... }; };	 (8)	
+Class::Class() : member{arg1, arg2, ...} {...	 (9)	
+T object = {arg1, arg2, ...};	 (10)	
+
+Explanation
+
+List initialization is performed in the following situations:
+1) initialization of a named variable with a brace-enclosed list of expressions or nested lists (braced-init-list)
+2) initialization of an unnamed temporary with a braced-init-list
+3) initialization of an object with dynamic storage duration with a new-expression, where the initializer is a brace-init-list
+4) in a return statement with braced-init-list used as the return expression
+5) in a function call expression, with braced-init-list used as an argument
+6) in a subscript expression with a user-defined operator[]
+7) in a functional cast expression or other direct-initialization, with braced-init-list used as the constructor argument
+8) in a non-static data member initializer
+9) in a constructor initializer list
+10) on the right-hand-side of the equals sign (similar to copy-initialization)
+
+The effects of list initialization of an object of type T are:
+If the braced-init-list is empty and T is a class type with a default constructor, value-initialization is performed.
+Otherwise, if T is an aggregate type, aggregate initialization is performed.
+否则，如果T是聚合类型，使用聚合初始化。
+Otherwise, if T is a specialization of std::initializer_list, 
+a new std::initializer_list object of the same type is constructed and used to direct-initialize or copy-initialize the object of type T, 
+depending on context.
+
+Otherwise, the constuctors of T are considered, in two phases:
+All constructors that take std::initializer_list as the only argument, or as the first argument if the remaining arguments have default values, are examined, and matched by overload resolution against a single argument of type std::initializer_list
+
+If the previous stage does not produce a match, all constructors of T participate in overload resolution against the set of arguments that consists of the elements of the braced-init-list, with the restriction that only narrowing conversions are allowed. If this stage produces an explicit constructor as the best match for a copy-list-initialization, compilation fails (note, in simple copy-initialization, explicit constructors are not considered at all)
+
+Otherwise, if T is reference type, a prvalue temporary of the referenced type is list-initialized, and the reference is bound to that temporary.
+Otherwise, if the braced-init-list has only one element, T is direct-initialized or copy-initialized, depending on context, except that narrowing conversions are not allowed.
+Otherwise, if the braced-init-list has no elements, T is value-initialized.
+
+Narrowing conversions
+list-initialization limits the allowed implicit conversions by prohibiting the following:
+conversion from a floating-point type to an integer type
+conversion from a long double to double or to float and conversion from double to float, except where the source is a constant expression whose value can be stored exactly in the target type
+conversion from integer or unscoped enumeration type to integer type that cannot represent all values of the original, except where source is a constant expression whose value can be stored exactly in the target type
+
+Notes
+
+Braced-init-list is not an expression and has no type on its own: for example, when calling a function template, braced-init-list argument cannot be used for template type deduction. A special exception is made for the keyword auto, which deduces any braced-init-list as std::initializer_list.
+
+Example
+Run this code
+#include <iostream>
+#include <vector>
+#include <map>
+#include <string>
+ 
+struct Foo {
+    std::vector<int> mem = {1,2,3}; // list-initialization of a non-static member
+    std::vector<int> mem2;
+    Foo() : mem2{-1, -2, -3} {} // list-initialization of a member in constructor
+};
+ 
+std::pair<std::string, std::string> f(std::pair<std::string, std::string> p)
+{
+    return {p.second, p.first}; // list-initialization in return statement
+}
+ 
+int main()
+{
+    int n0{};     // value-initialization (to zero)
+    int n1{1};    // direct-list-initialization
+    std::string s1{'a', 'b', 'c', 'd'}; // initializer-list constructor call
+    std::string s2{s1, 2, 2};           // regular constructor call
+    std::string s3{0x61, 'a'}; // initializer-list ctor is preferred to (int, char)
+ 
+    int n2 = {1}; // copy-list-initialization
+    double d = double{1.2}; // list-initialization of a temporary, then copy-init
+ 
+    std::map<int, std::string> m = { // nested list-initialization
+           {1, "a"},
+           {2, {'a', 'b', 'c'} },
+           {3, s1}
+    };
+ 
+    std::cout << f({"hello", "world"}).first // list-initialization in function call
+              << '\n';
+ 
+    const int (&ar)[2] = {1,2}; // binds a lvalue reference to a temporary array
+    int&& r1 = {1}; // binds a rvalue reference to a temporary int
+//  int& r2 = {2}; // error: cannot bind rvalue to a non-const lvalue ref
+ 
+//  int bad{1.0}; // error: narrowing conversion
+    unsigned char uc1{10}; // okay
+//  unsigned char uc2{-1}; // error: narrowing conversion
+ 
+    Foo f;
+ 
+    std::cout << n0 << ' ' << n1 << ' ' << n2 << '\n'
+              << s1 << ' ' << s2 << ' ' << s3 << '\n';
+    for(auto p: m)
+        std::cout << p.first << ' ' << p.second << '\n';
+    for(auto n: f.mem)
+        std::cout << n << ' ';
+    for(auto n: f.mem2)
+        std::cout << n << ' ';
+}
+
+Output:
+world
+0 1 1
+abcd cd aa
+1 a
+2 abc
+3 abcd
+1 2 3 -1 -2 -3
+
+====
+default initialization
+默认初始化
+http://en.cppreference.com/w/cpp/language/default_initialization
+
+Provides the default initial value to a new object.
+
+Syntax
+语法：
+
+T object ;	 (1)	
+new T ;	 (2)	
+
+----
+Explanation
+
+Default initialization is performed in three situations:
+
+1) when a variable with automatic storage duration is declared with no initializer
+自动变量，声明时没有指明值。
+2) when an object with dynamic storage duration is created by a new-expression without an initializer
+动态变量，使用new，没有指明值。
+3) when a base class or a non-static data member is not mentioned in a constructor initializer list and that constructor is called.
+基类或非静态数据成员，在构造初始化列表中未提及。
+
+The effects of default initialization are:
+If T is a class type, the default constructor is called to provide the initial value for the new object.
+类类型，使用默认构造函数。
+If T is an array type, every element of the array is default-initialized.
+数组类型，每个元素被默认初始化。
+Otherwise, nothing is done.
+否则，什么也不做。
+
+If T is a const-qualified type, it must be a class type with a user-provided default constructor.
+
+----
+Notes
+注意
+
+Default initialization of non-class variables with automatic and dynamic storage duration produces objects with indeterminate values (static and thread-local objects get zero initialized)
+
+Reference cannot be default-initialized.
+引用不能被默认初始化。
+
+----
+Example
+Run this code
+
+#include <string>
+struct T1 {};
+class T2 { 
+    int mem;
+ public:
+    T2() {} // "mem" not in initializer list
+};
+int n; // This is not default-initialization, the value is zero.
+int main()
+{
+    int n;            // non-class: the value is undeterminate
+    std::string s;    // calls default ctor, the value is "" (empty string)
+    std::string a[2]; // calls default ctor, creates two empty strings
+//    int& r;         // error: default-initializing a reference
+//    const int n;    // error: const non-class type
+//    const T1 nd;    // error: const class type with implicit ctor
+    T1 t1; // ok, calls implicit default ctor
+    const T2 t2; // ok, calls the user-provided default ctor 
+                 // t2.mem is default-initialized (to indeterminate value)
+}
+
+====
+value initialization
+值初始化
+
+http://en.cppreference.com/w/cpp/language/value_initialization
+
+Provides the default initial value to a new object.
+
+Syntax
+语法
+
+T();	 (1)	
+new T ();	 (2)	
+Class::Class(...) : member() {...	 (3)	
+T object {};	 (4)	(since C++11)
+T{};	 (5)	(since C++11)
+new T {};	 (6)	(since C++11)
+Class::Class(...) :member{} {...	 (7)	(since C++11)
+
+----
+Explanation
+
+Value initialization is performed in three situations:
+1,5) when a nameless temporary object is created with the initializer consisting of an empty pair of parentheses or braces(since C++11).
+匿名的临时对象，使用空圆括号或空花括号。
+
+2,6) when an object with dynamic storage duration is created by a new-expression with the initializer consisting of an empty pair of parentheses or braces(since C++11).
+
+4) when a named variable (automatic, static, or thread-local) is declared with the initializer consisting of a pair of braces.
+(since C++11)
+动态对象，使用空圆括号或空花括号。
+
+3,7) when a non-static data member or a base class is initialized using a member initializer with an empty pair of parentheses or braces(since C++11)
+
+In all cases, if the empty pair of braces {} is used and T is an aggregate type, aggregate-initialization is performed. If T is a class type that has no default constructor but has a constructor taking std::initializer_list, list-initialization is performed.(since C++11)
+
+The effects of value initialization are:
+If T is a class type with at least one user-provided constructor of any kind, the default constructor is called.
+If T is an non-union class type without any user-provided constructors, then every non-static data member and base-class component of T is value-initialized
+(until C++11)
+If T is an non-union class type without any user-provided constructors, then the object is zero-initialized and then the implicitly-declared default constructor is called (unless it's trivial)
+(since C++11)
+
+This section is incomplete
+Reason: c++14 changes to [dcl.init]/8
+
+If T is an array type, each element of the array is value-initialized
+Otherwise, the object is zero-initialized.
+
+----
+Notes
+注意
+
+The syntax T object(); does not initialize an object; it declares a function that takes no arguments and returns T. The way to value-initialize a named variable before C++11 was T object = T();, which value-initializes a temporary and then copy-initializes the object: most compilers optimize out the copy in this case.
+
+References cannot be value-initialized.
+引用不能被值初始化。
+
+All standard containers (std::vector, std::list, etc) value-initialize their elements when constructed with a single size_type argument or when grown by a call to resize().
+
+Since C++11, value-initializing an class without a user-provided constructor, which has a member of a class type with a user-provided constructor zeroes out the member before calling its constructor:
+
+struct A {
+    int i;
+    A() {} // user-provided ctor, does not initialize i
+};
+ 
+struct B { A a; }; // no user-provided ctor
+ 
+B b{}; // value-initializing B
+       // leaves b.a.i uninitialized in C++03
+       // sets b.a.i to zero in C++11
+
+Example
+Run this code
+#include <string>
+#include <vector>
+#include <iostream>
+ 
+struct T1 {
+    int mem1;
+    std::string mem2;
+}; // no constructors
+struct T2 { 
+    int mem1;
+    std::string mem2;
+    T2(const T2&) {} // a constructor, but no default
+};
+struct T3 { 
+    int mem1;
+    std::string mem2;
+    T3() {} // user-provided default ctor
+};
+ 
+std::string s{}; // calls default ctor, the value is "" (empty string)
+int main()
+{
+    int n{};     // non-class value-initialization, value is 0
+    double f = double(); // non-class value-init, value is 0.0
+    int* a = new int[10](); // array of 10 zeroes
+ 
+    T1 t1{}; // no ctors: zero-initialized
+             // t1.mem1 is zero-initialized
+             // t1.mem2 is default-initialized
+//    T2 t2{}; // error: has a ctor, but no default ctor
+    T3 t3{}; // user-defined default ctor:
+             // t3.mem1 is default-initialized (the value is indeterminate)
+             // t3.mem2 is default-initialized
+ 
+    std::vector<int> v(3); // value-initializes three ints
+ 
+    std::cout << s.size() << ' ' << n << ' ' << f << ' ' << a[9] << ' ' << v[2] << '\n';
+    std::cout << t1.mem1 << ' ' << t3.mem1 << '\n';
+    delete[] a;
+}
+Output:
+0 0 0 0 0
+0 4199376
+
+====
+direct initialization
+直接初始化
+http://en.cppreference.com/w/cpp/language/direct_initialization
+
+Initializes an object from explicit set of constructor arguments.
+使用显示构造函数参数。
+
+Syntax
+语法
+
+T object ( arg );
+T object ( arg1, arg2, ... );
+(1)	
+
+T object { arg };
+T object { arg1, arg2, ... };
+(2)	(since C++11)
+
+T ( other )
+T ( arg1, arg2, ... );
+(3)	
+
+static_cast< T >( other )	 (4)	
+new T(args, ...)	 (5)	
+Class::Class() : member(args, ...) {...	 (6)	
+[arg](){...	 (7)	(since C++11)
+
+Explanation
+
+Direct initialization is performed in the following situations:
+1) initialization with a nonempty parenthesized list of expressions
+2) during list-initialization sequence, if no initializer-list constuctors are provided and a matching constructor is accessible, and all necessary implicit conversions are non-narrowing.
+3) initialization of a prvalue temporary by functional cast or with a parenthesized expression list
+4) initialization of a prvalue temporary by a static_cast expession
+5) initialization of an object with dynamic storage duration by a new-expression with a non-empty initializer
+6) initialization of a base or a non-static member by constructor initializer list
+7) initialization of closure object members from the variables caught by copy in a lambda-expression
+
+The effects of direct initialization are:
+If T is a class type, the constructors of T are examined and the best match is selected by overload resolution. The constructor is then called to initialize the object.
+Otherwise, if T is a non-class type, standard conversions are used, if necessary, to convert the value of other to the cv-unqualified version of T.
+
+Notes
+Direct-initialization is more permissive than copy-initialization: copy-initialization only considers non-explicit constructors and user-defined conversion functions, while direct-initialization considers all constructors and implicit conversion sequences.
+
+Example
+Run this code
+#include <string>
+#include <iostream>
+#include <memory>
+ 
+struct Foo {
+    int mem;
+    explicit Foo(int n) : mem(n) {}
+};
+ 
+int main()
+{
+    std::string s1("test"); // constructor from const char*
+    std::string s2(10, 'a');
+ 
+    std::unique_ptr<int> p(new int(1)); // OK: explicit constructors allowed
+//  std::unique_ptr<int> p = new int(1); // error: constructor is explicit
+ 
+    Foo f(2); // f is direct-initialized:
+              // constructor parameter n is copy-initialized from the rvalue 2
+              // f.mem is direct-initialized from the parameter n
+//  Foo f2 = 2; // error: constructor is explicit
+ 
+    std::cout << s1 << ' ' << s2 << ' ' << *p << ' ' << f.mem  << '\n';
+}
+
+Output:
+test aaaaaaaaaa 1 2
+
+====
+copy initialization
+复制初始化
+http://en.cppreference.com/w/cpp/language/copy_initialization
+
+Initializes an object from another object
+根据另一个对象来初始化。
+
+Syntax
+语法
+
+T object = other ;	 (1)	
+f(other);	 (2)	
+return other;	 (3)	
+catch ( T other) ;	 (4)	
+T array [ N ] = { other };	 (5)	
+
+Explanation
+
+Copy initialization is performed in the following situations:
+1) when a named variable (automatic, static, or thread-local) is declared with the initializer consisting of an equals sign followed by an expression.
+2) when passing an argument to a function by value
+3) when returning from a function that returns by value
+4) when catching an exception by value
+5) as part of aggregate initialization, to initialize each element for which an initializer is provided
+
+The effects of copy initialization are:
+If T is a class type and the type of other is cv-unqualified version of T or a class derived from T, the constructors of T are examined and the best match is selected by overload resolution. The constructor is then called to initialize the object.
+
+If T is a class type, and the type of other is different, or if T is non-class type, but the type of other is a class type, user-defined conversion sequences that can convert from the type of other to T are examined and the best one is selected through overload resolution. The result of the conversion, which is a prvalue temporary of the destination type, is then used to direct-initialize the object. The last step is usually eliminated and the result of the conversion function is constructed directly in the memory allocated for the target object, but the copy constructor is required to be accessible even though it's not used.
+
+Otherwise (if neither T nor the type of other are class types), standard conversions are used, if necessary, to convert the value of other to the cv-unqualified version of T.
+
+Notes
+
+Copy-initialization is less permissive than direct-initialization: copy-initialization only considers non-explicit constructors and user-defined conversion functions.
+
+If other is an rvalue expression, move constructor will be selected by overload resolution and called during copy-initialization.
+Implicit conversion is defined in terms of copy-initialization: if an object of type T can be copy-initialized with expression E, then E is implicitly convertible to T.
+The equals sign, =, in copy-initialization of a named variable is not related to the assignment operator. Assignment operator overloads have no effect on copy-initialization.
+
+Example
+Run this code
+
+#include <string>
+#include <utility>
+#include <memory>
+ 
+int main()
+{
+    std::string s = "test"; // OK: constructor is non-explicit
+    std::string s2 = std::move(s); // this copy-initialization performs a move
+ 
+//  std::unique_ptr<int> p = new int(1); // error: constructor is explicit
+    std::unique_ptr<int> p(new int(1)); // OK: direct-initialization
+ 
+    int n = 3.14;    // floating-integral conversion
+    const int b = n; // const doesn't matter
+    int c = b;       // ...either way
+}
+
+====
+aggregate initialization
+聚合初始化
+http://en.cppreference.com/w/cpp/language/aggregate_initialization
+
+Initializes an aggregate from braced-init-list
+花括号。
+
+Syntax
+语法
+
+T object = {arg1, arg2, ...};	 (1)	
+T object {arg1, arg2, ...};	 (2)	(since C++11)
+
+----
+Explanation
+
+Aggregate initialization is a form of list-initialization, which initializes aggregates
+聚合初始化是列表初始化的一种形式，用于初始化聚合体。
+
+An aggregate is an object of the type that is one of the following
+所谓聚合体，指以下类型：
+
+-1，array type
+-2，class type (typically, struct or union), that has
+no private or protected members
+no user-provided constructors (explicitly defaulted or deleted constructors are allowed)
+no base classes
+no virtual member functions
+no brace-or-equal initializers for non-static members
+结构体或联合体，没有私有和受保护成员，没有用户提供的构造函数，没有基类，没有虚函数，非静态成员没有圆括号或赋值初始化器。
+
+The effects of aggregate initialization are:
+
+Each array element or non-static class member, in order of array subscript/appearance in the class definition, is copy-initialized from the corresponding clause of the initializer list.
+
+If the initializer clause is an expression, implicit conversions are allowed, except (since C++11) if they are narrowing (as in list-initialization).
+If the initializer clause is a nested braced-init-list, the corresponding class member is itself an aggregate: aggregate initialization is recursive.
+If the object is an array of unknown size, and the supplied brace-enclosed initializer list has n clauses, the size of the array is n
+Static data members and anonymous bit-fields are skipped during aggregate initialization.
+If the number of initializer clauses exceeds the number of members to initialize, the program is ill-formed (compiler error)
+
+If the number of initializer clauses is less than the number of members or initializer clauses is completely empty, the remaining members are initialized by empty lists, which performs value-initialization. If a member of a reference type is one of these remaining members, the program is ill-formed (references cannot be value-initialized)
+
+If the aggregate initialization uses the form with the equal sign (T a = {args..})(until C++14), the braces around the nested initializer lists may be elided (omitted), in which case, as many initializer clauses as necessary are used to initialize every member or element of the corresponding subaggregate, and the subsequent initializer clauses are used to initialize the following members of the object. However, if the object has a sub-aggregate without any members (an empty struct, or a struct holding only static members), brace elision is not allowed, and an empty nested list {} must be used.
+
+When a union is initialized by aggregate initialization, only its first non-static data members is initialized.
+
+Character arrays
+
+Arrays of character types (char, signed char, unsigned char, char16_t, char32_t, wchar_t) can be initialized from an appropriate string literal, optionally enclosed in braces. Successive characters of the the string literal (which includes the implicit terminating null character) initialize the elements of the array. If the size of the array is specified and it is larger than the number of characters in the string literal, the remaining characters are zero-initialized.
+
+char a[] = "abc";
+// equivalent to char a[4] = {'a', 'b', 'c', '\0'};
+ 
+//  unsigned char b[3] = "abc"; // Error: initialzer string too long
+unsigned char b[5]{"abc"};
+// equivalent to unsigned char a[5] = {'a', 'b', 'c', '\0', '\0'};
+ 
+wchar_t c[] = {L"кошка"}; // optional braces
+// equivalent to wchar_t c[6] = {L'к', L'о', L'ш', L'к', L'а', L'\0'};
+
+Notes
+Until C++11, narrowing conversions were permitted in aggregate initialization, but they are no longer allowed.
+Until C++11, aggregate initialization could not be used in a constructor initializer list due to syntax restrictions.
+Until C++14, the direct-initialization form T a {args..} did not permit brace elision.
+In C, character array of size one less than the size of the string literal may be initialized from a string literal; the resulting array is not null-terminated. This is not allowed in C++.
+
+Example
+Run this code
+
+#include <string>
+#include <array>
+struct S {
+    int x;
+    struct Foo {
+        int i;
+        int j;
+        int a[3];
+    } b;
+};
+ 
+union U {
+    int a;
+    const char* b;
+};
+
+int main()
+{
+    S s1 = { 1, { 2, 3, {4, 5, 6} } };
+    S s2 = { 1, 2, 3, 4, 5, 6}; // same, but with brace elision
+    S s3{1, {2, 3, {4, 5, 6} } }; // same, using direct-list-initialization syntax
+//  S s4{1, 2, 3, 4, 5, 6}; // error: brace-elision only allowed with equals sign
+ 
+    int ar[] = {1,2,3}; // ar is int[3]
+//  char cr[3] = {'a', 'b', 'c', 'd'}; // too many initializer clauses
+    char cr[3] = {'a'}; // array initialized as {'a', '\0', '\0'}
+ 
+    int ar2d1[2][2] = {{1, 2}, {3, 4}}; // fully-braced 2D array: {1, 2}
+                                        //                        {3, 4}
+    int ar2d2[2][2] = {1, 2, 3, 4}; // brace elision: {1, 2}
+                                    //                {3, 4}
+    int ar2d3[2][2] = {{1}, {2}};   // only first column: {1, 0}
+                                    //                    {2, 0}
+ 
+    std::array<int, 3> std_ar2{ {1,2,3} };    // std::array is an aggregate
+    std::array<int, 3> std_ar1 = {1, 2, 3}; // brace-elision okay
+ 
+    int ai[] = { 1, 2.0 }; // narrowing conversion from double to int:
+                           // error in C++11, okay in C++03
+ 
+    std::string ars[] = {std::string("one"), // copy-initialization
+                         "two",              // conversion, then copy-initialization
+                         {'t', 'h', 'r', 'e', 'e'} }; // list-initialization
+ 
+    U u1 = {1}; // OK, first member of the union
+//    U u2 = { 0, "asdf" }; // error: too many initializers for union
+//    U u3 = { "asdf" }; // error: invalid conversion to int
+ 
+}
+
+====
+reference initialization
+引用初始化
+http://en.cppreference.com/w/cpp/language/reference_initialization
+
+Binds a reference to an object
+绑定对象到引用。
+
+Syntax
+语法
+
+T & ref = object ;
+T & ref ( object ) ;
+T & ref { object } ;
+(1)	
+
+T && ref = object ;
+T && ref ( object ) ;
+T && ref { object } ;
+(2)	(since C++11)
+
+R fn ( T & arg );
+or
+R fn ( T && arg );
+fn ( object )
+(3)	
+
+T & fn () {
+or
+T && fn () {
+return object ;
+(4)	
+
+----
+Explanation
+
+A reference to T can be initialized with an object of type T, a function of type T, or an object implicitly convertible to T. 
+Once initialized, a reference cannot be changed to refer to another object.
+
+References are initialized in the following situations:
+1) When a named lvalue reference variable is declared with an initializer
+2) When a named rvalue reference variable is declared with an initializer
+3) In a function call expression, when the function parameter has reference type
+4) In the return statement, when the function returns a reference type
+
+The effects of reference initialization are:
+If the reference is an lvalue reference:
+
+If object is an lvalue expression, and its type is T or derived from T, and is equally or less cv-qualified, then the reference is bound to the object identified by the lvalue or the base class subobject of the object.
+
+If object is an lvalue expression, and its type is implicitly convertible to a type that is either T or derived from T, equally or less cv-qualified, then the non-explicit conversion functions of the source type and its base classes that return lvalue references are considered and the best one is selected by overload resolution. The reference is then bound to the object identified by the lvalue returned by the conversion function (or its base class subobject)
+
+Otherwise, if the reference is either rvalue reference or lvalue reference to const:
+
+If object is an xvalue, a class prvalue, an array prvalue, or a function lvalue type that is either T or derived from T, equally or less cv-qualified, then the reference is bound to the value of the initializer expression or its base subobject.
+
+If object is a class type expression that can be implicitly converted to an xvalue, a class prvalue, or a function value of type that is either T or derived from T, equally or less cv-qualified, then the reference is bound to the result of the conversion or its base subobject.
+
+Otherwise, a temporary of type T is constructed and copy-initialized from object. The reference is then bound to this temporary.
+
+Lifetime of a temporary
+
+Whenever a reference is bound to a temporary or to a base subobject of a temporary, the lifetime of the temporary is extended to match the lifetime of the reference, with the following exceptions:
+
+a temporary bound to a return value of a function in a return statement is not extended: it is destroyed immediately at the end of the return expression. Such function always returns a dangling reference.
+
+a temporary bound to a reference member in a constructor initializer list persists only until the constructor exits, not as long as the object exists.
+
+a temporary bound to a reference parameter in a function call exists until the end of the full expression containing that function call: if the function returns a reference, which outlives the full expression, it becomes a dangling reference.
+
+a temporary bound to a reference in the initializer used in a new-expression exists until the end of the full expression containing that new-expression, not as long as the initialized object. If the initialized object outlives the full expression, its reference member becomes a dangling reference.
+
+In general, the lifetime of a temporary cannot be further extended by "passing it on": a second reference, initialized from the reference to which the temporary was bound, does not affect its lifetime.
+
+Notes
+
+References appear without initializers only in function parameter declaration, in function return type declaration, in the declaration of a class member, and with the extern specifier.
+
+Example
+Run this code
+
+#include <utility>
+#include <sstream>
+struct S {
+ int mi;
+ const std::pair<int,int>& mp; // reference member
+};
+ 
+void foo(int) {}
+ 
+struct A {};
+struct B : A {
+   int n;
+   operator int&() { return n; };
+};
+ 
+B bar() {return B(); }
+ 
+//int& bad_r; // error: no initializer
+extern int& ext_r; // OK
+ 
+int main()
+{
+ // lvalues
+    int n = 1;
+    int& r1 = n;  // lvalue reference to the object n
+    const int& cr(n); // reference can be more cv-qualified
+    volatile int& cv{n}; // any initializer syntax can be used
+    int& r2 = r1; // another lvalue reference to the object n
+//    int& bad = cr; // error: less cv-qualified
+    int& r3 = const_cast<int&>(cr); // const_cast is needed
+ 
+    void (&rf)(int) = foo; // lvalue reference to function
+    int ar[3];
+    int (&ra)[3] = ar; // lvalue reference to array
+ 
+    B b;
+    A& base_ref = b; // reference to base subobject
+    int& converted_ref = b; // reference to the result of a conversion
+ 
+// rvalues
+//  int& bad = 1; // error: cannot bind lvalue ref to rvalue
+    const int& cref = 1; // bound to rvalue
+    int&& rref = 1; // bound to rvalue
+ 
+    const A& cref2 = bar(); // reference to A subobject of B temporary
+    A&& rref2 = bar();      // same
+ 
+    int&& xref = static_cast<int&&>(n); // bind directly to n
+//  int&& copy_ref = n; // error: can't bind to an lvalue
+    double&& copy_ref = n; // bind to an rvalue temporary with value 1.0
+ 
+// restrictions on temporary lifetimes
+    std::ostream& buf_ref = std::ostringstream() << 'a'; // the ostringstream temporary
+                      // was bound to the left operand of operator<<, but its lifetime
+                      // ended at the semicolon: buf_ref is now a dangling reference.
+ 
+    S a { 1, {2,3} }; // temporary pair {2,3} bound to the reference member
+                      // a.mp and its lifetime is extended to match a
+    S* p = new S{ 1, {2,3} }; // temporary pair {2,3} bound to the reference
+                      // member a.mp, but its lifetime ended at the semicolon
+                      //  p->mp is a dangling reference
+    delete p;
+}
+
