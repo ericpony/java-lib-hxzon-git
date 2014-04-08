@@ -2,6 +2,17 @@
 
 注释by hxzon
 
+hxzon摘要：
+
+1，列表初始化。
+2，默认初始化：不指明值。
+3，值初始化：使用空的圆括号或花括号。
+4，直接初始化
+5，复制初始化
+
+6，聚合初始化
+7，引用初始化
+
 ====
 Initialization
 初始化
@@ -13,6 +24,8 @@ The initial value may be provided in the initializer section of a declarator.
 It also takes place during function calls: function parameters and the function return values are also initialized.
 
 For each declarator, the initializer may be one of the following:
+三种形式
+
 ( expression-list )	 (1)	
 = expression	 (2)	
 { initializer-list }	 (3)	
@@ -46,30 +59,52 @@ All variables with thread-local storage duration are initialized as part of thre
 所有线程本地变量，在线程开始运行时初始化。
 For both of these classes of variables, initialization occurs in stages:
 1) Static initialization of non-local variables happens first, and consists of two steps
+非本地变量的静态初始化先执行，分为下面两个步骤。
 a) Zero initialization takes place before anything else (in practice, 
 variables that are going to be zero-initialized, are typically placed in the .bss segment, which is zeroed out by the OS when loading the program)
-b) Constant initialization takes place where applicable. (in practice, this stage is usually performed at compile time, and pre-calculated values are stored as part of the program image. If the compiler doesn't do that, it still has to guarantee that this takes place before any dynamic initialization)
+零初始化。
+b) Constant initialization takes place where applicable. 
+(in practice, this stage is usually performed at compile time, and pre-calculated values are stored as part of the program image. 
+If the compiler doesn't do that, it still has to guarantee that this takes place before any dynamic initialization)
+常量初始化。在实践中，经常在编译期完成。
 
 2) Dynamic initialization of non-local variables, which takes place after all static initialization is completed, can be one of:
+非本地变量的动态初始化随后执行。下面两者之一。
 
-b) Unordered dynamic initialization, which applies only to (static/thread-local) class template data members that aren't explicitly specialized. Initialization of such static variables is undeterminately sequenced with respect to all other dynamic initialization. Initialization of such thread-local variables is unsequenced with respect to all other dynamic initialization.
+b) Unordered dynamic initialization, which applies only to (static/thread-local) class template data members that aren't explicitly specialized.
+无序的动态初始化， 没有明确描述的类模板的数据成员。
+Initialization of such static variables is undeterminately sequenced with respect to all other dynamic initialization. 
+Initialization of such thread-local variables is unsequenced with respect to all other dynamic initialization.
+（unsequenced，循序。hxzon，这里指无序？）
 
-a) Ordered dynamic initialization, which applies to all other non-local variables: within a single translation unit, these variables are initialized in exact order their definitions appear in the source code. Initialization of static variables in different translation units is indeterminately sequenced. Initialization of thread-local variables in different translation units is unsequenced.
+a) Ordered dynamic initialization, which applies to all other non-local variables: 
+有序的动态初始化，对其它所有非本地变量。
+within a single translation unit, these variables are initialized in exact order their definitions appear in the source code. 
+Initialization of static variables in different translation units is indeterminately sequenced. 
+（indeterminately，不定。）
+静态变量的初始化，在不同的翻译单元，是不定序的。
+Initialization of thread-local variables in different translation units is unsequenced.
+线程本地变量的初始化，在不同的翻译单元，是无序的。
 
 The compilers are allowed to initialize dynamically-initialized variables as part of static initialization (essentially, at compile time), if both of these are true:
+允许编译器将动态初始化作为静态初始化的一部分，如果下面两个条件满足。
 1) the dynamic version of the initialization does not change the value of any other object of namespace scope prior to its initialization
-2) the static version of the initialization produces the same value in the initialized variable as would be produced by the dynamic initialization if all variables not required to be initialized statically were initialized dynamically.
+2) the static version of the initialization produces the same value in the initialized variable as would be produced by the dynamic initialization 
+if all variables not required to be initialized statically were initialized dynamically.
 
 This section is incomplete
 Reason: when ambiguous, examples
+本节未完成，因为还有二义性。
 
 ----
 Class members
+类的成员
 
 Non-static data members can be initialized with member initializer list or with a in-class brace-or-equal initializer.
+非静态数据成员，可以用成员初始化列表，或者？？来初始化。
 
 ====
-list initialization
+1，list initialization
 列表初始化
 http://en.cppreference.com/w/cpp/language/list_initialization
 
@@ -77,12 +112,14 @@ Initializes an object from braced-init-list
 使用花括号。
 
 Syntax
+语法
 
 T object { arg1, arg2, ... };	 (1)	
 T { arg1, arg2, ... };	 (2)	
 new T { arg1, arg2, ... };	 (3)	
 return { arg1, arg2, ... } ;	 (4)	
 function( { arg1, arg2, ... } ) ;	 (5)	
+
 object[ { arg1, arg2, ... } ] ;	 (6)	
 T( { arg1, arg2, ... } )	 (7)	
 Class { T member = { arg1, arg2, ... }; };	 (8)	
@@ -93,71 +130,113 @@ Explanation
 
 List initialization is performed in the following situations:
 1) initialization of a named variable with a brace-enclosed list of expressions or nested lists (braced-init-list)
+有名的变量，带有花括号包住的表达式列表。
 2) initialization of an unnamed temporary with a braced-init-list
+匿名的临时变量，带有花括号包住的表达式列表。
 3) initialization of an object with dynamic storage duration with a new-expression, where the initializer is a brace-init-list
+使用new表达式的动态变量。
 4) in a return statement with braced-init-list used as the return expression
+返回语句。
 5) in a function call expression, with braced-init-list used as an argument
+函数调用语句。
 6) in a subscript expression with a user-defined operator[]
+下标表达式。
 7) in a functional cast expression or other direct-initialization, with braced-init-list used as the constructor argument
+转型表达式，或者其它直接初始化。
 8) in a non-static data member initializer
+非静态数据成员。
 9) in a constructor initializer list
+构造函数的初始化列表。
 10) on the right-hand-side of the equals sign (similar to copy-initialization)
+赋值运算符的右侧，类似复制初始化。
 
 The effects of list initialization of an object of type T are:
+效果：
 If the braced-init-list is empty and T is a class type with a default constructor, value-initialization is performed.
+如果列表为空，且类有默认构造函数，执行值初始化。
 Otherwise, if T is an aggregate type, aggregate initialization is performed.
-否则，如果T是聚合类型，使用聚合初始化。
+否则，如果T是聚合类型，执行聚合初始化。
 Otherwise, if T is a specialization of std::initializer_list, 
 a new std::initializer_list object of the same type is constructed and used to direct-initialize or copy-initialize the object of type T, 
 depending on context.
+否则，如果T使用了 std::initializer_list ，创建新的 std::initializer_list 对象，
+然后根据上下文，执行直接初始化或复制初始化。
 
 Otherwise, the constuctors of T are considered, in two phases:
-All constructors that take std::initializer_list as the only argument, or as the first argument if the remaining arguments have default values, are examined, and matched by overload resolution against a single argument of type std::initializer_list
+否则，考虑该类的构造函数，
+All constructors that take std::initializer_list as the only argument, 
+以 std::initializer_list 为唯一参数的所有构造函数，
+or as the first argument if the remaining arguments have default values, are examined, and matched by overload resolution against a single argument of type std::initializer_list
+或者，作为第一个参数，如果其它参数有默认值，且
 
-If the previous stage does not produce a match, all constructors of T participate in overload resolution against the set of arguments that consists of the elements of the braced-init-list, with the restriction that only narrowing conversions are allowed. If this stage produces an explicit constructor as the best match for a copy-list-initialization, compilation fails (note, in simple copy-initialization, explicit constructors are not considered at all)
+If the previous stage does not produce a match, 
+all constructors of T participate in overload resolution against the set of arguments that consists of the elements of the braced-init-list, 
+with the restriction that only narrowing conversions are allowed. 
+If this stage produces an explicit constructor as the best match for a copy-list-initialization, 
+compilation fails (note, in simple copy-initialization, explicit constructors are not considered at all)
+如果上述阶段没有找到合适的构造函数，
 
 Otherwise, if T is reference type, a prvalue temporary of the referenced type is list-initialized, and the reference is bound to that temporary.
+否则，如果T是引用类型，
+
 Otherwise, if the braced-init-list has only one element, T is direct-initialized or copy-initialized, depending on context, except that narrowing conversions are not allowed.
+否则，如果列表中只有一个元素，T根据上下文，执行直接初始化或复制初始化，除非窄转换不被允许。
+
 Otherwise, if the braced-init-list has no elements, T is value-initialized.
+如果列表没有元素，T执行值初始化。
 
 Narrowing conversions
+窄转换
 list-initialization limits the allowed implicit conversions by prohibiting the following:
-conversion from a floating-point type to an integer type
-conversion from a long double to double or to float and conversion from double to float, except where the source is a constant expression whose value can be stored exactly in the target type
-conversion from integer or unscoped enumeration type to integer type that cannot represent all values of the original, except where source is a constant expression whose value can be stored exactly in the target type
+（prohibiting，禁止。）
+列表初始化不允许下面的三种隐式转换：
 
+-1，conversion from a floating-point type to an integer type
+浮点类型向整型转换。
+-2，conversion from a long double to double or to float and conversion from double to float, 
+except where the source is a constant expression whose value can be stored exactly in the target type
+
+-3，conversion from integer or unscoped enumeration type to integer type that cannot represent all values of the original, 
+except where source is a constant expression whose value can be stored exactly in the target type
+
+----
 Notes
+注意
 
-Braced-init-list is not an expression and has no type on its own: for example, when calling a function template, braced-init-list argument cannot be used for template type deduction. A special exception is made for the keyword auto, which deduces any braced-init-list as std::initializer_list.
+Braced-init-list is not an expression and has no type on its own: 
+花括号初始化列表不是表达式，本身没有类型。
+for example, when calling a function template, braced-init-list argument cannot be used for template type deduction. 
+A special exception is made for the keyword auto, which deduces any braced-init-list as std::initializer_list.
 
 Example
 Run this code
+
 #include <iostream>
 #include <vector>
 #include <map>
 #include <string>
  
 struct Foo {
-    std::vector<int> mem = {1,2,3}; // list-initialization of a non-static member
+    std::vector<int> mem = {1,2,3}; // 非静态成员的列表初始化
     std::vector<int> mem2;
-    Foo() : mem2{-1, -2, -3} {} // list-initialization of a member in constructor
+    Foo() : mem2{-1, -2, -3} {} // 在构造函数中的成员初始化列表中
 };
  
 std::pair<std::string, std::string> f(std::pair<std::string, std::string> p)
 {
-    return {p.second, p.first}; // list-initialization in return statement
+    return {p.second, p.first}; // 返回语句中的列表初始化
 }
  
 int main()
 {
-    int n0{};     // value-initialization (to zero)
-    int n1{1};    // direct-list-initialization
+    int n0{};     // value-initialization (to zero) 值初始化
+    int n1{1};    // direct-list-initialization 直接列表初始化
     std::string s1{'a', 'b', 'c', 'd'}; // initializer-list constructor call
     std::string s2{s1, 2, 2};           // regular constructor call
     std::string s3{0x61, 'a'}; // initializer-list ctor is preferred to (int, char)
  
     int n2 = {1}; // copy-list-initialization
-    double d = double{1.2}; // list-initialization of a temporary, then copy-init
+    double d = double{1.2}; // list-initialization of a temporary, then copy-init 创建临时对象，然后复制初始化
  
     std::map<int, std::string> m = { // nested list-initialization
            {1, "a"},
@@ -198,11 +277,12 @@ abcd cd aa
 1 2 3 -1 -2 -3
 
 ====
-default initialization
+2，default initialization
 默认初始化
 http://en.cppreference.com/w/cpp/language/default_initialization
 
 Provides the default initial value to a new object.
+在声明时没有指定值。
 
 Syntax
 语法：
@@ -218,25 +298,29 @@ Default initialization is performed in three situations:
 1) when a variable with automatic storage duration is declared with no initializer
 自动变量，声明时没有指明值。
 2) when an object with dynamic storage duration is created by a new-expression without an initializer
-动态变量，使用new，没有指明值。
+动态变量，使用new表达式，没有指明值。
 3) when a base class or a non-static data member is not mentioned in a constructor initializer list and that constructor is called.
 基类或非静态数据成员，在构造初始化列表中未提及。
 
 The effects of default initialization are:
+效果：
 If T is a class type, the default constructor is called to provide the initial value for the new object.
-类类型，使用默认构造函数。
+类类型，执行默认构造函数。
 If T is an array type, every element of the array is default-initialized.
 数组类型，每个元素被默认初始化。
 Otherwise, nothing is done.
 否则，什么也不做。
 
 If T is a const-qualified type, it must be a class type with a user-provided default constructor.
+如果T是一个常量类型，它必须有用户自定义的默认构造函数。
 
 ----
 Notes
 注意
 
 Default initialization of non-class variables with automatic and dynamic storage duration produces objects with indeterminate values (static and thread-local objects get zero initialized)
+自动非class的变量，和动态变量，它们的默认初始化拥有不定的值。
+静态和线程本地变量初始化为零。
 
 Reference cannot be default-initialized.
 引用不能被默认初始化。
@@ -246,13 +330,17 @@ Example
 Run this code
 
 #include <string>
+
 struct T1 {};
+
 class T2 { 
     int mem;
  public:
     T2() {} // "mem" not in initializer list
 };
+
 int n; // This is not default-initialization, the value is zero.
+
 int main()
 {
     int n;            // non-class: the value is undeterminate
@@ -267,66 +355,91 @@ int main()
 }
 
 ====
-value initialization
+3，value initialization
 值初始化
 
 http://en.cppreference.com/w/cpp/language/value_initialization
 
 Provides the default initial value to a new object.
+默认初始值，空的圆括号或空的花括号。
 
 Syntax
 语法
 
 T();	 (1)	
-new T ();	 (2)	
-Class::Class(...) : member() {...	 (3)	
-T object {};	 (4)	(since C++11)
 T{};	 (5)	(since C++11)
+
+new T ();	 (2)	
 new T {};	 (6)	(since C++11)
+
+T object {};	 (4)	(since C++11)
+
+Class::Class(...) : member() {...	 (3)	
 Class::Class(...) :member{} {...	 (7)	(since C++11)
 
 ----
 Explanation
 
 Value initialization is performed in three situations:
+
 1,5) when a nameless temporary object is created with the initializer consisting of an empty pair of parentheses or braces(since C++11).
 匿名的临时对象，使用空圆括号或空花括号。
 
 2,6) when an object with dynamic storage duration is created by a new-expression with the initializer consisting of an empty pair of parentheses or braces(since C++11).
+动态变量，使用new表达式，使用空的圆括号或空的花括号。
 
 4) when a named variable (automatic, static, or thread-local) is declared with the initializer consisting of a pair of braces.
 (since C++11)
-动态对象，使用空圆括号或空花括号。
+命名变量，使用空圆括号或空花括号。
 
 3,7) when a non-static data member or a base class is initialized using a member initializer with an empty pair of parentheses or braces(since C++11)
+非静态数据成员，或者基类，在构造函数的初始化列表中，使用空的圆括号或花括号。
 
-In all cases, if the empty pair of braces {} is used and T is an aggregate type, aggregate-initialization is performed. If T is a class type that has no default constructor but has a constructor taking std::initializer_list, list-initialization is performed.(since C++11)
+In all cases, if the empty pair of braces {} is used and T is an aggregate type, aggregate-initialization is performed. 
+所有情况下，如果T是聚合体，使用空的花括号，会执行聚合初始化。
+If T is a class type that has no default constructor but has a constructor taking std::initializer_list, list-initialization is performed.(since C++11)
+如果T是一个类类型，没有默认构造函数，但有以 std::initializer_list 为唯一参数的构造函数，执行列表初始化。
 
 The effects of value initialization are:
+效果：
 If T is a class type with at least one user-provided constructor of any kind, the default constructor is called.
+如果T是一个类类型，至少含有一个用户定义的构造函数，默认构造函数被调用。？？
 If T is an non-union class type without any user-provided constructors, then every non-static data member and base-class component of T is value-initialized
 (until C++11)
+如果T是一个非联合体的类类型，没有用户自定义的构造函数，所有的非静态数据成员，和基类的成员，都执行值初始化。
 If T is an non-union class type without any user-provided constructors, then the object is zero-initialized and then the implicitly-declared default constructor is called (unless it's trivial)
 (since C++11)
+（trivial，琐细。）
+如果T是一个非联合体的类类型，没有用户自定义的构造函数，对象执行零初始化，然后执行自动生成的默认构造函数，除非？？
 
 This section is incomplete
 Reason: c++14 changes to [dcl.init]/8
+本节未完成，因为c++14有变更。
 
 If T is an array type, each element of the array is value-initialized
 Otherwise, the object is zero-initialized.
+如果T是数组类型，每个元素都执行值初始化，否则，对象执行零初始化。
 
 ----
 Notes
 注意
 
-The syntax T object(); does not initialize an object; it declares a function that takes no arguments and returns T. The way to value-initialize a named variable before C++11 was T object = T();, which value-initializes a temporary and then copy-initializes the object: most compilers optimize out the copy in this case.
+The syntax T object(); does not initialize an object; 
+it declares a function that takes no arguments and returns T.
+上述的语法不是初始化对象，而是定义了一个函数。 
+The way to value-initialize a named variable before C++11 was T object = T();, 
+which value-initializes a temporary and then copy-initializes the object: 
+most compilers optimize out the copy in this case.
+许多编译器对此进行了优化。
 
 References cannot be value-initialized.
 引用不能被值初始化。
 
 All standard containers (std::vector, std::list, etc) value-initialize their elements when constructed with a single size_type argument or when grown by a call to resize().
+所有的标准容器，会值初始化它的元素，当容器使用容量参数创建，或者调用容器的变容方法。
 
-Since C++11, value-initializing an class without a user-provided constructor, which has a member of a class type with a user-provided constructor zeroes out the member before calling its constructor:
+Since C++11, value-initializing an class without a user-provided constructor, 
+which has a member of a class type with a user-provided constructor zeroes out the member before calling its constructor:
 
 struct A {
     int i;
@@ -339,8 +452,10 @@ B b{}; // value-initializing B
        // leaves b.a.i uninitialized in C++03
        // sets b.a.i to zero in C++11
 
+----
 Example
 Run this code
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -349,11 +464,13 @@ struct T1 {
     int mem1;
     std::string mem2;
 }; // no constructors
+
 struct T2 { 
     int mem1;
     std::string mem2;
     T2(const T2&) {} // a constructor, but no default
 };
+
 struct T3 { 
     int mem1;
     std::string mem2;
@@ -361,6 +478,7 @@ struct T3 {
 };
  
 std::string s{}; // calls default ctor, the value is "" (empty string)
+
 int main()
 {
     int n{};     // non-class value-initialization, value is 0
@@ -381,12 +499,13 @@ int main()
     std::cout << t1.mem1 << ' ' << t3.mem1 << '\n';
     delete[] a;
 }
+
 Output:
 0 0 0 0 0
 0 4199376
 
 ====
-direct initialization
+4，direct initialization
 直接初始化
 http://en.cppreference.com/w/cpp/language/direct_initialization
 
@@ -409,30 +528,49 @@ T ( arg1, arg2, ... );
 (3)	
 
 static_cast< T >( other )	 (4)	
+
 new T(args, ...)	 (5)	
+
 Class::Class() : member(args, ...) {...	 (6)	
+
 [arg](){...	 (7)	(since C++11)
 
 Explanation
 
 Direct initialization is performed in the following situations:
 1) initialization with a nonempty parenthesized list of expressions
+非空的圆括号列表。
 2) during list-initialization sequence, if no initializer-list constuctors are provided and a matching constructor is accessible, and all necessary implicit conversions are non-narrowing.
 3) initialization of a prvalue temporary by functional cast or with a parenthesized expression list
 4) initialization of a prvalue temporary by a static_cast expession
+静态类型转换。
 5) initialization of an object with dynamic storage duration by a new-expression with a non-empty initializer
 6) initialization of a base or a non-static member by constructor initializer list
 7) initialization of closure object members from the variables caught by copy in a lambda-expression
 
 The effects of direct initialization are:
-If T is a class type, the constructors of T are examined and the best match is selected by overload resolution. The constructor is then called to initialize the object.
-Otherwise, if T is a non-class type, standard conversions are used, if necessary, to convert the value of other to the cv-unqualified version of T.
+效果：
+If T is a class type, the constructors of T are examined and the best match is selected by overload resolution. 
+The constructor is then called to initialize the object.
 
+Otherwise, if T is a non-class type, standard conversions are used, 
+if necessary, to convert the value of other to the cv-unqualified version of T.
+
+----
 Notes
-Direct-initialization is more permissive than copy-initialization: copy-initialization only considers non-explicit constructors and user-defined conversion functions, while direct-initialization considers all constructors and implicit conversion sequences.
+注意
 
+Direct-initialization is more permissive than copy-initialization: 
+直接初始化比复制初始化更宽容。
+copy-initialization only considers non-explicit constructors and user-defined conversion functions, 
+复制初始化只考虑“非明确的”构造函数，和用户自定义的转换函数，
+while direct-initialization considers all constructors and implicit conversion sequences.
+而直接初始化考虑所有的构造函数，和隐式的转换序列。
+
+----
 Example
 Run this code
+
 #include <string>
 #include <iostream>
 #include <memory>
@@ -462,7 +600,7 @@ Output:
 test aaaaaaaaaa 1 2
 
 ====
-copy initialization
+5，copy initialization
 复制初始化
 http://en.cppreference.com/w/cpp/language/copy_initialization
 
@@ -474,34 +612,55 @@ Syntax
 
 T object = other ;	 (1)	
 f(other);	 (2)	
+
 return other;	 (3)	
 catch ( T other) ;	 (4)	
+
 T array [ N ] = { other };	 (5)	
 
+----
 Explanation
 
 Copy initialization is performed in the following situations:
+
 1) when a named variable (automatic, static, or thread-local) is declared with the initializer consisting of an equals sign followed by an expression.
+使用赋值操作符。
 2) when passing an argument to a function by value
+作为函数的参数。
 3) when returning from a function that returns by value
+作为函数的返回值。
 4) when catching an exception by value
 5) as part of aggregate initialization, to initialize each element for which an initializer is provided
+作为聚合初始化的一部分。
 
 The effects of copy initialization are:
-If T is a class type and the type of other is cv-unqualified version of T or a class derived from T, the constructors of T are examined and the best match is selected by overload resolution. The constructor is then called to initialize the object.
+效果：
+If T is a class type and the type of other is cv-unqualified version of T or a class derived from T, 
+the constructors of T are examined and the best match is selected by overload resolution. 
+The constructor is then called to initialize the object.
 
-If T is a class type, and the type of other is different, or if T is non-class type, but the type of other is a class type, user-defined conversion sequences that can convert from the type of other to T are examined and the best one is selected through overload resolution. The result of the conversion, which is a prvalue temporary of the destination type, is then used to direct-initialize the object. The last step is usually eliminated and the result of the conversion function is constructed directly in the memory allocated for the target object, but the copy constructor is required to be accessible even though it's not used.
+If T is a class type, and the type of other is different, 
+or if T is non-class type, but the type of other is a class type, 
+user-defined conversion sequences that can convert from the type of other to T are examined and the best one is selected through overload resolution. 
+The result of the conversion, which is a prvalue temporary of the destination type, is then used to direct-initialize the object. 
+The last step is usually eliminated and the result of the conversion function is constructed directly in the memory allocated for the target object, 
+but the copy constructor is required to be accessible even though it's not used.
 
-Otherwise (if neither T nor the type of other are class types), standard conversions are used, if necessary, to convert the value of other to the cv-unqualified version of T.
+Otherwise (if neither T nor the type of other are class types), standard conversions are used, 
+if necessary, to convert the value of other to the cv-unqualified version of T.
 
+----
 Notes
+注意
 
-Copy-initialization is less permissive than direct-initialization: copy-initialization only considers non-explicit constructors and user-defined conversion functions.
+Copy-initialization is less permissive than direct-initialization: 
+copy-initialization only considers non-explicit constructors and user-defined conversion functions.
 
 If other is an rvalue expression, move constructor will be selected by overload resolution and called during copy-initialization.
 Implicit conversion is defined in terms of copy-initialization: if an object of type T can be copy-initialized with expression E, then E is implicitly convertible to T.
 The equals sign, =, in copy-initialization of a named variable is not related to the assignment operator. Assignment operator overloads have no effect on copy-initialization.
 
+----
 Example
 Run this code
 
@@ -523,7 +682,7 @@ int main()
 }
 
 ====
-aggregate initialization
+6，aggregate initialization
 聚合初始化
 http://en.cppreference.com/w/cpp/language/aggregate_initialization
 
@@ -546,6 +705,7 @@ An aggregate is an object of the type that is one of the following
 所谓聚合体，指以下类型：
 
 -1，array type
+数组类型。
 -2，class type (typically, struct or union), that has
 no private or protected members
 no user-provided constructors (explicitly defaulted or deleted constructors are allowed)
@@ -555,6 +715,7 @@ no brace-or-equal initializers for non-static members
 结构体或联合体，没有私有和受保护成员，没有用户提供的构造函数，没有基类，没有虚函数，非静态成员没有圆括号或赋值初始化器。
 
 The effects of aggregate initialization are:
+效果：
 
 Each array element or non-static class member, in order of array subscript/appearance in the class definition, is copy-initialized from the corresponding clause of the initializer list.
 
@@ -570,9 +731,15 @@ If the aggregate initialization uses the form with the equal sign (T a = {args..
 
 When a union is initialized by aggregate initialization, only its first non-static data members is initialized.
 
+----
 Character arrays
+字符数组
 
-Arrays of character types (char, signed char, unsigned char, char16_t, char32_t, wchar_t) can be initialized from an appropriate string literal, optionally enclosed in braces. Successive characters of the the string literal (which includes the implicit terminating null character) initialize the elements of the array. If the size of the array is specified and it is larger than the number of characters in the string literal, the remaining characters are zero-initialized.
+Arrays of character types (char, signed char, unsigned char, char16_t, char32_t, wchar_t) can be initialized from an appropriate string literal, 
+optionally enclosed in braces. 
+Successive characters of the the string literal (which includes the implicit terminating null character) initialize the elements of the array. 
+If the size of the array is specified and it is larger than the number of characters in the string literal, the remaining characters are zero-initialized.
+可以使用字符串字面量来初始化字符数组。
 
 char a[] = "abc";
 // equivalent to char a[4] = {'a', 'b', 'c', '\0'};
@@ -584,12 +751,20 @@ unsigned char b[5]{"abc"};
 wchar_t c[] = {L"кошка"}; // optional braces
 // equivalent to wchar_t c[6] = {L'к', L'о', L'ш', L'к', L'а', L'\0'};
 
+----
 Notes
+注意
+
 Until C++11, narrowing conversions were permitted in aggregate initialization, but they are no longer allowed.
 Until C++11, aggregate initialization could not be used in a constructor initializer list due to syntax restrictions.
 Until C++14, the direct-initialization form T a {args..} did not permit brace elision.
-In C, character array of size one less than the size of the string literal may be initialized from a string literal; the resulting array is not null-terminated. This is not allowed in C++.
 
+In C, character array of size one less than the size of the string literal may be initialized from a string literal; 
+the resulting array is not null-terminated. 
+This is not allowed in C++.
+在c中，字符数组如果长度比字符串字面量少一，字符数组会没有终止字符。在c++中，这是不允许的。
+
+----
 Example
 Run this code
 
@@ -644,7 +819,7 @@ int main()
 }
 
 ====
-reference initialization
+7，reference initialization
 引用初始化
 http://en.cppreference.com/w/cpp/language/reference_initialization
 
@@ -681,46 +856,70 @@ Explanation
 
 A reference to T can be initialized with an object of type T, a function of type T, or an object implicitly convertible to T. 
 Once initialized, a reference cannot be changed to refer to another object.
+一旦初始化，引用不能再改变。
 
 References are initialized in the following situations:
+
 1) When a named lvalue reference variable is declared with an initializer
+一个命名的左值引用。
 2) When a named rvalue reference variable is declared with an initializer
+一个命名的右值引用。
 3) In a function call expression, when the function parameter has reference type
+作为函数的参数，当函数参数为引用类型。
 4) In the return statement, when the function returns a reference type
+作为函数的返回值，当函数返回值为引用类型。
 
 The effects of reference initialization are:
+效果：
+
 If the reference is an lvalue reference:
 
-If object is an lvalue expression, and its type is T or derived from T, and is equally or less cv-qualified, then the reference is bound to the object identified by the lvalue or the base class subobject of the object.
+If object is an lvalue expression, and its type is T or derived from T, 
+and is equally or less cv-qualified, then the reference is bound to the object identified by the lvalue or the base class subobject of the object.
 
-If object is an lvalue expression, and its type is implicitly convertible to a type that is either T or derived from T, equally or less cv-qualified, then the non-explicit conversion functions of the source type and its base classes that return lvalue references are considered and the best one is selected by overload resolution. The reference is then bound to the object identified by the lvalue returned by the conversion function (or its base class subobject)
+If object is an lvalue expression, and its type is implicitly convertible to a type that is either T or derived from T, 
+equally or less cv-qualified, then the non-explicit conversion functions of the source type and its base classes that return lvalue references 
+are considered and the best one is selected by overload resolution. 
+The reference is then bound to the object identified by the lvalue returned by the conversion function (or its base class subobject)
 
 Otherwise, if the reference is either rvalue reference or lvalue reference to const:
 
-If object is an xvalue, a class prvalue, an array prvalue, or a function lvalue type that is either T or derived from T, equally or less cv-qualified, then the reference is bound to the value of the initializer expression or its base subobject.
+If object is an xvalue, a class prvalue, an array prvalue, or a function lvalue type that is either T or derived from T, 
+equally or less cv-qualified, then the reference is bound to the value of the initializer expression or its base subobject.
 
-If object is a class type expression that can be implicitly converted to an xvalue, a class prvalue, or a function value of type that is either T or derived from T, equally or less cv-qualified, then the reference is bound to the result of the conversion or its base subobject.
+If object is a class type expression that can be implicitly converted to an xvalue, a class prvalue, or a function value of type that is either T or derived from T, 
+equally or less cv-qualified, then the reference is bound to the result of the conversion or its base subobject.
 
 Otherwise, a temporary of type T is constructed and copy-initialized from object. The reference is then bound to this temporary.
 
 Lifetime of a temporary
 
-Whenever a reference is bound to a temporary or to a base subobject of a temporary, the lifetime of the temporary is extended to match the lifetime of the reference, with the following exceptions:
+Whenever a reference is bound to a temporary or to a base subobject of a temporary, 
+the lifetime of the temporary is extended to match the lifetime of the reference, with the following exceptions:
 
-a temporary bound to a return value of a function in a return statement is not extended: it is destroyed immediately at the end of the return expression. Such function always returns a dangling reference.
+a temporary bound to a return value of a function in a return statement is not extended: it is destroyed immediately at the end of the return expression. 
+Such function always returns a dangling reference.
 
 a temporary bound to a reference member in a constructor initializer list persists only until the constructor exits, not as long as the object exists.
 
-a temporary bound to a reference parameter in a function call exists until the end of the full expression containing that function call: if the function returns a reference, which outlives the full expression, it becomes a dangling reference.
+a temporary bound to a reference parameter in a function call exists until the end of the full expression containing that function call: 
+if the function returns a reference, which outlives the full expression, it becomes a dangling reference.
 
-a temporary bound to a reference in the initializer used in a new-expression exists until the end of the full expression containing that new-expression, not as long as the initialized object. If the initialized object outlives the full expression, its reference member becomes a dangling reference.
+a temporary bound to a reference in the initializer used in a new-expression exists until the end of the full expression containing that new-expression, not as long as the initialized object. 
+If the initialized object outlives the full expression, its reference member becomes a dangling reference.
 
-In general, the lifetime of a temporary cannot be further extended by "passing it on": a second reference, initialized from the reference to which the temporary was bound, does not affect its lifetime.
+In general, the lifetime of a temporary cannot be further extended by "passing it on": 
+a second reference, initialized from the reference to which the temporary was bound, does not affect its lifetime.
 
+----
 Notes
+注意
 
 References appear without initializers only in function parameter declaration, in function return type declaration, in the declaration of a class member, and with the extern specifier.
+只有下述情况，引用不带初始化。
+作为函数参数声明时，作为函数返回值声明时，作为类的成员的声明时，作为extern时。
 
+----
 Example
 Run this code
 
