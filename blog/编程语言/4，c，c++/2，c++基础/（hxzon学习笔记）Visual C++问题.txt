@@ -1,0 +1,33 @@
+﻿（hxzon学习笔记）Visual C++问题
+
+by hxzon
+====
+1，VS2010链接错误：LINK : fatal error LNK1123: 转换到 COFF 期间失败: 文件无效或损坏
+
+网上有多种解决办法，我用最懒的一种，系统是Win7 X86，方法如下：
+C:\Windows\Microsoft.NET\Framework\v4.0.30319\cvtres.exe
+C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\cvtres.exe
+右键属性中，选择[详细信息]，对比这两个的版本，那个老的版本，直接删除，Shift+Del就行了。
+
+hxzon：使用VS2013，但平台工具集使用的是2010。
+将Microsoft Visual Studio 10.0\VC\bin\cvtres.exe文件改名，
+出现新错误：
+warning LNK4099: 未找到 PDB“vc100.pdb”
+
+2，warning LNK4099: 未找到 PDB“vc100.pdb”
+
+网上方法1：
+当多个Project是分开编译的，主项目和子项目的pdb文件名相同(默认都是vc90.pdb或vc100.pdb)，
+从而造成找不到调试信息，解决的办法是修改程序数据库文件名vc90.pdb为【项目名称.pdb】，如下图：
+xxx属性页-》配置属性-》C/C++-》输出文件-》对象文件名，程序数据库文件名。
+
+网上方法2：
+解决方案：在工程属性页 配置 release 平台 活动（win32）设置：
+配置属性 -> 链接器 -> 调试 -> 生成调试信息 -> 否
+
+3，使用cmake生成vs2010工程，用vs2013打开时不升级。
+成功编译，但是生成的exe运行时，提示：
+应用程序无法启动，因为应用程序的并行配置不正确。
+有关详细信息，请参阅应用程序事件日志，或使用命令行 sxstrace.exe 工具。
+
+

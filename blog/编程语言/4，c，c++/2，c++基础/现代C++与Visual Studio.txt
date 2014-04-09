@@ -1,0 +1,69 @@
+﻿现代C++与Visual Studio
+作者 Jeff Martin ，译者 臧秀涛 发布于 2014年4月8日
+http://www.infoq.com/cn/news/2014/04/modern_cpp
+
+在微软的Build 大会上，Herb Sutter就现代C++（Modern C++）的当前状态发表了一场演讲。在微软，过去的几年里C++的推广经历了一次复兴，而关注程度的上升，部分是由Sutter主导的。
+
+即将发布的C++版本
+
+一开场，Sutter先总结了ISO C++标准目前到了什么地步。
+2月份已经完成了关于C++14的技术讨论，标准委员会目前正在审阅会议记录，希望今年晚些时候举行表决，使该标准成为正式的ISO标准。
+
+C++14被看作一个小幅修订版本，即将到来的C++17标准（仍然在设计和讨论之中）则被看作一个主要版本。
+微软最新的编译器预览版（CTP）是去年11月发布的。
+Sutter非常自信，下一个CTP版本（发布日期尚未透露）有望包含下列特性：
+
+User-defined literals
+C++14 generalized lambda capture
+C++14 libs: std:: user-defined literals
+Inline namespaces
+
+下列特性包含在下一CTP版本中的可能性居中（这意味着有可能推迟到更晚的版本中）：
+
+Universal character names in literals
+noexcept (incl. conditional)
+char16_t, char32_t, attributes
+thread_local
+unrestricted unions
+consexpr (except ctors, literal types)
+constexpr (incl. ctors, literal types)
+
+并行STL（对PPL、TBB、Amp、CUDA和Thrust的聚合）近日将发布在CodePlex上。
+https://parallelstl.codeplex.com/
+Sutter宣布，微软在过去的两年赞助的C++会议GoingNative已经被CPPCon取代，该会议计划于今年9月7日-12日举行。
+
+现代C++ 的使用场景
+
+演讲的下一部分，他从版本相关的讨论转到了现代C++在今天的应用开发中的使用场景上。
+在Sutter看来，当存在下列目标或意图时应该使用C++：
+
+跨平台的可移植性和兼容性
+高性能、完全控制
+对硬件和操作系统资源完全的访问权限
+C++语言的亮点：默认的值类型、默认的确定性以及默认的连续性
+
+Sutter指出，现代C++并非C++98——现代C++更为清晰、更为安全，同时保留了快速、灵活的特性。
+这并不是说不再支持老式的C++了，
+在很多情况下，尽管编译器会就代码如何改进给出一些警告和建议，但是老式的代码还能通过编译。
+
+现代C++提供的一个特性就是，使用make_unique或make_shared替换掉new，内存管理有所简化（从程序员的角度看）。
+不需要delete，自动化的生命周期管理，而且是异常安全的。
+
+另一个领域是，如何针对move操作更高效地处理值类型。C++11添加了move语义。
+基于这种方法，对于一会就要删除的副本，我们可以获得所有权，而不是复制对象。
+对于遗留代码，简单地利用支持C++14的编译器重新编译，即可通过改进的move语义提高其速度。
+
+编写更快的代码
+
+连续数组非常重要，但是很多人往往领会不到，如果正在访问很多对象，开发者会非常希望以邻接的地址顺序访问它们。
+如果非常关注性能，则要使用数组，而不是链表（list）或arraylist。
+
+继续这一主题，Sutter提供了基准测试，
+表明在进行插入和删除操作时，向量（vector）比链表（list）好得多。
+预分配的链表比普通的链表快，但是两者都比向量慢。
+
+Sutter的演讲信息量很大，而且他还是一位很有魅力的演讲者。
+可以访问Channel9查看完整的演讲。
+
+查看英文原文：Modern C++ and Visual Studio
+

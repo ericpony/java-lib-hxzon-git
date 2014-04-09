@@ -7,10 +7,10 @@ hxzon摘要：
 1，列表初始化。
 2，默认初始化：不指明值。
 3，值初始化：使用空的圆括号或花括号。
-4，直接初始化
-5，复制初始化
+4，直接初始化：使用赋值操作符。
+5，复制初始化：不实用赋值操作符。
 
-6，聚合初始化
+6，聚合初始化：列表初始化的一种，用于数组和结构体。
 7，引用初始化
 
 ====
@@ -33,7 +33,7 @@ For each declarator, the initializer may be one of the following:
 1) comma-separated list of arbitrary expressions in parentheses
 圆括号。
 2) the equals sign followed by an expression
-等号，复制初始化。
+赋值操作符（等号），复制初始化。
 3) braced-init-list: possibly empty, comma-separated list of expressions and other braced-init-lists
 花括号，列表初始化。
 
