@@ -1,0 +1,176 @@
+﻿（官方）C#编译器选项
+
+
+按类别列出的 C# 编译器选项
+http://msdn.microsoft.com/zh-cn/library/6s2x2bzy.aspx
+
+Visual Studio 2013
+
+下列编译器选项按类别排序。 有关按字母顺序排序的列表，请参见按字母顺序列出的 C# 编译器选项。
+
+====
+优化
+
+/filealign
+指定输出文件中节的大小。
+
+/optimize
+启用/禁用优化。
+
+====
+输出文件
+
+/doc
+指定要将处理的文档注释写入到其中的 XML 文件。
+
+/out
+指定输出文件。
+
+/pdb
+指定 .pdb 文件的文件名和位置。
+
+/platform
+指定输出平台。
+
+/preferreduilang
+指定编译器输出的语言。
+
+/target
+指定输出文件使用五个选项之一的格式： /target:appcontainerexe， /target:exe， /target:library， /target:module， /target:winexe，或 /target:winmdobj。
+
+====
+.NET Framework 程序集
+
+/addmodule
+指定一个或多个模块作为此程序集的一部分。
+
+/delaysign
+指示编译器添加公钥，但将此程序集保留为未签名状态。
+
+/keycontainer
+指定加密密钥容器的名称。
+
+/keyfile
+指定包含加密密钥的文件名。
+
+/lib
+指定通过 /reference 引用的程序集的位置。
+
+/nostdlib
+指示编译器不导入标准库 (mscorlib.dll)。
+
+/reference
+从包含程序集的文件中导入元数据。
+
+====
+调试/错误检查
+
+/bugreport
+创建一个文件，该文件包含有助于报告 bug 的信息。
+
+/checked
+指定溢出数据类型边界的整数算法是否将在运行时导致异常。
+
+/debug
+指示编译器发出调试信息。
+
+/errorreport
+设置错误报告行为。
+
+/fullpaths
+指定编译器输出中的文件的绝对路径。
+
+/nowarn
+取消编译器生成指定警告的功能。
+
+/warn
+设置警告等级。
+
+/warnaserror
+将警告提升为错误。
+
+====
+预处理器
+
+/define
+定义预处理器符号。
+
+====
+资源
+
+/link
+使指定程序集中的 COM 类型信息可用于项目。
+
+/linkresource
+创建到托管资源的链接。
+
+/resource
+将一个 .NET Framework 资源嵌入到输出文件中。
+
+/win32icon
+指定插入到输出文件中的 .ico 文件。
+
+/win32res
+指定插入到输出文件中的 Win32 资源。
+
+====
+杂项
+
+@
+指定响应文件。
+
+/?
+将编译器选项列出到 stdout。
+
+/baseaddress
+指定加载 DLL 的首选基址。
+
+/codepage
+指定要用于编译中所有源代码文件的代码页。
+
+/help
+将编译器选项列出到 stdout。
+
+/highentropyva
+指定的可执行文件支持地址空间布局随机化 (ASLR)。
+
+/langversion
+指定要使用的语言版本。
+
+/main
+指定 Main 方法的位置。
+
+/noconfig
+指示编译器不使用 csc.rsp 进行编译。
+
+/nologo
+不显示编译器版权标志信息。
+
+/recurse
+在子目录中搜索要编译的源文件。
+
+/subsystemversion
+指定最小的可执行文件可以使用的子系统版本。
+
+/unsafe
+允许编译使用 unsafe 关键字的代码。
+
+/utf8output
+使用 UTF-8 编码显示编译器输出。
+
+====
+已过时的选项
+
+/incremental
+启用增量编译。
+
+========
+========
+请参见
+
+如何：设置环境变量
+
+按字母顺序列出的 C# 编译器选项
+
+C# 编译器选项
+

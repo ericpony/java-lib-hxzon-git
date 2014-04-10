@@ -1,0 +1,217 @@
+﻿（官方）C#“特性”
+
+特性（C# 和 Visual Basic）
+http://msdn.microsoft.com/zh-cn/library/z0w1kczw.aspx
+
+Visual Studio 2013
+
+hxzon：即java中的注解。
+====
+特性提供功能强大的方法，用以将元数据或声明信息与代码（程序集、类型、方法、属性等）相关联。 
+特性与程序实体关联后，即可在运行时使用名为“反射”的技术查询特性。 
+有关更多信息，请参见 反射（C# 和 Visual Basic）。
+
+特性具有以下属性：
+
+特性可向程序中添加元数据。 
+元数据是有关在程序中定义的类型的信息。 
+所有的 .NET 程序集都包含指定的一组元数据，这些元数据描述在程序集中定义的类型和类型成员。 
+可以添加自定义特性，以指定所需的任何附加信息。 
+有关更多信息，请参见 创建自定义特性（C# 和 Visual Basic）。
+
+可以将一个或多个特性应用到整个程序集、模块或较小的程序元素（如类和属性）。
+特性可以与方法和属性相同的方式接受参数。
+程序可以使用反射检查自己的元数据或其他程序内的元数据。 
+有关更多信息，请参见 使用反射访问特性（C# 和 Visual Basic）。
+
+使用特性
+
+特性可以放置在几乎所有的声明中（但特定的特性可能限制在其上有效的声明类型）。 
+在 C# 中，特性的指定方法为：将括在方括号中的特性名置于其应用到的实体的声明上方。 
+在 Visual Basic 中，特性括在尖括号 (< >) 内。 
+它必须位于所应用于的元素的紧前面并与该元素在同一行。
+
+在本例中，使用特性 SerializableAttribute 将特定特征应用于类：
+C#
+
+[System.Serializable]
+public class SampleClass
+{
+    // Objects of this type can be serialized.
+}
+
+
+具有 DllImportAttribute 特性的方法的声明如下：
+C#
+
+using System.Runtime.InteropServices;
+
+...
+
+[System.Runtime.InteropServices.DllImport("user32.dll")]
+extern static void SampleMethod();
+
+
+一个声明上可放置多个特性：
+C#
+
+using System.Runtime.InteropServices;
+
+...
+
+void MethodA([In][Out] ref double x) { }
+void MethodB([Out][In] ref double x) { }
+void MethodC([In, Out] ref double x) { }
+
+某些特性对于给定实体可以指定多次。 
+例如，ConditionalAttribute 就是一个可多次使用的特性：
+C#
+
+[Conditional("DEBUG"), Conditional("TEST1")]
+void TraceMethod()
+{
+    // ...
+}
+
+====
+说明
+
+根据约定，所有特性名称都以单词“Attribute”结束，以便将它们与“.NET Framework”中的其他项区分。 
+但是，在代码中使用特性时，不需要指定 attribute 后缀。 
+例如，[DllImport] 虽等效于 [DllImportAttribute]，但 DllImportAttribute 才是该特性在 .NET Framework 中的实际名称。
+
+====
+特性参数
+
+许多特性都有参数，而这些参数可以是定位参数、未命名参数或命名参数。 任何定位参数都必须按特定顺序指定并且不能省略，而命名参数是可选的且可以按任意顺序指定。 
+首先指定定位参数。 
+例如，这三个特性是等效的：
+C#
+
+[DllImport("user32.dll")]
+[DllImport("user32.dll", SetLastError=false, ExactSpelling=false)]
+[DllImport("user32.dll", ExactSpelling=false, SetLastError=false)]
+
+第一个参数（DLL 名称）是定位参数并且总是第一个出现，其他参数为命名参数。 
+在这种情况下，两个命名参数均默认为 false，因此可将其省略。 
+有关默认参数值的信息，请参考各个特性的文档。
+
+====
+特性目标
+
+特性的目标是应用该特性的实体。 
+例如，特性可以应用于类、特定方法或整个程序集。 
+默认情况下，特性应用于它后面的元素。 
+但是，您也可以显式标识要将特性应用于方法还是它的参数或返回值。
+若要显式标识特性目标，请使用下面的语法：
+C#
+[target : attribute-list]
+
+下表显示了可能的 target 值的列表。
+C#
+Visual Basic
+适用对象
+
+assembly
+Assembly
+整个程序集
+
+module
+Module
+当前程序集模块（不同于 Visual Basic 模块）
+
+field
+不支持
+在类或结构中的字段
+
+event
+不支持
+event
+
+method
+不支持
+方法或 get 和 set 属性访问器
+
+param
+不支持
+方法参数或 set 属性访问器参数
+
+property
+不支持
+属性
+
+return
+不支持
+方法、属性索引器或 get 属性访问器的返回值
+
+type
+不支持
+结构、类、接口、枚举或委托
+
+下面的示例演示如何将特性应用于程序集和模块。 
+有关更多信息，请参见 常用特性（C# 和 Visual Basic）。
+C#
+
+using System;
+using System.Reflection;
+[assembly: AssemblyTitleAttribute("Production assembly 4")]
+[module: CLSCompliant(true)]
+
+下面的示例演示如何在 C# 中将特性应用于方法、方法参数和方法返回值。
+C#
+
+// default: applies to method
+[SomeAttr]
+int Method1() { return 0; }
+
+// applies to method
+[method: SomeAttr]
+int Method2() { return 0; }
+
+// applies to return value
+[return: SomeAttr]
+int Method3() { return 0; }
+
+
+说明
+无论规定 SomeAttr 应用于什么目标，都必须指定 return 目标，即使 SomeAttr 被定义为仅应用于返回值也是如此。 
+换言之，编译器将不使用 AttributeUsage 信息解析不明确的特性目标。 
+有关更多信息，请参见 AttributeUsage（C# 和 Visual Basic）。
+
+====
+特性的常见用途
+
+以下列表包含特性的几个常见用途：
+
+在 Web 服务中，使用 WebMethod 特性来标记方法，以指示该方法应该可通过 SOAP 协议进行调用。 
+有关更多信息，请参见 WebMethodAttribute。
+
+描述当与本机代码进行交互操作时如何封送方法参数。 有关更多信息，请参见 MarshalAsAttribute。
+
+描述类、方法和接口的 COM 属性。
+
+使用 DllImportAttribute 类调用非托管代码。
+
+在标题、版本、说明或商标方面描述您的程序集。
+
+描述要持久性序列化类的哪些成员。
+
+描述如何映射类成员和 XML 节点以便进行 XML 序列化。
+
+描述方法的安全要求。
+
+指定用于强制安全性的特性。
+
+由实时 (JIT) 编译器控制优化，以便易于调试代码。
+
+获取有关调用方的信息的方法。
+
+====
+相关章节
+
+创建自定义特性（C# 和 Visual Basic）
+使用反射访问特性（C# 和 Visual Basic）
+如何：使用特性创建 C/C++ 联合（C# 和 Visual Basic）
+常用特性（C# 和 Visual Basic）
+调用方信息（C# 和 Visual Basic）
+

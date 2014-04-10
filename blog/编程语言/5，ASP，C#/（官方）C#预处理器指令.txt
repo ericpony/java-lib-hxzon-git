@@ -1,0 +1,234 @@
+﻿（官方）C#预处理器指令
+
+by hxzon
+====
+1，#region
+使您可以在使用 Visual Studio 代码编辑器的大纲显示功能时指定可展开或折叠的代码块。
+http://msdn.microsoft.com/zh-cn/library/9a1ybwek.aspx
+
+示例：
+		#region xxx
+        ...
+		#endregion
+
+====
+2，#if
+如果 C# 编译器遇到最后面跟有 #endif 指令的 #if 指令，则仅当指定的符号已定义时，它才会编译这两个指令之间的代码。
+
+示例：
+#define DEBUG
+#define MYTEST
+using System;
+public class MyClass 
+{
+    static void Main() 
+    {
+#if (DEBUG && !MYTEST)
+        Console.WriteLine("DEBUG is defined");
+#elif (!DEBUG && MYTEST)
+        Console.WriteLine("MYTEST is defined");
+#elif (DEBUG && MYTEST)
+        Console.WriteLine("DEBUG and MYTEST are defined");
+#else
+        Console.WriteLine("DEBUG and MYTEST are not defined");
+#endif
+    }
+}
+
+3，#define
+使用 #define 定义符号，当您将符号用作传递给 #if 指令的表达式时，此表达式的计算结果为 true 。
+
+4，#undef
+使您可以取消符号的定义，以便通过将该符号用作 #if 指令中的表达式，使表达式的计算结果为 false。
+
+5，#pragma
+为编译器提供特殊的指令，以说明如何编译包含杂注的文件。
+这些指令必须是编译器支持的指令。
+也就是说，不能使用 #pragma 创建自定义预处理指令。
+Microsoft C# 编译器支持以下两个 #pragma 指令：
+#pragma warning
+#pragma checksum
+
+#pragma pragma-name pragma-arguments
+
+====
+6，#pragma warning
+可启用或禁用某些警告。
+
+#pragma warning disable warning-list
+#pragma warning restore warning-list
+
+参数
+warning-list
+警告编号的逗号分隔列表。 只输入数字，不包括前缀 "CS"。
+当没有指定警告编号时，disable 禁用所有警告，而 restore 启用所有警告。
+
+说明
+要在 Visual Studio 中查找警告编号，请先生成项目，再在“输出”窗口中查找警告编号。
+
+示例：
+
+ // pragma_warning.cs
+using System;
+
+#pragma warning disable 414, 3021
+[CLSCompliant(false)]
+public class C
+{
+    int i = 1;
+    static void Main()
+    {
+    }
+}
+#pragma warning restore 3021
+[CLSCompliant(false)]  // CS3021
+public class D
+{
+    int i = 1;
+    public static void F()
+    {
+    }
+}
+
+====
+7，#pragma checksum
+
+生成源文件的校验和，以帮助调试 ASP.NET 页。
+#pragma checksum "filename" "{guid}" "checksum bytes"
+
+参数
+
+"filename"
+要求监视更改或更新的文件的名称。
+
+"{guid}"
+文件的全局唯一标识符 (GUID)。
+
+"checksum_bytes"
+十六进制数的字符串，表示校验和的字节。 必须是偶数位的十六进制数。 奇数位的十六进制数字会导致编译时警告，然后指令被忽略。
+
+备注
+Visual Studio 调试器使用校验和来确保找到的总是正确的源。 
+编译器计算源文件的校验和，然后将输出发出到程序数据库 (PDB) 文件。 
+最后，调试器使用 PDB 来比较它为源文件计算的校验和。
+此解决方案不适用于 ASP.NET 项目，因为算出的校验和是生成的源文件的校验和，而不是 .aspx 文件的校验和。 
+为解决此问题，#pragma checksum 为 ASP.NET 页提供了校验和支持。
+在 Visual C# 中创建 ASP.NET 项目时，生成的源文件包含 .aspx 文件（从该文件生成源文件）的校验和。 
+然后，编译器将此信息写入 PDB 文件。
+如果编译器在该文件中没有遇到 #pragma checksum 指令，它将计算校验和，然后将算出的值写入 PDB 文件。
+
+示例
+ class TestClass
+{
+    static int Main()
+    {
+        #pragma checksum "file.cs" "{3673e4ca-6098-4ec1-890f-8fceb2a794a2}" "{012345678AB}" // New checksum
+    }
+}
+
+====
+8，#line
+使您可以修改编译器的行号以及（可选）错误和警告的文件名输出。 
+下面的示例说明如何报告与行号关联的两个警告。 
+#line 200 指令将行号强制设置为 200（尽管默认行号为 #7），在执行下一条 #line 指令之前，文件名将报告为“Special”。 
+#line default 指令将行号恢复为默认行号，默认行号对前一条指令重新编号的行进行计数。
+
+class MainClass
+{
+    static void Main()
+    {
+#line 200 "Special"
+        int i;    // CS0168 on line 200
+        int j;    // CS0168 on line 201
+#line default
+        char c;   // CS0168 on line 9
+        float f;  // CS0168 on line 10
+#line hidden // numbering not affected
+        string s; 
+        double d; // CS0168 on line 13
+    }
+}
+
+备注
+
+#line 指令可能由生成过程中的自动中间步骤使用。 
+例如，如果行从原始的源代码文件中移除，但是您仍希望编译器基于文件中的原始行号生成输出，则可以移除行，然后用 #line 模拟原始行号。
+
+#line hidden 指令对调试器隐藏若干连续的行，这样当开发人员在逐句通过代码时，
+将会跳过 #line hidden 和下一个 #line 指令（假定它不是另一个 #line hidden 指令）之间的所有行。 
+此选项也可用来使 ASP.NET 能够区分用户定义的代码和计算机生成的代码。 
+尽管 ASP.NET 是此功能的主要使用者，但很可能将有更多的源生成器使用它。
+
+#line hidden 指令不会影响错误报告中的文件名或行号。 
+即，如果在隐藏块中遇到错误，编译器将报告当前文件名和错误的行号。
+
+#line filename 指令指定您希望出现在编译器输出中的文件名。 
+默认情况下，使用源代码文件的实际名称。 
+文件名必须用双引号 ("") 引起来且前面必须带一个行号。
+源代码文件可以具有 #line 指令的任何编号。
+
+示例 1
+下面的示例说明调试器如何忽略代码中的隐藏行。 
+运行此示例时，它将显示三行文本。 
+但是，当设置如示例所示的断点并按 F10 键逐句通过代码时，您将看到调试器忽略了隐藏行。 
+还请注意，即使在隐藏行上设置断点，调试器仍会忽略它。
+
+// preprocessor_linehidden.cs
+using System;
+class MainClass 
+{
+    static void Main() 
+    {
+        Console.WriteLine("Normal line #1."); // Set break point here.
+#line hidden
+        Console.WriteLine("Hidden line.");
+#line default
+        Console.WriteLine("Normal line #2.");
+    }
+}
+
+====
+9，#error 使您可以从代码中的特定位置生成错误。 
+例如：
+#error Deprecated code in this method.
+
+备注
+#error 通常用在条件指令中。
+也可以用 #warning 生成用户定义的警告。
+
+示例
+ // preprocessor_error.cs
+// CS1029 expected
+#define DEBUG
+class MainClass 
+{
+    static void Main() 
+    {
+#if DEBUG
+#error DEBUG is defined
+#endif
+    }
+}
+
+====
+10，#warning 使您得以从代码的特定位置生成一级警告。 
+例如：
+#warning Deprecated code in this method.
+
+备注
+#warning 通常用在条件指令中。 也可以用 #error 生成用户定义的错误。
+
+示例
+ // preprocessor_warning.cs
+// CS1030 expected
+#define DEBUG
+class MainClass 
+{
+    static void Main() 
+    {
+#if DEBUG
+#warning DEBUG is defined
+#endif
+    }
+}
+

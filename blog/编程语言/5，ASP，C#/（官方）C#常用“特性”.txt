@@ -1,0 +1,409 @@
+﻿（官方）C#常用“特性”
+
+修正。重翻译by hxzon
+
+http://msdn.microsoft.com/zh-cn/library/z371wyft.aspx
+
+====
+常用特性（C# 和 Visual Basic）
+
+Visual Studio 2013
+
+本主题介绍最常用于在 C# 和 Visual Basic 程序中的属性。
+
+目录：
+全局属性
+已过时的特性
+条件特性
+调用方信息属性
+Visual Basic 特性
+
+====
+全局属性
+
+大多数特性适用于特定的语言元素 (如类或方法;但是，有些属性是全局它们适用于整个程序集或模块。 
+例如， AssemblyVersionAttribute 属性可用于向程序集中嵌入版本信息，如下例所示:
+C#
+[assembly: AssemblyVersion("1.0.0.0")]
+
+全局特性在源代码中出现在任何顶级 using 指令 (在 Visual Basic 中Imports 更高版本以及任何类型、模块或命名空间声明之前。 
+全局特性可显示在多个源文件，但是，在单一编译传递必须编译文件。 
+对于 Visual Basic 项目，全局属性以 Visual Basic 项目自动创建的 AssemblyInfo.vb 文件通常中。 
+在 C# 项目中，它们在 AssemblyInfo.cs 文件中。
+
+程序集特性是提供有关程序集的信息的值。 
+它们分成以下类别:
+
+程序集标识特性
+信息性特性
+程序集清单特性
+强名称特性
+
+----
+程序集标识特性
+
+三个特性 (使用强名称，如果适用) 确定程序集的标识:名称、版本和区域性。 
+当在代码中引用时，这些特性构成程序集的完整名称需要。 
+使用特性，可以将程序集的版本和区域性。 
+但是，名称值由编译器，在 “程序集信息”对话框或程序集链接器 (al.exe) 的 Visual Studio IDE 设置，
+创建程序集后，根据包含程序集清单的文件。 AssemblyFlagsAttribute 特性指定程序集的多个副本是否可以共存。
+
+下表显示标识属性。
+特性
+用途
+
+AssemblyName
+详细描述程序集的标识。
+
+AssemblyVersionAttribute
+指定程序集的版本。
+
+AssemblyCultureAttribute
+指定程序集支持哪个区域性
+
+AssemblyFlagsAttribute
+在同一在同一应用程序域指定程序集是否支持在同一台计算机上并行执行，处理，或者。
+
+----
+信息性特性
+
+您可以使用信息性特性为程序集提供其他的公司或产品信息。 
+下表显示在 System.Reflection 命名空间中定义的信息性特性。
+
+特性
+用途
+
+AssemblyProductAttribute
+定义为程序集清单指定产品名称的自定义特性。
+
+AssemblyTrademarkAttribute
+定义为程序集清单指定商标的自定义特性。
+
+AssemblyInformationalVersionAttribute
+定义为程序集清单指定信息性版本的自定义特性。
+
+AssemblyCompanyAttribute
+定义为程序集清单指定公司名称的自定义特性。
+
+AssemblyCopyrightAttribute
+定义为程序集清单指定版权的自定义特性。
+
+AssemblyFileVersionAttribute
+指示编译器使用 Win32 文件版本资源的特定版本号。
+
+CLSCompliantAttribute
+指示程序集是否符合公共语言规范 (CLS) (cls)。
+
+----
+程序集清单特性
+
+可以使用程序集清单特性提供程序集清单中的信息。 
+其中包括标题、说明、默认别名和配置。 
+下表显示在 System.Reflection 命名空间中定义的程序集清单特性。
+
+特性
+用途
+
+AssemblyTitleAttribute
+定义为程序集清单指定程序集标题的自定义特性。
+
+AssemblyDescriptionAttribute
+定义为程序集清单指定程序集说明的自定义特性。
+
+AssemblyConfigurationAttribute
+定义用于指定程序集配置的自定义特性 (例如 retail 或调试) 为程序集清单。
+
+AssemblyDefaultAliasAttribute
+程序集清单定义友好默认别名
+
+----
+强名称特性
+
+In previous versions of Visual Studio, signing assemblies by using strong names was performed with these assembly-level attributes:
+在 Visual Studio 的早期版本，通过以下特性来使用强名称:
+AssemblyKeyFileAttribute
+AssemblyKeyNameAttribute
+AssemblyDelaySignAttribute
+
+This is still supported, but the preferred way to sign assemblies is to use the Signing Page in the Project Designer.
+现在仍支持上述方法，
+但是，给程序集签名的首选方法是使用" 项目设计器 " 中的签名页 。
+See Signing Page, Project Designer and How to: Sign an Assembly (Visual Studio) for more information.
+请参见 “项目设计器”->“签名”页 和 如何：对程序集进行签名 (Visual Studio) 有关更多信息。
+
+----
+“已过时”特性（Obsolete attribute）
+
+Obsolete 属性指示某个程序实体标记为“建议不再使用”。 
+根据特性的配置，每次使用“已过时”的实体，将生成警告或错误。 例如:
+C#
+
+[System.Obsolete("use class B")]
+class A
+{
+    public void Method() { }
+}
+
+class B
+{
+    [System.Obsolete("use NewMethod", true)]
+    public void OldMethod() { }
+    public void NewMethod() { }
+}
+
+In this example the Obsolete attribute is applied to class A and to method B.OldMethod. 
+Because the second argument of the attribute constructor applied to B.OldMethod is set to true, 
+this method will cause a compiler error, 
+whereas using class A will just produce a warning. 
+Calling B.NewMethod, however, produces no warning or error.
+The string provided as the first argument to attribute constructor will be displayed as part of the warning or error. 
+For example, when you use it with the previous definitions, the following code generates two warnings and one error:
+
+在此示例中类 A 和 B.OldMethod 应用了“过时”特性。 
+ B.OldMethod “过时”特性的第2个参数设置为 true，调用此方法将导致编译器错误。
+而使用 A 则生成警告。 
+调用 B.NewMethod，不会导致警告或错误。
+“过时”特性的第一个参数提供的字符串将作为警告或错误的一部分显示。 
+
+C#
+
+// Generates 2 warnings:
+// A a = new A();
+
+// Generate no errors or warnings:
+B b = new B();
+b.NewMethod();
+
+// Generates an error, terminating compilation:
+// b.OldMethod();
+
+Two warnings for class A are generated: one for the declaration of the class reference, and one for the class constructor.
+The Obsolete attribute can be used without arguments, 
+but including an explanation of why the item is obsolete and what to use instead is recommended.
+The Obsolete attribute is a single-use attribute and can be applied to any entity that allows attributes. 
+Obsolete is an alias for ObsoleteAttribute.
+
+类 A 将生成两个警告:一个是因为对类的引用，一个是因为调用类的构造函数。
+Obsolete 特性，可不使用参数，但是，建议使用参数，用来说明已过时的原因，以及替换方法。
+Obsolete 特性是一种单用途特性，并且可应用于允许特性的任何实体。 
+Obsolete 是 ObsoleteAttribute的别名。
+
+====
+条件特性
+
+The Conditional attribute makes the execution of a method dependent on a preprocessing identifier. The Conditional attribute is an alias for ConditionalAttribute, and can be applied to a method or an attribute class.
+In this example, Conditional is applied to a method to enable or disable the display of program-specific diagnostic information:
+
+Conditional 属性执行方法依赖于预处理标识符。 
+Conditional 属性是 ConditionalAttribute的别名，可应用于方法或属性类。
+在此示例中， Conditional 应用于方法以启用或禁用程序特定诊断信息示:
+C#
+
+#define TRACE_ON
+using System;
+using System.Diagnostics;
+
+public class Trace
+{
+    [Conditional("TRACE_ON")]
+    public static void Msg(string msg)
+    {
+        Console.WriteLine(msg);
+    }
+}
+
+public class ProgramClass
+{
+    static void Main()
+    {
+        Trace.Msg("Now in Main...");
+        Console.WriteLine("Done.");
+    }
+}
+
+If the TRACE_ON identifier is not defined, no trace output will be displayed.
+The Conditional attribute is often used with the DEBUG identifier to enable trace and logging features for debug builds but not in release builds, like this:
+
+如果 TRACE_ON 未定义标识符，则将不会显示跟踪输出。
+Conditional 属性通常用于在 DEBUG 标识符启用跟踪，并记录的功能的调试版本，但不在发布版本中，如下所示:
+C#
+
+[Conditional("DEBUG")]
+static void DebugMethod()
+{
+}
+
+When a method marked as conditional is called, the presence or absence of the specified preprocessing symbol determines whether the call is included or omitted. If the symbol is defined, the call is included; otherwise, the call is omitted. Using Conditional is a cleaner, more elegant, and less error-prone alternative to enclosing methods inside #if…#endif blocks, like this:
+
+当为条件标记为的调用方法时，是否存在指定的预处理符号确定调用是否包括或省略。 
+如果定义了该符号，则包含调用;否则，调用中被省略。 
+使用 Conditional 是更加整洁，较细，，并且不太到将方法的容易出错的除了在 #if…#endif 内部块标明，例如:
+C#
+
+#if DEBUG
+    void ConditionalMethod()
+    {
+    }
+#endif
+
+A conditional method must be a method in a class or struct declaration and must not have a return value.
+一个条件方法必须是类或结构声明的方法，而且不能有返回值。
+
+----
+使用多个标识符
+
+If a method has multiple Conditional attributes, a call to the method is included if at least one of the conditional symbols is defined (in other words, the symbols are logically linked together by using the OR operator). In this example, the presence of either A or B will result in a method call:
+
+如果方法具有多个 Conditional 属性，对方法的调用包括在内，如果至少一个条件符号的定义 (换言之，这些符号在逻辑上链接可以使用或运算符)。 
+在此示例中， A 或 B 显示导致方法调用:
+C#
+
+[Conditional("A"), Conditional("B")]
+static void DoIfAorB()
+{
+    // ...
+}
+
+To achieve the effect of logically linking symbols by using the AND operator, you can define serial conditional methods. For example, the second method below will execute only if both A and B are defined:
+
+通过使用和运算符，若要实现逻辑链接符号的效果，可以定义序列化的条件方法。
+例如，因此，只有当 A 和 B 定义，下面的第二种方法将执行:
+C#
+
+[Conditional("A")]
+static void DoIfA()
+{
+    DoIfAandB();
+}
+
+[Conditional("B")]
+static void DoIfAandB()
+{
+    // Code to execute when both A and B are defined...
+}
+
+----
+使用具有特性类的条件
+
+The Conditional attribute can also be applied to an attribute class definition. In this example, the custom attribute Documentation will only add information to the metadata if DEBUG is defined.
+
+Conditional 还可将特性应用于特性类定义。 
+在此示例中，因此，如果定义了 DEBUG 时，自定义属性 Documentation 只将信息添加到元数据。
+C#
+
+[Conditional("DEBUG")]
+public class Documentation : System.Attribute
+{
+    string text;
+
+    public Documentation(string text)
+    {
+        this.text = text;
+    }
+}
+
+class SampleClass
+{
+    // This attribute will only be included if DEBUG is defined.
+    [Documentation("This method displays an integer.")]
+    static void DoWork(int i)
+    {
+        System.Console.WriteLine(i.ToString());
+    }
+}
+
+====
+调用方信息属性
+
+By using Caller Info attributes, you can obtain information about the caller to a method. You can obtain the file path of the source code, the line number in the source code, and the member name of the caller.
+To obtain member caller information, you use attributes that are applied to optional parameters. Each optional parameter specifies a default value. The following table lists the Caller Info attributes that are defined in the System.Runtime.CompilerServices namespace:
+
+使用调用方信息属性，可以获取关于调用方的信息传递给方法。 
+可以获取源代码、行号在源代码和调用方的成员名称的文件路径。
+若要获取成员调用方信息，请使用适用于可选参数的属性。 每个可选参数指定默认值。 
+下表列出了 System.Runtime.CompilerServices 命名空间中定义的调用方信息属性:
+
+特性
+说明
+类型
+
+CallerFilePathAttribute
+包含调用方源文件的完整路径。 这是路径在编译时。
+String
+
+CallerLineNumberAttribute
+在调用方法的源文件中的行号。
+Integer
+
+CallerMemberNameAttribute
+方法名称或调用方的属性名称。 有关更多信息，请参见 调用方信息（C# 和 Visual Basic）。
+String
+
+有关调用方信息属性的更多信息，请 调用方信息（C# 和 Visual Basic）参见。
+
+====
+Visual Basic 特性
+
+下表列出了特定于 Visual Basic 的属性。
+
+特性
+用途
+
+ComClassAttribute
+指示编译器应显示类作为 COM 对象。
+
+HideModuleNameAttribute
+允许访问模块成员。只使用模块需要的该限定。
+
+VBFixedStringAttribute
+在结构指定固定长度字符串的大小。与文件的使用输入和输出函数。
+
+VBFixedArrayAttribute
+在结构指定一个固定数组的大小为与文件的使用输入和输出函数。
+
+----
+COMClassAttribute
+
+使用 COMClassAttribute 简化创建从 Visual Basic的 COM 组件。 COM 对象是大量使用 .NET Framework 程序集不同，
+因此，，而无需 COMClassAttribute，您需要经过很多步骤会从 Visual Basic的 COM 对象。 
+对于标记为的类 COMClassAttribute，编译器会自动执行这些步骤中的许多
+
+----
+HideModuleNameAttribute
+
+使用 HideModuleNameAttribute 允许访问模块成员。通过只使用模块需要的该限定。
+
+----
+VBFixedStringAttribute
+
+使用 VBFixedStringAttribute 强制 Visual Basic 创建定长字符串。 
+字符串的长度在默认情况下是可变的，因此，此属性很有用，在将字符串存储到文件中。 下面的代码对此进行了说明:
+VB
+
+Structure Worker
+    ' The runtime uses VBFixedString to determine 
+    ' if the field should be written out as a fixed size.
+    <VBFixedString(10)> Public LastName As String
+    <VBFixedString(7)> Public Title As String
+    <VBFixedString(2)> Public Rank As String
+End Structure
+
+----
+VBFixedArrayAttribute
+使用 VBFixedArrayAttribute 声明固定大小的数组。 默认情况下与 Visual Basic 字符串，数组是可变的。 ，在序列化数据或将到文件时，此属性很有用。
+
+========
+========
+请参见
+
+参考
+反射（C# 和 Visual Basic）
+使用反射访问特性（C# 和 Visual Basic）
+System.Reflection
+Attribute
+概念
+C# 编程指南
+其他资源
+Visual Basic 编程指南
+利用特性扩展元数据
+
