@@ -8,3 +8,12 @@ Obtaining Names of Method Parameters
 http://docs.oracle.com/javase/tutorial/reflect/member/methodparameterreflection.html
 
 2，
+java8的安装
+
+有一点这里强调一下（Windows系统）：在安装完jdk8并且没有设置path的情况下，你如果在命令行中输入：java -version，屏幕上会显示是jdk 8。
+这是因为jdk8安装的时候，会默认在C:/Windows/System32中增加java.exe，这个调用的优先级比path设置要高。
+所以即使path里指定是老版本的jdk，但是执行java命令显示的依然是新版本的jdk。
+这里我们要做的就是删除C:/Windows/System32中的java.exe文件（不要手抖！）。
+
+3，
+

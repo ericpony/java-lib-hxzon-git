@@ -1,0 +1,133 @@
+﻿SSL，TLS协议与OpenSSL heartbleed漏洞之伤
+
+SSL，TLS协议与OpenSSL "心血"heartbleed漏洞之伤
+2014-04-10 18:36:55
+
+本文原创作者为大众点评高级运维工程师：刘群英   转载请注明出处！
+本文出自 “马哥教育Linux” 博客，请务必保留此出处http://mageedu.blog.51cto.com/4265610/1393588
+
+====
+一声惊雷，今天爆出了一个关于SSL协议的惊天大漏洞，在用完各种poc工具后，我们不妨来深入了解下这个高危漏洞的机理。
+
+不管你是用网上公布的检测网站还是各个QQ群疯传的poc 脚本，知其然还要知其所以然，让我们知道漏洞形成的条件，以及漏洞产生的原理，如何修复这个惊天大漏洞。
+
+这一次，腾讯的个别站点也没有幸免，果断是坑爹啊。
+点评ssl服务没有开启TLS heartbeat扩展，所以避过一劫，当然任何时候都不能说我们可以高枕无忧了，时刻得关注各种漏洞的发布与修复。
+
+首先我们看一下某个有问题站点的SSL信息，当我们用openssl 以客户端模式连接对应网站的443端口的时候，会获取到对应服务器ssl协议中与TLS扩展相关的信息。
+
+[root@king tests]# /usr/bin/openssl s_client -connect mail.xxx.com:443 -tlsextdebug 2>&1| grep 'TLS'  
+TLS server extension "renegotiation info" (id=65281), len=1
+TLS server extension "session ticket" (id=35), len=0
+TLS server extension "heartbeat" (id=15), len=1
+
+我们看到该站点开启了heartbeat的TLS扩展，而造成本次漏洞问题的根源就是OpenSSL对他的实现。
+
+什么是SSL协议？
+什么是openssl？
+ssl和open ssl有什么关系？
+TLS是什么？
+造成这次漏洞的TLS服务扩展"heartbeat"又是什么？
+
+当这么多的疑问迎面而来，我们还是见招拆招，逐一了解：
+
+SSL是Secure Socket Layer（安全套接层协议）的缩写，可以在Internet上提供加密性传输通道。
+
+SSL协议保证两个应用间通信的保密性和可靠性,可在服务器端和用户端同时实现支持。使用户/服务器应用之间的通信不被攻击者窃听，并且始终对服务器进行认证还可选择对用户进行认证。
+
+
+ssl体系结构：
+wKioL1NGc7fTFPeDAADT0qWxf54999.jpg
+wKiom1NGc-CiMaD9AACULBn51uM735.jpg
+
+看图可以知道，SSL协议是建立在TCP协议上的，我们知道TCP较UDP协议是可靠地传输协议，可以保证整个传输过程数据的完整性。
+
+ssl协议时一套理论，最后要应用到实际的生活中，还得靠具体的人编写程序来实现。实现一个算法或者说协议是非常庞大艰巨的工程，这个时候就有两个大牛开始编写后来具有巨大影响的OpenSSL软件包，然后开源出来，后人不断完善，最后OpenSSL项目组来接手继续完善。
+
+OpenSSL: The Open Source toolkit for SSL/TLS
+
+OpenSSL是互联网上最流行的开源密码库和TLS实现，不仅是诸多Linux和BSD版本操作系统的默认安全通信机制，也是Apache和nginx等Web服务器的加密引擎。
+OpenSSL提供的功能相当强大和全面，囊括了主要的密码算法、常用的密钥和证书封装管理功能以及SSL协议，并提供了丰富的应用程序供测试或其它目的使用。
+
+随着科学技术和网络规模的发展，SSL协议经历了，SSL 1.0 ，SSL2.0、SSL3.0以及TLS1.0等演变，
+OpenSSL软件包也是在不断更新升级，从而支持实现SSL协议的升级版本。
+
+SSL是理论协议，OpenSSL是对其的具体实现。这就跟http协议和apache httpd的关系差不多。
+
+TLS是什么？
+
+TLS：安全传输层协议
+ （TLS：Transport Layer Security Protocol）
+ 安全传输层协议（TLS）用于在两个通信应用程序之间提供保密性和数据完整性。该协议由两层组成： TLS 记录协议（TLS Record）和 TLS 握手协议（TLS Handshake）。
+
+初看标准定义，感觉TLS和SSL貌似没有什么区别啊.
+
+是，你可以理解TLS协议时SSL协议的增强版本。
+
+最新版本的TLS（Transport Layer Security，传输层安全协议）是IETF（Internet Engineering Task Force，Internet工程任务组）制定的一种新的协议，它建立在SSL 3.0协议规范之上，是SSL 3.0的后续版本。在TLS与SSL3.0之间存在着显著的差别，主要是它们所支持的加密算法不同，所以TLS与SSL3.0不能互操作。
+1．TLS与SSL的差异
+1）版本号：TLS记录格式与SSL记录格式相同，但版本号的值不同，TLS的版本1.0使用的版本号为SSLv3.1。
+2）报文鉴别码：SSLv3.0和TLS的MAC算法及MAC计算的范围不同。TLS使用了RFC-2104定义的HMAC算法。SSLv3.0使用了相似的算法，两者差别在于SSLv3.0中，填充字节与密钥之间采用的是连接运算，而HMAC算法采用的是异或运算。但是两者的安全程度是相同的。
+3）伪随机函数：TLS使用了称为PRF的伪随机函数来将密钥扩展成数据块，是更安全的方式。
+4）报警代码：TLS支持几乎所有的SSLv3.0报警代码，而且TLS还补充定义了很多报警代码，如解密失败（decryption_failed）、记录溢出（record_overflow）、未知CA（unknown_ca）、拒绝访问（access_denied）等。
+5）密文族和客户证书：SSLv3.0和TLS存在少量差别，即TLS不支持Fortezza密钥交换、加密算法和客户证书。
+6）certificate_verify和finished消息：SSLv3.0和TLS在用certificate_verify和finished消息计算MD5和SHA-1散列码时，计算的输入有少许差别，但安全性相当。
+7）加密计算：TLS与SSLv3.0在计算主密值（master secret）时采用的方式不同。
+8）填充：用户数据加密之前需要增加的填充字节。在SSL中，填充后的数据长度要达到密文块长度的最小整数倍。而在TLS中，填充后的数据长度可以是密文块长度的任意整数倍（但填充的最大长度为255字节），这种方式可以防止基于对报文长度进行分析的攻击。
+
+====
+造成这次漏洞的TLS服务扩展“heartbeat”又是什么？
+
+The Heartbeat Extension provides a new protocol for TLS/DTLS allowing  the usage of keep-alive functionality without performing a renegotiation and a basis for path MTU (PMTU) discovery for DTLS.
+
+TLS心跳扩展为TLS/DTLS提供了一种允许在不重新进行商议和发送路径MTU探索包(PMTU)的情况下而使用保持持续通信功能的新协议。
+
+
+A missing bounds check in the handling of the TLS heartbeat extension can be
+used to reveal up to 64k of memory to a connected client or server.
+
+漏洞出在OpenSSL对TLS的心跳扩展（RFC6520）的实现代码中，
+由于漏了一处边界检查，可能在每次心跳中暴露客户端与服务器通信中的64K内存。
+
+网上提供的漏洞细节，看不懂可有忽略，反正我没有完全看懂，原理机制明白了就ok了。
+
+Hacker News网友drv在阅读了漏洞代码后指出，这是一个低级错误。
+他解释说：
+TLS心跳由一个请求包组成，其中包括有效载荷（payload），通信的另一方将读取这个包并发送一个响应，其中包含同样的载荷。
+在处理心跳请求的代码中，载荷大小是从攻击者可能控制的包中读取的：
+n2s(p, payload);
+pl = p;
+这里p是指向请求包的指针，payload是载荷的期望长度（16位短整数，也就是每次请求64K）。pl指针指向实际的载荷。
+
+然后响应包是这样构造的：
+/* Enter response type, length and copy payload */
+*bp++ = TLS1_HB_RESPONSE;
+s2n(payload, bp);
+memcpy(bp, pl, payload);
+
+载荷长度保存在目标包里，然后从源包pl将载荷复制到目标包bp。
+
+bug出在载荷长度没有根据请求包的大小进行检查。
+因此，memcpy()发送任意载荷长度（最大64K）加上一个小载荷，就能读取请求存储位置之外的任意数据。
+
+下面为演示图：
+wKioL1NGc9rh6Gz9AAgDFmKavXc643.jpg
+
+这次漏洞只是影响到了https服务吗？
+当然不是了，所有开启了“heartbeat” TLS扩展的SSL协议中封装的其他协议（http,ftp,ssh,smtp等协议）都相当于是明文传输了。
+
+
+面对此次OpenSSL漏洞问题如何处理？
+
+官方说了，升级到 OpenSSL 1.0.1g 版本。
+除此之外，还可以在边界设备上做一些行为拦截，以及对“heartbeat”扩展做处理（重新编译openssl，添加 -DOPENSSL_NO_HEARTBEATS 参数即可）。
+官方漏洞信息：
+
+http://www.openssl.org/news/secadv_20140407.txt
+http://heartbleed.com/
+https://tools.ietf.org/html/rfc6520
+
+我们只是科普，更专业更详细的漏洞细节信息，感兴趣的同学请自行google。
+
+仓促间从文，难免有纰漏和错误之处，欢迎指正。
+
