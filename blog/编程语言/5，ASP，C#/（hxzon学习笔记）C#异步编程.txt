@@ -1,0 +1,349 @@
+﻿（hxzon学习笔记）C#异步编程
+
+by hxzon
+
+async和await
+
+====
+《Professional C# 2012 and .NET 4.5》pdf，第13章
+
+原来的异步需要使用回调，或者事件。
+
+----
+BeginInvoke和EndInvoke
+
+private void OnSeachAsyncPattern(object sender, RoutedEventArgs e)
+{
+    Func<string, ICredentials, string> downloadString= (address, cred) =>
+    {
+        var client = new WebClient();
+        client.Credentials = cred;
+        return client.DownloadString(address);
+    };
+    Action<SearchItemResult> addItem = item => searchInfo.List.Add(item);
+    foreach (var req in GetSearchRequests())
+    {
+        downloadString.BeginInvoke(req.Url, req.Credentials, ar =>
+        {
+            string resp = downloadString.EndInvoke(ar);
+            IEnumerable<SearchItemResult> images = req.Parse(resp);
+            foreach (var image in images)
+            {
+                this.Dispatcher.Invoke(addItem, image);
+            }
+        }, null);
+    }
+}
+
+----
+基于任务的异步
+
+async和await，基于编译器的关键字。
+
+private async void OnTaskBasedAsyncPattern(object sender, 
+RoutedEventArgs e)
+{
+    foreach (var req in GetSearchRequests())
+    {
+        var client = new WebClient();
+        client.Credentials = req.Credentials;
+        string resp = await client.DownloadStringTaskAsync(req.Url);
+        IEnumerable<SearchItemResult> images = req.Parse(resp);
+        foreach (var image in images)
+        {
+            searchInfo.List.Add(image);
+        }
+    }
+}
+
+await之后的代码不会立即执行。
+
+private async void OnTaskBasedAsyncPattern(object sender, 
+RoutedEventArgs e)
+{
+    foreach (var req in GetSearchRequests())
+    {
+        var clientHandler = new HttpClientHandler
+        {
+            Credentials = req.Credentials
+        };
+        var client = new HttpClient(clientHandler);
+        var response = await client.GetAsync(req.Url);
+        string resp = await response.Content.ReadAsStringAsync();
+        IEnumerable<SearchItemResult> images = req.Parse(resp);
+        foreach (var image in images)
+        {
+            searchInfo.List.Add(image);
+        }
+    }
+}
+
+使用Task.Run()方法。
+
+private async void OnTaskBasedAsyncPattern(object sender, 
+RoutedEventArgs e)
+{
+    foreach (var req in GetSearchRequests())
+    {
+        var clientHandler = new HttpClientHandler
+        {
+            Credentials = req.Credentials
+        };
+        var client = new HttpClient(clientHandler);
+        var response = await client.GetAsync(req.Url, cts.Token);
+        string resp = await response.Content.ReadAsStringAsync();
+        await Task.Run(() =>
+        {
+            IEnumerable<SearchItemResult> images = req.Parse(resp);
+            foreach (var image in images)
+            {
+                searchInfo.List.Add(image);
+            }
+        }
+    }
+}
+
+====
+异步编程的基础
+
+创建同步版本：
+
+static string Greeting(string name)
+{
+    Thread.Sleep(3000);
+    return string.Format("Hello, {0}", name);
+}
+
+创建异步版本：
+
+static Task<string>GreetingAsync(string name)
+{
+    return Task.Run<string>(() =>
+    {
+        return Greeting(name);
+    });
+}
+
+调用异步方法：
+
+private async static void CallerWithAsync()
+{
+    string result = await GreetingAsync("Stephanie");
+    Console.WriteLine(result);
+}
+
+可以直接用在参数里：
+
+private async static void CallerWithAsync2()
+{
+    Console.WriteLine(await GreetingAsync("Stephanie"));
+}
+
+任务继续
+
+private static void CallerWithContinuationTask()
+{
+    Task<string> t1 = GreetingAsync("Stephanie");
+    t1.ContinueWith(t =>
+    {
+        string result = t.Result;
+        Console.WriteLine(result);
+    });
+}
+
+同步上下文
+
+顺序异步：
+
+private async static void MultipleAsyncMethods()
+{
+    string s1 = awaitGreetingAsync("Stephanie");
+    string s2 = awaitGreetingAsync("Matthias");
+    Console.WriteLine("Finished both methods.\n " + 
+        "Result 1: {0}\n Result 2: {1}", s1, s2);
+}
+
+使用组合子：
+
+等待所有任务：
+
+private async static void MultipleAsyncMethodsWithCombinators1()
+{
+    Task<string> t1= GreetingAsync("Stephanie");
+    Task<string> t2= GreetingAsync("Matthias");
+    await Task.WhenAll(t1, t2);
+    Console.WriteLine("Finished both methods.\n " + 
+        "Result 1: {0}\n Result 2: {1}", t1.Result, t2.Result);
+}
+
+private async static void MultipleAsyncMethodsWithCombinators2()
+{
+    Task<string> t1 = GreetingAsync("Stephanie");
+    Task<string> t2 = GreetingAsync("Matthias");
+    string[] result = await Task.WhenAll(t1, t2);
+    Console.WriteLine("Finished both methods.\n " + 
+        "Result 1: {0}\n Result 2: {1}", result[0], result[1]);
+}
+
+等待其中一个任务：
+Task.WhenAny
+
+====
+转换异步模式
+
+private static Func<string, string> greetingInvoker = Greeting;
+static IAsyncResult BeginGreeting(string name, AsyncCallback callback, 
+object state)
+{
+    return greetingInvoker.BeginInvoke(name, callback, state);
+}
+
+static string EndGreeting(IAsyncResult ar)
+{
+    return greetingInvoker.EndInvoke(ar);
+}
+
+private static async void ConvertingAsyncPattern()
+{
+    string s = await Task<string>.Factory.FromAsync<string>(
+    BeginGreeting, EndGreeting, “Angela”, null);
+    Console.WriteLine(s);
+}
+
+====
+错误处理
+
+static async Task ThrowAfter(int ms, string message)
+{
+    await Task.Delay(ms);
+    throw new Exception(message);
+}
+
+private static void DontHandle()
+{
+    try
+    {
+        ThrowAfter(200, "first");
+        // exception is not caught because this method is finished 
+        // before the exception is thrown
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+    }
+}
+
+
+private static async void HandleOneError()
+{
+    try
+    {
+        await ThrowAfter(2000, “first”);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(“handled {0}”, ex.Message);
+    }
+}
+
+
+private static async void StartTwoTasks()
+{
+    try
+    {
+        await ThrowAfter(2000, "first");
+        await ThrowAfter(1000, "second"); // the second call is not invoked 
+        // because the first method throws 
+        // an exception
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("handled {0}", ex.Message);
+    }
+}
+
+private async static void StartTwoTasksParallel()
+{
+    try
+    {
+        Task t1 =ThrowAfter(2000, "first");
+        Task t2 =ThrowAfter(1000, "second");
+        await Task.WhenAll(t1, t2);
+    }
+    catch (Exception ex)
+    {
+        // just display the exception information of the first task 
+        // that is awaited within WhenAll
+        Console.WriteLine("handled {0}", ex.Message);
+    }
+}
+
+private static async void ShowAggregatedException()
+{
+    Task taskResult = null;
+    try
+    {
+        Task t1 = ThrowAfter(2000, "first");
+        Task t2 = ThrowAfter(1000, "second");
+        await (taskResult = Task.WhenAll(t1, t2));
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("handled {0}", ex.Message);
+        foreach (var ex1 in taskResult.Exception.InnerExceptions)
+        {
+            Console.WriteLine("inner exception {0}", ex1.Message);
+        }
+    }
+}
+
+任务取消
+
+public partial class MainWindow : Window
+{
+private SearchInfo searchInfo;
+private object lockList = new object();
+private CancellationTokenSource cts;
+
+private void OnCancel(object sender, RoutedEventArgs e)
+{
+    if (cts != null)
+    cts.Cancel();
+}
+
+private async void OnTaskBasedAsyncPattern(object sender, 
+RoutedEventArgs e)
+{
+    cts = new CancellationTokenSource();
+    try
+    {
+        foreach (var req in GetSearchRequests())
+        {
+            var client = new HttpClient();
+            var response = await client.GetAsync(req.Url, cts.Token);
+            string resp = await response.Content.ReadAsStringAsync();
+            //...
+        }
+    }
+    catch (OperationCanceledException ex)
+    {
+        MessageBox.Show(ex.Message);
+    }
+}
+
+自定义任务的取消，需要自己检查任务是否被中断。
+
+await Task.Run(() =>
+{
+    var images = req.Parse(resp);
+    foreach (var image in images)
+    {
+        cts.Token.ThrowIfCancellationRequested();
+        searchInfo.List.Add(image);
+    }
+}, cts.Token);
+
+
+
+
+

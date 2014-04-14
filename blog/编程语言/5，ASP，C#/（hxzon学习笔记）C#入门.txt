@@ -32,6 +32,10 @@ using(ClassNameXX vXX=new ClassNameXX()){
 
 4，C#代码中的[]为“特性”，相当于java中的注解。
 
+5，C#的case语句，会自动break，除非是case是空的。
+
+6，
+
 
 
 

@@ -2,7 +2,25 @@
 作者 Jonathan Allen ，译者 孙镜涛 发布于 2014年3月27日
 http://www.infoq.com/cn/articles/Microsoft-Stack-2013
 
+hxzon摘要：
 
+尽量早日放弃Silverlight和Flash。
+web表单淡出。
+
+服务：首选：ASP.NET Web API，第二选择：WCF。
+中小型企业Web应用程序：LightSwitch，其次Web表单。
+中小型桌面程序：WinForms，WPF。当然这也是有代价的，在同等条件下WPF应用程序通常比WinForms应用程序运行的慢。
+
+"现代化" —放弃Windows桌面。
+
+大型、关键业务应用程序：
+企业Web应用程序：ASP.NET MVC
+企业桌面应用程序：WinForms，WPF，C++和Win32/MFC
+
+Microsoft推荐使用所有的.NET 本地、Web和通信框架，浏览器端的Silverlight和.NET Remoting除外。
+在一些场景下他们还推荐使用C++和JavaScript。
+
+====
 Microsoft技术栈最近有大量的变迁，这使得开发人员和领导者都想知道他们到底应该关注哪些技术。
 Microsoft自己并不想从官方层面上反对Silverlight这样的技术，相对而言他们更喜欢让这种技术慢慢淡出人们的视线，否则局面可能会更加混乱。
 如果你想了解该问题的答案，那么可以查看“.NET业务应用程序技术指南”这个小有名气的文档。
@@ -37,7 +55,8 @@ Windows 8商店有三个相等但是不同的选项
 就Windows 8商店应用而言，Microsoft过去一直不愿意将开发人员推到某一种具体的技术栈上。
 这个政策现在也没有发生变化；在.NET/XAML、C++和JavaScript/HTML5这些技术之间选择的首要标准是开发人员最熟悉哪种技术。
 
-除此之外，他们还提到了C++，因为它具有性能优势。可重用性并不是很受关注的一个点，因为这三个平台都能够在Windows Phone和Windows桌面之间共享代码和资源。
+除此之外，他们还提到了C++，因为它具有性能优势。可重用性并不是很受关注的一个点，
+因为这三个平台都能够在Windows Phone和Windows桌面之间共享代码和资源。
 
 --
 本地选项适合Windows Phone

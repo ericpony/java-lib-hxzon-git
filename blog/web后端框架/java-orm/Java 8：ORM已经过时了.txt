@@ -1,0 +1,305 @@
+﻿Java 8：ORM已经过时了
+ Published: 13 Apr 2014  Category: Java
+http://it.deepinmind.com/java/2014/04/13/java-8-friday-no-more-need-for-orms.html
+
+====
+ORM已经过时了
+
+最近几十年来，关于ORM究竟还有没有用的争论一直不断。
+很多人承认Hibernate和JPA确实很好的解决了不少实际的问题（通常是复杂对象的持久化），
+但有些人认为，对于面向数据的应用而言，复杂的映射关系则有点大材小用了。
+
+JPA通过在目标类型上使用硬编码的注解，来建立标准的声明式的映射规则，进而完成映射关系。
+但我们认为，很多以数据为中心的应用不应该受限于注解的局限性，而应该通过一种函数式的方式来解决。
+Java 8的Steam API终于让我们可以用一种简洁的方式来解决这个问题了！
+
+我们先从一个简单的例子开始，这里我们使用H2的INFORMATION_SCHEMA来查询所有的表及字段。
+我们专门用一个Map<String, List<String>>类型的数据结构来存储这个信息。
+我们用jOOQ来简化SQL的交互。下面来做一下准备工作：
+
+public static void main(String[] args)
+throws Exception {
+    Class.forName("org.h2.Driver");
+
+    try (Connection c = getConnection(
+            "jdbc:h2:~/sql-goodies-with-mapping", 
+            "sa", "")) {
+ 
+        // This SQL statement produces all table
+        // names and column names in the H2 schema
+        String sql =
+            "select table_name, column_name " +
+            "from information_schema.columns " +
+            "order by " +
+                "table_catalog, " +
+                "table_schema, " +
+                "table_name, " +
+                "ordinal_position";
+ 
+        // This is jOOQ's way of executing the above
+        // statement. Result implements List, which
+        // makes subsequent steps much easier
+        Result<Record> result =
+        DSL.using(c)
+           .fetch(sql)
+    }
+}
+
+我们已经执行完查询了，现在来看下如何从查询结果中生成Map>信息。
+
+DSL.using(c)
+   .fetch(sql)
+   .stream()
+   .collect(groupingBy(
+       r -> r.getValue("TABLE_NAME"),
+       mapping(
+           r -> r.getValue("COLUMN_NAME"),
+           toList()
+       )
+   ))
+   .forEach(
+       (table, columns) -> 
+           System.out.println(table + ": " + columns)
+   );
+
+上述程序会输出如下的结果：
+
+FUNCTION_COLUMNS: [ALIAS_CATALOG, ALIAS_SCHEMA, ...]
+CONSTANTS: [CONSTANT_CATALOG, CONSTANT_SCHEMA, ...]
+SEQUENCES: [SEQUENCE_CATALOG, SEQUENCE_SCHEMA, ...]
+
+这是如何工作的？我们来一步一步的分析下：
+
+DSL.using(c)
+   .fetch(sql)
+//这里我们把一个列表转化成一个Stream
+ .stream() 
+// 把Stream中的元素汇集成一个新的类型
+   .collect(
+// 收集器是一个分组操作，会生成一个map
+            groupingBy(
+// 分组操作的key是jOOQ记录的TABLE_NAME字段
+       r -> r.getValue("TABLE_NAME"),
+// 分组操作的值是用这个映射表达式来生成的
+       mapping(
+// 实际上是映射到每条jOOQ记录的COLUMN_NAME字段上
+           r -> r.getValue("COLUMN_NAME"),
+// 然后将所有的值收集到一个java.util.List中
+           toList()
+       )
+   ))
+// 一旦拿到了<String, List<String>>列表，
+// 就可以很容易通过lambda表达式来使用它了
+   .forEach(
+       (table, columns) -> 
+           System.out.println(table + ": " + columns)
+   );
+
+看明白了吗？第一次使用这些方法的话可能的确需要费点工夫。
+新的类型，泛型，lambda表达式，这些东西加到一起的话，第一次看到的话的确会有些困惑。
+最好的办法就是不断的去实践直到你完全掌握了。
+毕竟来说，和Java Collections API比起来的话，Stream API可是一次革命性的进步。
+
+不过有个好消息就是，这些方法已经确定就是这样，不会再变了。
+你的每一次实践都是对未来的一次投资。
+
+注意上述的程序用到了如下的静态导入语句：
+
+import static java.util.stream.Collectors.*;
+
+同样还应该注意到，输出的结果和数据库返回的顺序是不一样的。
+这是因为groupingBy收集器返回的是一个java.util.HashMap。
+在这个例子中，我们更希望能收集到一个java.util.LinkedHashMap里面，这个集合能保留插入时的顺序。
+
+DSL.using(c)
+   .fetch(sql)
+   .stream()
+   .collect(groupingBy(
+       r -> r.getValue("TABLE_NAME"),
+ 
+       // Add this Supplier to the groupingBy
+       // method call
+       LinkedHashMap::new,
+       mapping(
+           r -> r.getValue("COLUMN_NAME"),
+           toList()
+       )
+   ))
+   .forEach(...);
+
+====
+我们还可以用另一种转化结果的方法。
+想像一下，我们将要从上面的schema中生成DDL。
+这很简单。首先，我们需要知道每一列的数据类型。只需要把它加到我们的SQL查询语句中就好了：
+
+String sql =
+    "select " +
+        "table_name, " +
+        "column_name, " +
+        "type_name " + // Add the column type
+    "from information_schema.columns " +
+    "order by " +
+        "table_catalog, " +
+        "table_schema, " +
+        "table_name, " +
+        "ordinal_position";
+
+这个例子中还引入了一个新的局部类，用来封装名字和类型属性：
+
+class Column {
+    final String name;
+    final String type
+    Column(String name, String type) {
+        this.name = name;
+        this.type = type;
+    }
+}
+
+现在我们来看下Streams API的方法调用该如何修改：
+
+result
+    .stream()
+    .collect(groupingBy(
+        r -> r.getValue("TABLE_NAME"),
+        LinkedHashMap::new,
+        mapping(
+ 
+            // We now collect this new wrapper type
+            // instead of just the COLUMN_NAME
+            r -> new Column(
+                r.getValue("COLUMN_NAME", String.class),
+                r.getValue("TYPE_NAME", String.class)
+            ),
+            toList()
+        )
+    ))
+    .forEach(
+        (table, columns) -> {
+ 
+            // Just emit a CREATE TABLE statement
+            System.out.println(
+                "CREATE TABLE " + table + " (");
+ 
+            // Map each "Column" type into a String
+            // containing the column specification,
+            // and join them using comma and
+            // newline. Done!
+            System.out.println(
+                columns.stream()
+                       .map(col -> "  " + col.name +
+                                    " " + col.type)
+                       .collect(Collectors.joining(",\n"))
+            );
+ 
+            System.out.println(");");
+        }
+    );
+
+输出的结果简直是棒极了！
+
+CREATE TABLE CATALOGS(
+  CATALOG_NAME VARCHAR
+);
+
+CREATE TABLE COLLATIONS(
+  NAME VARCHAR,
+  KEY VARCHAR
+);
+
+CREATE TABLE COLUMNS(
+  TABLE_CATALOG VARCHAR,
+  TABLE_SCHEMA VARCHAR,
+  TABLE_NAME VARCHAR,
+  COLUMN_NAME VARCHAR,
+  ORDINAL_POSITION INTEGER,
+  COLUMN_DEFAULT VARCHAR,
+  IS_NULLABLE VARCHAR,
+  DATA_TYPE INTEGER,
+  CHARACTER_MAXIMUM_LENGTH INTEGER,
+  CHARACTER_OCTET_LENGTH INTEGER,
+  NUMERIC_PRECISION INTEGER,
+  NUMERIC_PRECISION_RADIX INTEGER,
+  NUMERIC_SCALE INTEGER,
+  CHARACTER_SET_NAME VARCHAR,
+  COLLATION_NAME VARCHAR,
+  TYPE_NAME VARCHAR,
+  NULLABLE INTEGER,
+  IS_COMPUTED BOOLEAN,
+  SELECTIVITY INTEGER,
+  CHECK_CONSTRAINT VARCHAR,
+  SEQUENCE_NAME VARCHAR,
+  REMARKS VARCHAR,
+  SOURCE_DATA_TYPE SMALLINT
+);
+
+激动吧？看来ORM的时代已经过去了
+ORM的时代应该终结了。为什么？
+因为软件工程里有一个很重要的思想就是使用函数式表达式来进行数据集的转化。
+函数式编程表达性强，并且非常通用。
+它是数据及数据流处理的核心。
+Java开发人员现在也都知道函数式编程，而大家又都用过SQL。
+想像一下吧。你用SQL来声明表来源，把数据转化成新的元组流，
+然后要么将它们作为派生表提供给其它更高级的SQL语句来使用，要么将它们交给你的应用程序来处理。
+
+如果你用的是XML的话，你可以使用XSLT来声明XML转化，并通过XProc管道把结果提供给其它XML处理器，比如说另一个XSL表格。
+
+使用SQL和Streams API是数据处理里面一个很重要的概念。
+如果你使用了jOOQ的话，你还可以进行类型安全的数据库访问及查询。
+想像一下如何使用jOOQ的流API来改写前面的代码，而不是直接使用SQL语句。
+
+整个方法调用链会是一个流式的数据转化链，就像这样：
+
+DSL.using(c)
+   .select(
+       COLUMNS.TABLE_NAME,
+       COLUMNS.COLUMN_NAME,
+       COLUMNS.TYPE_NAME
+   )
+   .from(COLUMNS)
+   .orderBy(
+       COLUMNS.TABLE_CATALOG,
+       COLUMNS.TABLE_SCHEMA,
+       COLUMNS.TABLE_NAME,
+       COLUMNS.ORDINAL_POSITION
+   )
+   .fetch()  // jOOQ ends here
+   .stream() // Streams start here
+   .collect(groupingBy(
+       r -> r.getValue(COLUMNS.TABLE_NAME),
+       LinkedHashMap::new,
+       mapping(
+           r -> new Column(
+               r.getValue(COLUMNS.COLUMN_NAME),
+               r.getValue(COLUMNS.TYPE_NAME)
+           ),
+           toList()
+       )
+   ))
+   .forEach(
+       (table, columns) -> {
+            // Just emit a CREATE TABLE statement
+            System.out.println(
+                "CREATE TABLE " + table + " (");
+ 
+            // Map each "Column" type into a String
+            // containing the column specification,
+            // and join them using comma and
+            // newline. Done!
+            System.out.println(
+                columns.stream()
+                       .map(col -> "  " + col.name +
+                                    " " + col.type)
+                       .collect(Collectors.joining(",\n"))
+            );
+ 
+           System.out.println(");");
+       }
+   );
+
+Java 8代表着未来，而有了jOOQ,Java 8以及Streams API,你可以写出强大的数据转化的API。
+希望你能和我们一样感到激动！还有更多的Java 8的内容，敬请收看。
+
+原创文章转载请注明出处：Java 8:ORM已经过时了
+
+英文原文链接
+http://blog.jooq.org/2014/04/11/java-8-friday-no-more-need-for-orms/
