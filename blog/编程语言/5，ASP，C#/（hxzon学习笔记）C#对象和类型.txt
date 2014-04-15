@@ -1,0 +1,333 @@
+﻿（hxzon学习笔记）C#对象和类型
+
+by hxzon
+《Professional C# 2012 and .NET 4.5》pdf，第3章
+
+====
+1，类和结构
+
+类的数据成员：字段，常量，时间。
+类的函数成员：包括方法，属性，构造函数，析构函数，索引器。
+
+class PhoneCustomer
+{
+    public const string DayOfSendingBill = "Monday";
+    public int CustomerID;
+    public string FirstName;
+    public string LastName;
+}
+
+struct PhoneCustomerStruct
+{
+    public const string DayOfSendingBill = "Monday";
+    public int CustomerID;
+    public string FirstName;
+    public string LastName;
+}
+
+PhoneCustomer myCustomer = new PhoneCustomer(); // works for a class
+PhoneCustomerStruct myCustomer2 = new PhoneCustomerStruct();// works for a struct
+
+====
+2，结构
+
+使用struct关键字。
+可以自定义构造函数。
+编译器总是会生成默认构造函数。
+性能较好。
+是值类型。
+new只调用构造函数，不会在堆中分配内存。
+可以定义属性。
+不支持继承。
+结构继承自 System.ValueType 。
+
+不能像类一样初始化非常量成员。
+
+struct Dimensions
+{
+    public double Length = 1; // error. Initial values not allowed
+    public double Width = 2; // error. Initial values not allowed
+}
+
+类在用之前必须用new初始化，而结构可以不用new。
+
+====
+3，方法
+
+public bool IsSquare(Rectangle rect)
+{
+    return (rect.Height == rect.Width);
+}
+
+C#社区，方法名以大写开头。
+
+方法参数默认是传值方式（对于类类型，传的是引用值）。
+
+----
+ref参数
+
+在方法定义时，使用ref修饰参数，则变为传引用方式。
+即对形参修改，会改变形参。
+调用时，也要使用ref关键字。
+
+static void SomeFunction(int[] ints, ref int i)
+{
+    ints[0] = 100;
+    i = 100; // The change to i will persist after SomeFunction() exits.
+}
+
+SomeFunction(ints, ref i);
+
+----
+out参数
+
+C#中实参必须初始化，即便是ref参数。
+使用out，可以让实参不必初始化。
+
+static void SomeFunction(out int i)
+{
+    i = 100;
+}
+
+public static int Main()
+{
+    int i; // note how i is declared but not initialized.
+    SomeFunction(out i);
+    Console.WriteLine(i);
+    return 0;
+}
+
+----
+命名参数
+
+调用方法时，可以用命名参数来传参。
+位置参数和命名参数可以混用。
+
+string FullName(string firstName, string lastName)
+{
+    return firstName + " " + lastName;
+}
+
+FullName("John", "Doe");
+FullName(lastName: "Doe", firstName: "John");
+
+----
+可选参数
+
+可选参数必须在末尾。
+
+void TestMethod(int optionalNumber, int notOptionalNumber = 10)
+{
+    System.Console.Write(optionalNumber + notOptionalNumber);
+}
+
+----
+方法重载
+
+不允许只有ref或out不同的方法重载。
+
+====
+4，属性
+
+public string SomeProperty
+{
+    get
+    {
+        return "This is the property value.";
+    }
+    set
+    {
+        // do whatever needs to be done to set the property.
+    }
+}
+
+----
+set内部使用value关键字。
+
+private int age;
+public int Age
+{
+    get
+    {
+        return age;
+    }
+    set
+    {
+        age = value;
+    }
+}
+
+如果只写get或set，就是只读或只写属性。
+不建议这么用，改用方法较好。
+
+----
+自动实现的属性
+
+public int Age {get; set;}
+
+不需要定义age字段，会自动生成。
+get和set必须都有，但可以使用不同的访问权限修饰符。
+
+public int Age {get; private set;}
+
+====
+5，构造函数
+
+如果没有任何自定义构造函数，编译器会生成默认构造函数。
+
+调用自己的其它构造函数，或直接父类的构造函数。
+使用this和base，使用C++的构造初始化列表语法。
+
+class Car
+{
+    private string description;
+    private uint nWheels;
+
+    public Car(string description, uint nWheels)
+    {
+        this.description = description;
+        this.nWheels = nWheels;
+    }
+
+    public Car(string description): this(description, 4)
+    {
+    }
+    // etc
+
+
+====
+6，静态构造函数
+
+作用相当于java的静态初始化块。
+只允许一个静态构造函数。
+只保证类在第一次用之前会被调用，不保证调用时机。
+
+class MyClass
+{
+    static MyClass()
+    {
+        // initialization code
+    }
+    // rest of class definition
+}
+
+====
+7，只读字段
+
+public class DocumentEditor
+{
+    public static readonly uint MaxDocuments;
+
+    static DocumentEditor()
+    {
+        MaxDocuments = DoSomethingToFindOutMaxNumber();
+    }
+}
+
+====
+8，匿名类型
+
+var captain = new {FirstName = "James", MiddleName = "T", LastName = "Kirk"};
+
+var doctor = new {FirstName = "Leonard", MiddleName = "", LastName = "McCoy"};
+
+captain和doctor会视为相同的类型。
+
+还可以这么写：
+var captain = new {person.FirstName, person.MiddleName, person.LastName};
+
+captain和doctor也是相同类型。
+
+====
+9，弱引用
+
+和java的弱引用一样。
+随时会被回收，使用前需先检查。
+
+static void Main()
+{
+    // Instantiate a weak reference to MathTest object
+    WeakReference mathReference = new WeakReference(new MathTest()); 
+    MathTest math;
+ 
+   if(mathReference.IsAlive)
+    {
+        math = mathReference.Target as MathTest;
+        math.Value = 30;
+        Console.WriteLine("Value field of math variable contains " + math.Value);
+        Console.WriteLine("Square of 30 is " + math.GetSquare());
+    }
+    else
+    {
+        Console.WriteLine("Reference is not available.");
+    }
+
+    GC.Collect();
+    if(mathReference.IsAlive)
+    {
+        math = mathReference.Target as MathTest;
+    }
+    else
+    {
+        Console.WriteLine("Reference is not available.");
+    }
+}
+
+====
+10，部分类
+
+允许一个类在多个文件中定义。
+
+以下关键字必须在每处定义中都相同：
+public
+private
+protected
+internal
+abstract
+sealed
+new
+generic constraints
+
+====
+11，静态类
+
+只含有静态成员的类成为“静态类”。
+使用static关键字，可以避免不小心加入实例成员。
+
+static class StaticUtilities
+{
+    public static void HelperMethod()
+    {
+    }
+}
+
+====
+12，System.Object类
+
+MemberwiseClone()，浅复制。
+
+GetType()
+
+====
+13，扩展方法
+
+即scala中的隐式转换。
+可以给无法修改源码的类增加新方法。
+第一个参数为要扩展的对象，使用this关键字。
+
+namespace Wrox
+{
+    public static class MoneyExtension
+    {
+        public static void AddToAmount(this Money money, decimal amountToAdd)
+        {
+            money.Amount += amountToAdd;
+        }
+    }
+}
+
+cash1.AddToAmount(10M);
+
+尽管定义像静态方法，但是不能像静态方法那样使用。
+
+

@@ -1,0 +1,64 @@
+﻿Meteor 0.8：发布全新的渲染系统Blaze
+作者 James Chesters ，译者 孙镜涛 发布于 2014年4月14日
+http://www.infoq.com/cn/news/2014/04/meteor-08-blaze
+
+Meteor最近发布了0.8版本，该版本“对Meteor的渲染系统做了一次彻底的检查”。
+Meteor的下一代实时模板引擎Blaze支持细粒度的DOM更新、jQuery集成和更简单的API。
+Blaze替代了在2012年发布的0.4版本中所引入的实时页面更新引擎Saprk。
+
+Matt Debergalis在Meteor的博客上将Blaze描述为“对开发者友好的”，同时它的架构比起Spark有几个方面的提升。
+
+Blaze包含两部分：
+第一部分是一个构建时编译器，它将模板转换成JavaScript代码。
+Spacebars——Handlebars风格的编译器——将HTML模板转换成实时更新的DOM元素，用户能够编写普通样子的HTML模板和帮助器。
+
+“当某个用户修改了数据或者某个模板依赖的新数据通过网络抵达的时候，Blaze就会自动地更新你的屏幕，
+不需要声明任何依赖，也不需要编写管理应该如何更新屏幕的代码。”
+Debergalis 说。
+
+Blaze的第二部分是运行时API，它“渲染元素，跟踪元素的依赖，在元素的完整生命周期内随着依赖的变化更新元素”。
+
+对之前Spark API的替代包括移除了Meteor.render，为定制块帮助器的定义引入了一个新模式。
+添加和废弃的API列表包括UI.body现在是与整个BODY元素相关的一个模板。
+
+Spacebars解析器让用户能够做一些之前不能做的事情，例如：
+
+HTML感知更新。
+模板解析器现在会解析HTML元素，这让细粒度的响应更新成为可能，包括对DOM元素进行属性级的更新。
+
+预编译。
+Spacebars编译器会生成调用内部Meteor接口的简单程序代码以便于在将来执行客户端或者服务器端的渲染工作。
+这比在运行时解释模板或者解析它的HTML输出更加有效。
+
+语法扩展。
+Handlebars语法极小，我们预见随着时间的发展需要添加一些额外的、精选的扩展。
+我们还会实现Handlebars 现在支持但是Meteor并不具备的顶层特性，
+例如支持对象，让你能够访问当前索引或者键的#each。
+
+在Meteor 0.8中Handlebars命名空间已经被废弃。
+现在Handlebars.SafeString改成了Spacebars.SafeString，
+而Handlebars.registerHelper则变成了UI.registerHelper。
+
+Spacebars需要HTML是“格式良好的”。
+引用Blaze项目GitHub页面上的说明：“在Spark中HTML解析是通过浏览器完成的，这种方式更加宽容”。
+
+另外，Blaze HTML解析器目前还没有完全实现HTML规范。
+发布说明中还特别指出它并不会自动地关闭某些标签，例如<p>和<li>。Meteor社区非常欢迎0.8版本的发布。
+在LinkedIn网站上的Meteor组中，用户Uğur Toprakdeviren发起了一个讨论，
+他问道：“对于新版本的Meteor（Blaze、Spacebars等）你的观点是什么呢？”。
+
+Ongo Works的创建者和CTO Aaron Singmaster-Judd回复说：
+“真了不起，做的好，感谢Meteor团队和在新代码库上工作的社区包开发者。”。
+
+“升级已有的包可能需要一些努力，而这也会导致Web上呈现出大量无效的信息，但是这是值得的。”
+
+Hacker News上的用户对于该更新的反应也很不错。
+用户elsherbini 对jQuery集成的评论是“jQuery兼容的工作量非常巨大，赞一个！”。
+其他用户也分享了自己对Blaze的正面评价，
+TylerE 对编译器的评价是：
+“不得不说，我非常兴奋，因为现在终于可以按照一种非旁门左道的方式去使用jade模板了，对我而言这是重大的胜利。”。
+
+Debergalis指出实时模板引擎是0.8版本中仅有的新特性，它向Meteor 1.0版本迈出了重要的一步。
+
+查看英文原文：Meteor 0.8: Blaze Release Overhauls Rendering System
+

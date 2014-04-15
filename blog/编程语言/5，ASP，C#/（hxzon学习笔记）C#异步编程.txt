@@ -1,12 +1,11 @@
 ﻿（hxzon学习笔记）C#异步编程
 
 by hxzon
+《Professional C# 2012 and .NET 4.5》pdf，第13章
 
 async和await
 
 ====
-《Professional C# 2012 and .NET 4.5》pdf，第13章
-
 原来的异步需要使用回调，或者事件。
 
 ----
@@ -342,8 +341,4 @@ await Task.Run(() =>
         searchInfo.List.Add(image);
     }
 }, cts.Token);
-
-
-
-
 
