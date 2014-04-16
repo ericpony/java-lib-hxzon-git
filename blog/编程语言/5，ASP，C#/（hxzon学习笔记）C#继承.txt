@@ -1,0 +1,325 @@
+﻿（hxzon学习笔记）C#继承
+
+by hxzon
+《Professional C# 2012 and .NET 4.5》pdf，第4章
+
+第4章继承 
+
+4.1 继承 
+4.2 继承的类型 
+4.2.1 实现继承和接口继承 
+4.2.2 多重继承 
+4.2.3 结构和类 
+
+4.3 实现继承 
+4.3.1 虚方法 
+4.3.2 隐藏方法 
+4.3.3 调用函数的基类版本 
+4.3.4 抽象类和抽象函数 
+4.3.5 密封类和密封方法 
+4.3.6 派生类的构造函数 
+
+4.4 修饰符 
+4.4.1 可见性修饰符 
+4.4.2 其他修饰符 
+
+4.5 接口 
+4.5.1 定义和实现接口 
+4.5.2 派生的接口 
+
+
+====
+1，
+C#有实现继承和接口继承，不支持多重继承。
+
+2，
+结构不能继承，但是可以实现多个接口。
+实际上结构继承自 System.ValueType 。
+
+3，
+C#继承与C++的语法相同，但没有私有继承、保护继承。
+
+class MyDerivedClass: MyBaseClass
+{
+    // functions and data members here
+}
+
+public class MyDerivedClass: MyBaseClass, IInterface1, IInterface2
+{
+    // etc.
+}
+
+public struct MyDerivedStruct: IInterface1, IInterface2
+{
+// etc.
+}
+
+可以用object关键字来指代 System.Object 。
+class MyClass: object // derives from System.Object
+{
+    // etc.
+}
+
+====
+4，虚方法
+
+同C++一样，某个方法必须声明为虚方法，才可被子类重写。这是为了性能。
+属性页可以为虚的。
+
+class MyBaseClass
+{
+    public virtual string VirtualMethod()
+    {
+        return "This method is virtual and defined in MyBaseClass";
+    }
+}
+
+public virtual string ForeName
+{
+    get { return foreName;}
+    set { foreName = value;}
+}
+private string foreName;
+
+子类重写必须使用override关键字。
+
+class MyDerivedClass: MyBaseClass
+{
+    public override string VirtualMethod()
+    {
+        return "This method is an override defined in MyDerivedClass.";
+    }
+}
+
+====
+5，隐藏方法
+
+子类与父类方法签名相同，但未使用virtual和override关键字。
+
+class MyDerivedClass: HisBaseClass
+{
+    public int MyGroovyMethod()
+    {
+        // some groovy implementation
+        return 0;
+    }
+}
+
+class MyDerivedClass: HisBaseClass
+{
+    public new int MyGroovyMethod()
+    {
+        // some groovy implementation
+        return 0;
+    }
+}
+
+一种出现的场景是父类后来增加了与子类同名的方法。
+
+====
+6，调用父类版本的方法
+
+使用base关键字。
+
+class CustomerAccount
+{
+    public virtual decimal CalculatePrice()
+    {
+        // implementation
+        return 0.0M;
+    }
+}
+
+class GoldAccount: CustomerAccount
+{
+    public override decimal CalculatePrice()
+    {
+        return base.CalculatePrice() * 0.9M;
+    }
+}
+
+====
+7，抽象类和抽象方法
+
+和java中一样。
+C++使用术语“纯虚方法”。
+
+abstract class Building
+{
+    public abstract decimal CalculateHeatingCost(); // abstract method
+}
+
+====
+8，封闭类和封闭方法
+
+即java中的final类和final方法，不允许被继承或重写。
+使用sealed关键字。
+
+sealed class FinalClass
+{
+    // etc
+}
+
+class DerivedClass: FinalClass // wrong. Will give compilation error
+{
+    // etc
+}
+
+class MyClass: MyClassBase
+{
+    public sealed override void FinalMethod()
+    {
+        // etc.
+    }
+}
+
+class DerivedClass: MyClass
+{
+    public override void FinalMethod() // wrong. Will give compilation error
+    {
+    }
+}
+
+====
+9，派生类的构造函数
+
+与C++和java中的规则相同。使用C++的语法。
+
+public abstract class GenericCustomer
+{
+    private string name;
+
+    public GenericCustomer()
+    : base() // We could omit this line without affecting the compiled code.
+    {
+        name = "<no name>";
+    }
+}
+
+public Nevermore60Customer(string name)
+: this(name, "<None>")
+{
+}
+
+====
+10，修饰符
+
+----
+10.1，可见性修饰符
+
+public 
+Any types or members 
+The item is visible to any other code.
+公开
+
+protected 
+Any member of a type, and any nested type
+The item is visible only to any derived type.
+子类
+
+internal 
+Any types or members 
+The item is visible only within its containing assembly.
+同一程序集内。
+
+private 
+Any member of a type, and any nested type
+The item is visible only inside the type to which it belongs.
+私有
+
+protected internal 
+Any member of a type, and any nested type
+The item is visible to any code within its containing assembly and to any code inside a derived type.
+子类或同一程序集内。
+
+--
+public class OuterClass
+{
+    protected class InnerClass
+    {
+        // etc.
+    }
+    // etc.
+}
+
+内部类可以访问外部类的任何成员。
+
+----
+10.2，其它修饰符
+
+new 
+Function members 
+The member hides an inherited member with the same signature.
+隐藏继承的父类方法。
+
+
+static 
+All members 
+The member does not operate on a specifi c instance of the class.
+静态成员。
+
+virtual 
+Function members 
+only The member can be overridden by a derived class.
+指明父类哪些方法可被重写。
+
+abstract 
+Function members 
+only A virtual member that defines the signature of the member but doesn’t provide an implementation.
+抽象方法。
+
+override 
+Function members 
+only The member overrides an inherited virtual or abstract member.
+重写父类的方法。
+
+
+sealed 
+Classes, methods, and properties
+
+For classes, the class cannot be inherited from. 
+For properties and methods, the member overrides an inherited virtual member 
+but cannot be overridden by any members in any derived classes. 
+Must be used in conjunction with override.
+类不允许被继承，或方法不允许被重写，即java的final类和final方法。
+必须和override关键字一起使用。
+
+extern 
+Static [DllImport] methods only
+The member is implemented externally, in a different language.
+使用其它语言实现的方法，相当于java的native方法。
+
+====
+11，接口
+
+与java的概念和规则相同。
+
+接口的成员不允许使用修饰符。
+
+public interface IDisposable
+{
+    void Dispose();
+}
+
+实现类不用使用override关键字。
+
+class SomeClass: IDisposable
+{
+    // This class MUST contain an implementation of the
+    // IDisposable.Dispose() method, otherwise
+    // you get a compilation error.
+    public void Dispose()
+    {
+        // implementation of Dispose() method
+    }
+    // rest of class
+}
+
+----
+接口继承另一接口
+
+public interface ITransferBankAccount: IBankAccount
+{
+    bool TransferTo(IBankAccount destination, decimal amount);
+}
+
