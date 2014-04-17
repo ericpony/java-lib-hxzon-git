@@ -1,0 +1,349 @@
+﻿（hxzon学习笔记）C#运算符和类型强制转换
+
+by hxzon
+《Professional C# 2012 and .NET 4.5》pdf
+
+第7章 运算符和类型强制转换 
+
+7.1 运算符和类型转换 
+
+7.2 运算符 
+7.2.1 运算符的简化操作 
+7.2.2 运算符的优先级 
+
+7.3 类型的安全性 
+7.3.1 类型转换 
+7.3.2 装箱和拆箱 
+
+7.4 比较对象的相等性 
+7.4.1 比较引用类型的相等性 
+7.4.2 比较值类型的相等性 
+
+7.5 运算符重载 
+7.5.1 运算符的工作方式 
+7.5.2 运算符重载的示例：Vector结构 
+
+7.6 用户定义的类型强制转换 
+7.6.1 实现用户定义的类型强制转换 
+7.6.2 多重类型强制转换 
+
+====
+1，运算符
+
+Arithmetic 
++ –* / %
+
+Logical 
+& | ^ ~ && || !
+
+String concatenation 
++
+
+Increment and decrement 
+++ ––
+
+Bit shifting 
+<< >>
+
+Comparison 
+== != < > <= >=
+
+Assignment 
+= += -= *= /= %= &= |= ^= <<= >>=
+
+Member access (for objects and structs) 
+.
+
+Indexing (for arrays and indexers) 
+[]
+
+Cast 
+()
+
+Conditional (the ternary operator) 
+?:
+
+Delegate concatenation and removal (discussed in Chapter 8, “Delegates, Lambdas, and Events”)
++ -
+
+Object creation 
+new
+
+Type information 
+sizeof is typeof as
+
+Overflow exception control 
+checked unchecked
+
+Indirection and address 
+[]
+
+Namespace alias qualifier (discussed in Chapter 2, “Core C#”) 
+::
+
+Null coalescing operator 
+??
+
+----
+四个特殊的操作符。
+
+Operator keywords 
+sizeof(for .NET Framework versions 1.0 and 1.1 only)
+
+Operators 
+* -> &
+
+----
+运算符缩写
+
+x++, ++x 
+x = x + 1
+
+x--, --x 
+x = x – 1
+
+x += y 
+x = x + y
+
+x -= y 
+x = x - y
+
+x *= y 
+x = x * y
+
+x /= y 
+x = x / y
+
+x %= y 
+x = x % y
+
+x >>= y 
+x = x >> y
+
+x <<= y 
+x = x << y
+
+x &= y 
+x = x & y
+
+x |= y 
+x = x | y
+
+
+====
+2，溢出检查
+
+byte b = 255;
+b++;
+Console.WriteLine(b.ToString());
+
+byte++将溢出，
+
+byte b = 255;
+checked
+{
+    b++;
+}
+Console.WriteLine(b.ToString());
+
+运行时会抛出异常。
+Unhandled Exception: System.OverflowException: Arithmetic operation resulted in an 
+overflow at Wrox.ProCSharp.Basics.OverflowTest.Main(String[] args)
+
+----
+byte b = 255;
+unchecked
+{
+    b++;
+}
+Console.WriteLine(b.ToString());
+
+b会变成0.
+
+====
+3，
+is判断对象是否某种类型。
+
+int i = 10;
+if (i is object)
+{
+    Console.WriteLine("i is an object");
+}
+
+as执行显示转换，如果转换失败，返回null。
+
+object o1 = "Some String";
+object o2 = 5;
+string s1 = o1 as string; // s1 = "Some String"
+string s2 = o2 as string; // s2 = null
+
+sizeof获得一个对象所需的字节数。
+
+Console.WriteLine(sizeof(int))
+
+If you are using the sizeofoperator with complex types (and not primitive types), you need to block the 
+code within an unsafeblock as illustrated here:
+
+unsafe
+{
+    Console.WriteLine(sizeof(Customer));
+}
+
+typeof返回对象的类型。
+
+typeof(string)
+
+====
+4，可空类型
+
+int? a = null;
+int? b = a + 4; // b = null
+int? c = a * 5; // c = null
+
+int? a = null;
+int? b = -5;
+if (a > = b)
+    Console.WriteLine("a > = b");
+else
+    Console.WriteLine("a < b");
+
+If the fi rst operand is not null, then the overall expression has the value of the first operand.
+If the first operand is null, then the overall expression has the value of the second operand.
+
+int? a = null;
+int b;
+b = a ?? 10; // b has the value 10
+a = 3;
+b = a ?? 10; // b has the value 3
+
+====
+5，运算符优先级
+
+Primary 
+() . [] x++ x-- new typeof sizeof checked unchecked
+
+Unary 
++ — ! ~ ++x --x and casts
+
+Multiplication/division 
+* / %
+
+Addition/subtraction 
++ -
+
+Bitwise shift operators 
+<< >>
+
+Relational 
+< ><= >= is as
+
+Comparison 
+== !=
+
+Bitwise AND 
+&
+
+Bitwise XOR 
+^
+
+Bitwise OR 
+|
+
+Boolean AND 
+&&
+
+Boolean OR 
+||
+
+Conditional operator 
+?:
+
+Assignment 
+= += -= *= /= %= &= |= ^= <<= >>= >>>=
+
+====
+6，类型安全，类型转换
+
+byte value1 = 10;
+byte value2 = 23;
+byte total;
+total = value1 + value2;
+Console.WriteLine(total);
+
+编译器报错：
+Cannot implicitly convert type 'int' to 'byte'
+
+----
+隐式转换
+
+byte value1 = 10;
+byte value2 = 23;
+long total; // this will compile fine
+total = value1 + value2;
+Console.WriteLine(total);
+
+--
+FROM TO
+
+sbyte short,int,long,float,double,decimal,BigInteger
+byte short,ushort,int,uint,long,ulong,float,double, decimal,BigInteger
+short int,long,float,double,decimal,BigInteger
+ushort int,uint,long,ulong,float,double,decimal,BigInteger
+int long,float,double,decimal,BigInteger
+uint long,ulong,float,double,decimal,BigInteger
+
+long,ulong float,double,decimal,BigInteger
+float double,BigInteger
+char ushort,int,uint,long,ulong,float,double,decimal,BigInteger
+
+Nullable types implicitly convert to other nullable types following the conversion rules described for 
+non-nullable types in the previous table; that is, int?implicitly converts to long?, float?, double?, 
+and decimal?.
+
+Non-nullable types implicitly convert to nullable types according to the conversion rules described in 
+the preceding table; that is, intimplicitly converts to long?, float?, double?, and decimal?.
+
+Nullable types do notimplicitly convert to non-nullable types; you must perform an explicit 
+conversion as described in the next section. That’s because there is a chance that a nullable type will 
+have the value null, which cannot be represented by a non-nullable type.
+
+----
+显示转换
+
+long val = 30000;
+int i = (int)val; // A valid cast. The maximum int is 2147483647
+
+long val = 3000000000;
+int i = (int)val; // An invalid cast. The maximum int is 2147483647
+
+long val = 3000000000;
+int i = checked((int)val);
+
+double price = 25.30;
+int approximatePrice = (int)(price + 0.5);
+
+ushort c = 43;
+char symbol = (char)c;
+Console.WriteLine(symbol);
+
+struct ItemDetails
+{
+public string Description;
+public int ApproxPrice;
+}
+//..
+double[] Prices = { 25.30, 26.20, 27.40, 30.00 };
+ItemDetails id;
+id.Description = "Hello there.";
+id.ApproxPrice = (int)(Prices[0] + 0.5);
+
+int? a = null;
+int b = (int)a; // Will throw exception
+
+string s = "100";
+int i = int.Parse(s);
+Console.WriteLine(i + 50); // Add 50 to prove it is really an int
+
+====
+7，装箱和拆箱
+

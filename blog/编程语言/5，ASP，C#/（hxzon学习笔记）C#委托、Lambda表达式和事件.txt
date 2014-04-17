@@ -222,7 +222,10 @@ Func<int, int> f = x => x + someVal;
 someVal = 7;
 Console.WriteLine(f(3));
 
+--
 hxzon：原书p200给出下面的代码作为原理解释，有误？
+
+在定义一个lambda表达式时，编译器创建了一个匿名类。
 
 public class AnonymousClass
 {
@@ -272,18 +275,34 @@ foreach (var f in funcs)
 
 C#5.0会在循环中创建不同的本地变量。
 
-The outcome of this code snippet changed with C# 5. Using C# 4 or earlier versions of the compiler, 30 is 
-written to the console three times. Using a closure with the first foreachloop, the functions that are created 
+The outcome of this code snippet changed with C# 5. 
+上述代码的输出，在C# 5中有变更。
+Using C# 4 or earlier versions of the compiler, 30 is 
+written to the console three times. 
+Using a closure with the first foreach loop, the functions that are created 
 don’t take the value of the valvariable during the time of the iteration, but instead when the functions are 
-invoked. As you’ve already seen in Chapter 6, “Arrays and Tuples,” the compiler creates a whileloop out 
-from the foreachstatement. With C# 4 the compiler defines the loop variable outside of the while loop and 
-reuses it with every iteration. Thus, at the end of the loop the variable has the value from the last iteration. 
+invoked. 
+As you’ve already seen in Chapter 6, “Arrays and Tuples,” the compiler creates a while loop out 
+from the foreach statement. 
+正如你在第6章，数组与元组看到的，编译器在foreach语句外创建while循环。
+With C# 4 the compiler defines the loop variable outside of the while loop and 
+reuses it with every iteration. 
+C# 4编译器在while循环外部创建变量，每次迭代都重用这个变量。
+Thus, at the end of the loop the variable has the value from the last iteration. 
+所以在循环结束时，变量拥有最后一个迭代的值。
 To get 10, 20, 30 with the result of the code using C# 4, it’s necessary to change the code to use a local 
-variable that is passed to the lambda expression. Here, a different value is retained with every iteration.
+variable that is passed to the lambda expression. 
+Here, a different value is retained with every iteration.
+在C# 4中要输出10,20,30，需要创建一个本地变量，然后传递给lambda表达式。
+这样，每次迭代的值才能保留。
 
-Using C# 5 the code change to have a local variable is no longer necessary. C# now creates the loop variable 
-differently locally within the block of the while loop and thus the value is retained automatically. You just 
-need to be aware of these different behaviors of C# 4 and 5.
+Using C# 5 the code change to have a local variable is no longer necessary. 
+使用C# 5则不用再创建本地变量。
+C# now creates the loop variable 
+differently locally within the block of the while loop and thus the value is retained automatically. 
+C#现在在loop循环体内创建变量（不同），所以每次迭代值会被自动保留。
+You just need to be aware of these different behaviors of C# 4 and 5.
+你要注意C# 4和C# 5之间的这个区别。
 
 ====
 9，事件
