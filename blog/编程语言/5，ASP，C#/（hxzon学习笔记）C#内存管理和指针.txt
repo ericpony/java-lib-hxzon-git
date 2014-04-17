@@ -23,5 +23,367 @@ by hxzon
 14.4.3 使用指针优化性能 
 
 ====
+1，垃圾回收
 
+新对象放入第0代，原来的第0代放入第1代，原来的第1代放入第2代，如果未被回收。
+
+====
+2，释放非托管的资源：析构函数
+
+class MyClass
+{
+    ~MyClass()
+    {
+        // destructor implementation
+    }
+}
+
+但是析构函数不像C++中那样会立即调用。
+
+C#将析构函数编译成Finalize方法，包含对父类Finalize方法的调用。
+
+protected override void Finalize()
+{
+    try
+    {
+        // destructor implementation
+    }
+    finally
+    {
+        base.Finalize();
+    }
+}
+
+====
+3，释放非托管的资源：IDisposable接口
+
+即java7中的java.lang.AutoCloseable接口，可以自动释放资源。
+
+class MyClass: IDisposable
+{
+    public void Dispose()
+    {
+        // implementation
+    }
+}
+
+try
+{
+    theInstance = new ResourceGobbler();
+    // do your processing
+}
+finally
+{
+    if (theInstance != null)
+    {
+        theInstance.Dispose();
+    }
+}
+
+资源在使用完毕会自动释放。
+
+using (ResourceGobbler theInstance = new ResourceGobbler())
+{
+    // do your processing
+}
+
+----
+一种设计方案：同时实现IDisposable和析构函数
+
+using System;
+public class ResourceHolder: IDisposable
+{
+    private bool isDisposed = false;
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!isDisposed)
+        {
+            if (disposing)
+            {
+                // Cleanup managed objects by calling their
+                // Dispose() methods.
+            }
+            // Cleanup unmanaged objects
+        }
+        isDisposed = true;
+    }
+
+    ~ResourceHolder()
+    {
+        Dispose (false);
+    }
+
+    public void SomeMethod()
+    {
+        // Ensure object not already disposed before execution of any method
+        if(isDisposed)
+        {
+            throw new ObjectDisposedException("ResourceHolder");
+        }
+        // method implementation...
+    }
+}
+
+====
+4，不安全的代码，使用指针
+
+使用指针一是兼容，二是为了性能。
+
+使用unsafe关键字。
+
+unsafe int GetSomeNumber()
+{
+    // code that can use pointers
+}
+
+unsafe class MyClass
+{
+    // any method in this class can now use pointers
+}
+
+class MyClass
+{
+    unsafe int* pX; // declaration of a pointer field in a class
+}
+
+void MyMethod()
+{
+    // code that doesn't use pointers
+    unsafe
+    {
+        // unsafe code that uses pointers here
+    }
+    // more 'safe' code that doesn't use pointers
+}
+
+不能对局部变量使用unsafe关键字。
+
+int MyMethod()
+{
+    unsafe int *pX; // WRONG
+}
+
+编译时需要使用unsafe选项。
+
+csc /unsafe MySource.cs
+csc -unsafe MySource.cs
+
+====
+5，指针语法
+
+int* pWidth, pHeight;
+double* pResult;
+byte*[] pFlags;
+
+注意，C#的语法与C++不同：
+C#中的
+
+int* pX, pY;
+
+等价于C++中的
+
+int *pX, *pY;
+
+&取地址。
+*取指针的内容。
+
+int x = 10;
+int* pX, pY;
+pX = &x;
+pY = pX;
+*pY = 20;
+
+将指针转为整型
+
+int x = 10;
+int* pX, pY;
+pX = &x;
+pY = pX;
+*pY = 20;
+uint y = (uint)pX;
+int* pD = (int*)y;
+
+Console.WriteLine("Address is " + pX); // wrong -- will give a compilation error
+Console.WriteLine("Address is " + (uint)pX); // OK
+
+指针类型之间的转换
+
+byte aByte = 8;
+byte* pByte= &aByte;
+double* pDouble = (double*)pByte;
+
+无类型指针
+
+int* pointerToInt;
+void* pointerToVoid;
+pointerToVoid = (void*)pointerToInt;
+
+----
+指针运算
+
++, -, +=, -=, ++, --
+
+不能对void指针做上述运算。
+
+uint u = 3;
+byte b = 8;
+double d = 10.0;
+uint* pUint= &u; // size of a uint is 4
+byte* pByte = &b; // size of a byte is 1
+double* pDouble = &d; // size of a double is 8
+
+++pUint; // adds (1*4) = 4 bytes to pUint
+pByte -= 3; // subtracts (3*1) = 3 bytes from pByte
+double* pDouble2 = pDouble + 4; // pDouble2 = pDouble + 32 bytes (4*8 bytes)
+
+----
+sizeof运算符
+
+int x = sizeof(double);
+
+sizeof(sbyte) = 1; sizeof(byte) = 1;
+sizeof(short) = 2; sizeof(ushort) = 2;
+sizeof(int) = 4; sizeof(uint) = 4;
+sizeof(long) = 8; sizeof(ulong) = 8;
+sizeof(char) = 2; sizeof(float) = 4;
+sizeof(double) = 8; sizeof(bool) = 1;
+
+可以对结构类型使用sizeof，但不能对class类型使用。
+
+====
+6，对结构使用指针
+
+-> 访问指针所指对象的成员。
+
+struct MyStruct
+{
+    public long X;
+    public float F;
+}
+
+MyStruct* pStruct;
+
+MyStruct Struct = new MyStruct();
+pStruct = &Struct;
+
+(*pStruct).X = 4;
+(*pStruct).F = 3.4f;
+
+pStruct->X = 4;
+pStruct->F = 3.4f;
+
+long* pL = &(Struct.X);
+float* pF = &(Struct.F);
+或者
+long* pL = &(pStruct->X);
+float* pF = &(pStruct->F);
+
+
+====
+7，对类的成员使用指针
+
+class MyClass
+{
+    public long X;
+    public float F;
+}
+
+MyClass myObject = new MyClass();
+long* pL = &(myObject.X); // wrong -- compilation error
+float* pF = &(myObject.F); // wrong -- compilation error
+
+因为类的实例会被移动。
+需要使用fixed关键字。
+
+MyClass myObject = new MyClass();
+fixed (long* pObject = &(myObject.X))
+{
+    // do something
+}
+
+fixed可以并行或嵌套使用。
+
+MyClass myObject = new MyClass();
+fixed (long* pX = &(myObject.X))
+fixed (float* pF = &(myObject.F))
+{
+    // do something
+}
+
+MyClass myObject = new MyClass();
+fixed (long* pX = &(myObject.X))
+{
+    // do something with pX
+    fixed (float* pF = &(myObject.F))
+    {
+        // do something else with pF
+    }
+}
+
+MyClass myObject = new MyClass();
+MyClass myObject2 = new MyClass();
+fixed (long* pX = &(myObject.X), pX2 = &(myObject2.X))
+{
+    // etc.
+}
+
+
+====
+8，使用指针优化性能的示例：基于栈的数组
+
+decimal* pDecimals = stackalloc decimal[10];
+
+double* pDoubles = stackalloc double[20];
+
+int size;
+size = 20; // or some other value calculated at runtime
+double* pDoubles = stackalloc double[size];
+
+double* pDoubles = stackalloc double[20];
+*pDoubles = 3.0;
+
+double* pDoubles = stackalloc double [20];
+*pDoubles = 3.0;
+*(pDoubles+1) = 8.4;
+
+double* pDoubles = stackalloc double [20];
+pDoubles[0] = 3.0; // pDoubles[0] is the same as *pDoubles
+pDoubles[1] = 8.4; // pDoubles[1] is the same as *(pDoubles+1)
+
+double[] myDoubleArray = new double [20];
+myDoubleArray[50] = 3.0;
+
+double* pDoubles = stackalloc double [20];
+pDoubles[50] = 3.0;
+
+----
+using System;
+namespace QuickArray
+{
+    internal class Program
+    {
+        private static unsafe void Main()
+        {
+            Console.Write("How big an array do you want? \n> ");
+            string userInput = Console.ReadLine();
+            uint size = uint.Parse(userInput);
+            long* pArray = stackalloc long[(int) size];
+            for (int i = 0; i < size; i++)
+            {
+                pArray[i] = i*i;
+            }
+            for (int i = 0; i < size; i++)
+            {
+                Console.WriteLine("Element {0} = {1}", i, *(pArray + i));
+            }
+            Console.ReadLine();
+        }
+    }
+}
 

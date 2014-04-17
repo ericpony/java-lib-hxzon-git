@@ -57,6 +57,854 @@ by hxzon
 2.13.2 用法约定 
 
 ====
+1，开始
+
+using System;
+namespace Wrox
+{
+    public class MyFirstClass
+    {
+        static void Main()
+        {
+            Console.WriteLine("Hello from Wrox.");
+            Console.ReadLine();
+            return;
+        }
+    }
+}
+
+编译
+csc First.cs
+
+运行
+First.exe
+
+====
+2，
+using，即java中的import语句。
+
+Main()可以没有参数。
+
+可以有多个Main()函数，可在编译时用选项指定哪个Main()函数作为程序入口。
+
+using System;
+namespace Wrox
+{
+    class Client
+    {
+        public static int Main()
+        {
+            MathExample.Main();
+            return 0;
+        }
+    }
+    class MathExample
+    {
+        static int Add(int x, int y)
+        {
+            return x + y;
+        }
+        public static int Main()
+        {
+            int i = Add(5,10);
+            Console.WriteLine(i);
+            return 0;
+        }
+    }
+}
+
+编译
+
+csc DoubleMain.cs /main:Wrox.MathExample
+
+----
+using System;
+namespace Wrox
+{
+    class ArgsExample
+    {
+        public static int Main(string[] args)
+        {
+            for (int i = 0; i < args.Length; i++)
+            {
+                Console.WriteLine(args[i]);
+            }
+            return 0;
+        }
+    }
+}
+
+更多编译选项
+
+指定目标类型
+
+/t:exe A console application (the default)
+/t:library A class library with a manifest
+/t:module A component without a manifest
+/t:winexe A Windows application (without a console window)
+
+依赖某个库
+
+csc MathClient.cs /r:MathLibrary.dll
 
 
+====
+3，变量
+
+一个语句只能声明一种类型的变量。
+int x = 10, bool y = true; // This won't compile!
+
+变量在使用前必须初始化，否则出错。
+除非作为函数调用的out参数。
+
+----
+类型推断，使用var关键字。
+
+var someNumber = 0;
+
+xx.GetType()可以获得变量的类型。
+
+Type nameType = name.GetType();
+
+----
+变量的作用域
+
+局部变量会遮住成员变量。
+
+====
+4，常量
+
+const int a = 100; // This value cannot be changed.
+
+====
+5，值类型和引用类型
+
+6，CTS类型
+
+C#有15中预定义类型，13种是值类型，2种是引用类型（string和object）。
+
+----
+预定义的值类型：整型
+
+sbyte 
+System.SByte 
+8-bit signed integer 
+-128:127 (-2 7:2 7 –1)
+
+short 
+System.Int16 
+16-bit signed integer 
+-32,768:32,767 (-2 15 :2 15 –1)
+
+int 
+System.Int32 
+32-bit signed integer -2,147,483,648:2,147,483,647 (-2
+31
+:2
+31
+–1)
+
+long 
+System.Int64 
+64-bit signed integer 
+-9,223,372,036,854,775,808: 
+9,223,372,036,854,775,807 (-2
+63
+:2
+63
+–1)
+
+byte 
+System.Byte 
+8-bit unsigned integer 
+0:255 (0:2
+8
+–1)
+
+ushort 
+System.UInt16 
+16-bit unsigned integer 
+0:65,535 (0:2
+16
+–1)
+
+uint 
+System.UInt32 
+32-bit unsigned integer 
+0:4,294,967,295 (0:2
+32
+–1)
+
+ulong 
+System.UInt64 
+64-bit unsigned integer 0:18,446,744,073,709,551,615 (0:2
+64
+–1)
+
+----
+预定义类型：浮点类型
+
+float 
+System.Single 
+32-bit, single-precision floating point
+7 61.5 310
+245
+to 63.4 310
+38
+
+double 
+System.Double 
+64-bit, double-precision 
+fl o a t i n g p o i n t
+15/16 65.0 310
+2324
+to 61.7 310
+308
+
+----
+预定义类型：Decimal类型
+
+decimal System.Decimal 128-bit, high-precision 
+decimal notation
+28 61.0 310
+228
+to 67.9 310
+28
+
+----
+预定义类型：布尔类型
+
+bool 
+System.Boolean 
+Represents true or false 
+NA 
+true or false
+
+----
+预定义类型：字符类型
+
+char 
+System.Char 
+Represents a single 16-bit (Unicode) character
+
+转义字符
+
+\' Single quotation mark
+\" Double quotation mark
+\\ Backslash
+\0 Null
+\a Alert
+\b Backspace
+\f Form feed
+\n Newline
+\r Carriage return
+\t Tab character
+\v Vertical tab
+
+----
+预定义的引用类型
+
+object 
+System.Object 
+The root type. All other types (including value types) in the CTS are derived from object.
+
+string 
+System.String 
+Unicode character string
+
+字符串
+string str1 = "Hello ";
+string str2 = "World";
+string str3 = str1 + str2; // string concatenation
+
+在字符串前使用@，可以不用转义，还可以多行。
+string filepath = "C:\\ProCSharp\\First.cs";
+
+string filepath = @"C:\ProCSharp\First.cs";
+
+string jabberwocky = @"'Twas brillig and the slithy toves
+Did gyre and gimble in the wabe.";
+
+====
+7，流程控制
+
+----
+条件语句
+
+if
+else if
+else
+
+----
+switch语句
+
+注意其中的case值必须是常量，不能是变量。
+
+switch (integerA)
+{
+    case 1:
+    Console.WriteLine("integerA =1");
+    break;
+
+    case 2:
+    Console.WriteLine("integerA =2");
+    break;
+
+    case 3:
+    Console.WriteLine("integerA =3");
+    break;
+
+    default:
+    Console.WriteLine("integerA is not 1,2, or 3");
+    break;
+}
+
+C#中的case会自动break，不会跑到下一分支。
+C#中的default可以放到最前。
+
+可以用字符串字面量。
+
+// assume country and language are of type string
+switch(country)
+{
+    case "America":
+    CallAmericanOnlyMethod();
+    goto case "Britain";
+
+    case "France":
+    language = "French";
+    break;
+
+    case "Britain":
+    language = "English";
+    break;
+}
+
+但不能用字符串常量。
+
+// assume country is of type string
+const string england = "uk";
+const string britain = "uk";
+
+switch(country)
+{
+    case england:
+    case britain: // This will cause a compilation error.
+    language = "English";
+    break;
+}
+
+但如果case语句为空，则会流入下一个case。
+switch(country)
+{
+    case "au":
+    case "uk":
+    case "us":
+    language = "English";
+    break;
+
+    case "at":
+    case "de":
+    language = "German";
+    break;
+}
+
+----
+循环语句
+
+for
+
+while
+
+--
+do...while
+
+bool condition;
+do
+{
+    // This loop will at least execute once, even if Condition is false.
+    MustBeCalledAtLeastOnce();
+    condition = CheckCondition();
+} while (condition);
+
+--
+foreach
+
+foreach (int temp in arrayOfInts)
+{
+    Console.WriteLine(temp);
+}
+
+foreach (var temp in arrayOfInts)
+{
+    Console.WriteLine(temp);
+}
+
+foreach是只读的。
+
+foreach (int temp in arrayOfInts)
+{
+    temp++;
+    Console.WriteLine(temp);
+}
+
+----
+跳转语句
+
+goto Label1;
+Console.WriteLine("This won't be executed");
+
+Label1:
+Console.WriteLine("Continuing execution from here");
+
+--
+break
+continue
+return
+
+====
+枚举
+
+public enum TimeOfDay
+{
+    Morning = 0,
+    Afternoon = 1,
+    Evening = 2
+}
+
+class EnumExample
+{
+    public static int Main()
+    {
+        WriteGreeting(TimeOfDay.Morning);
+        return 0;
+    }
+    static void WriteGreeting(TimeOfDay timeOfDay)
+    {
+        switch(timeOfDay)
+        {
+            case TimeOfDay.Morning:
+            Console.WriteLine("Good morning!");
+            break;
+
+            case TimeOfDay.Afternoon:
+            Console.WriteLine("Good afternoon!");
+            break;
+
+            case TimeOfDay.Evening:
+            Console.WriteLine("Good evening!");
+            break;
+
+            default:
+            Console.WriteLine("Hello!");
+            break;
+        }
+    }
+}
+
+TimeOfDay time = TimeOfDay.Afternoon;
+Console.WriteLine(time.ToString());
+
+TimeOfDay time2 = (TimeOfDay) Enum.Parse(typeof(TimeOfDay), "afternoon", true);
+Console.WriteLine((int)time2);
+
+====
+命名空间
+
+namespace CustomerPhoneBookApp
+{
+    using System;
+    public struct Subscriber
+    {
+        // Code for struct here..
+    }
+}
+
+嵌套写法：
+
+namespace Wrox
+{
+    namespace ProCSharp
+    {
+        namespace Basics
+        {
+            class NamespaceExample
+            {
+                // Code for the class here..
+            }
+        }
+    }
+}
+
+点分隔写法
+
+namespace Wrox.ProCSharp.Basics
+{
+    class NamespaceExample
+    {
+        // Code for the class here..
+    }
+}
+
+----
+using指令
+
+using System;
+using Wrox.ProCSharp;
+
+如果有同名类，需要指明是哪一个。
+
+using Wrox.ProCSharp.OOP;
+using Wrox.ProCSharp.Basics;
+
+namespace Wrox.ProCSharp
+{
+    class Test
+    {
+        public static int Main()
+        {
+            Basics.NamespaceExample nSEx = new Basics.NamespaceExample();
+            // do something with the nSEx variable.
+            return 0;
+        }
+    }
+}
+
+----
+命名空间别名
+
+using alias = NamespaceName;
+
+using System;
+using Introduction = Wrox.ProCSharp.Basics;
+
+class Test
+{
+    public static int Main()
+    {
+        Introduction::NamespaceExample NSEx =
+        new Introduction::NamespaceExample();
+        Console.WriteLine(NSEx.GetNamespace());
+        return 0;
+    }
+}
+
+namespace Wrox.ProCSharp.Basics
+{
+    class NamespaceExample
+    {
+        public string GetNamespace()
+        {
+            return this.GetType().Namespace;
+        }
+    }
+}
+
+====
+Console IO
+
+Console.Write()
+— Writes  the  specified value to the console window.
+
+Console.WriteLine()
+— Writes  the  specified value to the console window but adds a newline 
+character at the end of the output.
+
+string s = Console.ReadLine();
+Console.WriteLine(s);
+
+支持格式化
+
+int i = 10;
+int j = 20;
+Console.WriteLine("{0} plus {1} equals {2}", i, j, i + j);
+
+int i = 940;
+int j = 73;
+Console.WriteLine(" {0,4}\n+{1,4}\n — — \n {2,4}", i, j, i + j);
+
+上边的语句将打印出竖式。
+
+--
+格式化描述
+
+C Local currency format
+
+D Decimal format. Converts an integer to base 10, and pads with leading zeros if a precision specifi er 
+is given.
+
+E Scientifi c (exponential) format. The precision specifi er sets the number of decimal places (6 by 
+default). The case of the format string (eor E) determines the case of the exponential symbol.
+
+F Fixed-point format; the precision specifi er controls the number of decimal places. Zero is acceptable.
+
+G General format. Uses Eor Fformatting, depending on which is more compact.
+
+N Number format. Formats the number with commas as the thousands separators — for example 32,767.44.
+
+P Percent format
+
+X Hexadecimal format. The precision specifi er can be used to pad with leading zeros.
+
+--
+decimal i = 940.23m;
+decimal j = 73.7m;
+Console.WriteLine(" {0,9:C2}\n+{1,9:C2}\n — — — — -\n {2,9:C2}", i, j, i + j);
+
+double d = 0.234;
+Console.WriteLine("{0:#.00}", d);
+
+====
+注释
+
+// This is a single-line comment
+/* This comment
+spans multiple lines. */
+
+====
+xml文档
+
+即java doc。
+
+以三个斜杠开始。
+
+<c> Marks up text within a line as code — for example, <c>int i= 10;</c>.
+
+<code> Marks multiple lines as code
+
+<example> Marks up a code example
+
+<exception> Documents an exception class. (Syntax is verifi ed by the compiler.)
+
+<include> Includes comments from another documentation fi le. (Syntax is verifi ed by the compiler.)
+
+<list> Inserts a list into the documentation
+
+<para> Gives structure to text
+
+<param> Marks up a method parameter. (Syntax is verifi ed by the compiler.)
+
+<paramref> Indicates that a word is a method parameter. (Syntax is verifi ed by the compiler.)
+
+<permission> Documents access to a member. (Syntax is verifi ed by the compiler.)
+
+<remarks> Adds a description for a member
+
+<returns> Documents the return value for a method
+
+<see> Provides a cross-reference to another parameter. (Syntax is verifi ed by the compiler.)
+
+<seealso> Provides a “see also” section in a description. (Syntax is verifi ed by the compiler.)
+
+<summary> Provides a short summary of a type or member
+
+<typeparam> Used in the comment of a generic type to describe a type parameter
+
+<typeparamref> The name of the type parameter
+
+<value> Describes a property
+
+示例：
+
+// MathLib.cs
+namespace Wrox
+{
+    ///<summary>
+    /// Wrox.Math class.
+    /// Provides a method to add two integers.
+    ///</summary>
+    public class MathLib
+    {
+        ///<summary>
+        /// The Add method allows us to add two integers.
+        ///</summary>
+        ///<returns>Result of the addition (int)</returns>
+        ///<param name="x">First number to add</param>
+        ///<param name="y">Second number to add</param>
+        public int Add(int x, int y)
+        {
+            return x + y;
+        }
+    }
+}
+
+生成文档
+csc /t:library /doc:MathLibrary.xml MathLibrary.cs
+
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MathLibrary</name>
+    </assembly>
+    <members>
+        <member name="T:Wrox.MathLibrary">
+            <summary>
+                Wrox.MathLibrary class.
+                Provides a method to add two integers.
+            </summary>
+        </member>
+        <member name=
+        "M:Wrox.MathLibrary.Add(System.Int32,System.Int32)">
+            <summary>
+                The Add method allows us to add two integers.
+            </summary>
+            <returns>Result of the addition (int)</returns>
+            <param name="x">First number to add</param>
+            <param name="y">Second number to add</param>
+        </member>
+    </members>
+</doc>
+
+====
+C#预处理指令
+
+#define 
+#undef
+
+#if
+#elif
+#else
+#endif
+
+int DoSomeWork(double x)
+{
+    // do something
+    #if DEBUG
+    Console.WriteLine("x is " + x);
+    #endif
+}
+
+#define ENTERPRISE
+#define W2K
+// further on in the file
+#if ENTERPRISE
+// do something
+#if W2K
+// some code that is only relevant to enterprise
+// edition running on W2K
+#endif
+#elif PROFESSIONAL
+// do something else
+#else
+// code for the leaner version
+#endif
+
+#if W2K && (ENTERPRISE==false) // if W2K is defined but ENTERPRISE isn't
+
+----
+#warning and #error
+#region and #endregion
+#line
+#pragma
+
+====
+C#编程规则
+
+标识符命名规则
+
+C#关键字
+
+as 
+explicit 
+null 
+switch
+base 
+extern 
+object 
+this
+bool 
+false 
+operator 
+throw
+break 
+finally 
+out 
+true
+byte 
+fixed 
+override 
+try
+case 
+float 
+params 
+typeof
+catch 
+for 
+private 
+uint
+char 
+foreach 
+protected 
+ulong
+checked 
+goto 
+public 
+unchecked
+class 
+if 
+readonly 
+unsafe
+const 
+implicit 
+ref 
+ushort
+continue 
+in 
+return 
+using
+decimal 
+int 
+sbyte 
+virtual
+default 
+interface 
+sealed 
+void
+delegate 
+internal 
+short 
+volatile
+do 
+is 
+sizeof 
+while
+double 
+lock 
+stackalloc
+else 
+long 
+static
+enum 
+namespace 
+string
+
+--
+可以使用Unicode字符做标识符。
+
+Name
+Überfluß
+_Identifier
+\u005fIdentifier
+
+C++中，*跟在标识符前，而C#中，*是跟着类型的。
+
+方法名习惯以大写开头。
+常量名习惯以大写开头，但不是全大写。
+私有成员习惯以小写开头，有些人还习惯在前面再加下划线。
+
+属性名以大写开头，对应的字段则小写开头。
+
+private string employeeName;
+public string EmployeeName
+{
+    get
+    {
+        return employeeName;
+    }
+}
+
+----
+如果为了互操作性，避免使用VB.NET的关键字和函数的名字。
+
+为了使用用别的语言写的，用了C#的关键字的标识符，可以在该标识符前面加@ 。
 

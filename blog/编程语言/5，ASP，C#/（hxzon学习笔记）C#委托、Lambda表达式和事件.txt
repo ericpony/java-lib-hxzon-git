@@ -29,3 +29,497 @@ by hxzon
 
 
 ====
+hxzon理解：
+委托类似C中的函数指针，及java8的方法引用。
+委托的用处就是把方法变成一级公民。
+委托是方法的容器，调用委托就会调用它包含的方法。
+方法包括实例方法和静态方法，只要签名匹配即可。
+事件即委托。
+
+定义委托就是定义一个类。
+
+====
+1，定义委托：
+delegate void IntMethodInvoker(int x)
+
+delegate double TwoLongsOp(long first, long second);
+
+delegate string GetAString();
+
+可以使用和定义类一样的修饰符。
+
+public delegate string GetAString();
+
+2，使用委托
+
+pri v a te delegate string GetAString();
+static void Main()
+{
+    int x = 40;
+    GetAString firstStringMethod = new GetAString(x.ToString);
+
+    Console.WriteLine("String is {0}", firstStringMethod());
+    // With firstStringMethod initialized to x.ToString(),
+    // the above statement is equivalent to saying
+    // Console.WriteLine("String is {0}", x.ToString());
+}
+
+firstStringMethod();
+等价于：
+firstStringMethod.Invoke();
+
+生成委托实例可以简写：
+
+GetAString firstStringMethod = x.ToString;
+
+可以定义委托的数组：
+DoubleOp[] operations =
+{
+    MathOperations.MultiplyByTwo,
+    MathOperations.Square
+};
+
+====
+3，Action<T> 和 Func<T> 委托
+
+两者都有许多变体，支持最多16个参数。
+Action适用于没有返回值的方法，Func适用于有返回值的方法。
+使用Action和Func就不用自己定义那么多委托类。
+
+Func<double, double>[] operations =
+{
+    MathOperations.MultiplyByTwo,
+    MathOperations.Square
+};
+
+示例：任意类型的排序
+
+static public void Sort<T>(IList<T> sortArray, Func<T, T, bool> comparison)
+
+class BubbleSorter
+{
+    static public void Sort<T>(IList<T> sortArray, Func<T, T, bool> comparison)
+    {
+        bool swapped = true;
+        do
+        {
+            swapped = false;
+            for (int i = 0; i < sortArray.Count — 1; i++)
+            {
+                if (comparison(sortArray[i+1], sortArray[i]))
+                {
+                    T temp = sortArray[i];
+                    sortArray[i] = sortArray[i + 1];
+                    sortArray[i + 1] = temp;
+                    swapped = true;
+                }
+            }
+        } while (swapped);
+    }
+}
+
+====
+4，多播委托
+
+委托可以含有多个方法，调用委托会执行它所包含的所有方法，但顺序没有保证。
+如果其中一个方法抛出异常，就会立即停止。
+
+使用+，+=，-，-=，给委托添加方法。
+
+Action<double> operations = MathOperations.MultiplyByTwo;
+operations += MathOperations.Square;
+
+可以获得委托所含有的方法，自己迭代调用。
+
+static void Main()
+{
+    Action d1 = One;
+    d1 += Two;
+    Delegate[] delegates = d1.GetInvocationList();
+    foreach (Action d in delegates)
+    {
+        try
+        {
+            d();
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Exception caught");
+        }
+    }
+}
+
+====
+5，匿名方法
+
+使用delegate关键字，可以省去为只在一个地方使用的方法取名字。
+
+using System;
+namespace Wrox.ProCSharp.Delegates
+{
+    class Program
+    {
+        static void Main()
+        {
+            string mid = ", middle part,";
+            Func<string, string> anonDel = delegate(string param)
+            {
+                param += mid;
+                param += " and this was added to the string.";
+                return param;
+            };
+            Console.WriteLine(anonDel("Start of string"));
+        }
+    }
+}
+
+====
+6，lambda表达式
+
+C#3.0开始，可以使用lambda表达式替代匿名方法。
+
+using System;
+namespace Wrox.ProCSharp.Delegates
+{
+    class Program
+    {
+        static void Main()
+        {
+            string mid = ", middle part,";
+            Func<string, string> lambda = param =>
+            {
+                param += mid;
+                param += " and this was added to the string.";
+                return param;
+            };
+            Console.WriteLine(lambda("Start of string"));
+        }
+    }
+}
+
+使用 => 分隔参数列表和方法体。
+
+参数有多个时要使用圆括号。
+方法体只有一行时，可省略花括号和return语句。
+
+Func<double, double, double> twoParams = (x, y) => x * y;
+Console.WriteLine(twoParams(3, 2));
+
+参数可以显示指定类型。
+
+Func<double, double, double> twoParamsWithTypes = (double x, double y) => x * y;
+Console.WriteLine(twoParamsWithTypes(4, 2));
+
+====
+7，闭包
+
+闭包捕获的是变量，而不是变量当时的值。
+
+int someVal = 5;
+Func<int, int> f = x => x + someVal;
+
+下面的输出是10而不是8。
+someVal = 7;
+Console.WriteLine(f(3));
+
+hxzon：原书p200给出下面的代码作为原理解释，有误？
+
+public class AnonymousClass
+{
+    private int someVal;
+    public AnonymousClass(int someVal)
+    {
+        this.someVal = someVal;
+    }
+    public int AnonymousMethod(int x)
+    {
+        return x + someVal;
+    }
+}
+
+====
+8，在foreach语句中的闭包（需留意）
+
+var v alues = new List<int>() { 10, 20, 30 };
+var funcs = new List<Func<int>>();
+
+foreach (var val in values)
+{
+    funcs.Add(() => val);
+}
+foreach (var f in funcs)
+{
+    Console.WriteLine((f()));
+} 
+
+在C#4.0及之前，会输出3个30。
+
+但C#5.0，会输出10,20,30.
+
+如果C#4.0及之前要有这种效果，需使用本地变量。
+
+var values = new List<int>() { 10, 20, 30 };
+var funcs = new List<Func<int>>();
+foreach (var val in values)
+{
+    var v = val;
+    funcs.Add(() => v);
+}
+foreach (var f in funcs)
+{
+    Console.WriteLine((f()));
+} 
+
+C#5.0会在循环中创建不同的本地变量。
+
+The outcome of this code snippet changed with C# 5. Using C# 4 or earlier versions of the compiler, 30 is 
+written to the console three times. Using a closure with the first foreachloop, the functions that are created 
+don’t take the value of the valvariable during the time of the iteration, but instead when the functions are 
+invoked. As you’ve already seen in Chapter 6, “Arrays and Tuples,” the compiler creates a whileloop out 
+from the foreachstatement. With C# 4 the compiler defines the loop variable outside of the while loop and 
+reuses it with every iteration. Thus, at the end of the loop the variable has the value from the last iteration. 
+To get 10, 20, 30 with the result of the code using C# 4, it’s necessary to change the code to use a local 
+variable that is passed to the lambda expression. Here, a different value is retained with every iteration.
+
+Using C# 5 the code change to have a local variable is no longer necessary. C# now creates the loop variable 
+differently locally within the block of the while loop and thus the value is retained automatically. You just 
+need to be aware of these different behaviors of C# 4 and 5.
+
+====
+9，事件
+
+事件基于委托。使用event关键字。
+
+----
+事件发布器：
+
+using System;
+namespace Wrox.ProCSharp.Delegates
+{
+    //事件参数
+    public class CarInfoEventArgs: EventArgs
+    {
+        public CarInfoEventArgs(string car)
+        {
+            this.Car = car;
+        }
+        public string Car { get; private set; }
+    }
+
+    public class CarDealer
+    {
+        //事件
+        public event EventHandler<CarInfoEventArgs> NewCarInfo;
+
+        public void NewCar(string car)
+        {
+            Console.WriteLine("CarDealer, new car {0}", car);
+            RaiseNewCarInfo(car);
+        }
+
+        protected virtual void RaiseNewCarInfo(string car)
+        {
+            EventHandler<CarInfoEventArgs> newCarInfo = NewCarInfo;
+            if (newCarInfo != null)
+            {
+                newCarInfo(this, new CarInfoEventArgs(car));
+            }
+        }
+    }
+}
+
+EventHandler的定义如下：
+
+public delegate void EventHandler<TEventArgs>(object sender, TEventArgs e)
+where TEventArgs: EventArgs
+
+----
+定义事件的长记法：
+
+对于事件，可以使用add和remove关键字来添加和移除事件处理器。
+
+private delegate EventHandler<CarInfoEventArgs> newCarInfo;
+
+public event EventHandler<CarInfoEventArgs> NewCarInfo
+{
+    add
+    {
+        newCarInfo += value;
+    }
+    remove
+    {
+        newCarInfo = value;
+    }
+}
+
+----
+事件监听器
+
+using System;
+namespace Wrox.ProCSharp.Delegates
+{
+    public class Consumer
+    {
+        private string name;
+
+        public Consumer(string name)
+        {
+            this.name = name;
+        }
+
+        public void NewCarIsHere(object sender, CarInfoEventArgs e)
+        {
+            Console.WriteLine("{0}: car {1} is new", name, e.Car);
+        }
+    }
+}
+
+----
+注册和反注册事件监听器
+
+namespace Wrox.ProCSharp.Delegates
+{
+    class Program
+    {
+        static void Main()
+        {
+            var dealer = new CarDealer();
+            var michael = new Consumer("Michael");
+            dealer.NewCarInfo += michael.NewCarIsHere;
+            dealer.NewCar("Ferrari");
+
+            var sebastian = new Consumer("Sebastian");
+            dealer.NewCarInfo += sebastian.NewCarIsHere;
+            dealer.NewCar("Mercedes");
+
+            dealer.NewCarInfo -= michael.NewCarIsHere;
+            dealer.NewCar("Red Bull Racing");
+        }
+    }
+}
+
+====
+10，弱事件
+
+With events, the publisher and listener are directly connected. This can be a problem with garbage 
+collection. For example, if a listener is not directly referenced any more, there’s still a reference from the 
+publisher. The garbage collector cannot clean up memory from the listener, as the publisher still holds a 
+reference and fires events to the listener.
+
+因为事件发布器总是持有监听器的引用，导致监听器无法被垃圾回收。
+
+----
+派生自己的弱事件管理器
+
+using System.Windows;
+namespace Wrox.ProCSharp.Delegates
+{
+    public class WeakCarInfoEventManager: WeakEventManager
+    {
+        public static void AddListener(object source, IWeakEventListener listener)
+        {
+            CurrentManager.ProtectedAddListener(source, listener);
+        }
+
+        public static void RemoveListener(object source, IWeakEventListener listener)
+        {
+            CurrentManager.ProtectedRemoveListener(source, listener);
+        }
+
+        public static WeakCarInfoEventManager CurrentManager
+        {
+            get
+            {
+                var manager = GetCurrentManager(typeof(WeakCarInfoEventManager))
+                as WeakCarInfoEventManager;
+                if (manager == null)
+                {
+                    manager = new WeakCarInfoEventManager();
+                    SetCurrentManager(typeof(WeakCarInfoEventManager), manager);
+                }
+                return manager;
+            }
+        }
+
+        protected override void StartListening(object source)
+        {
+            (source as CarDealer).NewCarInfo += CarDealer_NewCarInfo;
+        }
+
+        void CarDealer_NewCarInfo(object sender, CarInfoEventArgs e)
+        {
+            DeliverEvent(sender, e);
+        }
+
+        protected override void StopListening(object source)
+        {
+            (source as CarDealer).NewCarInfo = CarDealer_NewCarInfo;
+        }
+    }
+}
+
+----
+派生自己的弱事件监听器
+
+using System;
+using System.Windows;
+namespace Wrox.ProCSharp.Delegates
+{
+    public class Consumer: IWeakEventListener
+    {
+        private string name;
+        public Consumer(string name)
+        {
+            this.name = name;
+        }
+
+        public void NewCarIsHere(object sender, CarInfoEventArgs e)
+        {
+            Console.WriteLine("{0}: car {1} is new", name, e.Car);
+        }
+
+        bool IWeakEventListener.ReceiveWeakEvent(Type managerType, object sender, EventArgs e)
+        {
+            NewCarIsHere(sender, e as CarInfoEventArgs);
+            return true;
+        }
+    }
+}
+
+----
+static void Main()
+{
+    var dealer = new CarDealer();
+    var michael = new Consumer("Michael");
+
+    WeakCarInfoEventManager.AddListener(dealer, michael);
+    dealer.NewCar("Mercedes");
+
+    var sebastian = new Consumer("Sebastian");
+    WeakCarInfoEventManager.AddListener(dealer, sebastian);
+    dealer.NewCar("Ferrari");
+
+    WeakCarInfoEventManager.RemoveListener(dealer, michael);
+    dealer.NewCar("Red Bull Racing");
+}
+
+----
+.net4.5提供了泛型弱事件管理器，
+所以不再需要像上边一样派生自己的弱事件管理器和弱事件监听器。
+
+var dealer = new CarDealer();
+
+var michael = new Consumer("Michael");
+WeakEventManager<CarDealer, CarInfoEventArgs>.AddHandler(dealer, “NewCarInfo”, michael.NewCarIsHere);
+
+dealer.NewCar("Mercedes");
+
+var sebastian = new Consumer("Sebastian");
+WeakEventManager<CarDealer, CarInfoEventArgs>.AddHandler(dealer, “NewCarInfo”, sebastian.NewCarIsHere);
+
+dealer.NewCar("Ferrari");
+
+WeakEventManager<CarDealer, CarInfoEventArgs>.RemoveHandler(dealer, “NewCarInfo”, michael.NewCarIsHere);
+
+dealer.NewCar("Red Bull Racing");
+
