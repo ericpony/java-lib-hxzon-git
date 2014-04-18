@@ -1,0 +1,41 @@
+﻿微软通过.NET Native为Windows Store应用提速
+作者 Abel Avram ，译者 姚琪琳 发布于 2014年4月8日
+http://www.infoq.com/cn/news/2014/04/net-native
+
+.NET Native是微软的一次尝试，旨在降低Windows Store应用的启动时间和内存占用。
+
+自从去年11月份，有人发现Windows Store应用的启动速度有了大幅提高后，对该项目的猜测就已经开始了。
+在微软内部，.NET Native叫做“项目N”，
+它使用微软C++基础设施，将托管代码预编译为原生代码，从而大幅提升.NET应用的性能。
+这项技术与NGen（Native Image Generator）或为Store应用进行动态编译是不同的。
+
+.NET Native工具链最初生成MSIL，然后由C++优化器处理并生成MDIL（依赖于机器的中间语言），
+.NET Native团队的项目经理Mani Ramaswamy这样说道。
+他在Channel 9的访谈中提供了很多技术细节。
+在该访谈中，开发主管Shawn Farkas介绍，原生应用会静态地链接到只有几百KB大小的Mrt100.dll。
+Mrt100.dll代表一个最小化的CLR，为静态编译进行了重构和优化。
+因此，应用程序启动时将运行于这个最小化的CLR之上，不会加载整个.NET运行时，不会涉及任何JIT编译。
+
+应用程序仍然可以使用dynamic来访问在运行时才能决定其类型的对象。
+Ramaswamy说，这是在代码优化阶段，保留所有可能在运行时访问的类型时实现的。
+此外，仍然还可以使用标准的后台垃圾回收。
+
+这些优化将应用的启动时间缩短到原来的60%。
+.NET Native目前为预览版，并且面向的是Windows Store应用，
+但.NET Native团队希望将范围扩大到普通的.NET桌面应用。
+
+对于.NET开发者来说，没有什么改变。
+在应用程序级别没有引入抽象机，整个开发调试的体验也保持一致。
+得到改变的是构建，需要为特殊的硬件平台生成特殊的构建版本
+（目前已经支持ARM和x86-64bit，x86-32bit也即将支持）。
+优化后，构建时间可能要比原来多1-2分钟。
+
+目前并不是一切都十分顺利。
+MSDN有一节专门介绍用.NET Native编译应用程序，其中一个页面介绍将应用迁移到.NET Native。
+两者在以下方面存在一些差别：
+运行时、处理动态编程和反射、大量不支持的场景和API以及Visual Studio。
+
+要想使用原生代码，必须安装Visual Studio 2013 Update 2 RC和.NET Native SDK。
+
+原文英文链接：Microsoft Speeds Up Windows Store Apps with .NET Native
+

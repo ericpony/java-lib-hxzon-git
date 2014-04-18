@@ -1,0 +1,70 @@
+﻿C#的未来计划（2013-12）
+作者 Jonathan Allen ，译者 姚琪琳 发布于 2013年12月25日
+http://www.infoq.com/cn/news/2013/12/CSharp-Futures
+
+
+在NDC London上，Mads Torgersen提出了对未来C#语言的的计划。
+需要注意的是，这些只是计划，不会保证在哪个版本发布。
+Damien Guard对这些建议进行了总结和简要的分析，我们在此为您挑选了其中的一些内容。
+
+====
+只读属性
+
+只读自动属性将允许开发者在一行代码中声明属性及其后台字段。
+
+public int X { get; } = x; 
+
+----
+静态类型using语句
+
+Visual Basic和Java都允许在命名空间中导入模块（C#静态类）。
+这样可以移除常用的静态函数前面的重复代码，如“Math.”。
+
+----
+主构造函数
+
+通过在类名后加上参数，开发者将不再需要显式创建构造函数。
+这可以移除将构造函数参数复制到私有字段时的冗长代码。
+
+public class Point(int x, int y)  {     private int x, y; } 
+
+----
+属性和方法表达式
+
+属性表达式可以为简单的只读属性剔除一些原来必须的样板代码。
+
+public double Distance => Math.Sqrt((X * X) + (Y * Y)); 
+
+
+方法表达式也是如此，当然它们可以接受参数。
+注意，参数化的属性仍然没有列入考虑范围之内。
+在未来相当长一段时间里，这只能是VB独有的特性。
+
+----
+函数参数
+
+如今大多数开发者从来不用数组，除非要使用params关键字。
+因此有人提议让params也支持IEnumerable接口。
+如果这样做，其他语言（如Visual Basic）也需要支持。
+还有人提议可以使用out关键字声明局部变量。例如，
+
+int.TryParse("123", out int x); 
+
+----
+空传播
+
+在处理凌乱的数据时，开发者经常需要在读取属性或调用方法前编写一系列空判断逻辑。
+?.语法将帮助我们剔除这些逻辑，只有当它前面的值不为空时，才会调用后面的方法。
+
+var bestValue = points?.FirstOrDefault()?.X; 
+
+在本例中，如果points为空，或points.FirstOrDefault()返回空，那么将忽略.X，并返回空。
+它也可以和??连接使用，以提供可选的默认值。
+
+var bestValue = points?.FirstOrDefault()?.X ?? -1; 
+
+Objective-C和Smalltalk这样的“消息传递”语言都包含这样的语法。
+它通常被认为是有问题的，因为本应抛出空引用异常的地方，却悄无声息地被忽略了。
+
+原文英文链接：Future Plans for C#
+

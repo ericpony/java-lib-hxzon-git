@@ -1,0 +1,31 @@
+﻿C#中的异步陷阱
+作者 Jonathan Allen ，译者 李彬 发布于 2013年5月6日
+http://www.infoq.com/cn/news/2013/05/async-csharp-fsharp
+
+有时候，理解一种语言中的缺陷的最好方式是查看另一种语言如何防止这些缺陷发生。
+《Real-World Functional Programming》（注：该书已由清华大学出版社引进，中文名《C#与F#编程实践》）
+的作者Tomas Petricek讨论了异步C#代码中常见的7项错误，并说明F#如何降低这些缺陷出现的可能性。
+
+以下是Tomas的文章《在C#和F#中使用异步：C#中的异步陷阱》所覆盖内容的简要介绍，而我们更鼓励读者阅读整篇文章。
+
+----
+Async没有异步运行：只有在第一个await语句之后出现的代码才会异步运行。
+
+忽略结果：忘记await一个函数返回的任务，将会导致乱序执行。
+
+Async void方法：不能await一个返回“async void”而不是“async Task”的异步函数，这会导致与上一条相同的问题。
+
+Async void lambda函数：发生在当某个函数接收一个Action委托而不是Func<…，Task>委托的时候。
+此外也无法await一个async函数。
+
+嵌套任务：在语句“await Task.Factory.StartNew(async () => { await Task.Delay(1000); });”
+中，第一个和第二个await语句互相之间完全无关。
+这意味着第一个await将在第二个await之前完成，而语句中关联的1000ms延迟将被忽略。
+
+未按异步方式运行：使用Task.Wait()会将整个调用栈强制转为同步模式。
+
+对那些不熟悉F#的开发者来说，在了解到F#中的async工作流并不是基于Task和Task<T>类型的时候或许会感到惊讶。
+相反，F#使用自己的类型——Async<T>。
+
+查看英文原文：Asynchronous Gotchas in C#
+

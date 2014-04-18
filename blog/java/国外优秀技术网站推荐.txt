@@ -1,0 +1,115 @@
+﻿国外优秀技术网站推荐
+http://ifeve.com/tech-related-sites/
+
+1. http://blog.adam-bien.com/
+Adam Bien的个人博客，主要是Java&Java EE相关。
+
+2. http://techblog.bozho.net/
+Java, Android,WEB相关
+
+3. http://www.captaindebug.com/
+Java, Spring, Weblogic, Oracle, MySQL等。
+
+4. http://www.devx.com/
+综合类的技术门户网站
+
+5. http://www.drdobbs.com/
+各类文章及教程，视频
+
+6. http://www.ibm.com/developerworks/
+IBM的，不用多说了吧
+
+7. http://marxsoftware.blogspot.sg/
+这位博主更新很频繁，爱好也很广泛
+
+8. http://www.javacodegeeks.com/
+如果你比较懒，只关注这个也差不多了，其它网站和博客的文章很多也都会发到这上面来。
+
+9. http://javax0.wordpress.com/
+Java技术，纯的
+
+10. http://javaeesupportpatterns.blogspot.sg/
+Java EE,Java，.Net，JVM相关
+
+11. http://java-performance.info/
+关注Java性能
+
+12. http://blog.jooq.org/
+一家创业公司的博客，主要是Java,SQL相关，他们的产品是jOOQ，他们号称使用SQL就用jOOQ就足够了
+
+13. https://www.java.net/
+看域名就知道是什么了
+
+14. http://java.dzone.com/
+很活跃的社区，更新也很频繁
+
+15. http://www.javaperformancetuning.com/
+性能优化相关
+
+16. http://javarevisited.blogspot.sg/
+Java技术
+
+17. http://www.javaworld.com/
+Java相关的技术新闻门户
+
+18. http://jaxenter.com/
+同上，但不仅限于Java
+
+19. http://www.mkyong.com/
+Java EE，WEB开发
+
+20. http://www.optaplanner.org/
+一款计划引擎，上面是他们技术人员的一些文章，大多是Java相关的
+
+21. http://www.takipiblog.com/
+takipi是一款代码分析的工具，这是他们公司的技术博客
+
+22. http://zeroturnaround.com/blog/
+这也是一家很不错的企业
+
+23. http://augustl.com/
+更新不算太多，关注的点也比较分散
+
+24. http://keaplogik.blogspot.sg/
+Java&Ruby开发
+
+25. http://blog.headius.com/
+JRuby, JVM, Go
+
+26. http://joearms.github.io/
+Erlang语言的作者
+
+27. http://mechanical-sympathy.blogspot.sg/
+注重软硬件的结合，有不少并发相关的文章
+
+28. http://blog.palominolabs.com/
+很有个性的一个团队
+
+29. http://vanillajava.blogspot.sg/
+关注Java实现的细节
+
+30. http://www.insightfullogic.com/blog/
+Java 8 lambda一书的作者
+
+31. http://yarivsblog.blogspot.sg/
+Erlang技术
+
+32. http://www.planeterlang.org/
+还是Erlang。。
+
+33. https://blog.twitter.com/engineering
+twitter公司的技术分享
+
+34. https://www.facebook.com/Engineering
+这是facebook的工程师
+
+35. http://engineering.linkedin.com/blog
+LinkedIn的也来报道了
+
+36. http://slideshare.net/
+上面有很多精彩的PPT
+
+37. https://plumbr.eu/blog
+plumbr是一款可以检测内存泄露的软件，这是他们团队的技术博客
+
+（全文完）

@@ -1,0 +1,552 @@
+﻿微型ORM——用VB和C#编写的动态类型ORM，只有160行
+作者 Jonathan Allen ，译者 侯伯薇 发布于 2010年2月11日
+http://www.infoq.com/cn/articles/MicroORM
+
+
+近来ORM变得越来越普遍，这都归于一种很具说服力的原因；
+它可以使开发数据库驱动的应用程序变得更快、更省力。
+但是ORM框架都有点“固执己见”，他们期望开发者遵从特定的规则，当规则被打破的时候就非常难以使用。
+最通常的规则之一就是，存储过程必须总是返回单独的结果集，其中带有一致的列的列表。
+不幸的是，有很多这样的存储过程，其中返回的数据的结果根据它自身内部逻辑的不同而不同。
+例如，一个存储过程可能会接受一个参数，它表示要返回那些列，
+而另一个参数表示如果它包含了所有行，那么就对其进行合计。
+或者存储过程的结果可能会根据某些内部的标识而不同，从而应用程序需要检查输出，从而在运行时决定结构。
+
+面对已经确定了的存储过程集合，而这些存储过程并非是针对ORM系统所基于的静态建模的类型所设计的，
+大多数.NET开发者会转而使用DataTable的方法。
+但是有了.NET 4.0中新创建的对动态类型的支持，他们会产生另一个主意。
+如果所有一切——包括存储过程的名称、SQL的参数以及得到的对象——都在运行时处理会怎么样呢？
+
+
+下面是一些由VB和C#编写的示例代码。
+你会注意到VB需要使用Option Strict，而C#大量地使用了它的新关键字“dynamic”。
+
+VB
+
+Using con As New SqlClient.SqlConnection(connectionString)
+
+    Dim customer = con.CallSingleProc.CustomerSelect(AccountKey:=12345)
+
+    Console.WriteLine(customer.FirstName & " " & customer.LastName)
+
+ 
+
+    Dim orders As IList = con.CallListProc.OrderSearch(AccountKey:=12345, MinCreatedDate:=Now.AddDays(-7), MaxCreatedDate:=Now)
+
+    Dim totalValue = Aggregate order In orders Into Sum(CDec(order.TotalOrderValue))
+
+    Console.WriteLine("This customer ordered a total of $" & totalValue & " last week")
+
+    For Each order In orders
+
+        Console.WriteLine(vbTab & "Order Key: " & order.OrderKey & " Value: $" & order.TotalOrderValue)
+
+    Next
+
+ 
+
+End Using
+
+ 
+
+C#
+
+using (var con = new SqlConnection(connectionString))
+
+{
+
+    var customer = con.CallSingleProc().CustomerSelect(AccountKey: 12345);
+
+    Console.WriteLine(customer.FirstName + " " + customer.LastName);
+
+ 
+
+    IList<dynamic> orders = con.CallListProc().OrderSearch(AccountKey: 12345, MinCreatedDate: DateTime.Now.AddDays(-7), MaxCreatedDate: DateTime.Now);
+
+    var totalValue = orders.Sum(order => (decimal)order.TotalOrderValue);
+
+ 
+
+    Console.WriteLine("This customer ordered a total of $" + totalValue + " last week");
+
+    foreach (var order in orders)
+
+    {
+
+        Console.WriteLine("\tOrder Key: " + order.OrderKey + " Value: $" + order.TotalOrderValue);
+
+    }
+
+}
+
+这看起来和一般的.NET代码很类似，但是那些方法和属性实际上很多都不存在。
+下面是相同的代码，其中突出显示了不存在的成员。
+
+VB
+
+Using con As New SqlClient.SqlConnection(connectionString)
+
+    Dim customer = con.CallSingleProc.CustomerSelect(AccountKey:=12345)
+
+    Console.WriteLine(customer.FirstName & " " & customer.LastName)
+
+ 
+
+    Dim orders As IList = con.CallListProc.OrderSearch(AccountKey:=12345, MinCreatedDate:=Now.AddDays(-7), MaxCreatedDate:=Now)
+
+    Dim totalValue = Aggregate order In orders Into Sum(CDec(order.TotalOrderValue))
+
+    Console.WriteLine("This customer ordered a total of $" & totalValue & " last week")
+
+    For Each order In orders
+
+        Console.WriteLine(vbTab & "Order Key: " & order.OrderKey & " Value: $" & order.TotalOrderValue)
+
+    Next
+
+ 
+
+End Using
+
+C#
+
+using (var con = new SqlConnection(connectionString))
+
+{
+
+    var customer = con.CallSingleProc().CustomerSelect(AccountKey: 12345);
+
+    Console.WriteLine(customer.FirstName + " " + customer.LastName);
+
+ 
+
+    IList<dynamic> orders = con.CallListProc().OrderSearch(AccountKey: 12345, MinCreatedDate: DateTime.Now.AddDays(-7), MaxCreatedDate: DateTime.Now);
+
+    var totalValue = orders.Sum(order => (decimal)order.TotalOrderValue);
+
+ 
+
+    Console.WriteLine("This customer ordered a total of $" + totalValue + " last week");
+
+    foreach (var order in orders)
+
+    {
+
+        Console.WriteLine("\tOrder Key: " + order.OrderKey + " Value: $" + order.TotalOrderValue);
+
+    }
+
+} 
+
+现在一些保守派会开始抱怨延迟绑定可能给他们造成的风险，比方说，程序可能会出错，但直到运行时才会被捕获。
+这确实是可能的，但实际上情况不会那么坏。
+当我们将存储过程和列的名称都保存在字符串中的时候，我们也会手误使用到错误的对象，从而在运行时有失败的风险。
+
+为了让它生效，我们需要两样东西。
+第一样是从静态类型的上下文切换到动态类型上下文的方法。
+对此，我们选择一组扩展方法，它们会返回“System.Object”。
+在Visual Basic中，这就足以触发延迟绑定，但在C#中这是不可行的。
+为了让C#在两种模式之间切换，你还需要使用Dynamic属性来修饰返回值。
+
+Public Module MicroOrm
+
+    ''' <summary>
+
+    ''' 调用返回标量值的存储过程 
+
+    ''' </summary>
+
+    ''' <returns>Null或者单值</returns>
+
+    ''' <remarks> 只有第一个结果集的第一行的第一列会被返回。所有其它数据都会被忽略。数据库的null被转换为CLR的null</remarks>
+
+    <Extension()>
+
+    Public Function CallScalarProc(ByVal connection As SqlConnection) As <Dynamic()> Object
+
+        Return New MicroProcCaller(connection, Scalar)
+
+    End Function
+
+ 
+
+    ''' <summary>
+
+    ''' 调用返回单独对象的存储过程 
+
+    ''' </summary>
+
+    ''' <returns>Null或者MicroDataObject</returns>
+
+    ''' <remarks>只会返回第一个结果集的第一行。所有其它数据都会被忽略。数据库的null都被转换为CLR的null</remarks>
+
+    <Extension()>
+
+    Public Function CallSingleProc(ByVal connection As SqlConnection) As <Dynamic()> Object
+
+        Return New MicroProcCaller(connection, [Single])
+
+    End Function
+
+ 
+
+    ''' <summary>
+
+    ''' 调用返回一系列对象的存储过程 
+
+    ''' </summary>
+
+    ''' <returns>每行都有一个MicroDataObject </returns>
+
+    ''' <remarks>只会返回第一个结果集。所有其它数据都会被忽略。数据库的null会被转换为CLR的null</remarks>
+
+    <Extension()>
+
+    Public Function CallListProc(ByVal connection As SqlConnection) As <Dynamic()> Object
+
+        Return New MicroProcCaller(connection, List)
+
+    End Function
+
+ 
+
+    ''' <summary>
+
+    ''' 调用返回包含一系列对象的列表的存储过程 
+
+    ''' </summary>
+
+    ''' <returns>包含MicroDataObject列表的List。每个记录集都会有一个list，并且给定的结果集中的每行都有一个MicroDataObject</returns>
+
+    ''' <remarks>数据库的null被转换为CLR的null</remarks>
+
+    <Extension()>
+
+    Public Function CallMultipleListProc(ByVal connection As SqlConnection) As <Dynamic()> Object
+
+        Return New MicroProcCaller(connection, MultipleLists)
+
+    End Function
+
+ 
+
+End Module
+
+作为对比，下面是使用C#实现的一个功能。
+
+public static class MicroOrm
+
+{
+
+    public static dynamic CallSingleProc(this SqlConnection connection)
+
+    {
+
+       return new MicroProcCaller(connection, CallingOptions.Single);
+
+    }
+
+}
+
+为了设定基本的环境，以下是MicroProcCaller 类的构造函数。
+注意，这个类被标记为friend（C#的内部标识符）。
+这样做是因为任何人都不应该声明这个类型的变量；它只是工作在动态的上下文中。
+并且这个类还是暂时的；调用者不应该持有对它的引用。
+
+Friend Class MicroProcCaller
+
+    Inherits Dynamic.DynamicObject
+
+ 
+
+    Private m_Connection As SqlConnection
+
+    Private m_Options As CallingOptions
+
+ 
+
+    Public Sub New(ByVal connection As SqlConnection, ByVal options As CallingOptions)
+
+        m_Connection = connection
+
+        m_Options = options
+
+    End Sub
+
+End Class
+
+ 
+
+Public Enum CallingOptions
+
+    Scalar = 0
+
+    [Single] = 1
+
+    List = 2
+
+    MultipleLists = 3
+
+End Enum
+
+既然我们已经位于动态上下文中，那么就需要一种方式，用来将延迟绑定的方法调用转换为对存储过程的调用。
+想要达到这个目的有很多种方法，但其中最简单的就是继承DynamicObject 并重写TryInvokeMember 方法。
+需要做的步骤如下：
+
+决定这个函数是否负责管理connection对象的生命周期。
+使用和存储过程一样的名称来创建SqlCommand。被调用的方法的名字可以在“binder”中找到。
+由于使用Data.SqlClient的对存储过程的调用不支持未命名的参数，所以要确保所有的参数都有名称。
+通过对参数数组的重复使用，继续创建SqlParameter参数。
+创建结果并将其存储在result参数中。（稍后将会向你展示实现的细节）
+返回true，表示方法已经成功执行了。
+
+Public Overrides Function TryInvokeMember(
+
+    ByVal binder As System.Dynamic.InvokeMemberBinder,
+
+    ByVal args() As Object,
+
+    ByRef result As Object) As Boolean
+
+ 
+
+    Dim manageConnectionLifespan = (m_Connection.State = ConnectionState.Closed)
+
+    If manageConnectionLifespan Then m_Connection.Open()
+
+ 
+
+    Try
+
+        Using cmd As New SqlClient.SqlCommand(binder.Name, m_Connection)
+
+            cmd.CommandType = CommandType.StoredProcedure
+
+ 
+
+            If binder.CallInfo.ArgumentNames.Count <> binder.CallInfo.ArgumentCount Then
+
+                Throw New ArgumentException("All parameters must be named")
+
+            End If
+
+ 
+
+            For i = 0 To binder.CallInfo.ArgumentCount - 1
+
+                Dim param As New SqlClient.SqlParameter
+
+                param.ParameterName = "@" & binder.CallInfo.ArgumentNames(i)
+
+                param.Value = If(args(i) Is Nothing, DBNull.Value, args(i))
+
+                cmd.Parameters.Add(param)
+
+            Next
+
+ 
+
+            Select Case m_Options
+
+                Case CallingOptions.Scalar
+
+                    result = ExecuteScalar(cmd)
+
+                Case CallingOptions.Single
+
+                    result = ExecuteSingle(cmd)
+
+                Case CallingOptions.List
+
+                    result = ExecuteList(cmd)
+
+                Case CallingOptions.MultipleLists
+
+                    result = ExecuteMultpleLists(cmd)
+
+                Case Else
+
+                    Throw New ArgumentOutOfRangeException("options")
+
+            End Select
+
+        End Using
+
+    Finally
+
+        If manageConnectionLifespan Then m_Connection.Close()
+
+    End Try
+
+ 
+
+    Return True
+
+End Function
+
+ExecuteScalar方法很简单，它拥有自己方法的唯一原因是要保持一致性。
+
+Private Function ExecuteScalar(ByVal command As SqlCommand) As Object
+
+    Dim temp = command.ExecuteScalar
+
+    If temp Is DBNull.Value Then Return Nothing Else Return temp
+
+End Function
+
+对于剩下的变量，调用者期望是真正的属性，或者至少看起来像属性。
+一种选择是基于运行时结果集的内容自动生成代码的类。
+但是在运行时生成代码会耗费大量的资源，并且我们不会从中得到太多好处，因为没有哪个调用者会通过名字来引用我们的类。
+因此，在保持动态代码的模式的时候，我们选择使用原型动态对象来替换它。
+
+Friend Class MicroDataObject
+
+    Inherits Dynamic.DynamicObject
+
+    Private m_Values As New Dictionary(Of String, Object)(StringComparer.OrdinalIgnoreCase)
+
+ 
+
+    Public Overrides Function TryGetMember(ByVal binder As System.Dynamic.GetMemberBinder, ByRef result As Object) As Boolean
+
+        If m_Values.ContainsKey(binder.Name) Then result = m_Values(binder.Name) Else Throw New System.MissingMemberException("The property " & binder.Name & " does not exist")
+
+        Return True
+
+    End Function
+
+ 
+
+    Public Overrides Function TrySetMember(ByVal binder As System.Dynamic.SetMemberBinder, ByVal value As Object) As Boolean
+
+        SetMember(binder.Name, value)
+
+        Return True
+
+    End Function
+
+ 
+
+    Public Overrides Function GetDynamicMemberNames() As System.Collections.Generic.IEnumerable(Of String)
+
+        Return m_Values.Keys
+
+    End Function
+
+ 
+
+    Friend Sub SetMember(ByVal propertyName As String, ByVal value As Object)
+
+        If value Is DBNull.Value Then m_Values(propertyName) = Nothing Else m_Values(propertyName) = value
+
+    End Sub
+
+ 
+
+End Class
+
+由于任何类都不会依赖于这个对象，因此我们再次将其标记为Friend（C#的internal修饰符）。
+这还剩下三个用来管理属性的重写方法：一个用来设置属性，一个用来取得属性，还有一个用来列出属性的名称。
+另外，还有一个用来使用静态类型代码初始化类的后门方法。
+
+Private Function ExecuteSingle(ByVal command As SqlCommand) As Object
+
+    Using reader = command.ExecuteReader
+
+        If reader.Read Then
+
+            Dim dataObject As New MicroDataObject
+
+            For i = 0 To reader.FieldCount - 1
+
+                dataObject.SetMember(reader.GetName(i), reader.GetValue(i))
+
+            Next
+
+            Return dataObject
+
+        Else
+
+            Return Nothing
+
+        End If
+
+    End Using
+
+End Function
+
+ 
+
+Private Function ExecuteList(ByVal command As SqlCommand) As List(Of MicroDataObject)
+
+    Dim resultList = New List(Of MicroDataObject)
+
+    Using reader = command.ExecuteReader
+
+        Do While reader.Read
+
+            Dim dataObject As New MicroDataObject
+
+            For i = 0 To reader.FieldCount - 1
+
+                dataObject.SetMember(reader.GetName(i), reader.GetValue(i))
+
+            Next
+
+            resultList.Add(dataObject)
+
+        Loop
+
+    End Using
+
+    Return resultList
+
+End Function
+
+ 
+
+Private Function ExecuteMultpleLists(ByVal command As SqlCommand) As List(Of List(Of MicroDataObject))
+
+    Dim resultSet As New List(Of List(Of MicroDataObject))
+
+ 
+
+    Using reader = command.ExecuteReader
+
+        Do
+
+ 
+
+            Dim resultList = New List(Of MicroDataObject)
+
+            Do While reader.Read
+
+                Dim dataObject As New MicroDataObject
+
+                For i = 0 To reader.FieldCount - 1
+
+                    dataObject.SetMember(reader.GetName(i), reader.GetValue(i))
+
+                Next
+
+                resultList.Add(dataObject)
+
+            Loop
+
+            resultSet.Add(resultList)
+
+ 
+
+        Loop While reader.NextResult
+
+    End Using
+
+ 
+
+    Return resultSet
+
+End Function
+
+你刚刚创建的“微型ORM”还有很大的改善空间。
+可能会增加的特性有：添加对输出参数的支持；选择发送参数化的查询而不是存储过程名称；对其它数据库的支持等等。
+

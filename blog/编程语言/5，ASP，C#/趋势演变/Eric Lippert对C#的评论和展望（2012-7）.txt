@@ -1,0 +1,46 @@
+﻿Eric Lippert对C#的评论和展望（2012-7）
+作者 Jeff Martin ，译者 郭晓刚 发布于 2012年7月20日
+http://www.infoq.com/cn/news/2012/07/lippert_csharp
+
+O'Reilly编辑Rachel Rouemeliotis最近跟Eric Lippert聊过。
+Eric Lippert在微软的C#编译器团队担任Principal Software Design Engineer。
+谈话自然离不开C#主题，Lippert对C#世界进行了一番总结。
+看了他们的讨论，InfoQ也跟风联系Lippert，请他为先前对语言设计哲学的深入分析补充一点背景情况。
+
+Lippert在O'Reilly的访谈中首先评价了C#“遍及整个Windows生态系统”的流行度，
+指出C#被用于X-Box 360、Windows Phones、Active Server Pages等平台，以及各种业务线应用的开发。
+C#的优势之一是它的通用性，它不是一种领域专用语言。
+虽然通用，不过Lippert强调，C#并不不以包罗万象为目标。
+
+Lippert这番话提醒了InfoQ，
+所以我们请他澄清一下Microsoft目前对C#和Visual Basic的战略和目标定位。
+C#和VB的相互关系是这样的，Microsoft把两者都设定为通用语言，而且两者的发展将齐头并进。
+但这并不意味着它们是披了不同语法外衣的同一种语言，而应该陈述为，微软“打算让C#的主要特性在VB中存在类似的对应物，反之亦然”。
+
+现在已经有这样的例子，例如LINQ特性和泛型协变(generic covariance)特性。
+接下来要增加的特性是通过async/await关键字实现的异步编程支持。
+Lippert在与O'Reilly的谈话中指出，“……问题是我们活在一个有延迟的世界里”，
+程序员必须在程序里处理用户输入、网络通信等带来的延迟。
+为了减轻这种负担，async/await关键字让程序员在代码里做标注，然后编译器可以协助管理异步代码段。
+结果是代码更好懂，开发更轻松。
+
+在和InfoQ的谈话中，Lippert承认说，历史上“C#和VB有着深刻的设计哲学区别，它们分别支持不同的特性只是表面”：
+
+一直以来VB的设计哲学是“尽可能不要把用户拦下来检查；如果代码不够清晰，尽量推断其含义”。
+而一直以来C#的设计哲学是“如果代码不够清晰，那么它可能是错的；告诉用户改正之后才能继续前进”。
+两者的目标相同，都是程序员的生产效率，但它们解决方向正好相反！
+有所区别是好事；不同的程序员对于怎样解决问题效率最高，有着不同的看法，我们能为多样化的工作风格提供相应工具，是一件好事。
+
+====
+最后，Lippert在O'Reilly访谈中评估了C#未来可能的几种发展路线——不过他事先声明这只是个人想法，不代表Microsoft的官方意见。
+
+在Roslyn项目的问题上，Lippert向InfoQ确认，Roslyn项目的编译器开发完成后，
+将取代目前随Visual Studio发布的编译器。
+而且Roslyn分析工具系列将取代现在的编辑期代码分析引擎（就是当你写代码的时候，负责在VS编辑器窗口中给你实时反馈那个东西）。
+
+Lippert希望澄清一件事情，现在对于Visual Studio 2012之后的C#/VB语言版本，“还没有确定的特性集合”。
+目前Microsoft对于C# 5的继任者“还没有确定的特性集合”，但正密切关注业界的趋势，看哪些语言研究领域能提供一些启发。
+Lippert声称他的团队还处在探索阶段，一方面尝试更好地定义从业界观察到的问题，另一方面尝试寻找最好的解决方案。
+
+查看英文原文：Eric Lippert Reviews C# and Speculates on its Future
+
