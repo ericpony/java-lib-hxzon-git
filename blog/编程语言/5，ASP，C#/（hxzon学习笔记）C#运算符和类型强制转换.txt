@@ -207,8 +207,12 @@ if (a > = b)
 else
     Console.WriteLine("a < b");
 
-If the fi rst operand is not null, then the overall expression has the value of the first operand.
+----
+空合并运算符??
+
+If the first operand is not null, then the overall expression has the value of the first operand.
 If the first operand is null, then the overall expression has the value of the second operand.
+如果第一个参数不为null，取第1个参数，否则取第2个参数。
 
 int? a = null;
 int b;
@@ -274,7 +278,7 @@ Console.WriteLine(total);
 Cannot implicitly convert type 'int' to 'byte'
 
 ----
-隐式转换
+隐式转换，不会丢失数据就可隐式转换。
 
 byte value1 = 10;
 byte value2 = 23;
@@ -308,7 +312,7 @@ conversion as described in the next section. That’s because there is a chance 
 have the value null, which cannot be represented by a non-nullable type.
 
 ----
-显示转换
+显示转换，可能丢失数据，所以需要显示。C和java风格。
 
 long val = 30000;
 int i = (int)val; // A valid cast. The maximum int is 2147483647
@@ -328,8 +332,8 @@ Console.WriteLine(symbol);
 
 struct ItemDetails
 {
-public string Description;
-public int ApproxPrice;
+    public string Description;
+    public int ApproxPrice;
 }
 //..
 double[] Prices = { 25.30, 26.20, 27.40, 30.00 };
@@ -346,4 +350,266 @@ Console.WriteLine(i + 50); // Add 50 to prove it is really an int
 
 ====
 7，装箱和拆箱
+
+会创建临时的装箱对象。
+
+string s = 10.ToString();
+
+int myIntNumber = 20;
+object myObject = myIntNumber; // Box the int
+int mySecondNumber = (int)myObject; // Unbox it back into an int
+
+A variable can be unboxed only if it has been boxed. If you execute the last line when myObjectis not a 
+boxed int, you will get a runtime exception thrown at runtime.
+只能对装箱对象拆箱。
+
+long myLongNumber = 333333423;
+object myObject = (object)myLongNumber;
+int myIntNumber = (int)myObject;//InvalidCastException
+
+====
+8，相等性
+
+引用类型的相等性
+
+ReferenceEquals() 引用相等，即指向同一个对象。
+Equals() 虚方法
+Equals() 静态方法，比较两个对象是否相等。
+== 引用相等。注意string类重写了这个操作符，使得比较内容，而不是引用。
+
+----
+值类型的相等性
+
+ReferenceEquals()对值类型没有意义。因为会分别装箱，所以总是不相等。
+bool b = ReferenceEquals(v,v); // v is a variable of some value type
+
+====
+9，操作符重载
+
+使用operator关键字。
+
+示例：向量的操作符重载。
+
+public static Vector operator + (Vector lhs, Vector rhs)
+{
+    Vector result = new Vector(lhs);
+    result.x += rhs.x;
+    result.y += rhs.y;
+    result.z += rhs.z;
+    return result;
+}
+
+注意，参数位置不能调换，所以得重载两次乘法运算符。
+
+public static Vector operator * (double lhs, Vector rhs)
+{
+    return new Vector(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z);
+}
+
+public static Vector operator * (Vector lhs, double rhs)
+{
+    return rhs * lhs;
+}
+
+----
+重载比较运算符
+
+public static bool operator == (Vector lhs, Vector rhs)
+{
+    if (lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z)
+        return true;
+    else
+    return false;
+}
+
+----
+可重载的运算符
+
+CATEGORY OPERATORS RESTRICTIONS
+
+Arithmetic binary 
++, *, /, -, % 
+None
+
+Arithmetic unary 
++, -, ++, -- 
+None
+
+Bitwise binary 
+&, |, ^, <<, >> 
+None
+
+Bitwise unary 
+!, ~true, false 
+The true and false operators must be overloaded as a pair.
+
+Comparison 
+==, !=,>=, <=>, <, 
+Comparison operators must be overloaded in pairs.
+
+Assignment 
++=, -=, *=, /=, >>=, <<=, %=, &=, |=, ^=
+You cannot explicitly overload these operators; they are 
+overridden implicitly when you override the individual 
+operators such as +, -, %, and so on.
+你不能显示重载这些运算符，在你重载对应的运算符时，这些简写运算符会自动重载。
+
+Index 
+[] 
+You cannot overload the index operator directly. The 
+indexer member type, discussed in Chapter 2, allows you 
+to support the index operator on your classes and structs.
+不能直接重载索引操作符。
+
+Cast 
+() 
+You cannot overload the cast operator directly. 
+Userdefi ned casts (discussed next) allow you to defi ne custom cast behavior.
+
+
+====
+10，用户自定义的类型转换
+
+int I = 3;
+long l = I; // implicit
+short s = (short)I; // explicit
+
+When converting from an intto a short, the shortmight not be large enough to hold the value of 
+the int.
+When converting from signed to unsigned data types, incorrect results are returned if the signed 
+variable holds a negative value.
+When converting from floating-point to integer data types, the fractional part of the number will be 
+lost.
+When converting from a nullable type to a non-nullable type, a value of nullcauses an exception.
+
+自定义隐式转换
+struct Currency
+{
+    public uint Dollars;
+    public ushort Cents;
+    public Currency(uint dollars, ushort cents)
+    {
+        this.Dollars = dollars;
+        this.Cents = cents;
+    }
+    public override string ToString()
+    {
+        return string.Format("${0}.{1,-2:00}", Dollars,Cents);
+    }
+}
+
+public static implicit operator float (Currency value)
+{
+    return value.Dollars + (value.Cents/100.0f);
+}
+
+Currency balance = new Currency(10,50);
+float f = balance; // We want f to be set to 10.5
+
+自定义显示转换
+
+public static explicit operator Currency (float value)
+{
+    uint dollars = (uint)value;
+    ushort cents = (ushort)((value-dollars)*100);
+    return new Currency(dollars, cents);
+}
+
+float amount = 45.63f;
+Currency amount2 = (Currency)amount;
+
+float amount = 45.63f;
+Currency amount2 = amount; // wrong
+
+public static explicit operator Currency (float value)
+{
+    checked
+    {
+        uint dollars = (uint)value;
+        ushort cents = Convert.ToUInt16((value-dollars)*100);
+        return new Currency(dollars, cents);
+    }
+}
+
+如果两个类存在派生关系，不能自定义类型转换。
+
+Notice that the casts that the compiler has supplied, which convert between base and derived class, do not 
+actually do any data conversion on the object in question. All they do is set the new reference to refer to 
+the object if it is legal for that conversion to occur. To that extent, these casts are very different in nature 
+from the ones that you normally define yourself.
+
+基类到派生类的转换，仅仅是复制地址。
+类型转换会生成新对象。
+
+如果你需要根据基类生成新派生类对象，使用下面的方式。
+
+class DerivedClass: BaseClass
+{
+    public DerivedClass(BaseClass rhs)
+    {
+        // initialize object from the Base instance
+    }
+    // etc.
+}
+
+----
+装箱和拆箱的类型转换
+
+Currency balance = new Currency(40,0);
+object baseCopy = balance;
+
+object derivedObject = new Currency(40,0);
+object baseObject = new object();
+Currency derivedCopy1 = (Currency)derivedObject; // OK
+Currency derivedCopy2 = (Currency)baseObject; // Exception thrown
+
+====
+11，多重类型转换
+
+Currency balance = new Currency(10,50);
+long amount = (long)balance;
+double amountD = balance;
+
+Currency balance = new Currency(10,50);
+long amount = (long)(float)balance;
+double amountD = (double)(float)balance;
+
+Currency balance = new Currency(10,50);
+long amount = balance;
+
+public static implicit operator Currency (uint value)
+{
+    return new Currency(value/100u, (ushort)(value%100));
+} // Do not do this!
+
+uint bal = 350;
+Currency balance = bal;
+uint bal2 = (uint)balance;
+
+public static implicit operator Currency (uint value)
+{
+    return new Currency(value, 0);
+}
+
+Currency balance = new Currency(50, 35);
+ulong bal = (ulong) balance;
+
+public static implicit operator Currency (uint value)
+{
+    return new Currency(value, 0);
+}
+public static implicit operator uint (Currency value)
+{
+    return value.Dollars;
+}
+
+try
+{
+    Currency balance = new Currency(50,35);
+    Console.WriteLine(balance);
+    Console.WriteLine("balance is " + balance);
+    Console.WriteLine("balance is (using ToString()) " + balance.ToString());
+    uint balance3 = (uint) balance;
+    Console.WriteLine("Converting to uint gives " + balance3)
+}
 
