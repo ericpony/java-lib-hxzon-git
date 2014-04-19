@@ -1,0 +1,24 @@
+﻿-Google C++编程规范–第18条，#define防御
+http://roclinux.cn/?p=3251
+
+==
+
+【规范】
+
+所有的头文件，都应该进行#define防御，避免重复引用情况的出现。
+格式应该为<PROJECT>_<PATH>_<FILE>_H_。
+
+【具体解释】
+
+我们使用#define的特性来保证头文件引用的唯一性，比如头文件foo/src/bar/baz.h，在进行#define防御时，应该这样来写：
+
+//==
+#ifndef FOO_BAR_BAZ_H_
+#define FOO_BAR_BAZ_H_
+ 
+...
+ 
+#endif // FOO_BAR_BAZ_H_
+
+谢谢！
+

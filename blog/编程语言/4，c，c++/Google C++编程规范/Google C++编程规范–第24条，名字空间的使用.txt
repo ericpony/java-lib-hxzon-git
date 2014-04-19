@@ -1,0 +1,151 @@
+﻿Google C++编程规范–第24条，名字空间的使用
+http://roclinux.cn/?p=3434
+
+hxzon：可以在任何范围给命名空间取别名，类似scala的import。
+
+==
+
+【规范】
+
+我们推荐大家在C++代码中使用“匿名名字空间（unnamed namespace）”。
+
+如果要使用“具名名字空间（named namespace）”，请选择和你项目相关的名字，建议包含项目的路径信息。
+
+不建议使用using关键字包含整个名字空间，也不建议使用内联名字空间。
+
+【什么是名字空间】
+
+名字空间（namespace）的作用是将全局范围切割成不同的名字区域，以便避免在全局范围内引发名字冲突。
+
+【支持这条规范的理由】
+
+类机制（class）提供了一种分层级分区域的命名方法，和此类似，名字空间也是一种分层级分区域的命名方法。
+
+举个例子来说，如果两个不同的项目在全局范围内都有一个名叫Foo的类，那么这可能会引起编译时或运行时的名字冲突。
+
+如果两个项目把他们的代码分别放在不同的名字空间里，比如project1::Foo和project2::Foo就是两个名字，也就不会引起冲突了。
+
+对于内联名字空间，我们看下面这段代码片段：
+
+namespace X {
+ 
+    inline namespace  Y {
+     
+        void foo();
+     
+    }
+ 
+}
+
+在这个例子中，X::Y::foo()和X::foo()是等价的，因为内联名字空间会作用于其上一层区域。
+内联名字空间可以用来解决ABI在各个版本之间的兼容性。
+（有关内联名字空间的解释，可以参考这里）
+http://www.stroustrup.com/C++11FAQ.html#inline-namespace
+
+【反对这条规范的理由】
+
+名字空间可能会产生歧义，这正是由于名字空间本身的层级机制导致的。
+
+内联名字空间尤其会引起混淆，这是由于内联名字空间的作用域不是严格限制在namespace内的，而是在其上一层。
+
+在头文件中如果使用匿名名字空间，则会违背C++语言的ODR原则（单一定义规则，One Definition Rule）。
+
+【有关匿名名字空间的结论】
+
+我们鼓励你在.cc/.cpp文件中使用匿名名字空间，这是为了避免名字冲突。比如：
+
+namespace { //这是在一个.cc/.cpp文件中
+ 
+    // 请遵守缩进规则，namespace中的内容是不需要缩进的
+    enum { kUnused, kEOF, kError };
+    bool AtEof() { return pos_ == kEOF; }
+ 
+} // namespace
+
+请注意：
+
+1. 在namespace的结尾部分，请以namespace名字作为注释结尾。
+
+2. 不要在头文件中使用匿名名字空间。
+
+【有关具名名字空间的结论】
+
+1. 名字空间应该包裹住除include、gflags定义、gflags声明、前向声明之外的整个源文件。
+
+在.h头文件中：
+
+namespace mynamespace {
+ 
+    class MyClass {
+        public:
+        ...
+        void Foo();
+    };
+ 
+} // namespace mynamespace
+
+在.cc/.cpp文件中：
+
+namespace mynamespace {
+ 
+    // 定义相应的成员函数
+    void MyClass::Foo() {
+        ...
+    }
+ 
+} // namespace mynamespace
+
+----
+一个更丰富一些的.cc/.cpp文件，应该是这样的：
+
+#include "a.h"
+ 
+DEFINE_bool(someflag, false, "dummy flag");
+ 
+class C; // 一个全局名字空间中的类的前向声明
+namespace a { class A; } // a::A的前向声明
+ 
+namespace b {
+ 
+    ...code for b...
+ 
+} // namespace b
+
+2. 不要在std名字空间中声明任何内容，甚至不要包括任何标准库的前向声明。
+这是因为在std名字空间内加入其他内容的后果是不可预估的，例如会导致代码不可移植。
+
+3. 禁止直接使用using关键字将一个名字空间中的所有名字都包括进来。例如下面的做法是禁止的：
+
+using namespace foo;
+
+4. 如果是.cc/.cpp文件，那么你可以在此文件的任何位置使用using关键字来引入名字空间中的某个名字，
+但假如是一个.h文件，那就只允许在整个文件的函数、方法或类中使用using关键字。
+
+// 如下语句可以在.cc/.cpp文件的任何位置使用
+// 只能在头文件中的函数、方法和类中使用
+using ::foo::bar;
+
+5. 名字空间别名则允许在.cc/.cpp文件的任何地方定义，而在头文件中则只允许在namespace中，函数中或方法中使用，如下所示：
+
+// 在.cc/.cpp文件中，可以用这种方法来缩短名字空间中的名字
+namespace fbz = ::foo::bar::baz;
+ 
+// 在.h文件中，允许在某个namespace中定义名字空间别名
+namespace librarian {
+    // 下面定义的别名可以在任何引用了此头文件的文件中使用，
+    // 不过也需要指明是namespace librarian。
+    namespace pd_s = ::pipeline_diagnostics::sidetable;
+     
+    inline void my_inline_function() {
+        // 此别名定义则只允许在此函数中使用
+        namespace fbz = ::foo::bar::baz;
+        ...
+    }
+} // namespace librarian
+
+值得注意的是，如果某个头文件属于公共头文件，则尽量避免在其中定义名字空间别名。
+
+6. 不要使用内联名字空间。
+
+谢谢！
+

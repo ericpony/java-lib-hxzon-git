@@ -1,0 +1,27 @@
+﻿-Google C++编程规范–第15条，构造函数初始化列表
+http://roclinux.cn/?p=3235
+
+==
+
+【规范】
+
+构造函数初始化列表，既可以都保持在一行内，也可以分成多行并且以四个空格来进行缩进。
+
+【实例】
+
+下面这两种格式，一种是一行的，一种是多行的，都是正确的：
+
+/* 这是一行的示例 */
+MyClass::MyClass(int var) : some_var_(var), some_other_var_(var + 1) {}
+ 
+/* 这是多行的示例 */
+MyClass::MyClass(int var)
+    : some_var_(var),             /* 注意此处要以四个空格缩进 */
+      some_other_var_(var + 1) {
+  ...
+  DoSomething();
+  ...
+}
+
+谢谢！
+
