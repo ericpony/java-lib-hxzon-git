@@ -1,0 +1,25 @@
+﻿Google C++编程规范–第11条，返回值
+http://roclinux.cn/?p=3218
+
+==
+
+【规范】
+
+在return时通常不使用括号。
+
+【详解】
+
+只有在需要返回一个表达式时，才需要使用括号；而在返回一个独立的值时，不要带括号，就像这样：
+
+return result;
+ 
+return (some_long_condition && another_condition);
+
+而下面的写法是错误的：
+
+return (value); /* value并不是一个表达式 */
+ 
+return(result); /* 因为return并不是一个函数 */
+
+谢谢！
+

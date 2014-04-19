@@ -1,0 +1,56 @@
+﻿Google C++编程规范–第12条，变量和数组的初始化
+http://roclinux.cn/?p=3222
+
+==
+
+【规范】
+
+在初始化时变量时，可以使用=、{}或（）。
+
+【举例】
+
+下面这些用法，都是正确的：
+
+int x = 3;
+int x(3);
+int x{3};
+ 
+string name = "Some Name";
+string name("Some Name");
+string name{"Some Name"};
+
+但是对于一些有构造函数的变量，就要格外小心了，比如下面的情况：
+
+vector<int> v(100, 1); /* 这表示由100个1组成的vector容器 */
+ 
+vector<int> v{100, 1); /* 这表示一个由100和1两个元素组成的vector容器。在有些编译器下甚至都无法编译通过 */
+
+为了验证上面的结论，我们来编一个简单的遍历vector容器的小程序：
+
+#include <iostream>
+#include <string>
+#include <vector>
+ 
+using namespace std;
+ 
+int main(int argc, char *argv[]) {
+  vector<int> v(100,1);
+  vector<int>::iterator iter;
+  iter = v.begin();
+  while(iter != v.end()) {
+    cout << *iter << endl;
+    ++iter;
+  }
+}
+
+如果你执行上面这个小程序的话，会看到刷屏的数字“1”。
+
+最后，还有一个关注点，那就是在使用()和{}在将一个浮点型数值赋给一个整型时，
+
+int pi(3.14); /* 用小括号，是没问题的，会将浮点数转换成整型的3 */
+ 
+int pi{3.14}; /* 在有些的编译器中，会报错退出；在另外一些编译器中，仍然会取3的值 */
+（hxzon：C++标准要求花括号对这种情况报错。）
+
+谢谢！
+

@@ -1,0 +1,24 @@
+﻿-Google C++编程规范–第3条，Tabs or Spaces
+http://roclinux.cn/?p=3046
+
+==
+
+今天是周五，大家辛苦了一周，期待着一个怡然自得的周末，所以今天的内容很简单，五分钟就可以读完这一条规则。
+
+【规范】
+
+请使用Spaces来进行缩进，不要使用Tabs。每次缩进请使用2个Spaces。
+
+【评论】
+
+你应该把你的代码编辑器设置成使用Spaces而非Tabs来进行缩进。
+如果你使用的是vim编辑器，可以在.vimrc中配置如下指令即可实现此功能：
+
+"if you input a tab, transfer it to space, without transfering older tab.
+ 
+set expandtab
+
+第一行是注释行，第二行就是具体指令了。
+
+周末愉快！谢谢！
+

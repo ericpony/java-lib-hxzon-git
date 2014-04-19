@@ -1,0 +1,412 @@
+﻿Linux大棚版gtest官网教程译文
+
+http://roclinux.cn/?p=2873
+本原创文章属于《Linux大棚》博客。
+文章作者为roc
+
+==
+
+【大棚科普】
+
+gtest，英文全称是Google C++ Testing Framework，英文简称是Google Test，中文译为“谷歌C++测试框架”，
+它是从谷歌内部诞生并受到业界追捧的一个非常优秀的测试框架，
+支持如自动发现测试、自定义断言、死亡测试、自动报告等诸多功能。
+
+其他著名的自动化测试框架产品还有CppUnit、CxxTest、JUnit、PyUnit等。
+
+如果你是一名开发工程师，或者你编写的程序要用到生产环境中，
+那么，你不可避免的需要学习和掌握一种自动化测试框架，以确保你的程序测试充分，质量上乘。
+
+gtest官网教程原文，在这里。
+
+【介绍：为什么要选择谷歌C++测试框架】
+
+因为：“谷歌C++测试框架可以帮助你编写出更好的C++测试程序”。
+
+无论你的开发是基于Linux、Windows还是Mac，只要你使用的是C++语言，gtest都能够帮助到你。
+
+那么，到底什么才是好的测试，gtest又如何实现这种好的测试的呢？我们是这样认为的：
+
+
+1. 测试应该是独立的且可重复的。
+（如果一个测试的结果是依赖于另一个测试的结果的，将是件很痛苦的事情。
+而gtest可以有效的避免这一点，它会确保每一个测试以一个独立对象的形式存在。
+当一个测试失败时，gtest支持你在独立的环境中进行调试。）
+
+2. 应该有一套方法较好的来组织我们的测试，这种组织方法要能够较好地反映程序代码的结构。
+（gtest会将test分组到“test case”中这样可以很好的来组织和管理所有的测试了。
+同时，test cases之间既可以共享信息，也可以嵌套。
+这种组织规则，会非常有利于记忆和管理。
+如果所有项目的测试都采用一致的组织规则，那么人员在测试项目间的迁移成本也会大大降低。）
+
+3. 测试应该是可迁移的且可复用的。
+（开源社区中有很多的代码是“平台中立的”，也就是兼容多种平台，
+因而，这些代码的测试也应该遵循“平台中立”的原则。
+基于这种考虑，gtest支持多种操作系统平台、多种编译器，所以，gtest可以很好的支持这类测试工作。）
+
+4. 在测试失败时，要能够提供足够充分的测试信息。
+（gtest并不会在首次失败后就停止工作，取而代之的是，gtest会停止当前这个测试，继续下一个测试。
+当然，你完全可以设置让gtest在继续下一个测试的同时，输出这次测试中非致命失败的相关信息，
+这样，你就可以在一个测试周期中，侦测和修复更多个bugs。）
+
+5. 测试框架应该让开发者从琐碎重复的工作中解脱出来，让它们能专注在测试内容上。
+（gtest会自动的扫描和跟踪所有定义的测试，而不会让开发者一个一个去列举。）
+
+6. 测试应该是高效的。
+（使用gtest，你可以复用不同测试中的资源，
+另外，set-up/tear-down也支持“一处定义，多处复用”的特性。）
+
+由于gtest是基于xUnit框架设计实现的，所以如果你之前使用过JUnit或PyUnit的话，你会很容易上手；
+否则，你或许需要花上10分钟的时间来学习下相关的基础知识。
+
+好了，我们现在就开始！
+
+【编译gtest】
+
+为了使用gtest来写一个测试程序，你首先需要做的便是把gtest编译成一个函数库，并且链接到你的测试程序中。
+我们支持多种流行的build系统，
+如用于Visual Studio的msvc，用于Mac Xcode的xcode，，
+用于GNU make的make，用于Borland C++ builder的codegear，
+以及用于CMake的CMakeLists.txt。
+
+如果很不幸，你所使用的build系统不在上述列表中，
+你可以下载make/Makefile来了解gtest的编译方法，试着自己来编译gtest。
+
+在你编译你自己的测试项目时，你的测试程序要引用gtest/gtest.h头文件
+（假如你的gtest安装在GTEST_ROOT路径下，那么gtest/gtest.h会存放在GTEST_ROOT/include文件夹下面）。
+
+【基本概念】
+
+当你使用gtest时，你会以assertion（断言）开始，assertion用来检查一个条件是否为真。
+一个assertion的结果可以为success(成功)、nonfatal failure（非致命失败）和fatal failure（致命失败）。
+一旦fatal failure发生，当前的测试函数会终止，而如果只是nonfatal failure，则测试程序还是会继续运行的。
+
+gtest就是使用assertion来验证程序代码的行为的。
+如果一个测试崩溃或者assertion失败，那么测试就未通过。
+
+一个test case可以包括一个或多个test。
+你需要把各种test归类到你的test case中，这样有利于更好的显示出代码结构。
+当同一个test case中的多个test需要共享一些信息时，你可以把这些test放到一个test fixture类中。
+（大棚：或许你读到这句话时，感觉有些晦涩，没关系。
+test fixture的具体用法后面还会具体讲的。:) ）
+
+一个test program往往会包含多个test case。
+
+基本概念就只有这些，应该不难理解的。
+下面我们就来编写第一个test program，主要是让大家了解assertion的使用！
+
+【初识断言】
+
+gtest的assertion本质上是一些宏。
+
+当一个assertion失败了，gtest会显示出这个assertion的源文件名称、所在行号以及错误信息。
+当然，你也可以自定义错误信息。
+
+assertion在测试一个函数时，可以有两种方案，即ASSERT_*和EXPECT_*。在失败发生时，ASSERT_*这类assertion会产生fatal failure，并且会终止当前函数；而EXPECT_*则只会产生nonfatal failure。
+（大棚：你还记得吧，fatal failure会引起函数终止，而nonfatal failure则不会）
+
+我们通常推荐大家使用EXPECT_*类的assertion，因为它允许我们在一个测试周期中经历多一些的failure。如果某个错误会导致后面的逻辑无法正常执行的话，那就只能用ASSERT_*来终止函数了。
+
+如果你想自定义failure message，可以使用<<操作符，举例如下：
+
+
+ASSERT_EQ(x.size(), y.size()) << "Vectors x and y are of unequal length";
+ 
+for (int i = 0; i < x.size(); ++i) {
+EXPECT_EQ(x[i],y[i]) << "Vectors x and y differ at index " << i;
+}
+任何可以作为流的对象都可以输出给assertion的宏，包括C字符数组及C++字符串对象等，如果将宽字符串（wchar_t*, TCHAR*, std::wstring）输出给assertion，则会以UTF-8编码方式输出。
+
+【断言 – 基本用法】
+
+下面这些assertion用来进行最基本的true/false条件判断：
+
+Fatal assertion	Nonfatal assertion	Verifies
+ASSERT_TRUE(condition);	EXPECT_TRUE(condition);	condition is true
+ASSERT_FALSE(condition);	EXPECT_FALSE(condition);	condition is false
+还是要再提醒一下，当上述assertion失败时，ASSERT_*会产生fatal failure并且立即从当前函数退出；而EXPECT_*只会产生nonfatal failure并且允许函数继续向下执行。
+
+【断言 – 两值比较】
+
+我们讲解一下如何通过assertion来做两个值的比较。
+
+Fatal assertion	Nonfatal assertion	Verifies
+ASSERT_EQ(expected, actual);	EXPECT_EQ(expected, actual);	expected == actual
+ASSERT_NE(val1, val2);	EXPECT_NE(val1, val2);	val1 != val2
+ASSERT_LT(val1, val2);	EXPECT_LT(val1, val2);	val1 < val2
+ASSERT_LE(val1, val2);	EXPECT_LE(val1, val2);	val1 <= val2
+ASSERT_GT(val1, val2);	EXPECT_GT(val1, val2);	val1 > val2
+ASSERT_GE(val1, val2);	EXPECT_GE(val1, val2);	val1 >= val2
+一旦assertion失败，gtest会打印出val和val2的值。
+
+而在ASSERT_EQ(expected, actual)和EXPECT_EQ(expected, actual)中，你应该在actual参数位置放置你想测试的表达式，而把你期望的值放在expected参数位置。
+
+值得注意的是，你所提供得val1和val2应该是可以被比较的，否则gtest会报出编译错误。上述这些assertion是支持用户自定义类型的，但是要求你进行运算符重载（==、<、>等）。
+
+对于C/C++函数来说，不同编译器对参数检查顺序的规则是不同的，所以你的测试代码也不应该对此做任何假设。
+
+ASSERT_EQ()在进行指针比较时需要格外注意。如果所传入的是两个C字符数串，assertion只会检查两个指针是否指向同一块内存区域，而非检查连个字符串内容是否相同。所以，如果你想检查两个字符串的内容是否相同，就要使用ASSERT_STREQ()宏来做。例如，如果你想判断C字符数组是否是否为NULL，则可以使用“ASSERT_STREQ(NULL, c_string);”实现。不过，如果你想判断两个C++字符串对象的话，则需要使用ASSERT_EQ()宏。
+
+本小节中涉及的assertion宏，都支持窄字符对象（string）和宽字符对象（wstring）。
+
+【断言 – 字符串比较】
+
+本小节所讲的宏用来支持C字符串的比较。如果你相比较的是两个字符串对象，那么请使用
+EXPECT_EQ/EXPECT_NE等宏。
+
+Fatal assertion	Nonfatal assertion	Verifies
+ASSERT_STREQ(expected_str, actual_str);	EXPECT_STREQ(expected_str, actual_str);	the two C strings have the same content
+ASSERT_STRNE(str1, str2);	EXPECT_STRNE(str1,str2);	the two C strings have different content
+ASSERT_STRCASEEQ(expected_str, actual_str);	EXPECT_STRCASEEQ(expected_str, actual_str);	the two C strings have the same content,ignore case
+ASSERT_STRCASENE(str1, str2);	EXPECT_STRCASENE(str1,str2);	the two C strings have different content,ignore case
+需要注意的是，assertion宏里，“CASE”表示“忽略大小写”。
+
+STREQ和STRNE类宏，也支持宽字符串，并且在必要时（如字符串比较失败时），会以UTF-8窄字符串
+方式输出。
+
+另外，一个NULL和一个空字符串被认为是不同的。
+
+如果你想了解更多有关字符串比较的trick方法，比如在assertion中处理子字符串、前缀、后缀、正则匹配等，请进入“高级gtest指南”。
+
+【最简单的测试】
+
+为了创建一个test，你需要做三件事儿：
+
+1. 使用TEST()宏来定义和命名一个test函数，这个test函数不需要return任何值。
+2. 在这个test函数中，你可以写任何C++语句，并且使用assertion来检查。
+3. 这个test的结果是由assertion决定的。如果任何一个assertion失败了，或者这个test函数崩溃了，这个test则会返回fail。否则，会返回success。
+编写TEST()宏的语法如下：
+
+
+TEST(test_case_name, test_name) {
+... test body ...
+}
+TEST()所需的两个参数，从宏观到具体。第一个参数表示这个test所属test case的名称，第二个参数表示这个test自身的名称。 名称中不允许使用下划线。
+
+一个test的全称，应该包括其所在的test case名称及自身名称。位于不同test case中的test可以拥有相同的名字。
+
+举例，让我们来看一个简单的阶乘函数：
+
+?
+1
+int Factorial(int n); // Returns the factorial of n
+针对这个函数的test case，可以这样来写：
+
+
+// Tests factorial of 0
+TEST(FactorialTest, HandlesZeroInput) {
+EXPECT_EQ(1, Factorial(0));
+}
+ 
+// Tests factorial of positive numbers.
+TEST(FactorialTest, HandlesPositiveInput) {
+EXPECT_EQ(1, Factorial(1));
+EXPECT_EQ(2, Factorial(2));
+EXPECT_EQ(6, Factorial(3));
+EXPECT_EQ(40320, Factorial(8));
+}
+gtest用test case来管理所有test，所以逻辑上相关的test应该放到同一个test case中，也就是说，TEST()的第一个参数应该相同。在上面这个例子中，我们建立了两个test，即HandlesZeroInput和HandlesPositiveInput，它们两个同属FactorialTest这个test case。
+
+【Test Fixtures】
+
+如果你发现你所写的多个test都在操作类似的数据，那么我推荐你使用test fixture。这个特性允许你在不同的test里复用相同的配置。
+
+要想建立一个fixture，请遵循下面的步骤：
+
+1. 建立一个类，并继承::testing::Test，并且使用protected或public限制符，以便其子类可以访问到共享的数据。
+2. 在这个类中，声明你想复用的对象。
+3. 如果有必要，请写一个默认的构造函数或SetUp函数来准备所需对象。（要注意的是，不要将SetUp写成Setup）
+4. 如果有必要，请写一个析构函数或TearDown函数来释放资源。
+5. 如果需要，请为你的test定义要共享的函数。
+（
+读到这里，你或许会有疑问，准备对象时我是应该用构造函数还是SetUp函数？在释放资源时，我是应该用析构函数，还是TearDown函数？
+
+首先你需要了解一个test fixture的执行过程：
+
+Step 1. 创建一个全新的test fixture对象（会调用构造函数）
+Step 2. 立即调用SetUp()
+Step 3. 运行test程序
+Step 4. 调用TearDown()
+Step 5. 立即删除test fixture对象（会调用析构函数）
+所以，看上去，你没有必要写SetUp()和TearDown()函数，只要在构造和析构函数中写下你要做的事情就可以了。但事实并非如此，在一些场景下，你就必须使用SetUp()和TearDown()函数，让我们来看看这些场景：
+
+View 1. 如果你要在收尾时抛出异常，则你必须在TearDown中抛出，而非析构函数中。这是因为在析构函数中抛出异常，会引发不可预期的结果。
+View 2. 因为assertion自身在失败时就会抛出异常，所以在收尾时，如果你仍想调用assertion，则也只能在TearDown()中，而非析构函数中。
+View 3. 在构造和析构函数中，不能调用虚函数，所以，如果你想调用一个重载过的虚函数，则只能在SetUp()和TearDown()中。
+综上，建议大家把初始化的逻辑都写到SetUp()中，而将收尾逻辑都写到TearDown()中。
+）
+
+当你使用了test fixture，请使用TEST_F()宏来代替TEST()宏，语法格式如下：
+
+
+TEST_F(test_case_name, test_name) {
+... test body ...
+}
+和TEST()类似，TEST_F()的第一个参数也是所属test case的名称，对于TEST_F来说，还要保证这个test case名称同时也是test fixture类的名称。（或许你已经猜到了，TEST_F的_F就是指fixture）。
+
+在定义TEST_F()之前，你就应该先定义好test fixture类，否则编译器会报错“virtual outside class declaration”。
+
+我们用TEST_F()来定义test，gtest会按照如下流程来动作：
+
+Step 1. 创建一个全新的test fixture对象（会调用构造函数）
+Step 2. 立即调用SetUp()
+Step 3. 运行test程序
+Step 4. 调用TearDown()
+Step 5. 立即删除test fixture对象（会调用析构函数）
+需要注意的是，在同一个test case中的不同test会拥有不同的test fixture对象，并且gtest总是会先删除一个test fixture后才建立下一个新的test fixture。gtest不会在多个test之间复用同一个test fixture。对一个test fixture所作的改变不会影响其他的test的效果。
+
+我们来看一个例子，我们实现了一个FIFO队列的模板类，名叫Queue，它的外部接口包括这些：
+
+template // E is the element type.
+class Queue {
+public:
+Queue();
+void Enqueue(const E& element); // 元素加入队列
+E* Dequeue(); // 从队列中清除，若队列为空则返回NULL
+size_t size() const; // 获取队列长度
+...
+};
+首先，我们定义一个fixture类：
+
+class QueueTest : public ::testing::Test {
+protected:
+virtual void SetUp() {
+q1_.Enqueue(1);
+q2_.Enqueue(2);
+q2_.Enqueue(3);
+}
+ 
+// virtual void TearDown(){}
+Queue q0_; // 模板类的实例
+Queue q1_;
+Queue q2_;
+};
+
+因为我们没有分配什么资源，所以我们也不需要在TearDown()中进行收尾工作。
+
+下面，我们就来使用TEST_F()和这个fixture写我们的test了：
+
+TEST_F(QueueTest, IsEmptyInitially) {
+EXPECT_EQ(0, q0_.size());
+}
+ 
+TEST_F(QueueTest, DequeueWorks) {
+int* n = q0_.Dequeue();
+EXPECT_EQ(NULL, n);
+ 
+n = q1_.Dequeue();
+ASSERT_TRUE(n != NULL);
+EXPECT_EQ(1, *n);
+EXPECT_EQ(0, q1_.size());
+delete n;
+ 
+n = q2_.Dequeue();
+ASSERT_TRUE(n != NULL);
+EXPECT_EQ(2, *n);
+EXPECT_EQ(1, q2_size());
+delete n;
+}
+
+上面的例子中，我们使用了ASSERT_*和EXPECT_*两类assertion。由于在本文开头部分已经多次讲过两种assertion的区别，所以，相信大家对于在何种情况下应该使用哪种，应该已经很清楚了。
+
+当上面这个test执行，会发生下面一系列的动作：
+
+1. gtest运行构造函数，创建QueueTest对象（命名为t1）
+2. t1.SetUp()运行
+3. 第一个test（IsEmptyInitially）运行
+4. t1.TearDown()运行
+5. t1被析构
+6. 1-5的动作在另一个QueueTest对象上被再次执行，以运行DequeueWorks这个test。
+【让test运行起来】
+
+TEST()和TEST_F()都是用于把test注册到test case中。不像其他一些C++测试框架，大家不需要在触发运行时再重新列出所有已注册的test。
+
+如果要触发运行，请执行RUN_ALL_TESTS()宏，如果所有的test都测试通过，它会返回0，否则会返回1。
+
+当你调用了RUN_ALL_TESTS()宏时，会依次发生下面这些事情：
+
+1. 保存gtest所有的状态信息
+2. 为第一个test创建test fixture对象
+3. 通过SetUp()初始化
+4. 基于这个fixture对象，运行test
+5. 通过TearDown()收尾
+6. 删除fixture对象
+7. 恢复gtest的各类状态信息
+8. 为下一个test，重复1-7步，直到所有test运行完成
+
+如果在第2步中，构造函数产生fatal failure，则3-5步就不会被执行了，而是直接跳到第6步。同样的，如果第3步产生fatal failure，则第4步不会执行，而是直接跳到TearDown()。
+
+需要大家注意的一个很重要的点是，你不能忽略RUN_ALL_TESTS()的返回值，否则gcc会报出编译错误的。这是因为gtest只会依赖于这个返回值来判断这次测试是否通过，所以这个值对gtest来说非常重要。因此，你需要在你的main函数中return这个值。
+
+另外，你只能调用一次RUN_ALL_TESTS()。如果多次调用，会产生一些高级冲突。
+
+【编写测试的main函数】
+
+你可以参考如下的这个样板：
+
+#include "this/package/foo.h"
+#include "gtest/gtest.h"
+ 
+namespace {
+ 
+// The fixture for testing class Foo.
+class FooTest : public ::testing::Test {
+protected:
+// You can remove any or all of the following functions if its body is empty.
+ 
+FooTest() {
+// You can do set-up work for each test here.
+}
+ 
+Virtual ~FooTest() {
+// You can do clean-up work that doesn't throw exceptions here.
+}
+ 
+// If the constructor and destructor are not enough for setting up
+// and cleaning up each test, you can define the following methods:
+ 
+virtual void SetUp() {
+// Code here will be called immediately after the constructor
+}
+ 
+virtual void TearDown() {
+// Code here will be called immediately after each test
+}
+ 
+// Object declared here can be used by all tests in the test case for Foo.
+};
+ 
+// Tests that the Foo::Bar() method does Abc.
+TEST_F(FooTest, MethodBarDoesAbc) {
+const string input_filepath = "this/package/testdata/myinputfile.dat";
+const string output_filepath = "this/package/testdata/myoutputfile.dat";
+Foo f;
+EXPECT_EQ(0, f.Bar(input_filepath, output_filepath));
+}
+ 
+// Tests that Foo does Xyz.
+TEST_F(FooTest, DoesXyz) {
+// Execises the Xyz feature of Foo.
+}
+} // namespace
+ 
+int main(int argc, char* argv[]) {
+::testing::InitGoogleTest(&argc, argv);
+return RUN_ALL_TESTS();
+}
+
+下面我们就来看看上面这段代码，其中::testing::InitGoogleTest函数会解析命令行输入的参数，这允许我们可以通过命令行参数来控制测试程序的一些行为，具体用法可以参考“高级指南”。
+
+而后，就可以在return 中调用RUN_ALL_TESTS()了，这也保证了测试结果可以通过main函数返回。
+
+【下一步去向哪里】
+
+祝贺你！你已经掌握了gtest的基础知识，现在可以尝试着去使用gtest了。
+
+1. 你可以阅读一些实际的例子，在这里。
+http://code.google.com/p/googletest/wiki/V1_6_Samples
+2. 你可以继续深入学习，在这里。
+http://code.google.com/p/googletest/wiki/V1_6_AdvancedGuide
+
+谢谢！
+

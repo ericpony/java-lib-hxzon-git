@@ -1,0 +1,66 @@
+﻿-Google C++编程规范–第8条，循环和switch语句
+http://roclinux.cn/?p=3111
+
+==
+
+【规范】
+
+switch语句可以用大括号来区分不同的段落；
+对于比较重要的case贯穿的情况，请加以注释说明；
+对于空的循环体，应该使用{}或continue。
+
+【详解】
+
+首先和大家明确一个概念“case贯穿”，英文叫做fall-through，
+是指“switch语句中一个case段落后不加break，这样可能会继续匹配到下面的case”的情况。
+要多谢新浪微博上的@WingStone帮我科普了这个概念。：）
+
+switch (var) {
+  case 0: {
+    var = 1;
+  } //此处case 0没有break语句，且var又被置为1，就会匹配到紧接着的case 1。
+  case 1: {
+    ...
+  }
+
+好了，在了解了这个概念之后，我们进入正题。
+
+switch语句中的各个case块，可以用大括号括起来，显得结构更清晰，
+当然，也可以不括起来，这完全取决于你的偏好。
+如果你决定使用大括号，那么请在case的冒号后空一个格写左大括号，新起一行写右大括号。
+
+对于switch语句，请一定使用default case。
+如果default确实不可能被用到，请简单的写一句assert语句。
+
+说了这么多有关switch的规则，来看一个生动的例子：
+
+switch (var) {
+  case 0: {  /* case相对于switch要有2个空格的缩进 */
+    ...      /* case里面的语句相对于switch有4个空格的缩进 */
+    break;
+  }
+  case 1: {
+    ...
+    break;
+  }
+  default: {
+    assert(false);
+  }
+}
+
+下面我继续说说while循环，当while内部不需要语句时，请使用{}或continue，不要只留一个孤单的分号在那里。
+
+while (condition) {
+  /* 正确。我们要一直循环，直到condition不满足条件，所以使用了{} */
+}
+
+for (int i = 0; i < kSomeNumber; ++i) {}  /* 正确。对于空循环体，使用了{} */
+
+while (condition) continue;  /* 正确。不使用{}的话，请使用continue */
+
+而像下面这样，是Google C++编程规范禁止的做法：
+
+while (condition);  /* 错误。我们不希望看到那个孤独的分号 */
+
+谢谢！
+

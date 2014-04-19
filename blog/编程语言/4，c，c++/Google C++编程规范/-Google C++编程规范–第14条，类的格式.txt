@@ -1,0 +1,44 @@
+﻿-Google C++编程规范–第14条，类的格式
+http://roclinux.cn/?p=3231
+
+==
+
+【规范】
+
+在定义类时，请按照public、protected、private的顺序来定义属性和方法，且每一个都请以一个空格作为缩进。
+
+【举例】
+
+我们来看一个类定义的例子：
+
+class MyClass : public OtherClass {
+ public:      /* 看，这里只需一个空格的缩进 */
+  MyClass();  /* 这里为两个空格的缩进 */
+  explicit MyClass(int var);
+  ~MyClass() {}
+ 
+  void SomeFunction();
+  void SomeFunctionThatDoesNothing() {
+  }
+ 
+  void set_some_var(int var) { some_var_ = var; }
+  int some_var() const { return some_var_; }
+ 
+ private: /* 注意，在private区域开始之前，留有一个空行 *、
+  bool SomeInternalFunction();
+ 
+  int some_var_;
+  int some_other_var_;
+  DISALLOW_COPY_AND_ASSIGN(MyClass);
+};
+
+除此之外，我们还应该关注的三个点包括：
+
+(1) 如果存在类的继承，那么在不突破行限制的前提下，基类（父类）的名称应该和子类的名称保持在同一行。
+
+(2) public/protected/private三者，除了第一个出现的以外，后续的都应该在前面留一个空行。
+
+(3) 请不要再public/protected/private的行尾留空格。
+
+谢谢！
+

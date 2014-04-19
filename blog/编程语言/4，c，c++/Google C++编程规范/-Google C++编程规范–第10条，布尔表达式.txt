@@ -1,0 +1,24 @@
+﻿-Google C++编程规范–第10条，布尔表达式
+http://roclinux.cn/?p=3209
+
+==
+
+今天，我们把视角聚焦到布尔表达式上面，看看在这个环节，有哪些需要关注的规范。
+
+【规范】
+
+在布尔表达式的长度超过行宽限制时，需要合理的换行，确保逻辑运算符作为行尾；
+另外，请使用符号（&&、~），而不是文字（and、compl）。
+
+【举例】
+
+我们来看一个比较直观的例子：
+
+if (this_one_thing > this_other_thing &&
+    a_third_thing == a_fourth_thing &&
+    yet_another && last_one) {
+  ...
+}
+
+谢谢！
+

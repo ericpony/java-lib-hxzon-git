@@ -1,0 +1,34 @@
+﻿-Google C++编程规范–第13条，预处理指令
+http://roclinux.cn/?p=3227
+
+==
+
+【规范】
+
+预处理指令的#符号应该放在每行的顶头位置，即便在需要缩进的情况下。
+
+【示例】
+
+/* 正确的格式。#符号全部顶头书写 */
+  if (lopsided_score) {
+#if DISASTER_PENDING      // Correct -- Starts at beginning of line
+    DropEverything();
+# if NOTIFY               // OK but not required -- Spaces after #
+    NotifyClient();
+# endif
+#endif
+    BackToNormal();
+  }
+
+下面是错误的格式：
+
+/* 错啦，#符号不应该缩进 */
+  if (lopsided_score) {
+    #if DISASTER_PENDING  // Wrong!  The "#if" should be at beginning of line
+    DropEverything();
+    #endif                // Wrong!  Do not indent "#endif"
+    BackToNormal();
+  }
+
+谢谢！
+

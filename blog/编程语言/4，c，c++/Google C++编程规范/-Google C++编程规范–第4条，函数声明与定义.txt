@@ -1,0 +1,51 @@
+﻿-Google C++编程规范–第4条，函数声明与定义
+http://roclinux.cn/?p=3055
+
+==
+
+【规范】
+
+函数返回类型请与函数名称保持在同一行，如果没有超过80字符，函数参数也请与函数名称保持在同一行。
+
+【场景举例】
+
+最规范的函数声明和定义方式如下：
+
+ReturnType ClassName::FunctionName(Type par_name1, Type par_name2) {
+  DoSomething();
+  ...
+}
+
+如果参数部分会超过80字符限制，从第二个参数开始可以折行，形如：
+
+ReturnType ClassName::ReallyLongFunctionName(Type par_name1, Type par_name2,
+                                                  Type par_name3) {
+  DoSomething();
+  ...
+}
+
+如果函数名称太长，以至于连第一个参数都无法在同一行定义，那么参数部分都可以折行定义：
+
+ReturnType LongClassName::ReallyReallyReallyLongFunctionName(
+    Type par_name1,  // 4 space indent
+    Type par_name2,
+    Type par_name3) {
+  DoSomething();  // 2 space indent
+  ...
+}
+
+【具体规则】
+
+函数返回类型务必与函数名称在同一行；
+左小括号请与函数名称在同一行；
+左小括号与函数名称间不要留有空格；
+小括号与参数间不要留有空格；
+左大括号请与最后一个参数保持在同一行；
+右大括号或者自成一行，或者与左大括号保持在同一行；
+右小括号与左大括号间请留有一个空格；
+无论是函数声明还是函数定义，都请写上参数名称，且保持声明与定义中的参数名称一致；
+在折行的情况下，如果可以，参数请尽量保持对齐；
+如果所有参数都需折行，请使用4个空格缩进；
+
+谢谢！
+

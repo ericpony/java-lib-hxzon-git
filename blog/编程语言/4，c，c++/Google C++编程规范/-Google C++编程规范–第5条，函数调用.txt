@@ -1,0 +1,44 @@
+﻿-Google C++编程规范–第5条，函数调用
+http://roclinux.cn/?p=3064
+
+==
+
+今天讲的，其实和上一篇的《函数声明与定义》有很多类似的规则，你看了就会知道:)
+
+【今天带来的规则是什么呢？】
+
+如果行宽允许，请在一行内完成函数调用；否则参数部分可以换行。
+
+【给详细解释一下吧！】
+
+最正规的函数调用格式是这样的：
+
+bool retval = DoSomething(argument1, argument2, argument3);
+
+如果超过了行宽，那么可以将参数部分换行，格式是这样的：
+
+bool retval = DoSomething(averyveryveryverylongargument1,
+                          argument2, argument3);
+
+如果参数比较多，也可以每行一个参数，这样阅读起来会更清楚些：
+
+bool retval = DoSomething(argument1,
+                          argument2,
+                          argument3,
+                          argument4);
+
+在极端情况下，所有的参数都可以换行：
+
+if (...) {
+  ...
+  ...
+  if (...) {
+    DoSomething(
+        argument1,  // 参数相对于函数名，要进行4个空格的缩进
+        argument2,
+        argument3,
+        argument4);
+  }
+
+谢谢！
+
