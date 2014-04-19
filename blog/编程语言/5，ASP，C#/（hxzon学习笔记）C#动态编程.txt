@@ -1,0 +1,244 @@
+﻿（hxzon学习笔记）C#动态编程
+
+by hxzon
+《Professional C# 2012 and .NET 4.5》pdf
+
+第12章 动态语言扩展 
+
+12.1 DLR 
+
+12.2 dynamic类型 
+
+12.3 包含DLRScriptRuntime 
+
+12.4 DynamicObject和ExpandoObject 
+12.4.1 DynamicObject 
+12.4.2 ExpandoObject 
+
+hxzon：即java中的脚本引擎。
+====
+1，DLR，动态运行时
+
+var的类型固定。
+dynamic的类型可变。
+dynamic不支持扩展方法，也不支持匿名方法和lambda表达式作为动态调用的参数。
+所以LINQ不能跟dynamic一起工作。
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        var staticPerson = new Person();
+        dynamic dynamicPerson = new Person();
+        staticPerson.GetFullName("John", "Smith");
+        dynamicPerson.GetFullName("John", "Smith");
+    }
+}
+
+class Person
+{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string GetFullName()
+    {
+        return string.Concat(FirstName, " ", LastName);
+    }
+}
+
+dynamic dyn;
+dyn = 100;
+Console.WriteLine(dyn.GetType());
+Console.WriteLine(dyn);
+
+dyn = "This is a string";
+Console.WriteLine(dyn.GetType());
+Console.WriteLine(dyn);
+
+dyn = new Person() { FirstName = "Bugs", LastName = "Bunny" };
+Console.WriteLine(dyn.GetType());
+Console.WriteLine("{0} {1}", dyn.FirstName, dyn.LastName);
+
+----
+using System;
+namespace DeCompile
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            StaticClass staticObject = new StaticClass();
+            DynamicClass dynamicObject = new DynamicClass();
+            Console.WriteLine(staticObject.IntValue);
+            Console.WriteLine(dynamicObject.DynValue);
+            Console.ReadLine();
+        }
+    }
+    class StaticClass
+    {
+        public int IntValue = 100;
+    }
+    class DynamicClass
+    {
+        public dynamic DynValue = 100;
+    }
+}
+
+====
+2，动态脚本引擎
+
+即java中的脚本引擎。
+
+private void button1_Click(object sender, RoutedEventArgs e)
+{
+    string scriptToUse;
+    if (CostRadioButton.IsChecked.Value)
+    {
+        scriptToUse = "AmountDisc.py";
+    }
+    else
+    {
+        scriptToUse = "CountDisc.py";
+    }
+
+    ScriptRuntime scriptRuntime = ScriptRuntime.CreateFromConfiguration();
+    ScriptEngine pythEng = scriptRuntime.GetEngine("Python");
+
+    ScriptSource source = pythEng.CreateScriptSourceFromFile(scriptToUse);
+    //传递变量
+    ScriptScope scope = pythEng.CreateScope();
+    scope.SetVariable("prodCount", Convert.ToInt32(totalItems.Text));
+    scope.SetVariable("amt", Convert.ToDecimal(totalAmt.Text));
+
+    source.Execute(scope);
+    label5.Content = scope.GetVariable("retAmt").ToString();
+}
+
+配置文件app.config
+
+<configuration>
+<configSections>
+    <section
+    name="microsoft.scripting" 
+    type="Microsoft.Scripting.Hosting.Configuration.Section, 
+    Microsoft.Scripting, 
+    Version=0.9.6.10, 
+    Culture=neutral, 
+    PublicKeyToken=null" 
+    requirePermission="false" />
+</configSections>
+<microsoft.scripting>
+    <languages>
+        <language 
+        names="IronPython;Python;py" 
+        extensions=".py" 
+        displayName="IronPython 2.6 Alpha" 
+        type="IronPython.Runtime.PythonContext, 
+        IronPython, 
+        Version=2.6.0.1, 
+        Culture=neutral, 
+        PublicKeyToken=null" />
+    </languages>
+</microsoft.scripting>
+</configuration>
+
+----
+Python脚本
+
+CalcTax.py
+
+def CalcTax(amount):
+    return amount*1.075
+
+--
+private void button2_Click(object sender, RoutedEventArgs e)
+{
+    ScriptRuntime scriptRuntime = ScriptRuntime.CreateFromConfiguration();
+    dynamic calcRate = scriptRuntime.UseFile("CalcTax.py");
+    label6.Content = calcRate.CalcTax(Convert.ToDecimal(label5.Content)).ToString();
+}
+
+====
+3，DynamicObject
+
+类似java的动态代理。
+
+class WroxDynamicObject : DynamicObject
+{
+    Dictionary<string, object> _dynamicData = new Dictionary<string, object>();
+    public override bool TryGetMember(GetMemberBinder binder, out object result)
+    {
+        bool success = false;
+        result = null;
+        if (_dynamicData.ContainsKey(binder.Name))
+        {
+            result = _dynamicData[binder.Name];
+            success = true;
+        }
+        else
+        {
+            result = "Property Not Found!";
+            success = false;
+        }
+        return success;
+    }
+
+    public override bool TrySetMember(SetMemberBinder binder, object value)
+    {
+        _dynamicData[binder.Name] = value;
+        return true;
+    }
+
+    public override bool TryInvokeMember(InvokeMemberBinder binder, 
+    object[] args, 
+    out object result)
+    {
+        dynamic method = _dynamicData[binder.Name];
+        result = method((DateTime)args[0]);
+        return result != null; 
+    }
+}
+
+dynamic wroxDyn = new WroxDynamicObject();
+wroxDyn.FirstName = "Bugs";
+wroxDyn.LastName = "Bunny";
+Console.WriteLine(wroxDyn.GetType());
+Console.WriteLine("{0} {1}", wroxDyn.FirstName, wroxDyn.LastName);
+
+----
+动态的添加新方法
+
+dynamic wroxDyn = new WroxDynamicObject();
+Func<DateTime, string> GetTomorrow = today => today.AddDays(1).ToShortDateString();
+
+wroxDyn.GetTomorrowDate = GetTomorrow;
+
+Console.WriteLine("Tomorrow is {0}", wroxDyn.GetTomorrowDate(DateTime.Now));
+
+====
+4，ExpandoObject
+
+ExpandoObject类似我们上节自定义的WroxDynamicObject。
+不仅可以添加新方法，还可以添加新数据成员。
+
+static void DoExpando()
+{
+    dynamic expObj = new ExpandoObject();
+    expObj.FirstName = "Daffy";
+    expObj.LastName = "Duck";
+    Console.WriteLine(expObj.FirstName + " " + expObj.LastName);
+
+    Func<DateTime, string> GetTomorrow = today => today.AddDays(1).ToShortDateString();
+    expObj.GetTomorrowDate = GetTomorrow;
+    Console.WriteLine("Tomorrow is {0}", expObj.GetTomorrowDate(DateTime.Now));
+
+    expObj.Friends = new List<Person>();
+    expObj.Friends.Add(new Person() { FirstName = "Bob", LastName = "Jones" });
+    expObj.Friends.Add(new Person() { FirstName = "Robert", LastName = "Jones" });
+    expObj.Friends.Add(new Person() { FirstName = "Bobby", LastName = "Jones" });
+    foreach (Person friend in expObj.Friends)
+    {
+        Console.WriteLine(friend.FirstName + " " + friend.LastName);
+    }
+}
+
+

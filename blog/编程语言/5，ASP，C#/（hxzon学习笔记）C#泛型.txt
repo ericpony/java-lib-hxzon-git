@@ -3,7 +3,6 @@
 by hxzon
 《Professional C# 2012 and .NET 4.5》pdf，第5章
 
-
 第5章 泛型 
 
 5.1 泛型概述 
@@ -35,3 +34,335 @@ by hxzon
  
 
 ====
+1，泛型概览
+
+C++使用模板实现泛型，在创建泛型实例时，需要源代码。
+C#则不需要。
+泛型是CLR本身就支持的。
+C#定义的泛型可以在VB.NET中使用。
+C#的泛型，除了创建引用类型的版本，还为值类型创建相关的版本，没有装箱和拆箱，所以有助于提高性能。
+
+非泛型版本，需要装箱拆箱，java属于这种。
+var list = new ArrayList();
+list.Add(44); // boxing — convert a value type to a reference type
+int i1 = (int)list[0]; // unboxing — convert a reference type to
+// a value type
+
+泛型。
+var list = new List<int>();
+list.Add(44); // no boxing — value types are stored in the List<int>
+int i1 = list[0]; // no unboxing, no cast needed
+foreach (int i2 in list)
+{
+    Console.WriteLine(i2);
+}
+
+====
+2，创建泛型类
+
+和java相同。
+
+public class LinkedList<T>: IEnumerable<T>
+{
+    public LinkedListNode<T> First { get; private set; }
+    public LinkedListNode<T> Last { get; private set; }
+    public LinkedListNode<T> AddLast(T node)
+    {
+        var newNode = new LinkedListNode<T>(node);
+        if (First == null)
+        {
+            First = newNode;
+            Last = First;
+        }
+        else
+        {
+            LinkedListNode<T> previous = Last;
+            Last.Next = newNode;
+            Last = newNode;
+            Last.Prev = previous;
+        }
+        return newNode;
+    }
+    public IEnumerator<T> GetEnumerator()
+    {
+        LinkedListNode<T> current = First;
+        while (current != null)
+        {
+            yield return current.Value;
+            current = current.Next;
+        }
+    }
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+}
+
+====
+3，泛型特性
+
+----
+3.1，default
+引用类型的默认值为null，而值类型为0。
+使用default可以合理设置泛型类型的默认值。
+
+public T GetDocument()
+{
+    T doc = default(T);
+    lock (this)
+    {
+        doc = documentQueue.Dequeue();
+    }
+    return doc;
+}
+
+----
+3.2，使用where关键字指定泛型类型的约束。
+
+public class MyClass<T>
+where T: IFoo, new()
+{
+    //...
+}
+
+可用的约束
+where T: struct 
+With a struct constraint, type Tmust be a value type.
+
+where T: 
+class The class constraint indicates that type Tmust be a reference type.
+
+where T: IFoo 
+Specifi es that type Tis required to implement interface IFoo.
+
+where T: Foo 
+Specifi es that type Tis required to derive from base class Foo.
+
+where T: new() 
+A constructor constraint; specifi es that type Tmust have a default constructor.
+必须有默认构造函数。
+
+where T1: T2 
+With constraints it is also possible to specify that type T1 derives from a generic type T2. 
+This constraint is known as naked type constraint.
+
+----
+3.3，继承。
+
+和java相同。
+
+public class Derived<T>: Base<T>
+{
+}
+
+public class Derived<T>: Base<string>
+{
+}
+
+----
+3.4，静态成员。
+
+下面有两种类型，所以又两个静态字段。
+
+public class StaticDemo<T>
+{
+    public static int x;
+}
+
+StaticDemo<string>.x = 4;
+StaticDemo<int>.x = 5;
+Console.WriteLine(StaticDemo<string>.x); // writes 4
+
+----
+泛型接口，与java相同。
+
+====
+4，创建泛型方法
+
+void Swap<T>(ref T x, ref T y)
+{
+    T temp;
+    temp = x;
+    x = y;
+    y = temp;
+}
+
+调用
+int i = 4;
+int j = 5;
+Swap<int>(ref i, ref j);
+
+编译器可以自己从参数类型推断类型。
+int i = 4;
+int j = 5;
+Swap(ref i, ref j);
+
+使用where关键字指明泛型类型的约束。
+
+public static decimal Accumulate<TAccount>(IEnumerable<TAccount> source)
+where TAccount: IAccount
+{
+    decimal sum = 0;
+    foreach (TAccount a in source)
+    {
+        sum += a.Balance;
+    }
+    return sum;
+}
+
+----
+泛型与重载
+
+public class MethodOverloads
+{
+    public void Foo<T>(T obj)
+    {
+        Console.WriteLine("Foo<T>(T obj), obj type: {0}", obj.GetType().Name);
+    }
+    public void Foo(int x)
+    {
+        Console.WriteLine("Foo(int x)");
+    }
+    public void Bar<T>(T obj)
+    {
+        Foo(obj);
+    }
+}
+
+会使用最佳匹配。
+static void Main()
+{
+    var test = new MethodOverloads();
+    test.Foo(33);
+    test.Foo("abc");
+}
+
+输出：
+Foo(int x)
+Foo<T>(T obj), obj type: String
+
+注意这种匹配是编译期的。
+
+public class MethodOverloads
+{
+    // ...
+    public void Bar<T>(T obj)
+    {
+        Foo(obj);
+    }
+}
+
+static void Main()
+{
+    var test = new MethodOverloads();
+    test.Bar(44);
+}
+
+输出为：
+Foo<T>(T obj), obj type: Int32
+
+====
+5，协变和抗变
+Covariance and Contra-variance
+
+没有使用out或in，则不可变。
+
+----
+使用out关键字指明协变。
+
+public interface IIndex<out T>
+{
+    T this[int index] { get; }
+    int Count { get; }
+}
+
+static void Main()
+{
+    IIndex<Rectangle> rectangles = RectangleCollection.GetRectangles();
+    IIndex<Shape> shapes = rectangles;
+    for (int i = 0; i < shapes.Count; i++)
+    {
+        Console.WriteLine(shapes[i]);
+    }
+}
+
+----
+使用in关键字指明抗变。
+
+public interface IDisplay<in T>
+{
+    void Show(T item);
+}
+
+static void Main()
+{
+    //...
+    IDisplay<Shape> shapeDisplay = new ShapeDisplay();
+    IDisplay<Rectangle> rectangleDisplay = shapeDisplay;
+    rectangleDisplay.Show(rectangles[0]); 
+}
+
+====
+6，泛型结构
+
+可空类型。不必使用装箱，可以提升性能。
+
+public struct Nullable<T>
+where T: struct
+{
+    public Nullable(T value)
+    {
+        this.hasValue = true;
+        this.value = value;
+    }
+    private bool hasValue;
+    public bool HasValue
+    {
+        get
+        {
+            return hasValue;
+        }
+    }
+    private T value;
+    public T Value
+    {
+        get
+        {
+            if (!hasValue)
+            {
+                throw new InvalidOperationException("no value");
+            }
+            return value;
+        }
+    }
+
+    public static explicit operator T(Nullable<T> value)
+    {
+        return value.Value;
+    }
+    public static implicit operator Nullable<T>(T value)
+    {
+        return new Nullable<T>(value);
+    }
+    public override string ToString()
+    {
+        if (!HasValue)
+        return String.Empty;
+        return this.value.ToString();
+    } 
+}
+
+Nullable<int> x;
+x = 4;
+x += 3;
+if (x.HasValue)
+{
+    int y = x.Value;
+}
+x = null;
+
+如果一个操作数为null，而结果为null。
+int? x1 = GetNullableType();
+int? x2 = GetNullableType();
+int? x3 = x1 + x2;
+
