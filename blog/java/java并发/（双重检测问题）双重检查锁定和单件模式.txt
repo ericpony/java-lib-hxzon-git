@@ -1,0 +1,506 @@
+﻿（双重检测问题）双重检查锁定和单件模式
+译者： Elaine.Ye 原作者：Peter Haggar (haggar@us.ibm.com), Senior Software Engineer, IBM
+http://article.yeeyan.org/view/213582/191888
+发表时间：2011-05-06
+
+====
+所有的编程语言都会有分享一些它们的惯用技法，其中的许多是值得了解并加以使用的，
+编程者花费了宝贵的时间来创建、学习和实现它们。
+但问题是，一些惯用技法在后来被证明并不完全如它们所声称的那样，或根本不能起到所描述的效用。
+Java编程语言就包含了一些有用的编程惯用技法，其同样包含了一些进一步的研究显示不应该再被使用的一些技法。
+在本文中，Peter Haggar分析了双重检查锁定这一惯用技法的起源，为什么这一技法会被开发出来，以及为什么它是不起作用的。
+
+编者注：本文参考的Java内存模型（Java Memory Model）是为Java 5.0做修订之前的版本；
+关于内存排序的语句也许已不再是正确的了。
+不过，双重检查锁定这一惯用技法在新的内存模型下仍然是有问题的。
+欲了解更多关于Java 5.0中的内存模型的信息，请参阅“Java理论与实践：
+修复Java内存模型（Java theory and practice: Fixing the Java Memory Model）”的第1部分和第2部分。
+
+单件（Singleton）的创建模式是一种常见的编程惯用技法。
+在与多线程一起使用时，必须要用到某种类型的同步机制。
+为了努力创建更高效的代码，Java编程者创造出了双重检查锁定（double-checked locking）来与单件创建模式一起使用，以此来限定有多少代码要做同步。
+然而，由于Java内存模型的一些鲜为人知的细节，这一双重检查锁定的惯用做法并不保证会发挥作用。
+其会偶然失败，而不是一直不起作用。
+此外，其失败的原因并不明显，且涉及了Java内存模型的一些私密的细节。
+这些实际情况造成了代码的失败，因为双重检查锁定非常难以跟踪下去。
+在本文余下的部分中，我们会详细分析双重检查锁定这一惯用技法，以了解其是在哪个地方出了问题。
+
+====
+单件创建的惯用做法
+为了了解双重检查锁定最初起源于什么地方，你需要理解常见的单件创建的惯用做法，清单1是这一做法的一个例子说明：
+
+清单1. 单件创建的惯用做法
+import java.util.*;
+class Singleton
+{
+  private static Singleton instance;
+  private Vector v;
+  private boolean inUse;
+  private Singleton()
+  {
+    v = new Vector();
+    v.addElement(new Object());
+    inUse = true;
+  }
+  public static Singleton getInstance()
+  {
+    if (instance == null)                //1
+      instance = new Singleton();  //2
+    return instance;                     //3
+  }
+}
+
+该类的设计确保了永远只会有一个Singleton对象被创建。
+构造函数被声明成是private的，且getInstance()方法只创建一个对象。
+对于单个线程程序来说这一实现没有什么问题，然而，当多个线程被引入时，就必须要通过同步来保护getInstance()方法了。
+如果getInstance()方法没有受到保护的话，则有可能会返回两个不同的Singleton对象对象的实例。
+考虑一下两个线程并发调用getInstance()方法并且是下面的这种事件顺序的情况：
+
+线程1在//1行上调用getInstance()方法并确定instance为null。
+线程1进入if代码块中，但在执行//2行代码前被线程2抢占了。
+线程2调用getInstance()方法并在//1行上确定instance为null。
+线程2进入if代码块中，在//2行上创建了一个新的Singleton对象，并把这一新对象赋值给了变量instance 。
+线程2在//3行上返回Singleton对象的引用。
+线程2被线程1抢占。
+线程1从其停止的地方开始，执行//2行代码，结果是创建了另一个Singleton对象。
+线程在//3行代码上返回该对象。
+
+方法在其应该只创建一个Singleton对象的时候结果是创建了两个，
+这一问题可通过同步getInstance()方法来纠正，一次只允许一个线程执行这些代码，如清单2所示：
+
+清单2. 线程安全的getInstance()方法
+public static synchronized Singleton getInstance()
+{
+  if (instance == null)                //1
+    instance = new Singleton();  //2
+  return instance;                     //3
+}
+
+对于多线程访问getInstance()方法来说， 清单2中的代码工作起来是没问题的。
+不过，如果分析这段代码的话，你就会意识到只有对于该方法的第一次调用来说，同步才是需要的。
+后续的调用都不需要做同步，因为只有第一次的调用是会执行//2行代码的调用，只有该行代码是需要同步的。
+所有其他的调用判定了instance是非空的，然后返回它。
+除了首个调用之外，多线程可以安全地在所有的调用上并发地执行。
+然而，因为方法是被声明成synchronized的，因此你为方法的每次调用都付出了同步代价，尽管只有第一次的调用是需要这一同步成本的。
+
+为了努力使这一方法更加的高效，一种被称作双重检查锁定的惯用做法被创建了出来。
+其想法是避免除了第一个方法调用之外的其他所有方法调用的高昂的同步费用。
+不同的JVM之间的同步开销不同，在早期，这一成本代价可以是相当高的。
+随着更先进的JVM的出现，同步成本已经降低，不过就进入和离开一个synchronized 方法或是代码块来说，仍然会存在性能上的损失。
+就抛开JVM技术方面的进步不论，编程者也永远不想对处理时间做不必要的浪费。
+
+因为清单2中只有//2行代码是需要同步的，因此我们可以仅把它包在一个同步块中，如清单3所示：
+
+清单3. getInstance() 方法
+public static Singleton getInstance()
+{
+  if (instance == null)
+  {
+    synchronized(Singleton.class) {
+      instance = new Singleton();
+    }
+  }
+  return instance;
+}
+
+清单3中的代码展示的问题与使用多线程和清单1来说明的问题是一样的。
+在instance为null的时候，两个线程可以并发地进入到if语句的内部；
+然后，一个线程进入synchronized块初始化instance，而另一个进程则被阻塞。
+当首个进程退出synchronized块时，等待的进程进入并创建另一个Singleton对象。
+需要注意的是，当第二个进程进入synchronized块时，其并未查看instance是否是非空的。
+
+====
+双重检查锁定
+
+为了解决清单3中的问题，我们需要对instance做第二次的检查，这也就是“双重检查锁定”这一名称的由来。
+把双重检查锁定的惯用做法应用到清单3中，得到清单4.
+
+清单4. 双重检查锁定的例子
+public static Singleton getInstance()
+{
+  if (instance == null)
+  {
+    synchronized(Singleton.class) {  //1
+      if (instance == null)          //2
+        instance = new Singleton();  //3
+    }
+  }
+  return instance;
+}
+
+双重检查锁定背后的理论是，//2行上的第二个检查可以使得不可能出现清单3中那种情况，即有两个不同的Singleton对象被创建。
+考虑一下下面的事件发生顺序：
+
+线程1进入getInstance() 方法中。
+因为instance为null，所以线程1进入到synchronized块的//1行上。
+线程1被线程2抢占。
+线程2进入到getInstance()方法中。
+因为instance依然为null，所以线程2尝试着获取//1行上的锁；但是，因为因为该锁被线程1持有，因此线程2阻塞在//1行上。
+线程2被线程1抢占。
+线程1执行，且因为在//2行上instance依然为null，所以其创建一个Singleton对象，并把它的引用赋值给instance。
+线程1退出synchronized块，并从getInstance()方法中返回instance。
+线程1被线程2抢占。
+线程2在//1行上获得锁并查看instance是否为null。
+
+因为instance是非空的，所有第二个Singleton对象没有被创建，由线程1创建的那一个被返回。
+
+双重检查锁定背后的理论是很好的，不幸的是，现实却完全不是这么回事。
+双重检查锁定的问题是，无法保证其在单个或多个处理器的机器上一定会生效。
+
+导致双重检查锁定失败的问题并不是因为JVM中的实现错误，而是因为当前Java平台的内存模型。
+这一内存模型允许通常所说的“无序写（out-of-order write）”，而这是为什么这一惯用技法会失败的首要原因。
+
+====
+无序写
+
+为了说明这一问题，你需要重新分析前面的清单4中的//3行代码，该行代码创建了一个Singleton对象，
+并初始化变量instance指向这一对象。
+这一行代码存在的问题是，变量instance在Singleton的构造函数体执行之前，有可能会变成是非空的。
+
+嗯哼？这一声明也许与一切你可能想到的都不一致，但事实上，就是这种情况。
+在解释这一问题是如何发生的之前，先暂时接受这一事实，
+同时研究一下这一问题如何会破坏了双重检查锁定这一惯用做法。
+考虑下面的清单4的代码的事件发生顺序：
+
+线程1进入getInstance()方法中。
+因为instance为null，线程1进入synchronized块的//1行。
+线程1往下执行到//3行，并把instance变成是非空的，但是在构造函数执行之前。
+线程1被线程2抢占。
+线程2查看instance是否为null，如果不为空的话，线程2返回instance，其引用一个完全构造好，但只是部分被初始化的Singleton对象。
+线程2被线程1抢占。
+线程1通过运行Singleton对象的构造函数来完成该对象的初始化，并返回到该对象的引用。
+
+这一事件顺序导致了线程2返回一个在某段时间内其构造函数还未执行的对象。
+为了说明这是如何发生的，考虑下面的这一行代码instance =new Singleton()的伪码：
+
+mem = allocate();             //为Singleton对象分配内存。
+instance = mem;               //注意现在instance是非空的，但是
+　　　                              //还没有被初始化。
+ctorSingleton(instance);    //调用Singleton的构造函数，传递
+                             　　    //instance.
+
+这段伪码不仅是有可能的，而且是确切地发生在一些JIT编译器中。
+执行的顺序被认为不合乎规程，但却允许在目前的内存模型中发生。
+现实中JIT编译器刚好如此的做法使得双重检查锁定的问题变得已不仅是一个学术方面的课题了。
+
+为了说明这一点，考虑一下清单5中的代码，其包含了getInstance()方法的一个简化版本，
+我已经移去了“双重检查”以易于我们对产生的汇编代码（清单6）做审查。
+我们的兴趣只在于查看instance=new Singleton(); 这行代码是如何被JIT编译器编译的。
+此外，我提供了一个简单的构造函数，以让其在构造函数以汇编代码的方式运行的时候变得更加的清晰。
+
+清单5. 说明无序写的Singleton类
+class Singleton
+  {
+    private static Singleton instance;
+    private boolean inUse;
+    private int val;  
+  private Singleton()
+    {
+      inUse = true;
+      val = 5;
+    }
+    public static Singleton getInstance()
+    {
+      if (instance == null)
+        instance = new Singleton();
+      return instance;
+    }
+  }                
+
+
+清单6包含的汇编代码是由Sun JDK 1.2.1 JIT编译器为清单5中的getInstance()方法的方法体生成的。
+
+清单6. 产生自清单5中的代码的汇编代码
+;为getInstance生成的汇编代码
+  054D20B0   mov         eax,[049388C8]      ;加载instance的引用
+  054D20B5   test        eax,eax             ;检测是否为null
+  054D20B7   jne         054D20D7
+  054D20B9   mov         eax,14C0988h
+  054D20BE   call        503EF8F0            ;分配内存
+  054D20C3   mov         [049388C8],eax      ;把指针存入到
+                                             ;instance引用中。instance  
+                                             ;非空且ctor
+                                             ;还未运行
+  054D20C8   mov         ecx,dword ptr [eax] 
+  054D20CA   mov         dword ptr [ecx],1   ;内联的ctor - inUse=true;
+  054D20D0   mov         dword ptr [ecx+4],5 ;内联的ctor - val=5;
+  054D20D7   mov         ebx,dword ptr ds:[49388C8h]
+  054D20DD   jmp         054D20B0                
+
+注释：为了在下面的解释中引用汇编代码的各行，我引用指令地址的最后两个值，因为它们全都是以054D20作为开始的。
+例如B5指的是test eax,eax这一行。
+
+这一汇编代码通过运行一个在一个无限循环中调用getInstance()方法的测试程序来产生。
+在这一程序运行时，运行Microsoft Visual C++调试器，并把它连接到代表这一测试程序的Java进程上。
+然后，中断执行并找出代表了无限循环的那部分汇编代码。
+
+B0和B5 行上的前两行汇编代码从内存位置049388C8上把instance引用加载到eax中，并检测其是否为空。
+这对应的是清单5中的getInstance()方法的第一行。
+该方法第一次被调用时，instance为null ，代码继续执行到B9行。
+BE行上的代码为Singleton对象从堆中分配内存，并把指向这一内存的指针存储在eax中。
+下一行，C3行，取得eax中的指针并把它存放回位于内存位置049388C8上的instance引用中。
+结果是，instance现在是非空的了，其引用了一个有效的Singleton对象。
+然而，这一对象的构造函数还没有运行，而恰恰是这一情形破坏了双重检查锁定。
+然后到C8行，instance指针被取值并保持在ecx中。
+CA和D0 行代表了内联的构造函数，该函数把值true和5存放入Singleton对象中。
+如果这一段代码在执行了C3 行，但在完成构造函数之前就被另一个线程中断的话，双重检查锁定就会失败。
+
+并非所有的JIT编译器都生成上述形式的代码，有一些生成的代码是这样的，只有在构造函数执行之后，instance才能变为非空的。
+IBM的SDK for Java技术的1.3版本，以及Sun JDK 1.3都是生成这种情形的代码的。
+然而，这并不意味着你应该在这些版本上使用双重检查锁定，因为还有其他导致其失败的原因存在。
+此外，你不会总是知道你的代码会在哪一个JVM上运行，而且JTM编译器总是会有所改动，其后生成的代码就有可能会破坏这一惯用技法。
+
+====
+双重检查锁定：采用两个变量
+
+鉴于目前的这一双重检查锁定代码不能使用，我把另一个版本的代码也放到这里来，如清单7所示，尝试着防止你刚才见到的无序写问题的出现。
+
+清单7. 尝试解决无序写的问题
+public static Singleton getInstance()
+  {
+    if (instance == null)
+    {
+      synchronized(Singleton.class) {      //1
+        Singleton inst = instance;         //2
+        if (inst == null)
+        {
+          synchronized(Singleton.class) {  //3
+            inst = new Singleton();        //4
+          }
+          instance = inst;                 //5
+        }
+      }
+    }
+    return instance;
+  }
+
+
+看一下清单7中的代码，你应该会发现事情变得有点可笑了起来。
+请记住，双重检查锁定是作为一种避免同步那个简单的三行代码的getInstance()方法的方式而被创造出来的，而清单7中的代码已经失控了。
+而且，这一代码并没有解决问题，仔细检查一下就会找出原因。
+
+这段代码是在试着去避开无序写的问题，其通过引入局部变量inst和第二个synchronized锁来试着做到这一点。理论上的工作过程如下：
+
+Thread 1 enters the getInstance() method.
+因为instance为null，线程1进入//1行上的第一个synchronized块。
+局部变量inst取得instance的值，在//2行上其为空。
+因为inst为null，线程1进入//3行上的第二个synchronized块。
+线程1接着开始执行//4行上的代码，把inst变成非空的，但是在Singleton的构造函数执行之前。（这就是我们刚才见到的无序写问题。）
+线程1被线程2抢占。
+线程2进入getInstance()方法。
+因为instance是null的，因此线程2尝试着进入 //1行上的第一个synchronized块。因为线程1当前持有该锁，所以线程2阻塞。
+线程1接着完成//4行的执行。
+线程1接着在//5行上把一个完全构造好的Singleton对象复制给变量instance，并退出两个synchronized块。
+线程1返回instance。
+线程2接着执行，在//2行上把instance赋值给inst。
+线程2查看instance非空，然后返回它。
+
+这里关键的一行代码是//5行，该行本应该是确保instance要不只能为空，要不就是引用一个完全构造好的Singleton对象的。
+然而出现问题的地方是，理论和现实的运行情况是却彼此正交的。
+
+由于目前的内存模型的定义方式，清单7中的代码是不起作用的。
+Java语言规范（Java Language Specification ，JLS）要求在某个synchronized块内的代码不能被移到synchronized块之外，
+但并没有说不在某个synchronized块内的代码不能被移到某个synchronized块内。
+
+JIT编译器应该是在这个地方看到了一个优化的机会。
+这一优化把//4行和//5行的代码移去，把它结合起来生成了清单8所示的代码：
+
+清单8. 优化清单7的代码
+public static Singleton getInstance()
+  {
+    if (instance == null)
+    {
+      synchronized(Singleton.class) {      //1
+        Singleton inst = instance;         //2
+        if (inst == null)
+        {
+          synchronized(Singleton.class) {  //3
+            //inst = new Singleton();      //4
+            instance = new Singleton();               
+          }
+          //instance = inst;               //5
+        }
+      }
+    }
+    return instance;
+  }
+
+
+如果这一优化发生了的话，你就会得到我们之前讨论的同样的无序写的问题。
+
+====
+用volatile修饰一下？
+
+另一个想法是使用关键字volatile来修饰变量inst和instance。
+根据JLS(参见参考资料)，被声明为volatile的变量应该是有着顺序上的一致性的，因此，不会被重排序。
+但是，在试图使用volatile解决双重检查锁定的问题时，有两个问题出现了：
+
+这里的问题不是顺序上的一致性带来的，代码是被移动了，而不是被重排序了。
+不管是对顺序上的一致性做何种考虑，许多JVM并未正确地实现volatile。
+
+第二点值得做一下扩充说明，考虑一下清单9中的代码：
+
+清单9. volatile的顺序一致性
+class test
+  {
+    private volatile boolean stop = false;
+    private volatile int num = 0;
+  public void foo()
+    {
+      num = 100;    //这有可能次发生
+      stop = true;  //这有可能先发生
+      //...
+    }
+  public void bar()
+    {
+      if (stop)
+        num += num;  //num有可能等于0
+    }
+    //...
+  }                
+
+
+根据JLS，因为stop和num都被声明成volatile的，因此它们应该是顺序上一致的，这意味着如果stop一旦为true的话，那么num就必须已经被设置成了100。
+然而，由于许多的JVM并未实现volatile的顺序上的一致性，因此你不能依赖这一行为。
+因此，如果线程1对foo的调用和线程2对bar的调用是并发的话，线程1有可能在把num设置成100之前先把stop设置成true，
+而这有可能会导致线程2查看到stop为true，但num依然设成0。
+volatile和64位变量的原子性还有着其他的一些问题，不过这已经超出了本文的范围，请参阅参考资料以了解更多有关这一主题的信息。
+
+====
+解决方案
+
+底线是，不管是以什么形式，双重检查锁定都不应该再被使用，因为你不能保证其在任何的JVM实现上都能工作。
+JSR-133正在解决内存模型有关的问题，不过，双重检查锁定不会被新的内存模型支持，因此，你有两种选择：
+
+接受清单2中给出getInstance()方法的同步做法。
+放弃同步，使用一个static域。
+
+选项2如清单10所示：
+
+清单10. 使用静态域的Singleton实现
+class Singleton
+  {
+    private Vector v;
+    private boolean inUse;
+    private static Singleton instance = new Singleton();
+  private Singleton()
+    {
+      v = new Vector();
+      inUse = true;
+      //...
+    }
+  public static Singleton getInstance()
+    {
+      return instance;
+    }
+  }                
+
+清单10中的代码并未用到同步，但确保了直到static getInstance()方法被调用时Singleton对象才会被创建。
+这是一个很好的选择，如果你的目标是消除同步的使用的话。
+
+====
+String并非是不可改变的
+
+你可能会想了解一下String类所被赋予的无序写问题和在构造函数执行之前引用变为非空的问题，考虑一下下面的代码：
+
+private String str;//...str = new String("hello");
+
+String类应该是不可改变的，然而，鉴于我们之前讨论的无序写问题，其会在这里引发出问题吗？
+答案是有可能。
+考虑一下有两个线程访问String str这种情况，一个线程可能会查看到str引用了一个其构造函数还未运行的String对象。
+实际上，清单11包含的代码展示了这一情况的发生。
+需要注意的一点是，这一代码只有在我测试过的较旧版本的JVM上才会出问题，IBM 1.3和Sun 1.3 JVM都如预期产生的是不可改变的String。
+
+清单11. 可改变的String的例子
+class StringCreator extends Thread
+  {
+    MutableString ms;
+    public StringCreator(MutableString muts)
+    {
+      ms = muts;
+    }
+    public void run()
+    {
+      while(true)
+        ms.str = new String("hello");          //1
+    }
+  }
+  class StringReader extends Thread
+  {
+    MutableString ms;
+    public StringReader(MutableString muts)
+    {
+      ms = muts;
+    }
+    public void run()
+    {
+      while(true)
+      {
+        if (!(ms.str.equals("hello")))         //2
+        {
+          System.out.println("String is not immutable!");
+          break;
+        }
+      }
+    }
+  }
+  class MutableString
+  {
+    public String str;                         //3
+    public static void main(String args[])
+    {
+      MutableString ms = new MutableString();  //4
+      new StringCreator(ms).start();           //5
+      new StringReader(ms).start();            //6
+    }
+  }                
+
+这段代码在 //4行创建了一个MutableString类，该类包含了一个//3行上的由两个线程共享的String引用。
+在//5行和//6行上，两个对象StringCreator和StringReader在两个单独的线程上创建，传进去MutableString对象的一个引用。
+StringCreator对象进入一个无限循环中并在 //1行上使用值“hello”创建String对象；
+StringReader也进入一个无限循环中，接着在 //2行上查看当前的String对象是否拥有值“hello”，
+如果没有的话，StringReader对象输出一条消息并停止。
+如果String类是不可变的话，则你应该永远也不会看到这个程序的任何输出。
+对于StringReader来说，唯一能够看到str引用的是其他的东西而不是一个有着“hello”值的String对象的情形是，如果有无序写的发生。
+在诸如Sun JDK 1.2.1一类的旧JVM上运行这段代码的结果导致无序写问题，以此方式可得到非不可变的String.
+
+====
+小结
+
+为了在单件中尽力避免代价高昂的同步，编程者很是巧妙地发明了双重检查锁定这一惯用技法。
+然而不幸的是，在得到较为广泛的应用之前，有一点就已经很明显了，那就是由于目前的内存模型，这一技法并不是一种安全的编程结构。
+一些工作正在进行中，以重新定义内存模型的一些薄弱环节。
+不过，即使是在新提议的内存模型下，双重检查锁定依然无法工作。
+这一问题的最好解决方案是接受同步或是使用一个静态域。
+
+资源
+
+在他的这本书Practical Java Programming Language Guide （Addison-Wesley，2000）中，Peter Haggar涵盖了许多的Java编程主题，包括整章的多线程的问题和编程技术。
+
+The Java Language Specification, Second Edition 由Bill Joy等人所著（Addison-Wesley，2000），最佳的Java编程语言技术参考。
+
+The Java Virtual Machine Specification, Second Edition 由Tim Lindholm和Frank Yellin 所著（Addison-Wesley，1999），关于Java编译器和运行时环境的最佳文档。
+
+Visit Bill Pugh的 Java内存模型网站，有着关于这一重要主题的丰富信息。
+
+欲了解更多关于volatile和64位变量的信息，请参阅Peter Haggar的文章“Does Java Guarantee Thread Safety?”，发表在Dr. Dobb's Journal 的2002年6月刊上。
+JSR-133处理Java平台的内存模型和线程规范的修订。
+
+Java软件顾问Brian Goetz在“Threading lightly: Synchronization is not the enemy”（developerWorks，July 2001）一文中探讨了何时使用同步。
+
+在“Threading lightly: Sometimes it's best not to share”（developerWorks，October 2001）一文中，Brian Goetz分析了ThreadLocal并给出了一些利用其能力的贴士。
+
+在“Writing multithreaded Java applications”（developerWorks，February 2001）一文中，Alex Roetter介绍了Java Thread API，列出了涉及多线程的一些问题，并给常见问题提供了解决方案。
+
+在developerWorks Java technology zone上查找其他的Java技术资料。
+
+关于作者
+
+Peter Haggar 是IBM在North Carolina的Research Triangle Park的一名Senior Software Engineer，
+也是由Addison-Wesley出版的Practical Java Programming Language Guide一书的作者。
+此外，他还发表了许多关于Java编程的文章。
+他有着广泛的编程经验，曾致力于开发工具、类库和操作系统方面的工作。
+在IBM， Peter致力于新兴的互联网技术，目前的工作重点是Web服务。
+Peter经常在许多的行业会议上做关于Java技术的技术宣讲，其已经在IBM工作超过14年，拥有Clarkson大学的计算机科学学士学位。
+你可通过haggar@us.ibm.com和他联系。
+

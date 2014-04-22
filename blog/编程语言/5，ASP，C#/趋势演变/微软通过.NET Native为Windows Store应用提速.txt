@@ -39,3 +39,103 @@ MSDN有一节专门介绍用.NET Native编译应用程序，其中一个页面�
 
 原文英文链接：Microsoft Speeds Up Windows Store Apps with .NET Native
 
+========
+========
+.NET Native：C++的性能 C#的产能？
+http://www.csdn.net/article/2014-04-16/2819333-.NET-Native-Preview
+发表于2014-04-16 09:34
+作者张红月
+
+摘要：.NET Native可以将C#代码编译为本地机器码，最令开发者兴奋地是，
+使用.NET Native预览版不仅会让应用拥有C++般的性能表现，还可以实现C#般的生产力，兼具二者之长。
+2013年，微软针对Visual Studio 2013 提出了“Project N”项目，
+在此次Build大会上，其面纱正式揭晓，它就是.NET Native。
+在微软MSDN官方博客上，Subramanian Ramaswamy和.NET Native团队高级项目经理Andrew Pardoe
+对.NET Native预览版进行了详细的介绍。
+
+.NET Native 
+.NET Native可以将C#代码编译为本地机器码。
+据博客介绍，.NET Native可以优化所有的Windows Store应用。
+使用.NET Native编译Windows Store应用程序，应用启动速度将加快60%，
+并且内存占用更小，
+这主要得益于开发团队优化.NET Native运行时（CLR的一个重构和优化）
+和使用先进的Microsoft VC++优化器后端。
+
+该预览版允许开发者测试和编译应用程序，此外，最令开发者兴奋地是，
+使用.NET Native不仅会让应用拥有C++般的性能表现，还可以实现C#般的生产力。
+
+目前，.NET Native预览版支持Windows Store应用，开发者可以使用该版本构建基于ARM和x86架构（很快会支持x86）的应用。
+不久，.NET Native开发团队还会提供跨平台的一致体验，并且将会继续完善和提升.NET Native的应用范围。
+
+通过与Visual Studio结合，.NET Native将会提供一流的.NET开发体验给用户，用户还将继续享有编辑/编译/调式等开发功能及体验。
+
+据微软提供的FAQ获知，目前.NET Native预览版只支持C#语言，
+用 .NET Native编译的程序将作为独立的原生编译代码部署到目标机器上，
+无需再安装.NET Framework。
+
+目前，微软已经用.NET Native开发了一些Windows Store甲方应用，
+这些应用包括Wordament、 Fresh Pain。  
+.NET Native预览版下载地址： http://msdn.microsoft.com/en-US/vstudio/dotnetnative ，
+目前可以安装在 Visual Studio 2013 Update 2 RC上。
+目前，微软官方还未告知何时发布.NET Native正式版本。
+
+使用.NET NativeToolchain编译应用
+
+项目加载后，你可以启用.NET Native编译器，前提是已经把应用针对x64或ARM架构进行了配置，
+此外，由于.NET Native编译为本地代码，所以你得指定一个真实的机器类型来代替CPU。
+具体步骤：
+
+（图）
+
+开发者们激情重燃
+
+微软此次推出.NET Native预览版，让开发者在.NET平台上又看到了希望，开发者们的热情被再一次燃起，引起了无数开发者的热烈讨论，
+笔者搜集了一些，整理如下：
+
+陈宇：
+
+技术上，.NET Native纯粹是个优化。
+商业上，.NET Native的静态链接，让微软可以进一步拉拢应用开发者，给他们提供大量方便易用的开发框架，
+而不用担心普通用户的机器上装满了各式各样的框架，影响体验了。
+这次微软的.NET Native有两个亮点：
+
+一个是云编译。也就是开发者提交的是虚拟机代码，用户直接下载自己设备可用的机器码。
+不像Mono要手动编译，这对用户和开发者来说，都很方便。
+
+另一个是，因为速度、空间的限制都不存在了，云编译器可以比即时编译JIT，
+比ART的安装时编译，做更多更好的优化。
+微软的Visual C++做了这么多年，应该有足够的技术储备。
+备注（本段文字摘自知乎网）。
+
+RednaxelaFX：
+
+感觉.NET Native比起以前最强力的地方在于能够做出“封闭世界的假设”
+并且放心做诸如class hierarchy analysis来做优化，
+而并不是说因为它用了VC++的编译器后端所以就快
+——要知道原本CLR的x64 Server JIT也是源自VC++的后端… 
+话说C# 的语言特性本来就比C++更好优化，例如别名分析会好做很多。（来自新浪微博）
+
+Lex_Li：
+
+总体来说，微软从Xamarin那边学到了不少。.NET Native源自AOT，但是优化更好。（来自新浪微博）
+
+写在最后
+
+针对.NET平台，微软给开发者带来的震撼不只是发布了.NET Native，
+在2014 Builid大会上，微软提出了“ The Next Generation of .NET”。
+.NET团队构建了一些新技术来扩展.NET核心功能，努力提升应用程序和用户体验，发布了一系列产品：
+
+ .NET Native
+.NET编译平台Roslyn，并开源
+下一代JIT CTP3、“RyuJIT”，包含对SIMD的支持
+统一Visual Studio 2013 Update 2可移植类库和类库
+提升Visual Studio 2013 Update 2性能和诊断中心
+.NET移动服务
+“Orleans”项目
+
+微软的这些举措足以说明对开发者的重视，相信，未来的微软也不会让开发者们失望。
+
+文章部分内容翻译自MSDN博客。
+
+本文为CSDN原创文章，未经允许不得转载，如需转载请联系market#csdn.net(#换成@)
+
