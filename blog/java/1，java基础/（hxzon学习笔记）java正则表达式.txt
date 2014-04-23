@@ -12,6 +12,25 @@ Pattern.DOTALL | Pattern.UNICODE_CASE | Pattern.MULTILINE//
 2，Matcher
 matcher.appendReplacement
 
+3，
+// 5 + ${rand.5}
+private static final Pattern randomPattern = Pattern.compile("\\$\\{rand\\.(\\d+)\\}");
 
+public String randomFormula(String formula)
+{
+    Matcher m = randomPattern.matcher(formula);
+    while (m.find())
+    {
+        String r = m.group();
+        String n = m.group(1);
+        double d = Type.getDouble(n, 0);
+        double rn = Random.nextDouble() * d;
+        formula = formula.replaceFirst(Pattern.quote(r), rn + "");
+    }
+    return formula;
+}
+
+不能识别${rand.3.1}
+"5+${rand.3}+${rand.3.1}+${rand.5}"
 
 

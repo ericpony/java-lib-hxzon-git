@@ -34,4 +34,434 @@ by hxzon
 6.9 结构比较 
 
 ====
+1，数组
+
+int[] myArray = new int[4];
+
+数组初始化：
+int[] myArray = new int[4] {4, 7, 11, 2};
+
+int[] myArray = {4, 7, 11, 2};
+
+访问数组元素
+int v1 = myArray[0]; // read first element
+int v2 = myArray[1]; // read second element
+myArray[3] = 44; // change fourth element
+
+foreach (var val in myArray)
+{
+    Console.WriteLine(val);
+}
+
+引用类型的数组
+
+Person[] myPersons = new Person[2];
+
+Person[] myPersons2 =
+{
+    new Person { FirstName="Ayrton", LastName="Senna"},
+    new Person { FirstName="Michael", LastName="Schumacher"}
+};
+
+====
+2，多维数组（矩形）
+
+注意语法：
+int[,] twodim = new int[3, 3];
+twodim[0, 0] = 1;
+twodim[0, 1] = 2;
+
+int[,] twodim = {
+    {1, 2, 3},
+    {4, 5, 6},
+    {7, 8, 9}
+};
+
+三维数组：
+int[,,] threedim = {
+    { { 1, 2 }, { 3, 4 } },
+    { { 5, 6 }, { 7, 8 } },
+    { { 9, 10 }, { 11, 12 } }
+};
+
+====
+3，不规则数组
+
+每一行的元素个数不一样。
+
+int[][] jagged = new int[3][];
+jagged[0] = new int[2] { 1, 2 };
+jagged[1] = new int[6] { 3, 4, 5, 6, 7, 8 };
+jagged[2] = new int[3] { 9, 10, 11 };
+
+for (int row = 0; row < jagged.Length; row++)
+{
+    for (int element = 0; element < jagged[row].Length; element++)
+    {
+        Console.WriteLine("row: {0}, element: {1}, value: {2}", row, element, 
+            jagged[row][element]);
+    }
+}
+
+====
+4，数组类
+
+Length，数组的长度。
+LongLength，数组的长度，当超过int时。
+GetEnumerator()
+
+创建一维数组：
+Array intArray1 = Array.CreateInstance(typeof(int), 5);
+for (int i = 0; i < 5; i++)
+{
+    intArray1.SetValue(33, i);
+}
+for (int i = 0; i < 5; i++)
+{
+    Console.WriteLine(intArray1.GetValue(i));
+}
+
+int[] intArray2 = (int[])intArray1;
+
+----
+创建二维数组
+
+int[] lengths = { 2, 3 };
+int[] lowerBounds = { 1, 10 };
+Array racers = Array.CreateInstance(typeof(Person), lengths, lowerBounds);
+
+racers.SetValue(new Person
+    {
+        FirstName = "Alain",
+        LastName = "Prost"
+    }, index1: 1, index2: 10);
+
+Person[,] racers2 = (Person[,])racers;
+Person first = racers2[1, 10];
+Person last = racers2[2, 12];
+
+====
+5，复制数组（浅复制）
+
+int[] intArray1 = {1, 2};
+int[] intArray2 = (int[])intArray1.Clone();
+
+排序
+
+Array.Sort(names);
+
+Array.Sort(persons, new PersonComparer(PersonCompareType.FirstName));
+
+----
+数组协变
+
+基类型数组可以放入派生类型元素。
+
+NOTE Array covariance is only possible with reference types, not with value types.
+
+====
+6，数组片段ArraySegment<T>
+
+对数组片段的修改，等于对原数组对应位置的修改。
+
+static int SumOfSegments(ArraySegment<int>[] segments)
+{
+    int sum = 0;
+    foreach (var segment in segments)
+    {
+        for (int i = segment.Offset; i < segment.Offset +
+        segment.Count; i++)
+        {
+            sum += segment.Array[i];
+        }
+    }
+    return sum;
+}
+
+int[] ar1 = { 1, 4, 5, 11, 13, 18 };
+int[] ar2 = { 3, 4, 5, 18, 21, 27, 33 };
+var segments = new ArraySegment<int>[2]
+{
+    new ArraySegment<int>(ar1, 0, 3),
+    new ArraySegment<int>(ar2, 3, 3)
+};
+var sum = SumOfSegments(segments);
+
+====
+7，数组的foreach
+
+基于编译器。
+
+foreach (var p in persons)
+{
+    Console.WriteLine(p);
+}
+
+编译成：
+IEnumerator<Person> enumerator = persons.GetEnumerator();
+while (enumerator.MoveNext())
+{
+    Person p = enumerator.Current;
+    Console.WriteLine(p);
+}
+
+====
+8，yield语句。
+
+using System;
+using System.Collections;
+namespace Wrox.ProCSharp.Arrays
+{
+    public class HelloCollection
+    {
+        public IEnumerator<string> GetEnumerator()
+        {
+            yield return "Hello";
+            yield return "World";
+        }
+    }
+
+    public void HelloWorld()
+    {
+        var helloCollection = new HelloCollection();
+        foreach (var s in helloCollection)
+        {
+            Console.WriteLine(s);
+        }
+    }
+}
+
+public class HelloCollection
+{
+    public IEnumerator GetEnumerator()
+    {
+        return new Enumerator(0);
+    }
+    public class Enumerator: IEnumerator<string>, IEnumerator, IDisposable
+    {
+        private int state;
+        private string current;
+        public Enumerator(int state)
+        {
+            this.state = state;
+        }
+        bool System.Collections.IEnumerator.MoveNext()
+        {
+            switch (state)
+            {
+                case 0:
+                current = "Hello";
+                state = 1;
+                return true;
+                case 1:
+                current = "World";
+                state = 2;
+                return true;
+                case 2:
+                break;
+            }
+            return false;
+        }
+        void System.Collections.IEnumerator.Reset()
+        {
+            throw new NotSupportedException();
+        }
+        string System.Collections.Generic.IEnumerator<string>.Current
+        {
+            get
+            {
+                return current;
+            }
+        }
+        object System.Collections.IEnumerator.Current
+        {
+            get
+            {
+                return current;
+            }
+        }
+        void IDisposable.Dispose()
+        {
+        }
+    }
+}
+
+NOTE Remember that the yieldstatement produces an enumerator, and not just a list 
+fi lled with items. This enumerator is invoked by the foreachstatement. As each item is 
+accessed from the foreach, the enumerator is accessed. This makes it possible to iterate 
+through huge amounts of data without reading all the data into memory in one turn.
+
+----
+按不同次序的迭代：
+public class MusicTitles
+{
+    string[] names = { "Tubular Bells", "Hergest Ridge", "Ommadawn",
+    "Platinum" };
+    public IEnumerator<string> GetEnumerator()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            yield return names[i];
+        }
+    }
+    public IEnumerable<string> Reverse()
+    {
+        for (int i = 3; i >= 0; i--)
+        {
+            yield return names[i];
+        }
+    }
+    public IEnumerable<string> Subset(int index, int length)
+    {
+        for (int i = index; i < index + length; i++)
+        {
+            yield return names[i];
+        }
+    }
+}
+
+var titles = new MusicTitles();
+foreach (var title in titles)
+{
+    Console.WriteLine(title);
+}
+Console.WriteLine();
+Console.WriteLine("reverse");
+foreach (var title in titles.Reverse())
+{
+    Console.WriteLine(title);
+}
+Console.WriteLine();
+Console.WriteLine("subset");
+
+foreach (var title in titles.Subset(2, 2))
+{
+    Console.WriteLine(title);
+}
+
+----
+public class GameMoves
+{
+    private IEnumerator cross;
+    private IEnumerator circle;
+    public GameMoves()
+    {
+        cross = Cross();
+        circle = Circle();
+    }
+    private int move = 0;
+    const int MaxMoves = 9;
+    public IEnumerator Cross()
+    {
+        while (true)
+        {
+            Console.WriteLine("Cross, move {0}", move);
+            if (++move >= MaxMoves)
+                yield break;
+            yield return circle;
+        }
+    }
+    public IEnumerator Circle()
+    {
+        while (true)
+        {
+            Console.WriteLine("Circle, move {0}", move);
+            if (++move >= MaxMoves)
+                yield break;
+            yield return cross;
+        }
+    }
+}
+
+var game = new GameMoves();
+IEnumerator enumerator = game.Cross();
+while (enumerator.MoveNext())
+{
+    enumerator = enumerator.Current as IEnumerator;
+}
+
+====
+9，元组
+
+public static Tuple<int, int> Divide(int dividend, int divisor)
+{
+    int result = dividend / divisor;
+    int reminder = dividend % divisor;
+    return Tuple.Create<int, int>(result, reminder);
+}
+
+var result = Divide(5, 2);
+Console.WriteLine("result of division: {0}, reminder: {1}",
+result.Item1, result.Item2);
+
+超过8个元素的元组：
+public class Tuple<T1, T2, T3, T4, T5, T6, T7, TRest>
+
+var tuple = Tuple.Create<string, string, string, int, int, int, double,
+    Tuple<int, int>>("Stephanie", "Alina", "Nagel", 2009, 6, 2, 1.37,
+    Tuple.Create<int, int>(52, 3490));
+
+====
+10，结构相等性
+
+public class Person: IEquatable<Person>
+{
+    public int Id { get; private set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public override string ToString()
+    {
+        return String.Format("{0}, {1} {2}", Id, FirstName, LastName);
+    }
+    public override bool Equals(object obj)
+    {
+        if (obj == null) 
+            return base.Equals(obj);
+        return Equals(obj as Person);
+    }
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
+    public bool Equals(Person other)
+    {
+        if (other == null)
+            return base.Equals(other);
+        return this.Id == other.Id && this.FirstName == other.FirstName &&
+            this.LastName == other.LastName;
+    }
+}
+
+if ((persons1 as IStructuralEquatable).Equals(persons2,
+    EqualityComparer<Person>.Default))
+{
+    Console.WriteLine("the same content");
+}
+
+----
+元组的相等性
+
+var t1 = Tuple.Create<int, string>(1, "Stephanie");
+var t2 = Tuple.Create<int, string>(1, "Stephanie");
+if (t1 != t2)
+    Console.WriteLine("not the same reference to the tuple");
+
+if (t1.Equals(t2))
+    Console.WriteLine("the same content");
+
+class TupleComparer: IEqualityComparer
+{
+    public new bool Equals(object x, object y)
+    {
+        return x.Equals(y);
+    }
+    public int GetHashCode(object obj)
+    {
+        return obj.GetHashCode();
+    }
+}
+
+if (t1.Equals(t2, new TupleComparer()))
+    Console.WriteLine("equals using TupleComparer");
+
 

@@ -1,0 +1,492 @@
+﻿（官网）您的首个 iOS 应用程序
+
+====
+https://developer.apple.com/library/ios/referencelibrary/GettingStarted/RoadMapiOSCh/chapters/RM_YourFirstApp_iOS/Articles/00_Introduction.html
+关于创建您的首个 iOS 应用程序
+
+“您的首个 iOS 应用程序”介绍 iOS 应用程序开发的“三Ｔ”：
+
+工具 (Tools)。如何使用 Xcode 创建和管理项目。
+技术 (Technologies)。如何创建一个响应用户输入的应用程序。
+技巧 (Techniques)。如何利用一些基础设计模式－－所有 iOS 应用程序开发的基础。
+完成本教程中的所有步骤后，您的应用程序外观大致是这样的：
+
+图像： ../Art/appSimulator.png
+如上图所示，您的应用程序有三个主要的用户界面元素：
+
+文本栏（用于用户输入信息）
+标签（用于显示信息）
+按钮（让应用程序在标签中显示信息）
+
+运行编写完成的应用程序时，点按文本栏会调出系统提供的键盘。
+使用键盘键入您的姓名后，点按“Done”键将键盘隐藏，然后点按“Hello”按钮，即可在文本栏和按钮之间的标签中看到字符串“Hello，您的姓名!”。
+
+稍后在《马上着手开发 iOS 应用程序》中，您将会学习另一个教程“将您的应用程序国际化”，为您在此教程中创建的应用程序添加中文本地化。
+
+如果您有计算机编程的基础知识，特别是面向对象编程和 Objective-C 程序设计语言的知识，您将能更好地理解本教程。
+如果您以前从未使用过 Objective-C，也不必担心本教程中的代码难以理解。
+您学完《马上着手开发 iOS 应用程序》之后，就能更好地理解这些代码了。
+
+注：即使您打算只开发用于 iPad 的程序，您仍然可以将本教程当做入门指南。
+尽管本教程显示的是 iPhone 用户界面，使用的工具和技巧与开发 iPad 应用程序所用到的完全相同。
+
+====
+https://developer.apple.com/library/ios/referencelibrary/GettingStarted/RoadMapiOSCh/chapters/RM_YourFirstApp_iOS/Articles/01_CreatingProject.html
+立即开始
+
+要创建本教程中的 iOS 应用程序，您需要 Xcode 4.3 或更高版本。
+Xcode 是 Apple 的集成开发环境（又称 IDE），用于 iOS 和 Mac OS X 的开发。
+在 Mac 上安装 Xcode，也会同时安装了 iOS SDK，它包含 iOS 平台的编程接口。
+
+创建和测试新项目
+
+要着手开发应用程序，请创建一个新 Xcode 项目。
+
+圆点符号
+创建新项目
+请花一些时间来熟悉 Xcode 的工作区窗口。
+在接下来的整个教程中，您将会用到下面窗口中标识出的按钮和区域。
+
+图像： ../Art/workspace_window_callouts_2x.png
+
+如果工作区窗口中的实用工具区域已打开（如上图窗口中所示），您可以暂时把它关闭，因为稍后才会用到它。
+最右边的“View”按钮可控制实用工具区域。实用工具区域可见时，该按钮是这样的：
+
+图像： ../Art/utilites_button.jpg
+
+如有需要，点按最右边的“View”按钮来关闭实用工具区域。
+
+即使您还未编写任何代码，您都可以构建您的应用程序，并在 Simulator（已包含在 Xcode 中）中运行它。
+顾名思义，Simulator 可模拟应用程序在 iOS 设备上运行，让您初步了解它的外观和行为。
+
+圆点符号
+在 Simulator 中运行您的应用程序
+
+Xcode 完成生成项目后，Simulator 应该会自动启动。
+因为您指定的是 iPhone 产品而非 iPad 产品，Simulator 会显示一个看起来像 iPhone 的窗口。
+在模拟的 iPhone 屏幕上，Simulator 打开您的应用程序，外观应该是这样的：
+
+图像： ../Art/first_run.jpg
+
+此刻，您的应用程序还不怎么样：它只显示一个空白的画面。
+要了解空白画面是如何生成的，您需要了解代码中的对象，以及它们如何紧密协作来启动应用程序。
+现在，退出 Simulator（选取“iOS Simulator”>“Quit iOS Simulator”；请确定您不是退出 Xcode）。
+
+====
+了解应用程序如何启动
+
+您的项目是基于 Xcode 模板开发的，所以运行应用程序时，大部分基本的应用程序环境已经自动建立好了。
+例如，Xcode 创建一个应用程序对象（以及其他一些东西）来建立运行循环（运行循环将输入源寄存，并将输入事件传递给应用程序）。
+该工作大部分是由 UIApplicationMain 函数完成的，该函数由 UIKit 框架提供，并且在您的项目的 main.m 源文件中自动调用。
+
+注：UIKit 框架提供应用程序构建和管理其用户界面所需的全部类。
+UIKit 框架只是 Cocoa Touch 提供的面向对象的众多框架中的一个，而 Cocoa Touch 是所有 iOS 应用程序的应用环境。
+
+圆点符号
+查看 main.m 源文件
+
+main.m 中的 main 函数调用自动释放池 (autorelease pool) 中的 UIApplicationMain 函数：
+
+@autoreleasepool {
+   return UIApplicationMain(argc, argv, nil, NSStringFromClass([HelloWorldAppDelegate class]));
+}
+
+@autoreleasepool 语句支持“自动引用计数 (ARC)”系统。
+ARC 可自动管理应用程序的对象生命周期，确保对象在需要时一直存在，直到不再需要。
+
+调用 UIApplicationMain 会创建一个 UIApplication 类的实例和一个应用程序委托的实例
+（在本教程中，应用程序委托是 HelloWorldAppDelegate，由“Single View”模板提供）。
+应用程序委托的主要作用是提供呈现应用程序内容的窗口，在应用程序呈现之前，应用程序委托也执行一些配置任务。
+（委托是一种设计模式，在此模式中，一个对象代表另一个对象，或与另一个对象协调工作。）
+
+在 iOS 应用程序中，窗口对象为应用程序的可见内容提供容器，协助将事件传递到应用程序对象，协助应用程序对设备的摆放方向做出响应。
+窗口本身是不可见的。
+
+调用 UIApplicationMain 也会扫描应用程序的 Info.plist 文件。
+Info.plist 文件为信息属性列表，即键和值配对的结构化列表，它包含应用程序的信息，例如名称和图标。
+
+圆点符号
+查看属性列表文件
+
+因为您已选取在项目中使用串联图，所以 Info.plist 文件还包含应用程序对象应该载入的串联图的名称。
+串联图包含对象、转换以及连接的归档，它们定义了应用程序的用户界面。
+
+在“HelloWorld”应用程序中，串联图文件命名为 MainStoryboard.storyboard（请注意 Info.plist 文件只显示这名称的第一部分）。
+应用程序启动时，载入 MainStoryboard.storyboard，接着根据它对初始视图控制器进行实例化。
+视图控制器是管理区域内容的对象；而初始视图控制器是应用程序启动时载入的第一个视图控制器。
+
+“HelloWorld”应用程序仅包含一个视图控制器（具体来说就是 HelloWorldViewController）。
+现在，HelloWorldViewController 管理由单视图提供的一个区域的内容。
+视图是一个对象，它在屏幕的矩形区域中绘制内容，并处理由用户触摸屏幕所引起的事件。
+一个视图也可以包含其他视图，这些视图称为分视图。
+当一个视图添加了一个分视图后，它被称为父视图，这个分视图被称为子视图。
+父视图、其子视图以及子视图的子视图（如有的话）形成一个视图层次。
+一个视图控制器只管理一个视图层次。
+
+注：“模型－视图－控制器”(Model-View-Controller, MVC) 设计模式定义了应用程序对象的三种角色，
+“HelloWorld”应用程序中的视图和视图控制器，体现了其中的两种，而第三种为模型对象。
+在 MVC 中，模型对象表示数据（例如日历应用程序中的待办事项或绘图程序中的图形），
+视图对象知道如何显示模型对象所表示的数据，控制器对象充当模型和视图的媒介。
+在“HelloWorld”应用程序中，模型对象为字符串，用来保存用户输入的名称。
+现在您不需要了解更多有关 MVC 的信息，但最好开始思考应用程序中的对象如何扮演不同的角色。
+
+在接下来的步骤，您要给由 HelloWorldViewController 管理的视图添加三个分视图，以创建视图层次；这三个子视图分别表示文本栏、标签和按钮。
+
+您可以在串联图中看到视图控制器及其视图的模样。
+
+圆点符号
+查看串联图
+打开默认串联图后，工作区窗口看起来应该类似这样：
+
+图像： ../Art/storyboard_on_canvas_2x.png
+串联图包括场景和过渡。场景代表视图控制器，过渡则表示两个场景之间的转换。
+
+因为“Single View”模板提供一个视图控制器，应用程序中的串联图只包含一个场景，没有过渡。
+画布上指向场景左侧的箭头是“initial scene indicator”（初始场景指示器），
+它标识出应用程序启动时应该首先载入的场景（通常初始的场景就是初始视图控制器）。
+
+在画布上看到的场景称为“Hello World View Controller”，因为它是由 HelloWorldViewController 对象来管理的。
+“Hello World View Controller”场景由一些项目组成，显示在 Xcode 大纲视图（在画布和项目导航器之间的面板）。
+现在，视图控制器由以下项目组成：
+
+一个第一响应器占位符对象（以橙色立方体表示）。
+“first responder”是一个动态占位符，应用程序运行时，它应该是第一个接收各种事件的对象。
+这些事件包括以编辑为主的事件（例如轻按文本栏以调出键盘）、运动事件（例如摇晃设备）和操作消息（例如当用户轻触按钮时该按钮发出的消息）等等。
+本教程不会涉及第一响应器的任何操作。
+
+名为 Exit 的占位符对象，用于展开序列。
+默认情况下，当用户使子场景消失时，该场景的视图控制器展开（或返回）父场景——即转换为该子场景的原来场景。
+不过，Exit 对象使视图控制器能够展开任意一个场景。
+
+HelloWorldViewController 对象（以黄色球体内的浅色矩形表示）。
+串联图载入一个场景时，会创建一个视图控制器类的实例来管理该场景。
+
+一个视图，列在视图控制器下方（要在大纲视图中显示此视图，您可能要打开“Hello World View Controller”旁边的展示三角形）。
+此视图的白色背景就是在 Simulator 中运行该应用程序时所看到的背景。
+
+注：应用程序的窗口对象在串联图中并未表示出来。
+画布上，场景下方的区域称为场景台。
+现在，场景台显示了视图控制器的名称，即“Hello World View Controller”。
+其他时候，场景台可包含图标，分别代表第一响应器、Exit 占位符对象和视图控制器对象。
+
+小结
+
+在本章中，您使用 Xcode 创建了一个基于“Single View”模板的新项目，生成并运行了该模板定义的默认应用程序。
+然后您查看了该项目的一些基本组成部分，例如 main.m 源文件、Info.plist 文件以及串联图文件，并了解了应用程序如何启动。
+您也学习了“模型－视图－控制器”设计模式是如何为应用程序中的对象定义角色的。
+
+在下一章，您将了解有关视图控制器及其视图的更多信息。
+
+====
+https://developer.apple.com/library/ios/referencelibrary/GettingStarted/RoadMapiOSCh/chapters/RM_YourFirstApp_iOS/Articles/04_InspectingVC.html
+检查视图控制器及其视图
+
+正如先前所学习的，一个视图控制器负责管理一个场景，而一个场景代表一个内容区域。
+在该区域中看到的内容，是在视图控制器的视图中定义的。
+在本章中，您可以更仔细地查看由 HelloWorldViewController 所管理的场景，并学习如何调整视图的背景颜色。
+
+使用检查器来检查视图控制器
+
+应用程序启动时，载入主串联图文件，然后实例化初始视图控制器。
+初始视图控制器管理用户打开应用程序时看到的第一个场景。
+因为“Single View”模板只提供一个视图控制器，该视图控制器自动设定为初始视图控制器。
+您可以使用 Xcode 检查器来验证视图控制器的状态，并查看关于它的其他信息。
+
+圆点符号
+打开检查器
+更改视图的背景颜色
+
+在本教程的前面部分，您已了解到视图提供了在 Simulator 中运行应用程序时所看到的白色背景。要确定应用程序工作正常，您可以将视图的背景设定为白色以外的其他颜色，并再次在 Simulator 中运行应用程序来验证新颜色的显示。
+
+在更改视图的背景之前，请确定串联图仍打开在画布上。（如有需要，点按项目导航器中的 MainStoryboard.storyboard，在画布上打开串联图。）
+
+圆点符号
+设定视图控制器的视图的背景颜色
+点按“Run”按钮或选取“Product”>“Run”，在 Simulator 中测试您的应用程序。请确定 Xcode 工具栏中的“Scheme”弹出式菜单仍然显示“HelloWorld”>“iPhone 5.0 Simulator”。您看到的应该大致是这样的：
+
+图像： ../Art/running_with_new_color.jpg
+提示图标
+提示 在运行应用程序前，可以不必存储您的工作，因为点按“Run”或选取“Product”>“Run”时，Xcode 会自动存储您更改过的文件。
+在继续本教程之前，请将视图的背景颜色恢复成白色。
+
+圆点符号
+恢复视图的背景颜色
+验证了应用程序重新显示白色背景后，退出 Simulator。
+
+运行应用程序时，Xcode 可能会在工作区窗口的底部打开调试区。本教程不会用到该面板，您可以将其关闭，以腾出更多空间。
+
+圆点符号
+关闭调试区
+小结
+
+在本章中，您检查了场景，更改和恢复了视图的背景颜色。
+
+在下一章，您将文本栏、标签以及按钮添加到视图中，让用户与应用程序进行交互操作。
+
+====
+https://developer.apple.com/library/ios/referencelibrary/GettingStarted/RoadMapiOSCh/chapters/RM_YourFirstApp_iOS/Articles/05_ConfiguringView.html
+配置视图
+
+Xcode 提供了对象库，您可以将库中的对象添加到串联图文件。其中的一些对象属于视图中的用户界面元素，例如按钮和文本栏。其他对象为高级对象，例如视图控制器和手势识别器。
+
+“Hello World View Controller”场景已经包含了一个视图。现在需要添加一个按钮、一个标签和一个文本栏。然后，在这些元素和视图控制器类之间建立连接，以便元素提供您想要的行为。
+
+添加用户界面元素
+
+将对象库中的用户界面 (UI) 元素拖移到画布上的视图中，来添加用户界面元素。UI 元素添加到视图后，可以适度移动它们的位置和调整大小。
+
+圆点符号
+将 UI 元素添加到视图并适当进行布局
+在添加文本栏、标签和按钮 UI 元素，并对布局做出建议的修改后，您的项目看起来应该是这样的：
+
+图像： ../Art/after_layout.png
+您可能注意到，当您将文本栏、标签和按钮添加到背景视图时，Xcode 在名为 Constraints 的大纲视图中插入了项目。Cocoa Touch 具有一个自动布局系统，让您定义用户界面元素的布局约束。这些约束定义用户界面元素之间的关系，当其他视图的大小改变或设备摆放方向改变时，该关系影响各界面元素如何改变其位置和几何形状。现在不要改变您添加到用户界面的视图的默认约束。
+
+您还可以对文本栏进行一些修改，使文本栏的行为符合用户的期望。首先，因为用户要输入自己的姓名，您可以确保 iOS 对用户键入的每个英文单词的首字母实施大写。其次，还可以确保与文本栏相关联的键盘配置为输入姓名（而不是数字），并且键盘显示“Done”按钮。
+
+这些更改所遵循的原则是：因为在设计时，您已知道文本栏将包含何种类型的信息，您可以配置文本栏使它运行时的外观和行为符合用户的任务。这些配置都可以在“Attributes”检查器中修改。
+
+圆点符号
+配置文本栏
+在 Simulator 中运行应用程序，以确定所添加的 UI 元素外观正如所期望的样子。如果点按“Hello”按钮，该按钮应该高亮显示；如果在文本栏内点按，键盘应该出现。不过，这时按钮没有任何功能，标签还是空的，而且键盘出现后无法使它消失。要添加此功能，需要在 UI 元素和视图控制器之间进行适当的连接。下面将说明如何建立连接。
+
+注：因为只是在 Simulator 中（而不是在设备上）运行应用程序，所以是通过点按来激活控制，而不是用手轻按的方式。
+为按钮创建操作
+
+当用户激活一个 UI 元素时，该元素可以向知道如何执行相应操作方法的对象发送一则操作消息，例如“将此联系人添加到用户的联系人列表”。这种互动是目标-操作机制的一部分，该机制是另一种 Cocoa Touch 设计模式。
+
+在本教程中，当用户轻按“Hello”按钮时，您想要按钮发送一则“更改问候语”的消息（操作）给视图控制器（目标）。视图控制器通过更改其管理的字符串（即模型对象）来响应此消息。然后，视图控制器更新在标签中显示的文本，以反映模型对象值的变动。
+
+使用 Xcode，您可以将操作添加到 UI 元素，并设置其相应的操作方法。方法是按住 Control 键并将画布上的元素拖移到源文件中的合适位置（通常是类扩展在视图控制器的实现文件中）。串联图将您通过这种方式创建的连接归档存储下来。稍后，应用程序载入串联图时，会恢复这些连接。
+
+圆点符号
+为按钮添加操作
+按住 Control 键将“Hello”按钮拖移到 HelloWorldViewController.m 文件中的类扩展，并配置生成的操作后，您完成了两件事情：通过 Xcode 将合适的代码添加到了视图控制器类中（在 HelloWorldViewController.m 中），并在按钮和视图控制器之间创建了连接。具体来说，Xcode 做了以下事情：
+
+在 HelloWorldViewController.m 中，将以下操作方法声明添加到了类扩展：
+- (IBAction)changeGreeting:(id)sender;
+并将以下的存根方法添加到了实现区域：
+- (IBAction)changeGreeting:(id)sender {
+}
+注：IBAction 是一个特殊关键词，用于告诉 Xcode 将一个方法作为目标-操作连接的操作部分来处理。IBAction 被定义为 void。
+操作方法中的 sender 参数指向发送操作消息的对象（在本教程中，发送对象为按钮）。
+它在按钮和视图控制器之间创建了连接。
+接下来，您要在视图控制器和剩余的两个 UI 元素（即标签和文本栏）之间创建连接。
+
+为文本栏和标签创建 Outlet
+
+Outlet 描述了两个对象之间的连接。当您想要一个对象（例如视图控制器）和它包含的对象（例如文本栏）进行通讯时，须将被包含的对象指定为 outlet。应用程序运行时，会恢复在 Xcode 中创建的 outlet，从而使对象在运行时可以互相通讯。
+
+在本教程中，您想要视图控制器从文本栏获取用户的文本，然后将文本显示在标签上。为确保视图控制器可以和这些对象通讯，您在它们之间创建 outlet 连接。
+
+为文本栏和标签添加 outlet 的步骤与添加按钮操作的步骤非常相似。开始之前，请确定主串联图文件仍然显示在画布上，而 HelloWorldViewController.m 在辅助编辑器中保持打开。
+
+圆点符号
+为文本栏添加 outlet
+通过为文本栏添加 outlet，您完成了两件事情：在这个过程中：
+
+Xcode 将合适的代码添加到了视图控制器类的实现文件 (HelloWorldViewController.m)。
+具体来说，Xcode 将以下声明添加到了类扩展：
+
+@property (weak, nonatomic) IBOutlet UITextField *textField;
+注：IBOutlet 是一个特殊关键词，仅用于告诉 Xcode 将对象作为 outlet 处理。它实际上的定义为什么都不是，因此在编译时不起作用。
+Xcode 在视图控制器和文本栏之间建立了连接。
+通过在视图控制器和文本栏之间建立连接，用户输入的文本可以传递给视图控制器。和处理 changeGreeting: 方法声明一样，Xcode 在文本栏声明的左边显示带有填充的圆圈，以表示已经建立连接。
+
+注：较早版本的 Xcode 使用按住 Control 键拖移的方式将 @synthesize 指令添加到您所声明的每个属性的实现块。因为编译器自动合成存取方法，所以这些指令是不必要的。您可以放心地将它们全部删除。
+现在为标签添加 outlet 并配置连接。在视图控制器和标签之间建立连接，会让视图控制器以字符串（该字符串包含用户输入的文本）来更新标签。完成此任务的步骤与为文本栏添加 outlet 的步骤相同，只不过在配置时要做适当修改。（确定 HelloWorldViewController.m 仍然显示在辅助编辑器中。）
+
+圆点符号
+为标签添加 outlet
+到此为止，您一共创建了三种到视图控制器的连接：
+
+按钮的操作连接
+文本栏的 Outlet 连接
+标签的 Outlet 连接
+您可以在“Connections”检查器中验证这些连接。
+
+圆点符号
+为视图控制器打开“Connections”检查器
+在“Connections”检查器中，Xcode 显示了所选对象（在本例中为视图控制器）的连接。在工作区窗口中，您看到的应该是这样的：
+
+图像： ../Art/verify_connections.png
+您会发现，在视图控制器和其视图之间，除了您创建的三个连接之外，还有一个连接。Xcode 提供了视图控制器和其视图之间的默认连接；您不必用任何方式访问它。
+
+建立文本栏的委托连接
+
+您还需要在应用程序中建立另一个连接：您需要将文本栏连接到您指定的委托对象上。在本教程中，您将视图控制器用作文本栏的委托。
+
+您需要为文本栏指定一个委托对象。这是因为当用户轻按键盘中的“Done”按钮时，文本栏发送消息给它的委托（前面提到过委托是代表另一个对象的对象）。在后面的步骤中，您将使用与此消息相关联的方法让键盘消失。
+
+确定串联图文件已在画布上打开。如果未打开，则在项目导航器中选择 MainStoryboard.storyboard。
+
+圆点符号
+设定文本栏的委托
+让应用程序具有辅助功能
+
+iOS 操作系统提供了许多功能，让应用程序可供所有用户使用，包括有视觉障碍、听觉障碍和身体残疾的用户。让应用程序具有辅助功能，也就让应用程序接触到了数以百万计原本不能够使用它的用户。
+
+Apple 的创新性读屏技术 VoiceOver 是一个重要的辅助功能。使用 VoiceOver，用户可以在不看屏幕的情况下导航和控制应用程序的各部分。通过触摸用户界面中的控制或其他对象，用户可以知道他们的位置、可以执行的操作以及执行某些操作后将发生什么。
+
+您可以将一些辅助功能属性添加到用户界面中的任何视图。这些属性包括视图的当前值（例如文本栏中的文本）、其标签、提示以及很多特征。就 HelloWorld 应用程序而言，您将要给文本栏添加一则提示。
+
+注：您所添加的任何辅助功能文本都应该本地化。要了解如何将辅助功能文本本地化，请参阅“应用程序设计”中的“将您的应用程序国际化”。
+ 圆点符号
+添加辅助功能提示
+测试应用程序
+
+点按“Run”以测试您的应用程序。
+
+在您点按“Hello”按钮时，应该看到它高亮显示。您还应该发现，如果在文本栏中点按，键盘会出现，您可以输入文本。然而还没有办法让键盘消失。要让键盘消失，您必须实施相关的委托方法。下一章会教您如何做。现在请退出 Simulator。
+
+小结
+
+当您在画布上的视图控制器与辅助编辑器中实现文件（即 HelloWorldViewController.m）里的类扩展之间建立适当的连接时，也就更新了实现文件以支持 Outlet 和操作。
+
+您不必使用 Xcode 自动添加代码（即通过按住 Control 键从画布拖移到源文件来建立连接时）的功能。而是可以自行编写类扩展的属性和方法声明，或公共属性和方法声明的头文件，然后就像建立文本栏的委托那样进行连接。然而通常情况下，Xcode 做得越多，您犯错的机会就越少，需要键入的内容也会越少。
+
+====
+https://developer.apple.com/library/ios/referencelibrary/GettingStarted/RoadMapiOSCh/chapters/RM_YourFirstApp_iOS/Articles/06_ImplementingController.html
+实施视图控制器
+
+实施视图控制器包括这几部分：为用户姓名添加属性，实施 changeGreeting: 方法，确保用户轻按“Done”时键盘消失。
+
+为用户姓名添加属性
+
+您需要为保存用户姓名的字符串添加属性声明，这样您的代码就总能引用该字符串。因为此属性必须是公共的，即对客户端和子类为可见，所以须将此声明添加到视图控制器的头文件，即 HelloWorldViewController.h。公共属性表示您打算如何使用这一类的对象。
+
+属性声明是一个指令，它告诉编译器如何为变量（例如用来保存用户姓名的变量）生成存取方法。（添加属性声明后，您将了解到有关存取方法的信息。）
+
+到此为止，不需要对串联图文件做出任何进一步的修改。要腾出更多空间以按照以下步骤来添加代码，请再次点按“Utilities View”按钮来隐藏实用工具区域（或者选取“View”>“Utilities”>“Hide Utilities”）。
+
+圆点符号
+为用户姓名添加属性声明
+编译器自动为您声明的任何属性合成存取方法。存取方法是一种获取或设定一个对象的属性的值的方法（因此，存取方法有时也称为“getter”和“setter”）。例如，编译器为刚刚声明的 userName 属性生成以下的 getter 和 setter 声明及其实现：
+
+- (NSString *)userName;
+- (void)setUserName:(NSString *)newUserName;
+编译器也自动声明专有实例变量以支持每一个经声明的属性。例如，编译器声明名为 _userName 的实例变量以支持 userName 属性。
+
+注：编译器将生成的存取方法添加到编译代码，而不是添加到您的源代码中。
+实施 changeGreeting:方法
+
+在上一章“配置视图”中，您已配置了“Hello”按钮，因此在用户轻按该按钮时，它发送 changeGreeting: 消息给视图控制器。作为响应，您想要视图控制器将用户在文本栏中输入的文本显示在标签中。具体来说，changeGreeting: 方法应该：
+
+从文本栏取回字符串，并将视图控制器的 userName 属性设定为此字符串。
+基于 userName 属性，创建新的字符串，并将其显示在标签中。
+圆点符号
+实施 changeGreeting: 方法
+changeGreeting: 方法中有几项有趣的事值得注意：
+
+self.userName = self.textField.text; 从文本栏取回文本，并将视图控制器的 userName 属性设定为该结果。
+在本教程中，您不会在其他任何地方用得上那个保存着用户姓名的字符串，但重要的是您要记住它的角色：这正是视图控制器所管理的非常简单的模型对象。一般情况下，控制器应在它自己的模型对象中维护应用程序数据的相关信息。换句话说，应用程序数据不应储存在用户界面元素（例如 HelloWorld 应用程序的文本栏）中。
+
+NSString *nameString = self.userName; 创建一个新的变量（为 NSString 类型）并将其设为视图控制器的 userName 属性。
+@"World" 是一个字符串常量，用 NSString 的实例表示。如果用户运行应用程序但不输入任何文本（即 [nameString length] == 0），nameString 将包含字符串“World”。
+initWithFormat: 方法是由 Foundation 框架提供给您的。它创建一个新的字符串，按您提供的格式字符串所规定的格式（很像 ANSI C 库中的 printf 函数）。
+在格式字符串中，%@ 充当字符串对象的占位符。此格式字符串的双引号中的所有其他字符都将如实显示在屏幕上。
+
+将视图控制器配置为文本栏的委托
+
+如果生成并运行应用程序，在点按按钮时应该会看到标签显示“Hello, World!”。如果您选择文本栏并开始在键盘上键入，您会发现完成文本输入后，仍然无法让键盘消失。
+
+在 iOS 应用程序中，允许文本输入的元素成为第一响应器时，键盘会自动出现；元素失去第一响应器状态时，键盘会自动消失。（前面提到过第一响应器是第一个接收各种事件通知的对象，例如轻按文本栏来调出键盘。）虽然无法从应用程序直接将消息发送给键盘，但是可以通过切换文本输入 UI 元素的第一响应器状态这种间接方式，使键盘出现或消失。
+
+UITextFieldDelegate 协议是由 UIKit 框架定义的，它包括 textFieldShouldReturn: 方法，当用户轻按“Return”按钮（不管该按钮的实际名称是什么）时，文本栏调用该方法。因为您已经将视图控制器设定为文本栏的委托（在“设定文本栏的委托”中），可以实施该方法，通过发送 resignFirstResponder 消息强制文本栏失去第一响应器状态，以该方法的副作用使键盘消失。
+
+注：协议基本上只是一个方法列表。如果一个类符合（或采用）某个协议，则保证它可以实施该协议所要求的方法。（协议也可以包括一些可选的方法。）委托协议指定了一个对象可能向其委托发送的所有消息。
+圆点符号
+将 HelloWorldViewController 配置为文本栏的委托
+测试应用程序
+
+生成并运行应用程序。这一次，一切的表现都应该如您所期望的那样。在 Simulator 中，输入您的姓名后，点按“Done”按钮使键盘消失，然后点按“Hello”按钮将“Hello, 您的姓名!”显示在标签中。
+
+如果应用程序的表现不是您所期望的，则需要进行故障排除。对于某些要检查的区域，请参阅“排除故障和检查代码”。
+
+小结
+
+既然您已完成了视图控制器的实施，您的首个 iOS 应用程序也就圆满完成了。恭喜您！
+
+返回《马上着手开发 iOS 应用程序》以继续学习有关 iOS 应用程序开发的内容。如果应用程序未能正确工作，请尝试下一章中描述的解决问题的方法，然后再返回《马上着手开发 iOS 应用程序》。
+
+====
+https://developer.apple.com/library/ios/referencelibrary/GettingStarted/RoadMapiOSCh/chapters/RM_YourFirstApp_iOS/Articles/07_Troubleshooting.html
+排除故障和检查代码
+
+如果应用程序未能正确工作，请尝试本章描述的解决问题方法。如果应用程序仍然不能正确工作，请将您的代码与本章末尾给出的清单进行比较。
+
+代码和编译器警告
+
+代码编译时应该不会有任何警告。如果真的收到警告，就很有可能是代码出错了。因为 Objective-C 是一种非常灵活的程序设计语言，有时候编译器给出的也仅仅是一些警告而已。
+
+检查串联图文件
+
+如果程序未能正确工作，开发者会很自然地去检查源代码来找出错误。但使用 Cocoa Touch，又增添了另一个层面。应用程序的大部分配置可能是“编码”在串联图中。例如，如果连接不正确，应用程序的行为就会与您的期望不符。
+
+如果点按按钮时文本没有更新，可能是没有将按钮的操作连接到视图控制器，或是没有将视图控制器的 outlet 连接到文本栏或标签。
+如果点按“Done”按钮时键盘不消失，可能是没有将文本栏的委托连接好，或者把视图控制器的 textField Outlet 连接到了文本栏。务必在串联图上检查文本栏的连接：按住 Control 键点按文本栏以显示半透明的连接面板。您应该会在 delegate outlet 和 textField 引用 outlet 的旁边，看到带有填充的圆圈。
+如果您已连接了委托，可能有更微妙的问题（请参阅下一部分“委托方法的名称”）。
+
+委托方法的名称
+
+与委托有关的一个常见错误是拼错委托方法的名称。即使已经正确设定了委托对象，但是如果委托未在其方法实现中使用正确的名称，则不会调用正确的方法。通常最好的做法是从文稿中拷贝和粘贴委托方法声明（例如 textFieldShouldReturn:）。
+
+代码清单
+
+这一部分提供 HelloWorldViewController 类的接口和实现文件的代码清单。请注意，该清单并未列出 Xcode 模板提供的注释和其他方法的实现。
+
+接口文件：HelloWorldViewController.h
+#import <UIKit/UIKit.h>
+ 
+@interface HelloWorldViewController :UIViewController <UITextFieldDelegate>
+ 
+@property (copy, nonatomic) NSString *userName;
+ 
+@end
+实现文件：HelloWorldViewController.m
+#import "HelloWorldViewController.h"
+ 
+@interface HelloWorldViewController ()
+ 
+@property (weak, nonatomic) IBOutlet UITextField *textField;
+@property (weak, nonatomic) IBOutlet UILabel *label;
+ 
+- (IBAction)changeGreeting:(id)sender;
+ 
+@end
+ 
+@implementation HelloWorldViewController
+ 
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+}
+ 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+}
+ 
+- (IBAction)changeGreeting:(id)sender {
+ 
+    self.userName = self.textField.text;
+ 
+    NSString *nameString = self.userName;
+    if ([nameString length] == 0) {
+        nameString = @"World";
+    }
+    NSString *greeting = [[NSString alloc] initWithFormat:@"Hello, %@!", nameString];
+    self.label.text = greeting;
+}
+ 
+- (BOOL)textFieldShouldReturn:(UITextField *)theTextField {
+ 
+    if (theTextField == self.textField) {
+        [theTextField resignFirstResponder];
+    }
+    return YES;
+}
+ 
+@end
+
