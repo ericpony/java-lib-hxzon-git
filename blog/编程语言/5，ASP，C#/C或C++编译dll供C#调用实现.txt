@@ -1,0 +1,48 @@
+﻿C或C++编译dll供C#调用实现
+http://hi.baidu.com/jiang_yy_jiang/item/36756ba9a98ca1756cd455d1
+2011-04-24 11:07
+
+====
+该操作参考MSDN关于extern关键字的解释部分：
+
+----
+此示例使用 C 程序创建一个 DLL，在下一示例中将从 C# 程序调用该 DLL。
+
+// cmdll.c
+// Compile with: /LD
+int __declspec(dllexport) SampleMethod(int i)
+{
+   return i*10;
+}
+
+----
+该示例使用两个文件 CM.cs 和 Cmdll.c 来说明 extern。
+C 文件是示例 2 中创建的外部 DLL，它从 C# 程序内调用。
+
+// cm.cs
+using System;
+using System.Runtime.InteropServices;
+public class MainClass
+{
+   [DllImport("Cmdll.dll")]
+   public static extern int SampleMethod(int x);
+
+   static void Main()
+   {
+      Console.WriteLine("SampleMethod() returns {0}.", SampleMethod(5));
+   }
+}
+
+输出：
+SampleMethod() returns 50.
+
+备注
+生成项目：
+使用 Visual C++ 命令行将 Cmdll.c 编译为 DLL：
+cl /LD Cmdll.c
+
+使用命令行编译 CM.cs：
+csc CM.cs
+
+这将创建可执行文件 CM.exe。运行此程序时，SampleMethod 将值 5 传递到 DLL 文件，该文件将此值乘以 10 返回。
+

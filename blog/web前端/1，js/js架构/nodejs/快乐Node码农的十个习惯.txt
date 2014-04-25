@@ -1,0 +1,195 @@
+﻿快乐Node码农的十个习惯
+作者 Zeke sikelianos ，译者 吴海星 发布于 2014年4月23日
+http://www.infoq.com/cn/articles/node.js-habits
+
+
+从问世到现在将近20年，JavaScript一直缺乏其它有吸引力的编程语言，比如Python和Ruby，的很多优点：
+命令行界面，REPL，包管理器，以及组织良好的开源社区。
+感谢Node.js和npm，现如今的JavaScript鸟枪换炮了。
+Web开发者有了强大的新工具，接下来就看他们的想象力了。
+
+下面这个提示和技巧清单，能让你和你的node程序保持快乐。
+
+1. 用npm init开始新项目
+
+npm有个init命令，可以引导你完成创建package.json文件的过程。
+即便你非常熟悉package.json和它的属性，也可以把npm init当作将你的新程序或模块导入正轨的简便办法。 它可以聪明地为你设置默认值，比如通过上层目录的名称推断模块名，从~/.npmrc中读取创作者的信息，以及用你的git设置确定代码库。
+
+mkdir my-node-app
+cd my-node-app
+npm init
+
+2.声明所有依赖项
+
+在将模块安装到项目本地时坚持使用--save (或 --save-dev)是个好习惯。
+这些选项会将指定的模块添加到package.json的dependencies（或devDependencies）清单中，并使用合理的默认semver范围。
+
+npm install domready --save
+
+注意，现在npm使用插入符风格的semver范围：
+
+
+"dependencies": {
+  "domready": "^1.0.4"
+}
+
+3.指定启动脚本
+
+在package.json中设定scripts.start，你就可以在命令行中用npm start启动程序了。
+这个非常方便，因为克隆了你的程序的其他node开发人员不用猜就能轻松运行它。
+
+额外奖励：如果在package.json中定义了scripts.start，
+你就不需要Procfile了(Heroku平台用Procfile来声明在你程序的dynos上运行什么命令)。
+使用npm start会自动创建一个作为web进程的Procfile。
+
+这里有个启动脚本示例：
+
+"scripts": {
+  "start": "node index.js"
+}
+
+4.指定测试脚本
+
+就像团队中的所有人都应该可以运行程序一样，他们也应该可以测试它。
+package.json中的scripts.test就是用来指定运行测试套件的脚本的。
+如果你用mocha之类的东西运行测试，一定要确保把它包含在package.json里的devDependencies中，
+并且指向安装在你项目本地的文件，而不是全局安装的mocha：
+
+"scripts": {
+  "test": "mocha"
+}
+
+5.不要把依赖项放在源码的版本控制中
+
+很多node程序使用的npm模块带有C语言写的依赖项，比如bson、ws和hiredis，
+这些依赖项必须在Heroku的64位Linux架构下进行编译。
+编译过程可能非常耗时。
+为了让构建过程尽可能的快，Heroku的node buildpack在下载和编译完依赖项后会缓存它们，以便在后续部署中重用。
+这个缓存是为了降低网络流量并减少编译次数。
+
+忽略node_modules目录也是模块创作者推荐的npm实践。应用程序和模块之间少了一个区别！
+
+echo node_modules >> .gitignore
+
+6.用环境变量配置npm
+
+以下内容摘自npm配置：
+
+所有以npm_config_开头的环境变量都会被解释为配置参数。
+比如说环境中有npm_config_foo=bar时，会将配置参数foo设置为bar。
+任何没有给出值的环境配置的值都会设置为true。
+配置值对大小写不敏感，所以NPM_CONFIG_FOO=bar也一样。
+
+最近在所有的Heroku构建中都有程序的环境。
+这一变化让Heroku上的node用户无需修改程序代码就可以控制他们的npm配置。
+习惯#7是这一方式的完美例证。
+
+7.带着你自己的npm注册中心
+
+最近几年公共npm注册中心出现了突飞猛进式的增长，因此会偶尔不稳定。
+所以很多node用户开始寻求公共注册中心之外的方案，他们或者是出于开发和构建过程中速度及稳定性方面的考虑，或者是因为要放置私有的node模块。
+
+最近几个月冒出了一些可供选择的npm注册中心。
+Nodejitsu和Gemfury提供收费的私有注册中心，此外也有一些免费的，比如Mozilla的只读S3/CloudFront镜像和Maciej Małecki的欧洲镜像。
+
+在Heroku上配置node程序使用定制注册中心很容易：
+
+heroku config:set npm_config_registry=http://registry.npmjs.eu
+
+8.追踪过期的依赖项
+
+如果你编程的时间足够长，可能已经领教过相依性地狱的厉害了。
+好在Node.js和npm接纳了semver，即 语义化版本管理规范 ，设置了一个健全的依赖项管理先例。
+在这个方案下，版本号和它们的变化方式传达的含义涉及到了底层代码，以及从一个版本到下一版本修改了什么。
+
+npm有一个很少有人知道的命令，outdated。它可以跟npm update结合使用，能够找出程序的那些依赖项已经过期了，需要更新：
+
+cd my-node-app
+npm outdated
+
+Package            Current  Wanted     Latest  Location
+-------            -------  ------     ------  --------
+express              3.4.8   3.4.8  4.0.0-rc2  express
+jade                 1.1.5   1.1.5      1.3.0  jade
+cors                 2.1.1   2.1.1      2.2.0  cors
+jade                0.26.3  0.26.3      1.3.0  mocha > jade
+diff                 1.0.7   1.0.7      1.0.8  mocha > diff
+glob                 3.2.3   3.2.3      3.2.9  mocha > glob
+commander            2.0.0   2.0.0      2.1.0  mocha > commander
+
+如果你做的是开源的node程序或模块，可以看看david-dm，NodeICO和shields.io，
+你可以用这三个优秀服务所提供的图片徽章在项目的README或网站上显示生动的依赖信息。
+
+9.用npm脚本运行定制的构建步骤
+
+随着npm生态系统的持续增长，开发和构建过程的自动化选择也会随之增长。
+Grunt是迄今为止node世界中最流行的构建工具，但像gulp.js这种新工具，以及普通的老式npm脚本也因为较轻的负载受到欢迎。
+
+在你把node程序部署到Heroku上时，要运行npm install --production命令以确保程序的npm依赖项会被下载下来装上。
+但那个命令也会做其它事情：它会运行你在package.json文件中定义的所有npm脚本钩子，比如preinstall和postinstall。这里有个样本：
+
+{
+  "name": "my-node-app",
+  "version": "1.2.3",
+  "scripts": {
+    "preinstall": "echo here it comes!",
+    "postinstall": "echo there it goes!",
+    "start": "node index.js",
+    "test": "tap test/*.js"
+  }
+}
+
+这些脚本可以是行内bash命令，或者也可以指向可执行的命令行文件。
+你还可以在脚本内引用其他npm脚本：
+
+{
+  "scripts": {
+    "postinstall": "npm run build && npm run rejoice",
+    "build": "grunt",
+    "rejoice": "echo yay!",
+    "start": "node index.js"
+  }
+}
+
+10.尝试新东西
+
+ES6，也就是被大众称为JavaScript的ECMAScript语言规范的下一版，其工作名称为Harmony。 
+Harmony给JavaScript带来了很多振奋人心的新特性，其中很多已经出现在较新版本的node中了。
+
+Harmony实现了很多新特性，比如块作用域、生成器、代理、弱映射等等。
+
+要在你的node程序中启用harmony的特性，需要指定一个比较新的node引擎，比如0.11.x，并在启动脚本中设置--harmony选项：
+
+{
+  "scripts": {
+    "start": "node --harmony index.js"
+  },
+  "engines": {
+    "node": "0.11.x"
+  }
+}
+
+11. Browserify
+
+客户端JavaScript有乱如麻团般的遗留代码，但那并不是语言本身的错。
+由于缺乏合理的依赖项管理工具，让jQuery-插件拷贝-粘帖的黑暗时代延续了好多年。
+感谢npm，带着我们步入了前端振兴的年代：npm注册中心像野草一样疯长，为浏览器设计的模块也呈现出了惊人的增长势头。
+
+Browserify是一个让node模块可以用在浏览器中的神奇工具。
+如果你是前端开发人员，browserify将会改变你的人生。
+可能不是今天，也不是明天，但不会太久。
+如果你想开始使用browserify，请参阅这些文章。
+
+你有哪些习惯？
+
+不管你已经做过一段时间node程序，还是刚刚开始，我们都希望这些小技巧能对你有所帮助。
+如果你有一些（健康的）node习惯想要跟大家分享，请在发tweet时带上#node_habits标签。编码快乐！
+
+作者简介
+
+本文最初由Zeke sikelianos发表在Heroku上。
+Zeke在Heroku工作，用ruby和coffeescript编写开源软件。
+他从事设计师这一职业已经有14年了，信奉信息自由的精神，并且相信用计算机可以创造出美好的事物。
+
+查看英文原文：What’s New in Node.js v0.12 – Running Multiple Instances in a Single Process
+

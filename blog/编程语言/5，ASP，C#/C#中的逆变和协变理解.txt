@@ -1,0 +1,133 @@
+﻿C#中的逆变和协变理解
+2011-12-14 11:59
+http://hi.baidu.com/jiang_yy_jiang/item/cbd1f30e6886fe143a53eed4
+
+关于协变和逆变要从面向对象继承说起。
+继承关系是指子类和父类之间的关系；子类从父类继承所以子类的实例也就是父类的实例。
+比如说Animal是父类，Dog是从Animal继承的子类；如果一个对象的类型是Dog，那么他必然是Animal。
+
+协变逆变正是利用继承关系 对不同参数类型或返回值类型 的委托或者泛型接口之间做转变。
+我承认这句话很绕，如果你也觉得绕不妨往下看看。
+
+如果一个方法要接受Dog参数，那么另一个接受Animal参数的方法肯定也可以接受这个方法的参数，这是Animal向Dog方向的转变是逆变。
+如果一个方法要求的返回值是Animal，那么返回Dog的方法肯定是可以满足其返回值要求的，这是Dog向Animal方向的转变是协变。
+ 
+由子类向父类方向转变是协变 协变用于返回值类型用out关键字
+由父类向子类方向转变是逆变 逆变用于方法的参数类型用in关键字
+协变逆变中的协逆是相对于继承关系的继承链方向而言的。
+ 
+一． 数组的协变：
+
+Animal[] animalArray = new Dog[]{};
+
+上面一行代码是合法的，声明的数组数据类型是Animal，而实际上赋值时给的是Dog数组；
+每一个Dog对象都可以安全的转变为Animal。
+Dog向Animal方法转变是沿着继承链向上转变的所以是协变
+ 
+二． 委托中的协变和逆变
+
+1.委托中的协变
+ 
+//委托定义的返回值是Animal类型是父类 
+public delegate Animal GetAnimal(); 
+ 
+//委托方法实现中的返回值是Dog，是子类 
+static Dog GetDog(){return new Dog();} 
+ 
+//GetDog的返回值是Dog, Dog是Animal的子类；返回一个Dog肯定就相当于返回了一个Animal；所以下面对委托的赋值是有效的 
+GetAnimal getMethod = GetDog;
+ 
+2.委托中的逆变
+ 
+//委托中的定义参数类型是Dog 
+public delegate void FeedDog(Dog target); 
+ 
+//实际方法中的参数类型是Animal 
+static void FeedAnimal(Animal target){} 
+// FeedAnimal是FeedDog委托的有效方法，因为委托接受的参数类型是Dog；
+而FeedAnimal接受的参数是animal，Dog是可以隐式转变成Animal的，所以委托可以安全的的做类型转换，正确的执行委托方法； 
+ 
+FeedDog feedDogMethod = FeedAnimal;
+
+定义委托时的参数是子类，实际上委托方法的参数是更宽泛的父类Animal，是父类向子类方向转变，是逆变
+ 
+三. 泛型委托的协变和逆变：
+
+1． 泛型委托中的逆变
+如下委托声明：
+public delegate void Feed<in T>(T target);
+
+Feed委托接受一个泛型类型T，注意在泛型的尖括号中有一个in关键字，这个关键字的作用是告诉编译器在对委托赋值时类型T可能要做逆变
+
+//先声明一个T为Animal的委托 
+Feed<Animal> feedAnimalMethod = a=>Console.WriteLine(“Feed animal lambda”); 
+
+//将T为Animal的委托赋值给T为Dog的委托变量，这是合法的，因为在定义泛型委托时有in关键字，如果把in关键字去掉，编译器会认为不合法 
+Feed<Dog> feedDogMethod = feedAnimalMethod;
+ 
+2. 泛型委托中的协变
+ 
+如下委托声明：
+public delegate T Find<out T>();
+
+Find委托要返回一个泛型类型T的实例，在泛型的尖括号中有一个out关键字，该关键字表明T类型是可能要做协变的
+ 
+//声明Find<Dog>委托 
+Find<Dog> findDog = ()=>new Dog(); 
+ 
+//声明Find<Animal>委托，并将findDog赋值给findAnimal是合法的，类型T从Dog向Animal转变是协变 
+Find<Animal> findAnimal = findDog;
+ 
+四． 泛型接口中的协变和逆变：
+ 
+泛型接口中的协变逆变和泛型委托中的非常类似，只是将泛型定义的尖括号部分换到了接口的定义上。
+
+1.泛型接口中的逆变
+如下接口定义：
+public interface IFeedable<in T> 
+{ 
+void Feed(T t); 
+}
+
+接口的泛型T之前有一个in关键字，来表明这个泛型接口可能要做逆变
+
+如下泛型类型FeedImp<T>，实现上面的泛型接口；
+需要注意的是协变和逆变关键字in，out是不能在泛型类中使用的，编译器不允许
+ 
+public class FeedImp<T>:IFeedable<T> 
+{ 
+    public void Feed(T t){ 
+        Console.WriteLine(“Feed Animal”); 
+    } 
+}
+ 
+来看一个使用接口逆变的例子：
+
+IFeedable<Dog> feedDog = new FeedImp<Animal>();
+
+上面的代码将FeedImp<Animal>类型赋值给了IFeedable<Dog>的变量；Animal向Dog转变了，所以是逆变
+2.泛型接口中的协变
+
+如下接口的定义：
+ 
+public interface IFinder<out T>  
+{ 
+    T Find(); 
+}
+
+泛型接口的泛型T之前用了out关键字来说明此接口是可能要做协变的；如下泛型接口实现类
+
+public class Finder<T>:IFinder<T> where T:new() 
+{ 
+    public T Find(){ 
+        return new T(); 
+    }  
+}
+//使用协变,IFinder的泛型类型是Animal，但是由于有out关键字，我可以将Finder<Dog>赋值给它
+
+IFinder<Animal> finder = new Finder<Dog>();
+
+协变和逆变的概念不太容易理解，可以通过实际代码思考理解。
+这么绕的东西到底有用吗？答案是肯定的，
+通过协变和逆变可以更好的复用代码。复用是软件开发的一个永恒的追求。
+

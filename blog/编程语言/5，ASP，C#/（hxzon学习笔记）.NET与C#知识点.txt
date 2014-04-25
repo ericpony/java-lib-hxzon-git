@@ -1,6 +1,10 @@
 ﻿（hxzon学习笔记）.NET与C#知识点
 
 by hxzon
+
+hxzon：
+较新颖的概念：程序集，LINQ，索引器，扩展方法，委托（事件）。
+
 ====
 1，
 程序集
@@ -14,6 +18,7 @@ by hxzon
 命名空间
 
 属性
+索引器
 
 ====
 3，流程控制语句
@@ -59,6 +64,9 @@ LINQ
 
 ====
 8，泛型
+
+逆变
+协变
 
 ====
 委托（方法引用，方法容器）
@@ -117,5 +125,160 @@ windows运行库（WinRT）
 
 ====
 XAML 
+
+===========
+学习资源
+
+C#技术探索专辑
+http://hi.baidu.com/jiang_yy_jiang/archive/tag/c%23%E5%88%9D%E6%8E%A2%E3%80%90%E5%8E%9F%E5%88%9B%E3%80%91
+
+===========
+C#学习网站
+http://hi.baidu.com/jiang_yy_jiang/item/a8ca51c02bca7e2846d5c0a3
+
+名称：快速入门 
+地址：http://chs.gotdotnet.com/quickstart/ 
+描述：本站点是微软.NET技术的快速入门网站，我们不必再安装.NET Framework中的快速入门示例程序，直接在网上查看此示例即看。 
+
+
+名称：微软官方.NET指导站点 
+地址：http://www.gotdotnet.com/ 
+描述：上面的站点是本站的一个子站点，本站点提供微软.NET官方信息，并且有大量的用户源代码、控件下载，微软.NET开发组的人员也经常在此站点发表一些指导性文章。 
+
+
+名称：SourceForge 
+地址：http://www.sourceforge.net 
+描述：世界上最大的Open Source项目在线网站，上面已经有.NET的各种大型Open Source项目上千件，包括SharpDevelop、NDoc、Mono等都是在此站点发布最新源代码信息。 
+
+
+名称：CodeProject 
+地址：http://www.codeproject.com 
+描述：很多非官方的中小型示例源代及文章，相当全面，基本上我们想要的各种方面的资料都可以在此处查找。 
+
+
+名称：Fabrice's weblog 
+地址：http://dotnetweblogs.com/FMARGUERIE/Story/4139.aspx 
+描述：这是一个WebLog形式的在线日志网站，定期更新，包括.NET相关的工具、混淆器、反编译器等各种信息，十分值得收藏。 
+
+
+名称： 
+地址：http://www.aspalliance.com/aldotnet/examples/translate.aspx 
+描述：c#翻译为vb.net，提供一个文本框，将你的C#源代码贴进去，就可以帮你翻译成VB.NET语法。 
+
+
+名称：CSharpHelp 
+地址：http://www.csharphelp.com 
+描述： 专业的C#语言在线帮助网站，主要提供C#语言方面的技术文章。专业性很强。 
+
+
+名称：DotNet247 
+地址：http://www.dotnet247.com 
+描述：最好的索引网站，分别按照门类及命名空间的索引，也提供了Microsoft KB知识库。 
+
+
+名称：ASP.NET 
+地址：http://www.asp.net 
+描述：微软.NET webform的老巢，资料和实例代码都非常难得。 
+
+
+名称：微软.NET Winform 
+地址：http://www.windowsforms.net/ 
+描述：微软.NET Winform的老巢。 
+
+
+名称：微软 KnowledgeBase 
+地址：http://support.microsoft.com/ 
+描述：微软知识库，开发的时候遇到的怪问题，可能会在这里找到答案。 
+
+
+名称：MSDN 
+地址：http://msdn.microsoft.com/ 
+描述：这个就不用多说了吧，虽然出了中文MSDN，但是资料还是不够全，英文的就什么都有了。 
+
+
+名称：HotScripts 
+地址：http://www.hotscripts.com/ 
+描述：Welcome to HotScripts.com, the net’s largest PHP, CGI, Perl, javascript and ASP script collection and resource web portal. We currently have 24,004 scripts across 11 different programming languages and 1,240 categories, as well as links to books, articles, as well as programming tips and tutorials. 
+
+
+名称：ASPAlliance 
+地址：http://www.aspalliance.com/ 
+描述：提供相当丰富的文章和示例代码，思路匮乏的时候可以找找思路 
+
+
+名称：CSDN文档中心 
+地址：http://dev.csdn.net/ 
+描述：中文的，资料还算丰富，可以作为国内首选。 
+
+
+名称：DOTNET中华网 
+地址：http://www.aspxcn.com/ 
+描述：2002-2003年的时候这个站点很不错的，不过现在好像管理不得力，有点疲软，资料更新也不过及时，论坛里人也不够热心了，因为希望它好起来，所以列出来。资料都比较老，不过有些D版的东西还可以。提供很多学习代码。 
+
+
+名称：中国DotNet俱乐部 
+地址：http://www.chinaspx.com/ 
+描述：有点公司背景的网站，很健壮，资料更新及时，比较丰富。论坛解答也不错。 
+
+
+名称：【孟宪会之精彩世界】 
+地址：http://dotnet.aspx.cc/ 
+描述：MS-MVP的个人站点，包括了他所有的经验文章，还是很值得一看的。 
+
+
+名称：dotNET Tools.org 
+地址：http://www.dotnettools.org 
+描述：ccboy，也就是CSDN的小气的神的站点，里面有很多关于.NET等的好东东。 
+
+
+名称：博客堂 
+地址：http://blog.joycode.com/ 
+描述：半官方性质的MS-MVP汇集blog，大家可以在这里接触到最新的技术，了解发展趋势，对技术的探索等等，优秀的文章。 
+
+
+名称：DotNetBips.com - Applying .NET 
+地址：http://www.dotnetbips.com/ 
+描述：该站点的文章，涉及到了整个.NET，从底层的IL到语言到架构，文章很多，质量还不错。 
+
+
+名称：C# Frequently Asked Questions 
+地址：http://blogs.msdn.com/csharpfaq/ 
+描述：The C# team posts answers to common questions 
+
+
+名称：正则表达式 
+地址：http://www.regexplib.com/ 
+描述: 正则表达式学习站点 
+
+
+名称：WINDOW formS FAQ 
+地址：http://www.syncfusion.com/FAQ/Winforms/ 
+描述：常见的forms faq问题，很多问题都可以在这里找到答案。 
+
+
+名称：ASP.NET 常用类库说明 
+地址：http://www.123aspx.com/rotor/default.aspx 
+描述：不用多说，看标题就知道是关于asp.net的名称空间的 
+
+
+名称：ASP.NET System.Web.Mail 
+地址：http://www.systemwebmail.com/faq/3.8.aspx 
+描述：邮件发送常见问题解决方法 
+
+
+名称：VB.NET & C# 比较 
+地址：http://www.harding.edu/USER/fmccown/WWW/vbnet_csharp_comparison.html 
+描述：VB.NET跟C#语法区别 
+
+
+名称：VB.NET架构师　BLOG 
+地址：http://panopticoncentral.net/ 
+描述：不用多说，想了解VB.NET的朋友不可不去的站点(PS，不知道我有没有记错是不是这个地址） 
+
+
+名称：索克论坛 
+地址：http://www.sorke.com/bbs/Boards.asp 
+
+
 
 
