@@ -1,0 +1,14 @@
+﻿（hxzon学习笔记）mysql工具使用-navicat for mysql
+
+by hxzon
+
+navicat 8 for mysql
+
+====
+1，传输数据库表
+
+选中数据库，右键，“数据传输”，左侧选择要传输的数据库表，右侧选择目标服务器和目标数据库，
+点“开始”。
+
+2，
+
