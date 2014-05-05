@@ -1,0 +1,202 @@
+﻿为什么Java 8存在接口污染
+
+原文链接： dzone 翻译： ImportNew.com - era_misa
+译文链接： http://www.importnew.com/11087.html
+
+====
+我刚读了一篇有趣的帖子–《Java 8的缺陷》。
+http://blog.jooq.org/2014/04/04/java-8-friday-the-dark-side-of-java-8/
+作者Lukas Edger在文中提到，在JDK8中函数类型不是简单地被称作函数类型，这一点显得很糟糕。
+举个例子，C#有一系列预先定义的函数类型，它们接受任意个数的参数和一个可选返回类型（Func和Action函数都有高达16个不同类型的参数T1，T2,……T16）。
+但是在JDK 8中，有一系列带有不同的名称、方法名称的函数式接口，
+它们的抽象方法代表着人们熟知函数签名的子集（像nullary, unary, binary, ternary等）。
+
+====
+类型擦除问题
+
+因此在某种程度上，两种语言都受害于接口污染（或是C#中的代理污染）。
+唯一的不同点是在C#中它们有同样的名称。
+不幸的是，由于Java中的类型擦除使得Function<T1,T2> ， Function<T1,T2,T3> ，Function<T1,T2,T3,…Tn>之间没有差异，
+所以，显然，我们不能简单地以同一个名称来命名它们，不得不为函数组合的所有可能类型想出有创意的名字。
+
+不要认为专家组没有纠结过这个问题。作者Brian Goetz在lambda邮件列表中说道：
+
+[……]作为一个单独的例子，让我们考虑下函数类型。
+在devoxx大会上的lambda strawman提案（有人译作lambda稻草人提案，译者注）是支持函数类型的。
+我坚持删掉它们，这使我不受欢迎。
+不过，我对函数类型的异议并不意味着我不喜欢函数类型 — 我爱函数类型 –但是函数类型与Java类型体系中已存在的类型擦除发生严重冲突。
+擦除函数类型在二者存在的地方是最糟糕的。所以我们把它从设计中移除掉。
+但我不会说的“Java永远不会有函数类型”（虽然我承认，Java的可能永远不会有函数类型）。
+为了支持函数类型，我认为必须首先处理好类型擦除。
+这件事可能做好，也可能无法完成。
+但在具体化结构类型的世界中，函数类型开始变得更有意义[……]
+
+那么，它如何影响到我们这些开发人员呢？
+下面是JDK8中一些最重要的新函数式接口（包括一些旧的）的分类，这些类目通过函数的返回类型和接口方法的预期参数数目组织起来的。
+
+返回类型为void的函数
+
+在返回类型为void的函数中，如下：
+
+TYPE OF FUNCTION	LAMBDA EXPRESSION	KNOWN FUNCTIONAL
+ INTERFACES
+Nullary	 () -> doSomething()	Runnable
+Unary	 foo  -> System.out.println(foo)
+ 	Consumer
+IntConsumer
+LongConsumer
+DoubleConsumer
+Binary	 (console,text) -> console.print(text)	BiConsumer
+ObjIntConsumer
+ObjLongConsumer
+ObjDoubleConsumer
+n-ary	 (sender,host,text) -> sender.send(host, text)	Define your own
+
+返回类型为T的函数
+
+在返回类型为T的函数中，如下：
+
+TYPE OF
+FUNCTION	LAMBDA
+EXPRESSION	KNOWN FUNCTIONAL 
+INTERFACES
+Nullary	 () -> ”Hello World”	Callable
+Supplier
+BooleanSupplier
+IntSupplier
+LongSupplier
+DoubleSupplier
+Unary	 n -> n + 1 n -> n >= 0	Function
+IntFunction
+LongFunction
+DoubleFunctionIntToLongFunction
+IntToDoubleFunction
+LongToIntFunction
+LongToDoubleFunction
+DoubleToIntFunction
+DoubleToLongFunctionUnaryOperator
+IntUnaryOperator
+LongUnaryOperator
+DoubleUnaryOperatorPredicate
+IntPredicate
+LongPredicate
+DoublePredicate
+Binary	 (a,b) -> a > b ? 1 : 0(x,y) -> x + y (x,y) -> x % y == 0	Comparator
+BiFunction
+ToIntBiFunction
+ToLongBiFunction
+ToDoubleBiFunctionBinaryOperator
+IntBinaryOperator
+LongBinaryOperator
+DoubleBinaryOperatorBiPredicate
+n-ary	 (x,y,z) -> 2 * x + Math.sqrt(y) – z	Define your own
+
+这种方式的优点是，我们可以定义自己的接口类型，让函数接受尽可能多的参数。
+需要时，我们可以用它们来创建的lambda表达式和方法引用。
+换句话说，我们能够利用更多的新函数式接口污染整个程序。
+此外，我们甚至可以在早期版本JDK的接口，或更早版本的自定义的单抽象函数类型的API中创建lambda表达式。
+所以，现在我们可以把Runnable的和Callable 接口当作函数式接口使用。
+
+然而，这些接口变得更加难以记忆，因为它们都具有不同的名称和方法。
+
+不过，作为质疑者中的一员，我对他们为什么不像Scala定义接口为Function0，Function1，Function2，…，FunctionN那样解决这种问题感到疑惑。
+或许，我唯一能想出解释上述问题的原因是，他们希望最大可能地，为较早版本APIs的接口定义如前所述的lambda表达式。
+
+====
+缺少值类型
+
+所以在这里，类型擦除显然是个驱动力。
+但如果你想知道为什么我们还需要这些附加的函数式接口—具有类似名称和方法签名，其唯一区别是使用基本类型，那么我来告诉你：
+Java缺乏像C#中的值类型。
+这意味着我们在泛型类中使用的泛型只能是引用类型，而不能是基本类型。
+
+换句话说，我们不能这样做：
+
+List<int> numbers = asList(1,2,3,4,5);
+
+但我们确实可以这样做：
+
+List<Integer> numbers = asList(1,2,3,4,5);
+
+虽然，第二个例子说明了包装类和基本类型来回装箱、拆箱的成本。
+这说明在集合中处理基本类型值所付出代价是昂贵的。
+因此，专家组决定创造大量的接口来应对不同的场景。为了让事情“不太坏”，他们决定只处理三种基本类型：int，long和double。
+
+引用自lamda邮件列表中Brian Goetz的话：
+
+更普遍地，具备专门的基本数据流（例如，IntStream）背后的哲学充满了艰难的权衡。
+一方面，它存在大量丑陋的重复代码，接口污染等；
+另一方面，在任何一种算术在装箱操作方面表现得很烂，对整数无能为力是可怕的。
+因此，我们正处在一个艰难的境地，正努力使情况不变得更糟。
+
+为了不使事情变得更糟的招数1：我们没有顾及所有的八种基本类型。
+我们正在改善int，long和double，其他类型可模仿这三种类型。
+可以说，我们本来也可以不把int纳入考虑之中，但我们认为大多数Java开发人员还没准备好。
+是的，会有人呼吁加入Character，得到的答案是“把它看做int”（每个特定的类型预计占〜100K到JRE内存）。
+
+招数2：我们正在使用的基本数据流，把基本过程（排序，约简）中的事情做到最好，而不是试图在装箱过程中的复制所有东西。
+举例来说，正如Aleksey指出不存在IntStream.into（）函数。
+（如果有，下面的问题将演变成“IntCollection在哪？IntArrayList呢？IntConcurrentSkipListMap呢？）
+这样做的目的是：许多流可能开始作为引用流，最后作为基本数据流，而不是相反的。
+这是确定的，并且这减少了需要转换的数量（例如，没有重载int – > T 的map，没有转换int – > T的特定函数，等等）
+我们可以看到：对于专家小组来，这说是一个艰难的决定。
+我认为很少人同意这是很酷的，但我们大多数人最有可能会同意这是必要的。
+
+====
+检查异常问题
+
+这可能是使事情变得更糟的第三驱动力。
+众所周知，Java支持2类异常：受检查异常和运行时异常。
+编译器要求我们处理或显式声明受检查异常，但它对运行时异常毫无办法。
+所以，这引发一个有趣的问题，原因是大部分函数式接口的方法签名不声明抛出任何异常。
+故举例来说，下面代码是行不通的：
+
+
+Writer out = new StringWriter();Consumer<String> printer = s -> out.write(s); //oops! compiler error
+
+不能这样做，因为写操作抛出受检查异常（即IOException异常），但 Consumer方法签名根本不声明抛出任何异常。
+所以这个问题的唯一解决办法是：创造出大量的接口，其中一些声明异常，
+另一些不声明（或为异常透明（exception transparency）提出了一种在语言层次上的机制）。
+同样，为了让事情“不太坏”，专家小组决定在这种情况下不做任何处理。
+
+Brian Goetz在lambda邮件列表的话：
+
+是的，你自己必须提供声明异常的单抽象函数。随后的lambda转换将正常工作。
+专家组（EG：expert group，译者注）讨论了使用额外的语言和库来解决这个问题，但最终认为这是一个糟糕的成本/效益权衡。
+以库为基础的解决方案导致单抽象函数类型（声明异常vs.不声明异常）指数地激增，这与现有原始类型组合式增长的步调不一致。
+以语言为基础的可用解决方案在复杂度/效用之间没有好的折中。
+尽管有一些代替性解决方案，我们将继续摸索，但肯定不会在Java 8中出现，也可能不会出现在Java 9中。
+在这期间，你有工具来做你想做的。
+我确定你会喜欢我们提供最终解决方案（其次，你对于“你们为什么不干脆放弃受检查异常呢”这样的要求，算是显而易见的一个），
+但我认为目前状态能够让完成你的工作。
+因此，在个案中，使用甚至更多的接口来处理这些事情，由我们开发人员决定。
+
+
+interface IOConsumer<T> {
+    void accept(T t) throws IOException;
+}
+
+static<T> Consumer<T> exceptionWrappingBlock(IOConsumer<T> b) {
+    return e -> {
+        try { b.accept(e); }
+        catch (Exception ex) { throw new RuntimeException(ex); }
+    };
+}
+
+为了这么做:
+
+
+Writer out = new StringWriter();
+Consumer<String> printer = exceptionWrappingBlock(s -> out.write(s));
+
+也许，等到未来（也许JDK9）Java支持值类型和Reification（新的Java泛型处理方式，译者注）的时候，
+我们将能够摆脱（或者至少不再需要使用）这些多重接口。
+
+综上所述，我们可以看到，专家组在几个设计问题上花费了心机。
+保持向后兼容的需要、要求或约束使得事情更加困难，接着出现这些重要的情况：缺少值类型，类型擦除和受检查异常等。
+如果Java有了值类型而缺少其他两个，那么JDK8的设计可能会有所不同。
+因此，我们必须明白：这些都是棘手的问题，要经过多次权衡。
+专家组不得不划清问题界限并做出决定。
+
+所以，当我们发现身受Java 8缺陷的影响时，也许我们需要提醒自己：为什么JDK有这些不优雅的设计？
+
