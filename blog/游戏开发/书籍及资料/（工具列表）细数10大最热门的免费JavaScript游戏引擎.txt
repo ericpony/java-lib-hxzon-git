@@ -1,0 +1,61 @@
+﻿（工具列表）细数10大最热门的免费JavaScript游戏引擎
+作者：八哥 | 2014-03-24 17:05:03
+http://www.evget.com/article/2014/3/24/20715.html
+
+====
+概述：使用HTML5、JavaScript可以帮助开发者开发出各种与众不同的游戏及游戏特效，比如3D动画、Canvas等。本文介绍10款被广泛使用的基于HTML5的免费JavaScript游戏引擎，大家不妨看看，有没有你钟爱的那一款。
+
+1.JsGameSoup
+
+JsGameSoup是一款开源的的游戏框架，开发者可以使用JavaScript和Web技术开发游戏。它几乎可以运行在所有的浏览器上，还可以使用开放的Web技术，如Canvas和HTML5等。
+
+
+2.Akihabara
+
+Akihabara是一系列的库和工具，用于使用 Javascript 创建像素化的8/16位时期的游戏，使用 JavaScript、HTML5 Canvas标签和一些标准hooks开发。?
+
+
+3.LimeJS
+
+LimeJS是基于HTML5的游戏框架，用于快速构建运行于所有现代触摸屏和桌面浏览器的纯正体验的游戏。
+
+
+4.Enchant.js
+
+Enchant.js在2011年发布，是一款开源免费的JavaScript游戏框架。可以使用HTML5和JavaScript来开发简单的游戏和应用。
+
+
+
+5.GMP
+
+GMP是一款JavaScript游戏引擎，可以制作基于Sprite的2D游戏。它可以很容易地设计复古风格的街机游戏。它也非常适合于制作拼图，数独或gogopop。
+
+
+
+6.Gamequery
+
+Gamequery是个易于使用的jQuery插件，可以通过添加相关游戏的类来帮助开发JavaScript游戏，可以兼容大量的浏览器，比如：Firefox、Chrome、Internet Explorer、Safari、Opera。
+
+
+7.Crafty
+
+Crafty是个轻量级，模块化的JavaScript游戏引擎，包含许多组件：动画、事件管理、重新划分区域、碰撞检测、Sprite等。它支持所有类型的浏览器，比如IE9。
+
+
+8.lycheeJS
+
+lycheeJS是个JavaScript的HTML5游戏引擎，提供完整的原型解决方案和HTML5 Canvas部署，同时支持PC和移动平台浏览器。这个项目的开发过程优化了Google Chrome 和它自身的开发工具。
+
+
+9.Quintus
+
+Quintus是一款容易上手、轻量级的JavaScript游戏引擎，包含一个模块化的引擎可轻松开发游戏，并在同一个页面上运行多个实例。支持移动和桌面开发。
+
+
+10.The Render Engine
+
+The Render Engine是个跨浏览器的开源游戏引擎，完全使用JavaScript编写。它拥有一个扩展的API 和使用当前最新的现代浏览器特性。此款引擎旨在帮助用户使用基础的工具来开发游戏，加快游戏概念到成品的过程。
+
+
+ 
+原文转载自：http://www.uml.org.cn/itnews/2014032108.asp

@@ -9,4 +9,7 @@ http://www.importnew.com/1993.html
 在运行期通过反射了解JVM内部机制
 http://www.importnew.com/8631.html
 
+64位JVM带来的问题及解决方案
+http://it.deepinmind.com/jvm/2014/05/05/hotspot-32-bit-to-64-bit-upgrade-what.html
+
 
