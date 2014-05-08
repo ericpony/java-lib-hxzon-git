@@ -1,0 +1,76 @@
+﻿Groovy 2.3发布
+作者 Victor Grazi ，译者 孙镜涛 发布于 2014年5月7日
+
+http://www.infoq.com/cn/news/2014/05/Groovy-2.3-Released?
+
+
+Pivotal公司的Groovy项目经理Guillaume Laforge今天宣布Groovy 2.3已经发布，
+这是今年发布的第一个Groovy主版本，同时也是第一个官方支持的、能够在不久之前发布的Java 8上运行的主版本。
+
+Groovy 2.3新增加了“特征（traits）”支持，同时还提供了很多新的和改进的AST转换，例如@TailRecursive、@Builder和@Sortable。
+新版本增加了一个新的支持Path的NIO2模块，极大地优化了JSON的解析和构建，
+支持闭包参数类型推断，
+增加了一个新的标记模板引擎，改进了Groovysh和GroovyConsole的易用性，
+增加了一个新的GroovyAssert测试工具，增强了@BaseScript类的能力，此外还包含一些其他的功能。
+
+InfoQ就该版本的发布采访了Groovy的产品经理Guillaume Laforge。
+
+InfoQ:首先祝贺你们又发布了一个伟大的Groovy版本。
+你能跟我们介绍一下该版本的主要特性吗？
+
+Guillaume: 该版本的主要亮点有两个，一是我们实现了“特征（traits）”，
+这让开发者能够更加优雅的组合行为，而不是单独地使用类和接口，同时能够更容易地促进重用。
+
+作为一个示例，让我们看看下面这段在行为中使用特征的样板代码：
+
+trait FlyingAbility { 
+    String fly() { "I'm flying!" }
+}
+
+然后我们创建一个Bird类，该类实现了上面的特征并实例化了一个对象：
+
+class Bird implements FlyingAbility {}
+
+def b = new Bird()
+
+通过下面的代码我们能够检查出Bird实例确实拥有一个新的fly()方法：
+
+assert b.fly() == "I'm flying!"
+
+这仅仅是一个简单的示例。
+
+第二个主要特性是对JDK 8的支持。
+你可以在JDK 8上运行Groovy 2.3，使用Groovy闭包替代Lambda表达式，或者在Groovy中重用所有新的JDK 8的API（例如日期/时间等）。
+
+InfoQ:对性能有哪些影响？
+
+Guillaume: 我们确实对很多地方做了性能调整，
+目的是把一些慢路径转变成更快的路径（例如优化一些调用路径从而能够更高效地静态编译它们，
+或者在动态领域更好地利用“调用动态（invoke dynamic）”等）。
+我们对JSON的支持做了一个引人注意的、巨大的提升，
+无论是在解析还是在序列化方面，Matt Raible最近在InfoQ上发布了一篇文章对此做了介绍。
+
+InfoQ:你们对正在提供或者使用的框架做了哪些变化？
+
+Guillaume: 我们将很多依赖关系升级到了最近的版本，例如我们将用来生成字节码的ASM类库升级到了5版本，原因是该版本支持Java 8字节码的生成（例如Lambda表达式、接口默认方法等）。
+Groovy分发包还自带了最近发布的GPars 1.2，这是我们用来处理并发、并行和异步的类库。
+GPars 1.2对很多功能做了提升，例如数据流处理方面（支持懒（lazy）任务，通过“Promises”更容易地实现fork-join）。
+
+InfoQ:接下来有什么计划？
+
+Guillaume: 我们依然有很多事情需要做：我们正在从头开始重写我们的文档，通过测试构建过程中包含的所有代码示例让它变得“可执行”。
+文档的内容已经很丰富了，但是依然有很多部分需要填充。
+同时Groovy团队非常欢迎大家能够在这方面做出贡献。
+我们还打算重新修整我们的网站，提供新鲜的界面、新的文档和可读性更好的API文档。
+在长期计划方面，我们正在做的一些工作包括：
+
+一个新的、更加清晰的动态运行时（元对象协议）
+重写我们的语法。
+应该还是同样的Groovy语法，但是当我们决定引入新语法结构的时候，我们希望重写后的语法能够让Groovy的开发团队更容易地继续进化语言的语法。
+一些新的Java 8语法结构将很有可能会成为Groovy语法的一部分，包括对JDK 8 API进一步的增强。
+
+
+如果你想了解与Groovy 2.3新特性相关的更多信息，可以查看发布说明。
+
+查看英文原文：Groovy 2.3 Released
+
