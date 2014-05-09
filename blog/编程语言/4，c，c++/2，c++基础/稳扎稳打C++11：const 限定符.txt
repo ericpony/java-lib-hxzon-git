@@ -1,0 +1,368 @@
+﻿稳扎稳打C++11：const 限定符
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-12-24 23:44:26
+http://ilanever.com/article/sitedetail.html?id=221
+
+====
+所有在引用类型中的const都是low-level的。
+
+目录
+
+const 及其初始化
+默认情况下，const对象是文件的本地变量
+绑定到const类型的引用（References to const）
+指针和const（Pointers and const）
+顶级 const（Top-Level const）
+
+
+====
+const 及其初始化 
+
+const 用于阻止改变对象的值。
+由于const对象的值不能改变，因此const对象必须进行初始化。
+我们可以使用一个对象初始化另一个对象，无论二者是否是const对象。
+
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    //const int ival;   //error: uninitialized const ‘ival’
+     
+    int i = 42;
+    const int ci = i;
+    int j = ci;
+     
+    cout << "ci : " << ci << endl;
+    cout << "j : " << j << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        ci : 42
+        j : 42
+    */
+     
+    return 0;
+}
+
+====
+默认情况下，const对象是文件的本地变量 
+
+当非const变量在定义在某个文件的全局作用域中时，在其他文件中只要使用extern声明一下该变量，即可在其他文件中使用该非const变量。
+
+与非const变量不同，在全局作用域中定义的const变量默认是文件的本地变量。
+此变量只存在于那个文件中，不能被其他文件访问。
+
+若想让const对象同非const对象一样，在多个文件中分享一个const对象，则在定义const对象时，必须定义const对象为extern。
+
+
+const_test.h
+#include <iostream>
+ 
+void Printmsg();
+const_test.cpp
+#include <iostream>
+ 
+extern int varx_global;
+extern const int varz_global;
+ 
+void Printmsg()
+{
+    std::cout << "'varx_global' is " << varx_global << "." << std::endl;
+    std::cout << "'varz_global' is " << varz_global << "." << std::endl;
+}
+
+main.cpp
+#include <iostream>
+#include "const_test.h"
+ 
+int varx_global = 2001;
+extern const int varz_global = 1998;
+ 
+int main()
+{
+    Printmsg();
+     
+    /*
+    Environment:
+        32bit Windows7
+        MSCL(vs2012)
+    Output:
+        'varx_global' is 2001.
+        'vary_global' is 1998.
+    */
+     
+    return 0;
+}
+
+====
+绑定到const类型的引用（References to const） 
+
+由于const类型的变量值不能被修改，而且修改引用的值就是在修改所绑定对象的值，所以绑定到const变量的引用也应该是const类型。
+
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    const int ci = 200;
+    //int &r1 = ci;//错误：将类型为‘int&’的引用初始化为类型为‘const int’的表达式无效
+    const int &r2 = ci;
+     
+    cout << "r2 : " << r2 << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        r2 : 200
+    */
+     
+    return 0;
+}
+
+在非const类型的引用中，引用的类型和引用绑定对象的类型必须完全一致。
+但是在const类型的引用中，任何能够转换成引用类型的表达式都可用于初始化绑定到const类型的引用。
+
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    double d1 = 3.14;
+    //int &r1 = d1;//错误：将类型为‘int&’的引用初始化为类型为‘double’的表达式无效
+    const int &r2 = d1;
+     
+    cout << "r2 : " << r2 << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        r2 : 3
+    */
+     
+    return 0;
+}
+
+绑定到const类型的引用不仅可以引用const类型的对象，还可以引用非const类型的对象。
+
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int i = 42;
+    int &r1 = i;
+    const int &r2 = i;
+    cout << "r1 : " << r1 << endl;
+    cout << "r2 : " << r2 << endl;
+    r1 = 0;
+    //r2 = 0;//不能给常量赋值
+     
+    /*
+    Environment:
+        32bit Windows7
+        MS CL（VS2012）
+    Output:
+        r1 : 42
+        r2 : 42
+    */
+     
+    return 0;
+}
+
+====
+指针和const（Pointers and const） 
+
+我们将const对象的地址存储在指向const对象的指针中。
+
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    const double d = 3.14;
+    //double *pd = &d; //无法从“const double *”转换为“double *”
+    const double *cpd = &d;
+    //*cpd = 2.5; // 不能给常量赋值
+ 
+    cout << "cpd : " << cpd << endl;
+ 
+    /*
+        Environment:
+            32bit Windows7
+            MS CL(VS2012)
+        Output:
+            cpd : 0017FD1C
+    */
+ 
+    return 0;
+}
+
+在非const类型的指针中，指针的类型和指针指向的对象的类型必须匹配。
+但是对于const对象而言，该规则不再适用。
+我们可以使用一个指向const对象的指针用来指向非const对象。
+
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    double d = 3.14;
+    const double *pd = &d;
+ 
+    cout << "pd : " << pd << endl;
+ 
+    /*
+        Environment:
+            32bit Windows7
+            MS CL(VS2012)
+        Output:
+            pd : 0023FDAC
+    */
+ 
+    return 0;
+}
+
+同绑定到const对象的引用一样，一个指向const对象的指针并不代表指针指向的对象是const对象。
+const 指针，是指指针本身是const的，即const指针的地址不能发生改变。
+
+最简单的理解const指针的方式仍然是从右向左读他的声明。
+“*const”表明变量首先是一个const对象，其次它才是一个指针。
+一个const指针的底层对象是不是const对象与const指针无关。
+
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    double d1 = 3.14;
+    double d2 = 5.67;
+    const double d3 = 6.89;
+ 
+    const double *pd1 = &d1;
+ 
+    cout << "pd1 : " << pd1 << endl;
+ 
+    pd1 = &d2;
+ 
+    cout << "pd1 : " << pd1 << endl;
+ 
+    double *const pd2 = &d2;
+    //pd2 = &d1;//不能给常量赋值
+ 
+    cout << "pd2 : " << pd2 << endl;
+ 
+    const double *const pd3 = &d3;
+ 
+    cout << "pd3 : " << pd3 << endl;
+ 
+    const double *const pd4 = &d1;
+ 
+    cout << "pd4 : " << pd4 << endl;
+ 
+    //pd3 = &d2;//不能给常量赋值
+ 
+    /*
+    Environment:
+        32bit Windows7
+        MSCL(vs2012)
+    Output:
+        pd1 : 0027FD70
+        pd1 : 0027FD78
+        pd2 : 0027FD78
+        pd3 : 0027FD68
+        pd4 : 0027FD70
+    */
+ 
+    return 0;
+}
+
+====
+顶级 const（Top-Level const） 
+
+综上所述，我们发现在复合类型中const有两种使用方法。
+一种是底层对象本身是const类型，在定义该底层对象的引用和指针时，需要给指针添加const限定符。
+另一种是复合类型对象本身是const的。
+
+通常情况下，我们使用术语top-level来表示一个对象本身是const的。
+使用术语low-level来表示底层对象是const的。
+
+top-level 与 low-level 的区别在于复制对象的时候。
+当我们复制一个对象时，top-level const 将被忽略，low-level const 从不会被忽略。
+当我们复制一个对象时，双方必须拥有同样的low-level const的限定或者存在两个对象类型之间的转换。
+通常，我们可以转换一个nonconst对象到const对象，但是反过来则不可以。
+
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int i = 10;
+    int *const p1 = &i; // const is top-level
+    const int ci = 33; // const is top-level
+    const int *p2 = &ci; // const is low-level
+    const int *const p3 = p2; // right const is top-level; left const is low-level
+    const int &r1 = ci; // const in reference types is always low-level;
+    const int &r2 = i;
+ 
+    cout << "i : " << i << endl;
+    cout << "ci : " << ci << endl;
+    cout << "p1 : " << p1 << endl;
+    cout << "p2 : " << p2 << endl;
+    cout << "p3 : " << p3 << endl;
+    cout << "r1 : " << r1 << endl;
+    cout << "r2 : " << r2 << endl;
+ 
+    i = ci; // ci's top-level const is ignored, both donot have const.
+    p2 = p3; // p3's top-leve const is ignored, both have low-level const.
+ 
+    cout << "i : " << i << endl;
+    cout << "p2 : " << p2 << endl;
+ 
+    //int *p = p3; // error : p3 has a low-level const, but p doesn't
+    p2 = &i; // convert int * to const int *
+ 
+    cout << "p2 : " << p2 << endl;
+ 
+    /*
+    Environment:
+        32bit Windows7
+        MSCL(vs2012)
+    Output:
+        i : 10
+        ci : 33
+        p1 : 002EFDC0
+        p2 : 002EFDB8
+        p3 : 002EFDB8
+        r1 : 33
+        r2 : 10
+        i : 33
+        p2 : 002EFDB8
+        p2 : 002EFDC0
+    */
+ 
+ 
+    return 0;
+}
+
+需要注意的是，所有在引用类型中的const都是low-level的。
+但是low-level的定义是底层对象是const的，但示例中的引用类型r2的底层对象i不是const的。
+对此，我们可以这样来理解：语法中之所以引入const限定符，是因为想让对象不可变。
+而引用变量本身就是不可变的（即，隐性的top-level），所以const直接用在引用变量上是没有多此一举的。
+之所以在引用中使用 const，是为了实现引用的底层对象是const时的情景，为了不让表层对象能够修改底层对象。
+所以，引用类型中的const，应该被认为是low-level的。
+

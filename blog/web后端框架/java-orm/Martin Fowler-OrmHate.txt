@@ -1,0 +1,58 @@
+﻿Martin Fowler-OrmHate
+
+OrmHate
+Photo of Martin Fowler
+Martin Fowler
+8 May 2012
+http://martinfowler.com/bliki/OrmHate.html
+
+====
+While I was at the QCon conference in London a couple of months ago, it seemed that every talk included some snarky remarks about Object/Relational mapping (ORM) tools. I guess I should read the conference emails sent to speakers more carefully, doubtless there was something in there telling us all to heap scorn upon ORMs at least once every 45 minutes. But as you can tell, I want to push back a bit against this ORM hate - because I think a lot of it is unwarranted.
+
+The charges against them can be summarized in that they are complex, and provide only a leaky abstraction over a relational data store. Their complexity implies a grueling learning curve and often systems using an ORM perform badly - often due to naive interactions with the underlying database.
+
+There is a lot of truth to these charges, but such charges miss a vital piece of context. The object/relational mapping problem is hard. Essentially what you are doing is synchronizing between two quite different representations of data, one in the relational database, and the other in-memory. Although this is usually referred to as object-relational mapping, there is really nothing to do with objects here. By rights it should be referred to as in-memory/relational mapping problem, because it's true of mapping RDBMSs to any in-memory data structure. In-memory data structures offer much more flexibility than relational models, so to program effectively most people want to use the more varied in-memory structures and thus are faced with mapping that back to relations for the database.
+
+
+The mapping is further complicated because you can make changes on either side that have to be mapped to the other. More complication arrives since you can have multiple people accessing and modifying the database simultaneously. The ORM has to handle this concurrency because you can't just rely on transactions- in most cases, you can't hold transactions open while you fiddle with the data in-memory.
+
+I think that if you're going to dump on something in the way many people do about ORMs, you have to state the alternative. What do you do instead of an ORM? The cheap shots I usually hear ignore this, because this is where it gets messy. Basically it boils down to two strategies, solve the problem differently (and better), or avoid the problem. Both of these have significant flaws.
+
+A better solution
+
+Listening to some critics, you'd think that the best thing for a modern software developer to do is roll their own ORM. The implication is that tools like Hibernate and Active Record have just become bloatware, so you should come up with your own lightweight alternative. Now I've spent many an hour griping at bloatware, but ORMs really don't fit the bill - and I say this with bitter memory. For much of the 90's I saw project after project deal with the object/relational mapping problem by writing their own framework - it was always much tougher than people imagined. Usually you'd get enough early success to commit deeply to the framework and only after a while did you realize you were in a quagmire - this is where I sympathize greatly with Ted Neward's famous quote that object-relational mapping is the Vietnam of Computer Science[1].
+
+The widely available open source ORMs (such as iBatis, Hibernate, and Active Record) did a great deal to remove this problem [2]. Certainly they are not trivial tools to use, as I said the underlying problem is hard, but you don't have to deal with the full experience of writing that stuff (the horror, the horror). However much you may hate using an ORM, take my word for it - you're better off.
+
+I've often felt that much of the frustration with ORMs is about inflated expectations. Many people treat the relational database "like a crazy aunt who's shut up in an attic and whom nobody wants to talk about"[3]. In this world-view they just want to deal with in-memory data-structures and let the ORM deal with the database. This way of thinking can work for small applications and loads, but it soon falls apart once the going gets tough. Essentially the ORM can handle about 80-90% of the mapping problems, but that last chunk always needs careful work by somebody who really understands how a relational database works.
+
+This is where the criticism comes that ORM is a leaky abstraction. This is true, but isn't necessarily a reason to avoid them. Mapping to a relational database involves lots of repetitive, boiler-plate code. A framework that allows me to avoid 80% of that is worthwhile even if it is only 80%. The problem is in me for pretending it's 100% when it isn't. David Heinemeier Hansson, of Active Record fame, has always argued that if you are writing an application backed by a relational database you should damn well know how a relational database works. Active Record is designed with that in mind, it takes care of boring stuff, but provides manholes so you can get down with the SQL when you have to. That's a far better approach to thinking about the role an ORM should play.
+
+There's a consequence to this more limited expectation of what an ORM should do. I often hear people complain that they are forced to compromise their object model to make it more relational in order to please the ORM. Actually I think this is an inevitable consequence of using a relational database - you either have to make your in-memory model more relational, or you complicate your mapping code. I think it's perfectly reasonable to have a more relational domain model in order to simplify your object-relational mapping [4]. This doesn't mean you should always follow the relational model exactly, but it does mean that you take into account the mapping complexity as part of your domain model design.
+
+So am I saying that you should always use an existing ORM rather than doing something yourself? Well I've learned to always avoid saying "always". One exception that comes to mind is when you're only reading from the database. ORMs are complex because they have to handle a bi-directional mapping. A uni-directional problem is much easier to work with, particularly if your needs aren't too complex and you are comfortable with SQL. This is one of the arguments for CQRS.
+
+So most of the time the mapping is a complicated problem, and you're better off using an admittedly complicated tool than starting a land war in Asia. But then there is the second alternative I mentioned earlier - can you avoid the problem?
+
+Avoiding the problem
+
+To avoid the mapping problem you have two alternatives. Either you use the relational model in memory, or you don't use it in the database.
+
+To use a relational model in memory basically means programming in terms of relations, right the way through your application. In many ways this is what the 90's CRUD tools gave you. They work very well for applications where you're just pushing data to the screen and back, or for applications where your logic is well expressed in terms of SQL queries. Some problems are well suited for this approach, so if you can do this, you should. But its flaw is that often you can't.
+
+When it comes to not using relational databases on the disk, there rises a whole bunch of new champions and old memories. In the 90's many of us (yes including me) thought that object databases would solve the problem by eliminating relations on the disk. We all know how that worked out. But there is now the new crew of NoSQL databases - will these allow us to finesse the ORM quagmire and allow us to shock-and-awe our data storage?
+
+As you might have gathered, I think NoSQL is technology to be taken very seriously. If you have an application problem that maps well to a NoSQL data model - such as aggregates or graphs - then you can avoid the nastiness of mapping completely. Indeed this is often a reason I've heard teams go with a NoSQL solution. This is, I think, a viable route to go - hence my interest in increasing our understanding of NoSQL systems. But even so it only works when the fit between the application model and the NoSQL data model is good. Not all problems are technically suitable for a NoSQL database. And of course there are many situations where you're stuck with a relational model anyway. Maybe it's a corporate standard that you can't jump over, maybe you can't persuade your colleagues to accept the risks of an immature technology. In this case you can't avoid the mapping problem.
+
+So ORMs help us deal with a very real problem for most enterprise applications. It's true they are often misused, and sometimes the underlying problem can be avoided. They aren't pretty tools, but then the problem they tackle isn't exactly cuddly either. I think they deserve a little more respect and a lot more understanding.
+
+Notes
+
+1: I have to confess a deep sense of conflict with the Vietnam analogy. At one level it seems like a case of the pathetic overblowing of software development's problems to compare a tricky technology to war. Nasty the programming may be, but you're still in a relatively comfy chair, usually with air conditioning, and bug-hunting doesn't involve bullets coming at you. But on another level, the phrase certainly resonates with the feeling of being sucked into a quagmire.
+
+2: There were also commercial ORMs, such as TOPLink and Kodo. But the approachability of open source tools meant they became dominant.
+
+3: I like this phrase so much I feel compelled to subject it to re-use.
+
+4: Indeed in many cases you shouldn't think of building a behavior-rich domain model at all, but instead use Row Data Gateways that are just the relational tables wrapped in simple objects.
+

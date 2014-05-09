@@ -1,0 +1,125 @@
+﻿稳扎稳打C++11：常量表达式和 constexpr 限定符
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-12-27 20:05:45
+http://ilanever.com/article/sitedetail.html?id=222
+
+====
+所有使用了const限定符的变量的值都不会改变么？答案是否定的。
+
+目录
+常量表达式
+constexpr 限定符
+字面类型（Literal Type）
+指针和 constexpr
+
+
+所有使用了const限定符的变量的值都不会改变么？答案是否定的。请看下面的代码：
+
+#include <iostream>
+#include <ctime>
+ 
+using namespace std;
+ 
+int GetSeconds()
+{
+    return time(NULL);
+}
+ 
+int main()
+{
+    const int seconds = GetSeconds();
+    cout << "seconds : " <<  seconds << endl;
+     
+    return 0;
+}
+
+我们使用GetSeconds方法获取系统当前时间的秒数。
+编译后执行程序，每次执行，输出的描述都是不同的。
+看来，不是所有的const对象都是一成不变的。
+为了解决这个问题，C++11中引入了constexpr限定符。
+
+常量表达式 
+
+当一个表达式的值不能被改变，并且能够在编译时得到其计算值时，则称该表达式为常量表达式。
+常量表达式可以是一个字面量，也可是一个const对象。
+
+constexpr 限定符 
+
+我们可以使用constexpr限定符来声明变量，以请求编译器验证变量是否为常量表达式。
+
+#include <iostream>
+#include <ctime>
+ 
+using namespace std;
+ 
+int GetSeconds()
+{
+    return time(NULL);
+}
+ 
+int main()
+{
+    const int seconds = GetSeconds();
+    cout << "seconds : " <<  seconds << endl;
+     
+    //constexpr int seconds2 = GetSeconds(); // compile error: call to non-constexpr function ‘int GetSeconds()’
+     
+    return 0;
+}
+
+字面类型（Literal Type） 
+
+能够在常量表达式中使用的类型被称为“字面类型”。
+字面类型包含算术类型、引用类型和指针类型。字符串类型和标准库中的其他类不属于字面类型。
+
+对于constexpr的指针，我们可以将指针初始化为nullptr或0，也可以将指针指向一个固定地址的对象。
+通常，定义在函数中的变量不能存储在固定地址，所以不能使用constexpr的指针指向这类变量。
+相反，定义在任何函数外的对象的地址或许可以用于初始化constexpr变量。
+还有一种变量虽然定义在函数内，但该函数每次调用都已存在（static变量），这种变量的地址也可以用于初始化constexpr指针。
+
+指针和 constexpr 
+
+在constexpr中声明指针时，constexpr是应用在了指针上，而不是指针指向的类型。
+constexpr相当于强加了一个top-level的const到对象上。
+
+#include <iostream>
+ 
+using namespace std;
+ 
+int i1_global = 900;
+const int i2_global = 700;
+ 
+int main()
+{
+    int i2 = 5;
+    const int ci = 8;
+    const int *p1 = &ci;
+     
+    cout << "p1 : " << p1 << endl;
+     
+    p1 = &i2;
+     
+    cout << "p1 : " << p1 << endl;
+     
+    //constexpr int *cep1 = &i2;// compile error: ‘& i2’ is not a constant expression
+    constexpr int *cep2 = &i1_global;
+    //cep2 = &i2_global;// compile error: assignment of read-only variable ‘cep2’
+     
+    cout << "cep2 : " << cep2 << endl;
+     
+    constexpr const int *cep3 = &i2_global;
+    cout << "cep3 : " << cep3 << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        p1 : 0xbf8206a0
+        p1 : 0xbf82069c
+        cep2 : 0x804a034
+        cep3 : 0x80489d0
+    */
+     
+    return 0;
+}
+

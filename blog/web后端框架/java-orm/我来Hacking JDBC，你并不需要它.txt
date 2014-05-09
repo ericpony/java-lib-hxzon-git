@@ -1,0 +1,125 @@
+﻿我来Hacking JDBC，你并不需要它
+
+http://www.javacodegeeks.com/2014/04/were-hacking-jdbc-so-you-dont-have-to.html
+译文链接： http://www.importnew.com/11116.html
+
+本文由 ImportNew - wudy 翻译自 javacodegeeks。
+
+====
+我们喜欢和JDBC打交道，以前从未有人这样说过。
+很严肃的说，JDBC是一个非常优秀的API。这可能是现在Java能够成为一个受欢迎的平台的重要原因之一。 
+在JDK1.1之前，ODBC出现之前(很久之前的事情了)，很难去想象有平台会标准化数据库的访问。
+在那个时候SQL语言甚至本身还没有标准化，随后出现的面向Java的简单的JDBC API，工作中你需要也就是一下几点：
+
+这些都是理论，在实际中，企业级软件操作JDBC却是像下面这样：
+
+
+JDBC是Java开发者的最后一种手段之一，你可以用很多方式来探索解密这个非常详细的神秘的API。
+几乎每个人都在JDBC操作将实现基于这些API的包装器来防止:
+
+常见的语法错误
+绑定变量索引不匹配
+动态的SQL构建
+在使用lob引起的边界情况
+资源的操作与关闭
+数组和UDT（户定义类型(User Defined Type)）管理
+存储过程的抽象
+
+所以当大多数的人在设计上层框架的时候，他们不是在和业务逻辑打交道，但是相当多的人在使用JDBC的时候，几乎都在做这些事情。
+Hibernate 和JPA大多数没有这些问题，可是他们也不再是SQL API了。
+
+下面是一些我们在JOOQ框架内解决问题的例子，所以你就不需要在解决了：
+
+如何在某些数据库获取生成的键
+
+case DERBY:
+case H2:
+case MARIADB:
+case MYSQL: {
+    try {
+        listener.executeStart(ctx);
+        result = ctx.statement().executeUpdate();
+        ctx.rows(result);
+        listener.executeEnd(ctx);
+    }
+
+    // Yes. Not all warnings may have been consumed yet
+    finally {
+        consumeWarnings(ctx, listener);
+    }
+
+    // Yep. Should be as simple as this. But it isn't.
+    rs = ctx.statement().getGeneratedKeys();
+
+    try {
+        List<Object> list = new ArrayList<Object>();
+
+        // Some JDBC drivers seem to illegally return null
+        // from getGeneratedKeys() sometimes
+        if (rs != null) {
+            while (rs.next()) {
+                list.add(rs.getObject(1));
+            }
+        }
+
+        // Because most JDBC drivers cannot fetch all
+        // columns, only identity columns
+        selectReturning(ctx.configuration(), list.toArray());
+        return result;
+    }
+    finally {
+        JDBCUtils.safeClose(rs);
+    }
+}
+
+怎么样去处理BigInteger and BigDecimal
+
+else if (type == BigInteger.class) {
+    // The SQLite JDBC driver doesn't support BigDecimals
+    if (ctx.configuration().dialect() == SQLDialect.SQLITE) {
+        return Convert.convert(rs.getString(index),
+                               (Class) BigInteger.class);
+    }
+    else {
+        BigDecimal result = rs.getBigDecimal(index);
+        return (T) (result == null ? null :
+                    result.toBigInteger());
+    }
+}
+else if (type == BigDecimal.class) {
+    // The SQLite JDBC driver doesn't support BigDecimals
+    if (ctx.configuration().dialect() == SQLDialect.SQLITE) {
+        return Convert.convert(rs.getString(index),
+                               (Class) BigDecimal.class);
+    }
+    else {
+        return (T) rs.getBigDecimal(index);
+    }
+} 
+
+怎么去从SQL Server获取所有的异常
+
+switch (configuration.dialect().family()) {
+    case SQLSERVER:
+        consumeLoop: for (;;)
+            try {
+                if (!stmt.getMoreResults() &&
+                     stmt.getUpdateCount() == -1)
+                    break consumeLoop;
+            }
+            catch (SQLException e) {
+                previous.setNextException(e);
+                previous = e;
+            }
+}
+
+你信吗
+这是令人不快的代码，并且我们这儿还有更多的令人不快的代码,或者就在我们的源码中 
+这里所有的例子在向你表明当你在使用JDBC的时候，你要在你的程序中写那些你不想写或者不是很必要的代码，
+这就是为什么：“我们已经在Hacking JDBC了，你就不需要掺和了”。
+
+
+关于作者：Lukas 是一个狂热的Java和SQL开发者。
+他创建了the Data Geekery GmbH。
+他是jOOQ的创建者之一,一个面向Java的综合的SQL库，他的博客主要关注三个话题：Java，SQL和JOOQ。
+

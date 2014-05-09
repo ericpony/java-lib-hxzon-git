@@ -1,0 +1,296 @@
+﻿Apache Lucene 4.8.0发布：不再支持Java 6
+作者 郭蕾 发布于 2014年5月8日
+http://www.infoq.com/cn/news/2014/05/apache-lucene-4.8.0-publish
+
+
+2014年4月28日，Apache Lucene 4.8.0正式发布。
+由于老的JDK版本的一些JVM bug会影响到Lucene，所以新版本的Lucene不再支持JDK 7u55以下的Java版本。
+另外Lucene 4.8.0全面兼容Java 8。以下是Lucene 4.8.0中的一些重大改进：
+
+所有的索引文件开始存储端到端的校验以在索引合并和读取的时候进行有效性检查。
+这样可以确保因为JVM内部的一些硬件问题或者BUG而引起的索引损坏可以被及时发现。
+
+提供了新的Rescorer/QueryRescorerAPI对second-pass的重新打分。
+
+AnalyzingInfixSuggester 类提供了支持NRT（near-real-time）的自动建议功能。
+
+使用Lucene的Sort类简化了impact-sorted postings的排序语义。
+
+分离了bulk scoring（基于批量处理的打分过程）和基于迭代的打分过程。
+
+建立索引的时的Hash term模块改为使用高效的MurmurHash3算法。
+
+IndexWriter开始支持更新二进制类型的字段。
+
+HunspellStemFilter的内存占用比之前减少了10到100倍。
+
+如果操作系统和文件系统允许，Lucene会在提交时fsyncs目录元信息。
+
+使用了Java 7的文件系统函数，所以在windows中，即使索引文件在打开（使用）的时候，也可以被删除。
+
+修复了NativeFSLockFactory类中的一个严重的bug，现在允许多个IndexWriter获取相同的锁。
+即使不持有锁，锁文件也不会再被从索引文件中删除。
+
+Apache Lucene是一个使用Java开发的高性能的全文检索引擎，
+读者可以从这里下载最新版本的Lucene,详细的改进说明可以阅读Lucene ChangeLog。
+此外，基于Lucene的Solr也更新到了4.8.0版本，读者可以到其官网了解相关信息。
+
+参考文档：
+
+Lucene News
+
+
+Lucene Change Log
+https://lucene.apache.org/core/4_8_0/changes/Changes.html#v4.8.0.api_changes
+
+春风田的个人博客
+http://blog.csdn.net/accesine960/article/details/24741703
+
+===========
+===========
+Lucene 4.8.0 发布了，变化一如既往的大，新特性一一解读
+http://blog.csdn.net/accesine960/article/details/24741703
+
+10年之前，你是1.0； 10年之后，你是4.8 。放在10年这个时间跨度上看，也许变化就没那么大了。
+
+看看这次发布有哪些变化吧：
+
+1、Apache Lucene 现在要求Java的最低版本为：Java 7 , update 55 ；
+推荐使用 Oracle Java 7 或 OpenJDK 7 ，之前版本的JVM bug 会影响到lucene。
+
+
+2、Apache Lucene全面兼容 Java 8。
+
+
+3、所有的索引文件开始存储checksums，在索引合并和读取的时候进行有效性检查。
+减少出现某个索引文件（物理）损坏带来的问题，主要是针对硬件或者JVM bug 引起的索引损坏。
+
+
+4、提供了针对第一次搜索结果集合的重打分（权重调整）API；
+相当于对搜索结果的二次自定义排序。
+
+5、AnalyzingInfixSuggester 类提供了支持NRT的自动建议功能。
+
+6、把基于批量处理的打分过程 bulk scoring 和基于迭代的打分过程分离了，这对于批量打分的过程更高效一些。
+
+7、在建立索引的时候针对Hash term 使用了 MurmurHash3 的hash方法，很高效的方法。
+
+http://zh.wikipedia.org/wiki/Murmur%E5%93%88%E5%B8%8C
+
+8、 IndexWriter现在支持更新二进制类型的字段了。
+
+
+9、优化了 HunspellStemFilter  占用内存的大小（10至100倍的减少）
+Hunspell 是一种检查拼写spellcheck流行的方法， OpenOffice中就用了它来进行拼写检查。
+HunspellStemFilter  是TokenFilter的扩展，可以用这个算法来过滤词的不同变形（时态，语气等）。
+中文的Token应该享受不到这个特性。
+http://en.wikipedia.org/wiki/Hunspell
+
+
+10、Lucene现在使用Java 7中的文件系统函数，比如即使在索引打开的时候，也可以删除索引文件。
+
+11、修复了NativeFSLockFactory 中的一个严重的bug ：
+允许多个IndexWriter获得一个lock。
+所以强烈建议升级到 lucene 4.8 。
+
+
+参考：
+
+1、 http://lucene.apache.org/core/4_8_0/changes/Changes.html#v4.8.0.new_features
+
+2、Lucene 4.0 正式版发布，亮点特性中文解读
+http://blog.csdn.net/accesine960/article/details/8066877
+
+3、欢迎订阅作者微博
+http://weibo.com/tianchunfeng
+
+===========
+===========
+Lucene 4.0 正式版发布，亮点特性中文解读
+
+作者：春风田   微博
+
+2012年10月12日，Lucene 4.0正式发布了（点击这里下载最新版），
+这个版本因为诸多的新特性和大胆的架构调整一直备受期待。
+无论是索引结构，索引算法以及整体架构的包容性都发生了翻天覆地的变化。
+正如大家一直所说的Lucene是一个搜索工具包 ，而4.0的发布则让Lucene向搜索框架的方向迈出了一大步。
+下面我们来逐一解读Lucene 4.0的新特性吧。
+
+Lucene 4.0 的关键词：
+
+架构解耦，索引结构可定制化，索引结构透明化，向搜索框架方向发展。
+
+Lucene 4.0 正式版亮点功能：
+
+一、通过解码器Codec 机制 Lucene 索引格式与Lucene架构解耦，变成了Plugin方式实现，
+包括：Terms , Postings lists ,Stored 字段,Term Vectors 等都可以以自定义的格式予以支持。
+
+正如Mysql支持多种存储引擎一样，现在Lucene也可以了。
+
+二、排序相关的算法与向量空间模型解耦(即Lucene中经典的经典的(TF/IDF)模型)。
+同时提供：最佳匹配 Okapi BM 25，随机分歧 (Divergence from Randomness )，语言模型和基于信息量的模型。 不同的算法模型可以组合串联起来使用，这等于完全解放了Lucene的生产力！。
+
+三、新的DocValues类型可以为每个文档提供存储额外的类型数据。
+类似：PayLoad, 可以在用这个特性自定义排序打分参数。
+
+四、IndexWriter 写入索引到硬盘支持完全并发，之前IndexWriter在应用层能多线程调用，
+但在写入硬盘的时候还是逐个线程顺序写入的。
+这对于经常要重建索引的场景，减少了等待索引的时间。
+
+具体图形化的演示，请参考我之前的一片文章： http://blog.csdn.net/accesine960/article/details/6780068
+
+
+五、每个Document的标准化因子 norms 不再局限于一个字节。
+自定义排序的实现可以使用任何DocValues类型的排序因子。
+
+六、索引结构更加透明化，增加了索引统计机制，利用这些统计信息，Lucene索引内容不再是一个黑匣子了。
+
+包括： 提供针对term或者Field的token数量，针对某个filed的Posting数量，包含某个field的positing的文档数量。
+当然有了这些索引统计的数据后，就可以自定义的改进评分机制了。
+
+也就是说以下方法将会成为你的新朋友：
+
+TermsEnum.docFreq()，TermsEnum.totalTermFreq()，Fields.getUniqueTermCount()，Fields.getUniqueFieldCount()
+
+七、索引term不再局限于UTF-16的字符格式，Lucene 4.0中 term 可以是任何二进制数值(java中的byte数组)。
+默认情况下文本类term是UTF-8字节方式存储。
+
+八、在搜索时使用Filter效率有大幅提升
+
+九、针对索引merge线程添加了IO限速机制，减少搜索线程与合并索引线程引起的IO争用现象。
+
+十、由于架构的解耦，增加了一系列可插拔和可替换的模块，包括： 
+
+A: 添加编码器codec：针对类 Hadoop DFS 的文件系统提供。
+
+B: 内存编码器codec：把所有的term和posting放到一个内存中的FST（有限状态机），针对内存型应用提升了搜索速度。
+
+C: 脉冲编码器codec:主要利用了 Zipf 定律，根据term的频率，把频率达到制定阈值的term以inline的方式存储。
+
+   了解c++ inline 函数的同学，应该知道inline对于提升函数调用速度的威力吧。
+
+D: 明文编码器codec: Lucene的索引结构为了提升效率，从来都是一个黑匣子。
+现在这个黑匣子可以以明文的方式存储了。
+很显然这个编码器主要是调试、演示用的。估计很多需要写论文的同学们很乐意使用这个功能。
+
+E: Bloom编码器codec: 国内很多人把Bloom翻译为布隆，我还是喜欢直接用英文的Bloom。
+
+关于什么是Bloom 参考我之前的一片文章：http://blog.csdn.net/accesine960/article/details/1491483
+
+F：直接编码器 codec : 由这个名字可以看到，这个编码器是为提升效率用的，主要针对高内存需求类的场景定制的。
+
+G: 块解码器 codec:  使用了一个新的索引结构和压缩模式schema。
+
+十一、Term 偏移量可以选择与Postings list存储在一起。
+
+十二、新增AutomatonQuery ，用来返回所有Term匹配有限状态机文章列表
+
+十三、FuzzyQuery 查询速度提升了100-200倍。
+
+十四、新增拼写检查器DirectSpellChecker，新的拼写检查器不需要单独的索引，能够直接使用主索引。
+
+十五、 运行中的内存数据结构优化，包括：term 目录，FiledCache 等。
+
+以：500万wekipedia数据为例 3.x 索引时需要600M内存，4.x 索引时需要 200M内存。
+
+十六、所有的搜索逻辑现在针对每个segment上工作。
+IndexReaer 也被完全重构，变成了：Atomic 和 Composite Reader。
+
+这个变化比较大，我们知道Lucene在生成索引的时候会先生成小的Segment然后逐渐合并成大的Segment。
+Lucene的所有结构和组件都是以多个Segment为导向进行设计架构的。
+为搜索多个Segment需要MultiReader，而多Reader的会导致在搜索TermEnum 或者 Postings 的时候搜索效率的下降。
+因此新的Reader去掉了MultiReader，以Atomic和Composite Reader 代替。
+
+十七、Lucene 4.0 提供了模块化的API。 
+以模块化的方式提供了非结构化信息管理分析器 和 空间信息搜索模块。
+
+相关参考：
+
+http://www.lucidimagination.com/blog/2011/09/12/flexible-ranking-in-lucene-4
+
+http://blog.mikemccandless.com/2011/05/265-indexing-speedup-with-lucenes.html
+
+http://blog.mikemccandless.com/2012/03/new-index-statistics-in-lucene-40.html
+
+http://blog.mikemccandless.com/2012/03/new-index-statistics-in-lucene-40.html
+
+http://blog.mikemccandless.com/2011/06/primary-key-lookups-are-28x-faster-with.html
+
+http://blog.mikemccandless.com/2010/06/lucenes-pulsingcodec-on-primary-key.html
+
+http://blog.mikemccandless.com/2010/10/lucenes-simpletext-codec.html
+
+http://www.slideshare.net/otisg/finite-state-queries-in-lucene
+
+http://blog.mikemccandless.com/2011/03/lucenes-fuzzyquery-is-100-times-faster.html
+
+http://blog.mikemccandless.com/2010/07/lucenes-ram-usage-for-searching.html
+
+http://blog.thetaphi.de/2012/02/is-your-indexreader-atomic-major.html
+
+===========
+===========
+Lucene 4.0 的重大升级内容一览
+
+作者：田春峰，微博
+
+
+新浪微博上阿朱（博客 ，微博）提示让我说说Lucene 4.0 的特点。
+最近也在做搜索相关的项目，一直关注Lucene 3.x 之后下一步的发展方向。
+我就把我了解到的Lucene 4.0的一些资料和大家分享一下。
+
+大家都知道Lucene的作者是Doug Cutting ，这位博士毕业生因为工作不稳定，
+想学java，当他准备写个项目练练手的时候，也许他没想到这个以他外祖母的姓Lucene 命名的搜索引擎软件包会在此后的让他声名鹊起，并成为了中小型搜索引擎绝对主流的选择。
+
+关于Lucene在国内流行的原因，请大家参考我2004年的一篇博客：为什么会是Lucene 。
+http://blog.csdn.net/accesine960/article/details/227134
+
+大概从Lucene 1.4.3 开始后的每次升级，我听到身边程序员抱怨最多的就是：API 改的太恶心了。
+的确每次升级API都是大幅度的变化，但这也正是Lucene开源社区活跃的表现。
+每个人都希望Lucene增加这样或者那样的功能，满足这样或者那样的需求。
+没错，Lucene 4.0 还将延续这种风格！
+
+言归正传，Lucene 4.0 将会有如下翻天覆地的变化：
+
+1、全部使用字节( utf-8 tytes )替代string来构建 term directory 。
+Mysql 有MyIsam ，Innodb 引擎，为什么Lucene不能有类似的引擎？
+
+带来的好处是：索引文件读取速度 30 倍的提升；占用原来大约10%的内存；搜索过程由于去掉了字符串的转化速度也会明显提升；
+
+但是如果说这上面的好处只是一个副产品，你会怎么想？ 
+没错，Mysql有MyIsam，Innodb等诸多引擎供我们选择的，Lucene为什么不能向这个方向发展呢？
+
+实现这个机制的模块叫：Codec （编码器），你可以实现自己的Codec来进行自定义的扩展，很显然Codec的操作对象是Segment 。
+
+2、支持多线程建索引，支持：concurrent flushing。
+
+了解过Lucene 3.X的同学们都知道，诸如XXXPerThread 的类在建索引的时候已经支持多线程了，
+但是当每个线程的内存达到指定上限 (maxBufferedDocs or ramMaxBufferSizeMB)的时候就需要写到硬盘上，
+而这个过程仍然不是多线程的，仍然需要一个个排队Flush到硬盘。
+Lucene 4.0 终于支持 concurrent flushing  了。
+
+支持Concurrent Flushing听起来很酷，具体到Lucene 4.0 里，是增加了一个类来完成这个功能的。
+
+先看以下类：DocConsumerPerThread ， DocFieldConsumerPerThread ， DocInverterPerThread ， InvertedDocConsumerPerThread 。
+觉得少了什么吗？ 
+对，为什么没有 DocumentsWriterPerThread ，Lucene 4.0 的Concurrent Flushing 正是这个类来实现的。
+
+图形化单线程Flushing和Concurrent Flushing的对比：
+
+Luene 4.0 支持 Concurrent Flushing后最主要的问题是索引删除／修改的一致性的问题，这个问题比较复杂，不是本文的重点，就不细说了。
+
+3、 基于有限自动机的模糊匹配算法（FSA算法），FuzzyQuery
+
+FuzzyQuery 这类查询估计大家用的比较少。
+在英文中单词拼写错误，比如： Lucene， Licene , lucen  等就可以用FuzzyQuery来进行查询提高查全率。
+
+在lucene 4.0 之前的FuzzyQuery 的实现非常耗费cpu，实现算法也很暴力。
+具体过程是：读取每个term，然后计算每个term与查询词的“编辑距离”，如果在指定的范围内则返回。
+
+Lucene 4.0 使用 Levenshtein Automaton 的来衡量文字的"编辑距离" ，使用有限状态自动机来进行计算。
+以数百倍的效率提升了FuzzyQuery 的效率。
+
+Levenshtein 距离我现在还不是很清楚。用单纯的有限状态机知识能大概理解其中的原理，如下图：
+
+综上所述的3点是Lucene 4.0 众多新特性中最重要的部分，很值得大家期待。
+

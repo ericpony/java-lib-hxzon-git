@@ -108,19 +108,38 @@ MyBatis的二级缓存配置都是在每个具体的表-对象映射中进行详
 而MyBatis在这一方面，使用二级缓存时需要特别小心。如果不能完全确定数据更新操作的波及范围，避免Cache的盲目使用。否则，脏数据的出现会给系统的正常运行带来很大的隐患。
 
 第六章 Hibernate与Mybatis对比总结
+
 两者相同点
-Hibernate与MyBatis都可以是通过SessionFactoryBuider由XML配置文件生成SessionFactory，然后由SessionFactory 生成Session，最后由Session来开启执行事务和SQL语句。其中SessionFactoryBuider，SessionFactory，Session的生命周期都是差不多的。
+
+Hibernate与MyBatis都可以是通过SessionFactoryBuider
+由XML配置文件生成SessionFactory，然后由SessionFactory 生成Session，最后由Session来开启执行事务和SQL语句。
+其中SessionFactoryBuider，SessionFactory，Session的生命周期都是差不多的。
+
 Hibernate和MyBatis都支持JDBC和JTA事务处理。
+
 Mybatis优势
+
 MyBatis可以进行更为细致的SQL优化，可以减少查询字段。
 MyBatis容易掌握，而Hibernate门槛较高。
+
 Hibernate优势
+
 Hibernate的DAO层开发比MyBatis简单，Mybatis需要维护SQL和结果映射。
 Hibernate对对象的维护和缓存要比MyBatis好，对增删改查的对象的维护要方便。
 Hibernate数据库移植性很好，MyBatis的数据库移植性不好，不同的数据库需要写不同SQL。
 Hibernate有更好的二级缓存机制，可以使用第三方缓存。MyBatis本身提供的缓存机制不佳。
+
 他人总结
-Hibernate功能强大，数据库无关性好，O/R映射能力强，如果你对Hibernate相当精通，而且对Hibernate进行了适当的封装，那么你的项目整个持久层代码会相当简单，需要写的代码很少，开发速度很快，非常爽。 
-Hibernate的缺点就是学习门槛不低，要精通门槛更高，而且怎么设计O/R映射，在性能和对象模型之间如何权衡取得平衡，以及怎样用好Hibernate方面需要你的经验和能力都很强才行。 
-iBATIS入门简单，即学即用，提供了数据库查询的自动对象绑定功能，而且延续了很好的SQL使用经验，对于没有那么高的对象模型要求的项目来说，相当完美。 
-iBATIS的缺点就是框架还是比较简陋，功能尚有缺失，虽然简化了数据绑定代码，但是整个底层数据库查询实际还是要自己写的，工作量也比较大，而且不太容易适应快速数据库修改。
+
+Hibernate功能强大，数据库无关性好，O/R映射能力强，如果你对Hibernate相当精通，
+而且对Hibernate进行了适当的封装，那么你的项目整个持久层代码会相当简单，需要写的代码很少，开发速度很快，非常爽。 
+
+Hibernate的缺点就是学习门槛不低，要精通门槛更高，而且怎么设计O/R映射，
+在性能和对象模型之间如何权衡取得平衡，以及怎样用好Hibernate方面需要你的经验和能力都很强才行。 
+
+iBATIS入门简单，即学即用，提供了数据库查询的自动对象绑定功能，
+而且延续了很好的SQL使用经验，对于没有那么高的对象模型要求的项目来说，相当完美。 
+
+iBATIS的缺点就是框架还是比较简陋，功能尚有缺失，
+虽然简化了数据绑定代码，但是整个底层数据库查询实际还是要自己写的，工作量也比较大，而且不太容易适应快速数据库修改。
+
