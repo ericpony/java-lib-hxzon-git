@@ -1,0 +1,165 @@
+﻿稳扎稳打C++11：（函数03）返回类型和return语句
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-3 0:19:58
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=264
+
+
+C++的返回类型
+目录
+无返回值的函数
+有返回值的函数
+从main返回
+返回一个指向数组的指针
+无返回值的函数 
+
+在一个void函数中，编译器会在函数的最后一条语句后添加一个return语句。典型就是，使用return语句来退出void函数。
+有返回值的函数 
+
+值是如何返回的
+函数返回值的方式同变量和参数初始化的方式相同。返回值用于初始化调用方的一个临时变量。
+同其他引用一样，当一个函数返回一个引用时，引用仅仅是其绑定对象的别名。
+从不返回本地对象的引用或指针
+当一个函数执行完成，它的存储空间会被释放。
+看看以下代码：
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+const string &manip()
+{
+    string ret;
+    if(!ret.empty())
+    {
+        return ret; //warning: reference to local variable ‘ret’ returned
+    }
+    else
+    {
+        return "Empty"; //warning: returning reference to temporary
+    }
+}
+ 
+int main()
+{
+    cout << manip() << endl;
+    return 0;
+}
+编译时，编译器给出警告提示。程序输出为空。
+“return ret”是因为ret是本地对象，函数的返回值不能绑定到本地对象上。“return Empty”是因为“Empty”是本地的一个临时对象，所以也是错误的。
+原因同引用一样，返回的指针也不能指向一个本地对象。
+返回的引用是左值
+一个函数调用是否是左值依赖于函数的返回类型。如果函数返回的是引用类型，那么函数调用就是左值，否则返回类型产生右值。返回类型为引用的函数调用可以像任何左值一样去使用。例如如下代码：
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+char &get_val(string &str, string::size_type i)
+{
+    return str[i];
+}
+ 
+int main()
+{
+    string s = "China";
+    cout << s << endl;
+    get_val(s,0) = 'M';
+    cout << s << endl;
+     
+    /*
+    ENVIRONMENT:
+    g++-4.8(linux64)
+ 
+    OUTPUT:
+    China
+    Mhina
+    */
+    return 0;
+}
+列表初始化返回值
+在新标准C++11下，函数能够返回列表值。
+#include <iostream>
+#include <string>
+#include <vector>
+ 
+using namespace std;
+ 
+vector<string> process()
+{
+    return {"funx","success"};
+}
+ 
+int main()
+{
+    vector<string> vs = process();
+    for(auto s : vs)
+    {
+        cout << s << endl;
+    }
+     
+    /*
+    ENVIRONMENT:
+    g++-4.8(linux64)
+ 
+    OUTPUT:
+    funx
+    success
+    */
+    return 0;
+}
+如果函数返回的是内置类型，大括号列表只能包含最多一个值，并且那个值不能进行收缩转换（narrowing conversion）。如果函数返回的是一个类类型，那么类本身定义了初始化器是如何使用的。
+从main返回 
+
+main函数允许不使用return语句。如果控制到达了main的结尾，并且没有return，那么编译器会隐式地插入“return 0”.
+返回0表示成功，大部分的其他值表示失败，一小部分根据机器不同代表不同意思。为了让return值不依赖于机器，cstdlib头文件中定义了两个预处理变量可以让我们表示成功或失败。
+#include <iostream>
+#include <cstdlib>
+#include <vector>
+ 
+using namespace std;
+ 
+int main()
+{
+    if( 0==0)
+    {
+        return EXIT_FAILURE;
+    }
+    else
+    {
+        return EXIT_SUCCESS;
+    }
+}
+递归
+一个函数直接或间接地调用它自己，这个函数是一个递归函数。
+返回一个指向数组的指针 
+
+因为我们不能拷贝数组，函数不能返回数组。然而，一个函数可以返回一个指向数组的指针或一个绑定到数组的引用。
+用于定义数组的指针或引用是十分复杂的，但是我们可以通过类型别名来简化声明。
+typedef int arrT[10];
+using arrt = int[10];
+arrt* func(int i);
+上面示例中，定义的arrT是包含10个整型元素的数组的同义词。func返回的是一个指向包含10个整型元素数组的指针。
+声明返回指向数组的指针的函数
+请看下面的函数声明：
+int arr[10]; // arr 是一个数组，包含10个整型
+int *parr[10]; // paar 是一个数组，包含10个指针
+int (*p2)[10] = &arr; // p2 是一个指针，指向一个包含10个整型的数组
+因此，一个返回指向数组的指针的函数的形式如下：
+Type (*function(parameter_list))[dimension]
+举个例子，定义一个函数，返回的是指向10个整型元素构成的数组的指针。
+int (*func(int i))[10];
+后置返回类型(Trailing Return Type)
+C++11中提供了一种简化上述func函数的方式，叫做后置返回类型。后置返回类型可以给任何函数进行定义，但它最大的用处还是定义复杂返回类型的函数。
+后置返回类型放在参数列表后，并且前面放置 ->。为了表示返回类型在参数类表后，我们使用auto来替代了返回类型的位置。
+例如上面的func函数，我们可以采用下面的方式进行定义：
+auto func(int i) -> int(*)[10];
+使用decltype
+除了上述方式，还有一种方式可以定义返回指向数组的指针的函数，那就是decltype。
+请参看以下的代码：
+int odd[] = {1,3,5,7,9};
+int even[] = {0,2,4,6,8};
+decltype(odd) *arrPtr(int i)
+{
+    return (i%2) ? &odd : &even;
+}
+这种方式利用的是decltype不会将数组转化位对应的指针类型。decltype返回的是一个数组类型，所以我们还需要在函数名前加一个*。
+

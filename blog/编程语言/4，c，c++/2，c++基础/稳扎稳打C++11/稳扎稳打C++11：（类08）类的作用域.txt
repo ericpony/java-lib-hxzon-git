@@ -1,0 +1,84 @@
+﻿稳扎稳打C++11：（类08）类的作用域
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-23 0:30:06
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=279
+
+
+当一个成员函数定义在类外部时，在返回类型中的任何名称都在类作用域之外。因此，返回类型必须指定名称所属的类。
+目录
+在类外定义的成员和作用域
+类成员声明的名称查找
+不一样的类型名称（type name）
+每个类都定义了它自己的新的作用域（Scope）。在类的作用域之外，我们可以通过类的对象或者对象的引用和指针来访问数据成员和函数成员。我们也可以通过类和作用域运算符来访问类型成员。
+在类外定义的成员和作用域 
+
+在类外部定义成员函数时，一旦在函数名部分中看见类名，定义的剩余部分（如参数列表和函数体）就都处于类的作用域之内了。这样，我们就不用使用完全限定来使用其他的类成员了。
+另一方面，函数的返回类型出现在函数名之前。当一个成员函数定义在类外部时，在返回类型中的任何名称都在类作用域之外。因此，返回类型必须指定名称所属的类。
+例如以下程序：
+#include <iostream>
+#include <string>
+#include <vector>
+ 
+using namespace std;
+ 
+class Screen
+{
+public:
+    typedef string::size_type pos;
+    void setHeight(pos);
+    pos getHeight();
+private:
+    pos height;
+};
+ 
+void Screen::setHeight(pos h)
+{
+    this->height = h;
+}
+Screen::pos Screen::getHeight()
+{
+    return this->height;
+}
+ 
+int main()
+{
+    Screen srn;
+    srn.setHeight(345);
+    cout << srn.getHeight() << endl;
+ 
+    /*
+    ENVIRONMENT:
+    MSVS2012
+ 
+    OUTPUT:
+    345
+    */
+ 
+    return 0;
+}
+类成员声明的名称查找 
+
+类定义的处理分两个阶段：首先，编译成员声明；其次，类中所有的声明都被处理后编译函数体。
+这两步只适用于成员函数内的名称的查找。当名称在返回类型和参数列表中时，名称在使用前必须是可见的。如果一个成员声明所使用的名称没有在类的内部找到的话，编译器会在类所在的作用域进行查找。例如：
+typedef double Money;
+string bal;
+class Account
+{
+public:
+    Money balance(){return bal;}
+private:
+    Money bal;
+};
+不一样的类型名称（type name） 
+
+通常，内部作用域可以重新定义外部作用域的名称。然而，在类中，如果一个类型名称已经在外部定义，那么类内将不能再重新定义该名称为其他的类型名称。例如：
+typedef double Money;
+string bal;
+class Account
+{
+public:
+    Money balance(){return bal;}
+private:
+    typedef double Money; // error:不能重新定义Money。
+    Money bal;
+};
+

@@ -1,0 +1,99 @@
+﻿稳扎稳打C++11：（类14）类的静态成员
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-28 0:14:27
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=286
+
+
+通常，static成员不能在类内进行初始化。然而，当static成员是const类型并且是整型时，我们可以在类内初始化static成员。
+目录
+声明static成员
+使用static成员
+定义static成员
+static成员的类内初始化
+static成员能做但普通成员不能做的情况
+类有时需要与类相关的成员，而不是与对象有关。例如，银行账户的利率与个人账户无关，从效率的角度来看，没有理由为每个对象存储利率。更重要的是，利率改变的时候，我们愿意让每个对象使用新的值。
+声明static成员 
+
+通过在声明中添加static关键字，将一个成员关联到类上。同其他成员一样，static成员可以是public或private的。静态数据成员的类型可以是const、引用、数组、类类型等。
+使用static成员 
+
+我们可以通过作用域操作符直接访问static成员，也可以通过对象或对象的引用和指针来访问static成员。成员函数可以直接访问static成员，而不用作用域操作符。
+定义static成员 
+
+同其他数据成员一样，我们可以在类内或类外定义一个static成员函数。当我们在类外定义static成员函数时，不需要static关键字。static只出现在类内的声明中。
+由于static数据成员并不是单独对象的一部分，所以在创建类的对象时并没有定义static成员。因此，类的构造函数并没有初始化static成员。通常，我们不能在类内初始化static成员。我们需要在类外部定义和初始化每个static成员。
+同全局对象，static数据成员定义在任何函数之外。因此，一旦他们被定义，他们会一直存在直到程序结束。
+static成员的类内初始化 
+
+通常，static成员不能在类内进行初始化。然而，当static成员是const类型并且是整型时，我们可以在类内初始化static成员。
+static成员能做但普通成员不能做的情况 
+
+一是static数据成员可以是不完整类型，而普通成员只能是不完整类型的引用或指针。
+二是static数据成员可以作为默认实参。
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+class Account
+{
+public:
+    static double rate(){return interestRate;}
+    static void rate(double);
+    static const int period = 1;
+    static Account child;
+ 
+    double calculate(){return amount * interestRate;}
+    void setAmount(double);
+ 
+private:
+    static double interestRate;
+    static double initRate();
+ 
+ 
+    string owner;
+    double amount;
+};
+ 
+double Account::interestRate = initRate();
+ 
+void Account::rate(double d)
+{
+    interestRate = d;
+}
+ 
+void Account::setAmount(double d)
+{
+    this->amount = d;
+}
+ 
+double Account::initRate()
+{
+    return 0.035;
+}
+ 
+int main()
+{
+    Account act;
+    act.setAmount(10000);
+    cout << act.rate() << endl;
+    cout << Account::rate() << endl;
+    cout << act.calculate() << endl;
+    Account::rate(0.05);
+    cout << act.calculate() << endl;
+    cout << Account::period << endl;
+ 
+    /*
+    ENVIRONMENT:
+    MS VS2012
+ 
+    OUTPUT:
+    0.035
+    0.035
+    350
+    500
+    1
+    */
+ 
+    return 0;
+}
+

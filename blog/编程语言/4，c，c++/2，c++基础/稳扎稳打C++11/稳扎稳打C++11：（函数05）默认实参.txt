@@ -1,0 +1,101 @@
+﻿稳扎稳打C++11：（函数05）默认实参
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-10 0:19:43
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=266
+
+
+本地变量不能用于实参。除了这个限制，默认实参可以是任何能够转换成参数类型的表达式。
+目录
+默认实参的声明
+默认实参的初始化式
+我们可在参数列表中为参数定义默认实参。如果一个参数定义了默认参数，那么这个参数后面的参数必须也要定义默认实参。
+默认实参的声明 
+
+函数可以在一处定义，多处声明。然后，在给定的范围内每个参数只能指定一次默认值。因此，任何接下来的声明中，只能为没有指定过默认值的参数设定默认值。测试的代码示例如下：
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+typedef string::size_type sz;
+ 
+void display(sz, sz, char);
+void display(sz, sz, char = 'A');
+//void display(sz, sz, char = 'B');// error: default argument given for parameter 3 of ‘void display(sz, sz, char)’
+void display(sz = 89, sz = 78, char);
+ 
+void display(sz height, sz width, char background)
+{
+    cout << "height: " << height << endl;
+    cout << "width: " << width << endl;
+    cout << "background: " << background << endl;
+}
+ 
+int main()
+{
+    display(20,30);
+    display();
+ 
+    /*
+    ENVIRONMENT:
+    g++-4.8(linux64)
+ 
+    OUTPUT:
+    height: 20
+    width: 30
+    background: A
+    height: 89
+    width: 78
+    background: A
+    */
+    return 0;
+}
+默认实参的初始化式 
+
+本地变量不能用于实参。除了这个限制，默认实参可以是任何能够转换成参数类型的表达式。
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+typedef string::size_type sz;
+ 
+sz height = 55;
+sz width = 66;
+char getBG()
+{
+    return 'X';
+}
+ 
+void display(sz height = height, sz width = width, char background = getBG())
+{
+    cout << "height: " << height << endl;
+    cout << "width: " << width << endl;
+    cout << "background: " << background << endl;
+}
+ 
+void func()
+{
+    height = 11;
+    sz width = 22;
+    display();
+}
+ 
+int main()
+{
+    display();
+    func();
+    /*
+    ENVIRONMENT:
+    g++-4.8(linux64)
+ 
+    OUTPUT:
+    height: 55
+    width: 66
+    background: X
+    height: 11
+    width: 22
+    background: X
+    */
+    return 0;
+}
+

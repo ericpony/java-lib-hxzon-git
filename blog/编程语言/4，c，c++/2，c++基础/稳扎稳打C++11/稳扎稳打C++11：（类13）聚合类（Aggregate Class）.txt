@@ -1,0 +1,42 @@
+﻿稳扎稳打C++11：（类13）聚合类（Aggregate Class）
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-24 23:48:24
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=284
+
+
+初始化器的顺序必须与数据成员的声明顺序一致。如果初始化器的个数少于类成员的个数，那么剩余的成员将执行值初始化。
+目录
+聚合类允许用户直接访问其成员，并且其拥有特殊的初始化语法。
+聚合类需要满足以下条件：
+所有的数据成员都是public的。
+没有定义任何构造函数
+没有任何类内初始化器
+没有基类或virtual函数。
+例如以下的类：
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+struct Data
+{
+    int ival;
+    string s;
+};
+ 
+int main()
+{
+    Data d1 = {12,"GOOD NIGHT."};
+    cout << d1.ival << ", " << d1.s << endl;
+     
+    /*
+    ENVIRONMENT:
+    g++-4.8(32bit)
+     
+    OUTPUT:
+    12, GOOD NIGHT.
+    */
+     
+    return 0;
+}
+初始化器的顺序必须与数据成员的声明顺序一致。如果初始化器的个数少于类成员的个数，那么剩余的成员将执行值初始化。
+

@@ -1,0 +1,45 @@
+﻿稳扎稳打C++11：（类10）委托构造函数
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-24 0:22:36
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=281
+
+
+使用委托构造函数的函数体的执行是在被委托构造函数的函数体的执行之后进行的。
+目录
+C++11中扩展了构造函数初始化器的使用，允许我们定义委托构造函数（delegating constructor）。一个委托构造函数使用类中另一个构造函数来完成自己的初始化。
+需要注意的是，使用委托构造函数的函数体的执行是在被委托构造函数的函数体的执行之后进行的。
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+class Screen
+{
+public:
+    Screen(int height,int width,string content):height(height),width(width),content(content)
+    {
+        cout << "first constructor executing." << endl;
+    }
+    Screen(string content):Screen(0,0,content)
+    {
+        cout << "second constructor executing." << endl;
+    }
+private:
+    int height;
+    int width;
+    string content;
+};
+ 
+int main()
+{
+    Screen screen("abc");
+    /*
+    ENVIRONMENT:
+    g++-4.8(32bit)
+     
+    OUTPUT:
+    first constructor executing.
+    second constructor executing.
+ 
+    */
+    return 0;
+}

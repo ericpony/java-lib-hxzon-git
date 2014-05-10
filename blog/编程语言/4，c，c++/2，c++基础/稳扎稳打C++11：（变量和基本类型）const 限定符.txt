@@ -1,4 +1,4 @@
-﻿稳扎稳打C++11：const 限定符
+﻿稳扎稳打C++11：（变量和基本类型）const 限定符
 来源：ilanever.com | 作者：LanPei | 创建时间：2013-12-24 23:44:26
 http://ilanever.com/article/sitedetail.html?id=221
 

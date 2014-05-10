@@ -1,0 +1,199 @@
+﻿稳扎稳打C++11：（类12）隐式类类型转换
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-24 23:32:21
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=283
+
+
+虽然将构造函数声明为explicit不能进行隐式转换，但可以通过static_cast进行强制转换。
+目录
+只允许执行一次类类型转换
+类类型转换并不总是有益的
+阻止构造函数定义的隐式转换
+使用static_cast强制转换
+在内置类型之间，语言定义了一些自动转换。同样，类也可以定义隐式转换。
+如果构造函数只定义了一个参数，那么就存在从参数类型到类类型的隐式转换。这样的构造函数被称作“转换构造函数（converting constructor）”。
+请看如下示例：
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+class Screen
+{
+public:
+    Screen(int height):height(height){}
+    int getHeight();
+private:
+    int height;
+};
+ 
+int Screen::getHeight()
+{
+    return this->height;
+}
+ 
+int main()
+{
+    Screen srn = 789;
+    cout << srn.getHeight() << endl;
+    /*
+    ENVIRONMENT:
+    MS VS2012
+ 
+    OUTPUT:
+    789
+    */
+    return 0;
+}
+只允许执行一次类类型转换 
+
+编译器自动应用一次类类型转换。以下的代码就是错的，因为执行了两次转换：
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+class Screen
+{
+public:
+    Screen(string content):content(content){}
+    string getContent();
+private:
+    string content;
+};
+string Screen::getContent()
+{
+    return this->content;
+}
+ 
+int main()
+{
+    //Screen srn1 = "First";//error: conversion from ‘const char [6]’ to non-scalar type ‘Screen’ requested
+    string ctn = "First";
+    Screen srn2 = ctn;
+    cout << srn2.getContent() << endl;
+     
+    /*
+    ENVIRONMENT:
+    g++-4.8(32bit)
+     
+    OUTPUT:
+    First
+    */
+     
+    return 0;
+}
+类类型转换并不总是有益的 
+
+比如以下示例中的combine函数：
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+class Screen
+{
+public:
+    Screen(string content):content(content){}
+    string getContent();
+    void combine(Screen);
+private:
+    string content;
+};
+string Screen::getContent()
+{
+    return this->content;
+}
+void Screen::combine(Screen s)
+{
+    cout << "Combing Screen's content is : " << s.getContent() << endl;
+}
+ 
+int main()
+{
+    //Screen srn1 = "First";//error: conversion from ‘const char [6]’ to non-scalar type ‘Screen’ requested
+    string ctn = "First";
+    Screen srn2 = ctn;
+    cout << srn2.getContent() << endl;
+     
+    string ctn2 = "Second";
+    srn2.combine(ctn2);
+    /*
+    ENVIRONMENT:
+    g++-4.8(32bit)
+     
+    OUTPUT:
+    First
+    Combing Screen's content is : Second
+    */
+     
+    return 0;
+}
+在给combine函数传递一个string对象时，string对象隐式地转化为Screen对象。但是在combine函数完成后，我们将不能访问到临时的Screen对象。
+阻止构造函数定义的隐式转换 
+
+有时候我们想阻止构造函数定义的隐式转换，这时我们可以将构造函数声明为explicit。
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+class Screen
+{
+public:
+    explicit Screen(string content):content(content){}
+    string getContent();
+private:
+    string content;
+};
+string Screen::getContent()
+{
+    return this->content;
+}
+ 
+int main()
+{
+    string ctn = "First";
+    Screen srn1 = ctn;// error: conversion from ‘std::string {aka std::basic_string<char>}’ to non-scalar type ‘Screen’ requested
+     
+    return 0;
+}
+explicit只能用于类内的构造函数声明，不能在类外的定义上重复使用。
+使用static_cast强制转换 
+
+虽然将构造函数声明为explicit不能进行隐式转换，但可以通过static_cast进行强制转换：
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+class Screen
+{
+public:
+    explicit Screen(string content):content(content){}
+    string getContent();
+private:
+    string content;
+};
+string Screen::getContent()
+{
+    return this->content;
+}
+ 
+int main()
+{
+    string ctn = "First";
+    auto srn = static_cast<Screen>(ctn);
+    cout << srn.getContent() << endl;
+     
+    /*
+    ENVIRONMENT:
+    g++-4.8
+     
+    OUTPUT:
+    First
+    */
+     
+    return 0;
+}
+由上可见，static_cast可能是调用Screen(string)进行直接初始化。
+

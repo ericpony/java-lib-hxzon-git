@@ -1,0 +1,49 @@
+﻿稳扎稳打C++11：（类02）构造函数
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-18 23:18:57
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=273
+
+
+不要在构造函数中重写类内的初始化器，除非要使用不同的初始化值。如果不能使用类内初始化器，每个构造函数应该显示地初始化每个内置类型成员。
+目录
+合成的默认构造函数
+一些类不能依赖于合成的默认构造函数
+定义Sales_data的构造函数
+= default
+构造函数初始化式列表
+构造函数的任务是初始化类对象的数据成员。
+合成的默认构造函数 
+
+在定义类对象时，如果没有为定义提供初始化器，那么对象将被默认初始化。类通过默认构造函数（default constructor）来控制默认初始化的行为。默认构造函数没有参数。
+当我们没有给类定义任何构造函数时，编译器会为我们隐式地定义默认构造函数。这种由编译器生成的构造函数被称为“合成的默认构造函数（synthesized default constructor）”。
+一些类不能依赖于合成的默认构造函数 
+
+有的时候我们需要自己定义默认构造函数，原因有三：
+一是只有在类未定义任何构造函数时，编译器才会生成默认的构造函数。
+二是合成的默认构造函数所执行的内容不是我们想要的。例如，内置类型对象和复合类型（例如数组和指针）对象定义在块内的话，执行默认初始化后，其值是未定义的。
+三是编译器不能帮助我们合成默认的构造函数。例如，类内拥有一个其他类类型的成员，而且那个类没有默认构造函数，这时编译器不能初始化该成员。
+定义Sales_data的构造函数 
+
+struct Sales_data
+{
+    Sales_data() = default;
+    Sales_data(const std::string &s): bookNo(s){}
+    Sales_data(const std::string &s, unsigned n, double p):
+                bookNo(s), units_sold(n), revenue(P*n){}
+    Sales_data(std::istream &);
+ 
+    std::string isdb() const {return bookNo;}
+    Sales_data& combine(const Sales_data&);
+    double avg_price() const;
+     
+    std::string bookNo;
+    unsigned units_sold = 0;
+    double revenue = 0.0;
+};
+= default 
+
+=default是C++11引入的。=default请求编译器为我们生成构造函数。=default可以在类内使用也可义在类外使用。和其他函数一样，如果=default在类内使用，默认构造函数就是inline的；如果出现在类外，就不是inline的。
+构造函数初始化式列表 
+
+Sales_data的第2个和第3个构造函数使用构造函数初始化式列表（constructor initializer list）初始化了类的成员。当类成员没有在构造函数初始化式列表中时，该成员的初始化方式同合成的默认构造函数的初始化方式。
+建议不要在构造函数中重写类内的初始化器，除非要使用不同的初始化值。如果不能使用类内初始化器，每个构造函数应该显示地初始化每个内置类型成员。
+

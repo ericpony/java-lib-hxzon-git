@@ -1,0 +1,168 @@
+﻿稳扎稳打C++11：（类07）友元关系（friendship）
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-23 0:08:45
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=278
+
+
+类可以将以下三种类型的对象作为它的友元：非成员函数（nonmemeber function）、类（class）、成员函数（member function）。
+目录
+类与类之间的友元关系
+将成员函数作为友元
+友元的声明和范围
+类可以将以下三种类型的对象作为它的友元：非成员函数（nonmemeber function）、类（class）、成员函数（member function）。
+类与类之间的友元关系 
+
+被授权的友元类的成员函数可以访问授权类的所有成员。
+#include <iostream>
+#include <string>
+#include <vector>
+ 
+using namespace std;
+ 
+class Screen
+{
+    friend class Window_mgr;
+private:
+    string content;
+public:
+    Screen(string c):content(c){}
+    void setContent(string);
+    void display();
+};
+void Screen::setContent(string s)
+{
+    this->content = s;
+}
+void Screen::display()
+{
+    cout << "current content: " << this->content << endl;
+}
+ 
+class Window_mgr
+{
+public:
+    typedef vector<Screen>::size_type ScreenIndex;
+    void clear(ScreenIndex);
+    void put(Screen s);
+    Screen &get(ScreenIndex);
+private:
+    vector<Screen> screens;
+};
+void Window_mgr::put(Screen s)
+{
+    this->screens.push_back(s);
+}
+void Window_mgr::clear(ScreenIndex i)
+{
+    Screen &screen = this->screens[i];
+    screen.content = "";
+}
+Screen &Window_mgr::get(ScreenIndex i)
+{
+    return this->screens[i];
+}
+ 
+int main()
+{
+    Screen screen1 = "ABC";
+    Screen screen2 = "DEF";
+    Window_mgr wgr;
+    wgr.put(screen1);
+    wgr.put(screen2);
+    wgr.get(0).display();
+    wgr.clear(0);
+    wgr.get(0).display();
+ 
+    /*
+    ENVIRONMENT:
+    MSVS2012
+ 
+    OUTPUT:
+    current content: ABC
+    current content:
+    */
+ 
+    return 0;
+}
+需要注意的是，友元是不能传递的。假如Window_mgr有自己的友元，但这些友元不能访问Screen的私有成员。
+将成员函数作为友元 
+
+#include <iostream>
+#include <string>
+#include <vector>
+ 
+using namespace std;
+ 
+class Screen;
+ 
+class Window_mgr
+{
+public:
+    typedef vector<Screen>::size_type ScreenIndex;
+    void clear(ScreenIndex);
+    void put(Screen s);
+    Screen &get(ScreenIndex);
+private:
+    vector<Screen> screens;
+};
+ 
+class Screen
+{
+    friend void Window_mgr::clear(ScreenIndex);
+private:
+    string content;
+public:
+    Screen(string c):content(c){}
+    void setContent(string);
+    void display();
+};
+ 
+void Window_mgr::put(Screen s)
+{
+    this->screens.push_back(s);
+}
+void Window_mgr::clear(ScreenIndex i)
+{
+    auto &s = this->screens[i];
+    s.content = "";
+}
+Screen &Window_mgr::get(ScreenIndex i)
+{
+    return this->screens[i];
+}
+ 
+void Screen::setContent(string s)
+{
+    this->content = s;
+}
+void Screen::display()
+{
+    cout << "current content: " << this->content << endl;
+}
+ 
+int main()
+{
+    Screen screen1 = "ABC";
+    Screen screen2 = "DEF";
+    Window_mgr wgr;
+    wgr.put(screen1);
+    wgr.put(screen2);
+    wgr.get(0).display();
+    wgr.clear(0);
+    wgr.get(0).display();
+ 
+    /*
+    ENVIRONMENT:
+    MSVS2012
+ 
+    OUTPUT:
+    current content: ABC
+    current content:
+    */
+ 
+    return 0;
+}
+上述代码中由于Screen和Window_mgr交叉使用对方。所以需要在一方使用另一方之前先声明被使用的类。上面程序需要注意各个部分的顺序才能保证顺利编译通过。
+友元的声明和范围 
+
+在被用于友元声明之前，类和非成员函数不需要声明。当一个名称首次出现在友元声明时，这个名称会被假定是周围范围的一部分。然而，友元声明本身并不是真正意义上的声明。
+

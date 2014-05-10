@@ -1,0 +1,330 @@
+﻿稳扎稳打C++11：（函数02）传递实参
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-1 0:24:49
+http://ilanever.com/article/sitedetail.html?id=263
+
+C++定义可变参数的方式有3种：1.使用特殊的参数类型：省略号（ellipsis）；2.使用类型initializer_list；3.使用可变参数模板（variadic template）。
+目录
+按值传递实参
+按引用传递实参
+const 形参和实参
+尽可能地使用const引用
+数组参数
+拥有可变参数的函数
+形参初始化的方式同变量初始化。
+当形参是引用的时候，我们说对应的实参是“按引用传递（passed by reference）”的，或者函数是“按引用调用（called by reference）”的。同其他的引用，此时形参是实参的别名。
+当实参的值被拷贝的时候，实参和形参是两个不同的对象。这样的实参是“按值传递（passed by value）”的，或者说函数是“按值调用（called by value）”的。
+按值传递实参 
+
+按值传递指针同传递非引用类型一样：指针的地址值被传递给函数。实参的指针地址复制给了形参，修改二者任何一个，都不会影响另一个。
+#include <iostream>
+ 
+using namespace std;
+ 
+void reset(int *p)
+{
+    cout << "p address at begin of reset : " << p << endl;
+    *p = 5;
+    p = 0;
+    cout << "p address at end of reset : " << p << endl;
+}
+ 
+int main()
+{
+    int i = 10;
+    int *ip = &i;
+    cout << "ip address at begin of program : " << ip << endl;
+    reset(ip);
+    cout << "i value after reset : " << i << endl;
+    cout << "ip address at end of program : " << ip << endl;
+ 
+    /*
+    Environment:
+    g++4.8 Linux64
+ 
+    Output:
+    ip address at begin of program : 0x7fff9fa76f34
+    p address at begin of reset : 0x7fff9fa76f34
+    p address at end of reset : 0
+    i value after reset : 5
+    ip address at end of program : 0x7fff9fa76f34
+    */
+    return 0;
+}
+习惯于C的程序员经常使用指针访问函数外的对象，在C++中则使用引用替代。
+按引用传递实参 
+
+引用形参用于允许函数改变一个或者多个实参的值。
+#include <iostream>
+ 
+using namespace std;
+ 
+void reset(int &p)
+{
+    p = 0;
+}
+ 
+int main()
+{
+    int i = 10;
+    reset(i);
+    cout << "i : " << i << endl;
+ 
+    /*
+    Environment:
+    g++4.8 Linux64
+ 
+    Output:
+    i : 0
+    */
+    return 0;
+}
+使用引用避免拷贝
+拷贝大对象或者大容器是十分低效的，甚至某些类型是不能拷贝的。函数必须使用引用形参来操作那些不能拷贝的对象。
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+bool isShorter(const string &s1,const string &s2)
+{
+    return s1.size() < s2.size();
+}
+ 
+int main()
+{
+    string s1 = "abc";
+    string s2 = "abcd";
+    bool r = isShorter(s1,s2);
+    cout << boolalpha << r << endl;
+    /*
+    Environment:
+    g++4.8 Linux64
+ 
+    Output:
+    true
+    */
+    return 0;
+}
+如果函数的引用形参不应被更改的话，应把该参数声明为绑定到const的引用。
+一个函数只能返回一个值，使用引用形参可以让我们高效地返回多个结果。
+const 形参和实参 
+
+我们可以使用notconst对象初始化一个low-level const对象，但反过来则不可义。这样的规则同样适用于参数传递。
+尽可能地使用const引用 
+
+当函数调用者看到形参是nonconst的时候，常常会认为实参的值在函数内会发生改变，但其实也许实参在我们的函数内部并不会发现改变。而且，使用nonconst参数时无法向函数传递const对象，所以在定义函数参数列表时应尽可能地使用const引用。
+数组参数 
+
+数组有两个特性影响着我们如何在函数中使用数组：数组不能拷贝和使用数组时会转换成指针。因为数组不能拷贝，所以我们不能按值传递数组。因为数组被转换成指针，所以当我们向函数传递数组时，实际上是传递指向数组第一个元素的指针。
+虽然我们不能按值传递数组，但我们可以给函数添加看起来像数组的参数。例如：
+void print(const int*);
+void print(const int[]);
+void print(const int[10]);
+虽然上述三个函数看上去不一样，但他们的声明是相同的：拥有const int* 类型参数的函数。
+因为数组是作为指针传递的，所以函数通常并不知道数组的大小。函数调用者必须给函数提供额外的信息。有三种方法用来管理指针参数：
+使用标记指定数组的范围
+让数组包含结束标记。例如：C风格字符串以null字符结尾。
+使用标准库习惯
+在函数参数列表中声明指向数组第一个元素的指针和指向off-the-end指针。我们可以使用库函数begin()和end()来提供这两个指针。这种方式在标准库中比较常见。
+显示传递一个size参数
+定义一个用于表示数组大小的参数，这种方式在C和老式C++代码中比较常见。
+3中方式的代码示例如下所示：
+#include <iostream>
+#include <string>
+#include <iterator>
+ 
+using namespace std;
+ 
+void print(const char* cp)
+{
+    while(*cp)
+    {
+        cout << *cp++;
+    }
+    cout << endl;
+}
+ 
+void print(const int* beg, const int* end)
+{
+    while(beg != end)
+    {
+        cout << *beg++ << endl;
+    }
+}
+ 
+void print(const int ia[],size_t sz)
+{
+    for(size_t i = 0; i < sz;++i)
+    {
+        cout << ia[i] << endl;
+    }
+}
+ 
+int main()
+{
+    string s = "abcde";
+    print(s.c_str());
+     
+    int ia[3] = {1,3,5};
+    print(begin(ia),end(ia));
+ 
+    print(ia, end(ia) - begin(ia));
+ 
+    /*
+    ENVIRONMENT:
+    g++4.8.1(linux64)
+ 
+    OUTPUT:
+    abcde
+    1
+    3
+    5
+    1
+    3
+    5
+ 
+    */
+    return 0;
+}
+如果上面的代码示例，当函数不需要更改数组元素时，数组参数应该是指向const的指针。只有当函数需要改变元素值时，参数才应该是指向nonconst类型的普通指针。
+数组引用参数
+正如我们可以定义绑定到数组的引用的变量，我们也可以定义一个绑定到数组的引用的参数。定义方法如下所示：
+#include <iostream>
+#include <string>
+#include <iterator>
+ 
+using namespace std;
+ 
+void print(int (&arr)[10])
+{
+    for(auto e : arr)
+    {
+        cout << e << endl;
+    }
+}
+ 
+int main()
+{
+     
+    int ia[10] = {1,2,3,4,5,6,7,8,9,10};
+    print(ia);
+ 
+    /*
+    ENVIRONMENT:
+    g++4.8.1(linux64)
+ 
+    OUTPUT:
+    abcde
+    1
+    3
+    5
+    1
+    3
+    5
+ 
+    */
+    return 0;
+}
+当在函数中定义绑定到数组的引用时，必须设置数组的维度。而且实参与形参的维度必须相同。
+绑定到数组的引用在声明时的小括号是必须的。
+f(int &arr[10]); // arr 是由10个引用组成的数组
+f(int (&arr)[10]); // arr 是绑定到数组的引用
+传递多维数组
+多维数组是数组的数组。同其他数组一样，多维数组在传递时是一个指向第一个元素（数组）的指针。而且在函数的参数声明时，要指定子维的大小。
+int *matrix[10]; // matrix是由10个指针组成的数组。
+int (*matrix)[10]; // matrix是指向数组的指针。
+因此，传递多维数组是这样传递的：定义一个指向数组的指针和多维数组的行大小。
+void print(int (*matrix)[10], int rowSize);
+main:处理命令行选项
+有时候需要向main函数提供参数。例如：
+prog -d -o ofile data0
+这样的命令行选项通过main函数的两个参数传递给了main函数：
+int main(int argc, char *argv[]){}
+argv是一个数组，其元素是char指针或者说是C风格字符串。argc存储的是argv的元素个数。由于argv是个数组，因此main函数还可定义成如下形式：
+int main(int argc, char **argv){}
+argv的第一个元素存储的不是程序名称就是空字符串。剩下的元素存储的是命令行选项。在最后一个元素的后面会添加一个值为0的元素。
+对于上面的命令行，argc是5，agrv如下所示：
+argv[0] = "prog";
+argv[1] = "-d";
+argv[2] = "-o";
+argv[3] = "ofile";
+argv[4] = "data0";
+argv[5] = 0;
+拥有可变参数的函数 
+
+C++定义可变参数的方式有3种：1.使用特殊的参数类型：省略号（ellipsis）；2.使用类型initializer_list；3.使用可变参数模板（variadic template）。
+第1种方式是旧有的形式，主要用于面对C的函数。第2和第3种是在C++11中新引入的方式。
+initializer_list 参数
+initializer_list定义在头文件initializer_list中。initializer_list的操作如下所示：
+操作	说明
+initializer_list<T> list	默认初始化
+initializer_list<T> list{a,b,c...}	列表初始化。list中的元素是const的。
+list2(list1)	拷贝一个initializer_list，但不拷贝元素。拷贝后，原始的和拷贝后的共享元素。
+list2 = list1	赋值一个initializer_list，同上，二者共享元素。
+list.size()	返回元素个数
+list.begin()	返回一个指针，指向list的第一个元素。
+list.end()	返回一个指针，指向list的off-the-end指针。
+initializer_list是个模板类型，但同vector不同的是，initializer_list中的元素是const的。
+initializer_list的使用示例如下所示：
+#include <iostream>
+#include <initializer_list>
+#include <string>
+ 
+using namespace std;
+ 
+void error_msg(initializer_list<string> list)
+{
+    for(auto beg = list.begin(); beg != list.end(); ++beg)
+    {
+        cout << *beg << " ";
+    }
+    cout << endl;
+}
+ 
+int main()
+{
+    error_msg({"funcX","return A","return B"});
+    /*
+    ENVIRONMENT:
+    g++4.8.1(linux64)
+ 
+    OUTPUT:
+    funcX return A return B
+    */
+    return 0;
+}
+省略号参数
+省略号参数应该只使用于面对C的代码。C++中的很多类类型的对象传递给省略号参数时都不能很好地拷贝。
+#include<cstdarg>
+#include<iostream>
+ 
+using namespace std;
+ 
+int add(int pre,...)  
+{
+    va_list arg_ptr;
+    int sum=0;
+    int nArgValue;
+    sum+=pre;
+    va_start(arg_ptr,pre);
+    do
+    {
+        nArgValue=va_arg(arg_ptr,int);
+        sum+=nArgValue;       
+    }while(nArgValue!=0);   
+    va_end(arg_ptr);
+    return sum;
+}
+ 
+int main()
+{
+    cout<<add(1,2,3,0)<<endl;  
+    /*
+    ENVIRONMENT:
+    g++-4.8.1(linux64)
+ 
+    OUTPUT:
+    6
+    */
+    return 0;
+}

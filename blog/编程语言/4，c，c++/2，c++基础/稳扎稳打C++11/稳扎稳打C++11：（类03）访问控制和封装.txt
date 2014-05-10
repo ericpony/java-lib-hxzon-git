@@ -1,0 +1,88 @@
+﻿稳扎稳打C++11：（类03）访问控制和封装
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-19 0:14:45
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=274
+
+
+类可以通过让其他的类或函数成为该类的友元而访问该类的非公共成员。
+目录
+使用关键字class或者struct
+友元（friend）
+在C++中使用访问修饰符进行强制封装：
+定义在public修饰符之后的成员对于程序的所有部分都是可访问的。public成员定义的是类的接口。
+定义在private修饰符之后的成员只对类内的成员函数可见。private部分封装了实现。
+重新定义Sales_data类：
+class Sales_data
+{
+    public:
+        Sales_data() = default;
+        Sales_data(const std::string &s): bookNo(s){}
+        Sales_data(const std::string &s, unsigned n, double p)
+                    :bookNo(s), units_sold(n), revenue(p*n){}
+        Sales_data(std::istream &);
+         
+        std::string isbn() const {return bookNo;}
+        Sales_data &combine(const Sales_data&);
+    private:
+        double avg_price() const
+        {
+            return units_sold ? revenue/units_sold : 0;
+        }
+        std::string bookNo;
+        unsigned units_sold = 0;
+        double revenue = 0.0;
+}
+每个访问修饰符指定了其后成员的访问级别。指定的访问级别一直延续到下一个访问修饰符的出现或者到达类的结尾。
+使用关键字class或者struct 
+
+class和struct的唯一区别就是默认访问级别。
+类型中定义在第一个访问修饰符之前的成员的访问性由类型的定义方式决定。如果我们使用struct定义的类型，那么成员就是public的；如果我们使用class定义的类型，那么成员就是private的。
+友元（friend） 
+
+类可以通过让其他的类或函数成为该类的友元而访问该类的非公共成员。友元函数是通过关键字friend进行声明的。
+友元声明要在类的内部进行。
+以下是个友元函数的使用示例：
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+class User
+{
+    friend void printUserName(User &);
+     
+    private:
+        string name;
+        string pwd;
+    public:
+        void setName(string name)
+        {
+            this->name = name;
+        }
+        void setPwd(string pwd)
+        {
+            this->pwd = pwd;
+        }
+};
+ 
+void printUserName(User &u)
+{
+    cout << u.name << endl;
+}
+ 
+int main()
+{
+    User user;
+    user.setName("hanmeimei");
+    printUserName(user);
+     
+    /*
+    ENVIRONMENT:
+    g++-4.8
+     
+    OUTPUT:
+    hanmeimei   
+    */
+    return 0;
+}
+友元声明只是指定了访问性，它并不是一个通常的函数声明，所以如果我们需要使用友元函数还需要单独地对函数进行声明。通常我们将类及其友元函数在同一个头文件中进行声明。
+

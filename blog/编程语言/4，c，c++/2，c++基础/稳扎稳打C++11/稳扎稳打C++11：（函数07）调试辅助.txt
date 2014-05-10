@@ -1,0 +1,80 @@
+﻿稳扎稳打C++11：（函数07）调试辅助
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-13 16:48:14
+http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=268
+
+
+assert的行为依赖于名为NDEBUG的预处理器变量的状态。如果程序中定义了NDEBUG，assert将什么也不做。
+目录
+预处理器宏命令 assert
+预处理器变量 NDEBUG
+预处理器宏命令 assert 
+
+assert是个预处理器宏命令（macro）。assert的格式如下:
+assert(expr);
+计算expr表达式，当计算结果为false时，assert会输出一段消息并结束程序；当计算结果为true时，assert什么也不做。
+assert宏指令定义在cassert头文件中。因为assert是预处理器指令，所以在使用assert之前不需要提供using声明。
+同预处理器变量一样，在程序内宏指令名称必须唯一。如果程序中包含了cassert头文件，那么就不应该再定义名称为assert的变量、函数或者其他实体。许多头文件中都包含了cassert头文件，所以即使我们没有直接包含该文件，它也被间接地包含在我们的程序中了。
+assert宏指令通常被用于检查不能发生的情况。
+#include <iostream>
+#include <cassert>
+ 
+using namespace std;
+ 
+int main()
+{
+    int i = 2;
+    assert(i == 3); // Assertion `i == 3' failed.
+    return 0;
+}
+预处理器变量 NDEBUG 
+
+assert的行为依赖于名为NDEBUG的预处理器变量的状态。如果程序中定义了NDEBUG，assert将什么也不做。默认情况下，NDEBUG是不被定义的，所以，默认情况下，assert执行运行时检查。
+我们可以使用#define来定义NDEBUG以关闭调试。作为一种替换的方式，大多数的编译器支持命令行选项让我们定义预处理器变量：
+$ CC -D NDEBUG main.c
+如果使用的是Microsoft的编译器，则使用“/D”选项。
+除了使用assert，我们可以通过NDEBUG来编写我们自己的调试代码。
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+void print(string msg)
+{
+    #ifndef NDEBUG
+    cerr << "DEBUGING: " << endl 
+        << "\tfile:\t\t" << __FILE__ << endl
+        << "\tin func:\t" << __func__ << endl
+        << "\tat line:\t" << __LINE__ << endl
+        << "\tcompiled on:\t" << __DATE__ << " " << __TIME__ << endl
+        << "\tOccured:\t\"Some errors\"" << endl;
+    #endif
+    cout << msg << endl;
+}
+ 
+int main()
+{
+    print("abc");
+ 
+    /*
+    ENVIRONMENT:
+    g++-4.8(linux64)
+ 
+    OUTPUT:
+    DEBUGING: 
+        file:       ndebug.cpp
+        in func:    print
+        at line:    12
+        compiled on:    Apr 13 2014 16:36:08
+        Occured:    "Some errors"
+    abc
+    */
+    return 0;
+}
+C++一共定义了5种供调试的变量：
+变量	描述
+__func__	函数名称
+__FILE__	文件名称
+__LINE__	当前行号
+__DATE__	文件编译日期
+__TIME__	文件编译时间
+
