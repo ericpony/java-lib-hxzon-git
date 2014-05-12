@@ -2,39 +2,72 @@
 来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-12 23:57:08
 http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=267
 
+hxzon学习笔记：
 
-当一个函数被修饰为inline，常常会在每次调用时在行内展开。当定义的constexpr函数可以用于初始化一个constexpr变量时，编译器将会使用constexpr函数的结果值来替换函数调用本身。
+1，当一个函数被修饰为inline，常常会在每次调用时在行内展开。
+2，当定义的constexpr函数可以用于初始化一个constexpr变量时，编译器将会使用constexpr函数的结果值来替换函数调用本身。
+constexpr函数是隐式的inline函数。
+
+=========
 目录
+
 inline函数避免过度地函数调用
 constexpr 函数
-通常，调用一个函数容易比计算相等的表达式慢。在大多数的机器上，函数调用执行了很多的工作：函数调用时保存寄存器，函数退出时还原寄存器；可能需要复制参数；跳转到程序分支的新位置。
+
+====
+通常，调用一个函数容易比计算相等的表达式慢。
+在大多数的机器上，函数调用执行了很多的工作：
+函数调用时保存寄存器，函数退出时还原寄存器；可能需要复制参数；跳转到程序分支的新位置。
+
 inline函数避免过度地函数调用 
 
 当一个函数被修饰为inline，常常会在每次调用时在行内展开。
+
 例如，函数shorterString被定义为inline的，它的调用如下所示：
 cout << shorterString(s1,s2) << endl;
+
 有可能在编译阶段，上面的代码会被展开成如下形式：
 cout << (s1.size() < s2.size() ? s1 : s2) << endl;
+
 这样，在运行时函数的过度调用就消除了。
+
 inline函数的定义如下所示：
+
 inlne
 const string &shorterString(const string &s1,const string &s2)
 {
     return s1.size() <= s2.size() ? s1 : s2;
 }
+
 inline修饰只是对编译器的一个请求。编译器可以选择忽略这个请求。
-通常，inline机制用于优化小的直白的经常被调用的函数。很多编译器不会inline一个递归函数，也不会inline一个75行以上代码的函数。
+
+通常，inline机制用于优化小的直白的经常被调用的函数。
+很多编译器不会inline一个递归函数，也不会inline一个75行以上代码的函数。
+
+====
 constexpr 函数 
 
-constexpr函数是能够用在常量表达式中的函数。constexpr函数同其他函数的定义方式一样，但必须满足以下限制：返回类型和参数类型必须是字面量类型，并且函数体必须包含一个return语句。
+constexpr函数是能够用在常量表达式中的函数。
+constexpr函数同其他函数的定义方式一样，但必须满足以下限制：
+返回类型和参数类型必须是字面量类型，并且函数体必须包含一个return语句。
+
 constexpr int new_sz(){return 42;}
 constexpr int foo = new_sz();
-当定义的constexpr函数可以用于初始化一个constexpr变量时，编译器将会使用constexpr函数的结果值来替换函数调用本身。为了能够及时地展开函数，constexpr函数是隐式的inline函数。
-constexpr函数的函数体可以包含其他语句，只要这些语句在运行时不产生任何行为即可。例如，一个constexpr函数可包含null语句，类型别名语句和using声明。
+
+当定义的constexpr函数可以用于初始化一个constexpr变量时，编译器将会使用constexpr函数的结果值来替换函数调用本身。
+为了能够及时地展开函数，constexpr函数是隐式的inline函数。
+
+constexpr函数的函数体可以包含其他语句，只要这些语句在运行时不产生任何行为即可。
+例如，一个constexpr函数可包含null语句，类型别名语句和using声明。
+
 constexpr函数允许返回一个不是常量的值。
 constexpr size_t scale(size_t cnt){return new_sz() * cnt;}
+
 以上函数中，只有当cnt是常量表达式时，函数返回的结果才是常量表达式。
+
 int arr[scale(2)];// ok: scale(2)是常量表达式
 int i = 2;
 int arr[scale(i)];// error: scale(i)不是常量表达式。
+
 通常，inline和constexpr函数是定义在头文件中的。
+

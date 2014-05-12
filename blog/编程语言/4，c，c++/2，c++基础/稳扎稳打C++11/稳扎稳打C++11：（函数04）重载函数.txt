@@ -2,37 +2,63 @@
 来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-8 0:45:11
 http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=265
 
+hxzon学习笔记：
 
-如果我们在内层范围声明了一个名称，那么这个名称将会隐藏外层范围声明的同名对象。对于重载函数而言这也是适用的。名称不能跨范围重载。
+1，一个参数拥有top-level const，与它不含top-level const的参数是相同的。
+另一方面，如果const是low-level的，那么我们可以基于此重载函数。
+
+2，我们可以使用const_cast将const类型转换为非const类型，或者将非const类型转换为const类型。
+
+3，如果我们在内层范围声明了一个名称，那么这个名称将会隐藏外层范围声明的同名对象。（hxzon：重点理解）
+对于重载函数而言这也是适用的。名称不能跨范围重载。
+
+==========
 目录
+
 重载和const参数
 const_cast和重载
 调用重载函数
 重载和范围
+
+====
 如果在同一个范围内拥有名称相同但参数列表不同的函数，那么这些函数是重载的。
 重载函数必须在参数类型和数量上不同，只在返回类型上不同的两个函数是错误的。
+
 如果两个参数一个用了别名，另一个用了原始类型，那么两个参数分别对应的函数被看作是相同的。
+
+====
 重载和const参数 
 
 一个参数拥有top-level const，与它不含top-level const的参数是相同的。例如：
+
 Record lookup(Phone);
 Record lookup(const Phone); // 重新声明函数：Record lookup(Phone)
  
 Record lookup(Phone*);
 Record lookup(Phone* const); // 指针地址为const的声明方式。重新声明函数：Record lookup(Phone*)
+
 在上面的声明中，下一个声明与上一个声明相同。
+
+----
 另一方面，如果const是low-level的，那么我们可以基于此重载函数。例如：
+
 Record lookup(Phone&);
 Record lookup(const Phone&); // 新函数
  
 Record lookup(Phone*);
 Record lookup(const Phone*); // 新函数
+
 在上面的声明中，编译器使用实参是否为const的来区分调用哪个函数。
-由于没有从const到普通类型的转换，因此我们只能将const对象传递给const参数。因为有从普通类型到const的转换，因此我们可以将普通类型的对象传递给普通参数和const参数。
-const_cast和重载 
+
+由于没有从const到普通类型的转换，因此我们只能将const对象传递给const参数。
+因为有从普通类型到const的转换，因此我们可以将普通类型的对象传递给普通参数和const参数。
+
+====
+const_cast和重载
 
 我们可以使用const_cast将const类型转换为非const类型，或者将非const类型转换为const类型。
-我们可以使用const_cast重写之前的shrotString()函数：
+我们可以使用const_cast重写之前的shortString()函数：
+
 #include <iostream>
 #include <string>
  
@@ -86,12 +112,20 @@ int main()
  
     return 0;
 }
+
+====
 调用重载函数 
 
-根据函数调用从已重载函数中寻找指定函数的过程称为函数匹配（Function Matching）。编译器通过比较调用函数的实参与重载函数的形参来决定使用哪个函数。
+根据函数调用从已重载函数中寻找指定函数的过程称为函数匹配（Function Matching）。
+编译器通过比较调用函数的实参与重载函数的形参来决定使用哪个函数。
+
+====
 重载和范围 
 
-通常，如果我们在内层范围声明了一个名称，那么这个名称将会隐藏外层范围声明的同名对象。对于重载函数而言这也是适用的。名称不能跨范围重载。
+通常，如果我们在内层范围声明了一个名称，那么这个名称将会隐藏外层范围声明的同名对象。
+对于重载函数而言这也是适用的。
+名称不能跨范围重载。
+
 #include <iostream>
 #include <string>
  
@@ -121,5 +155,6 @@ int main()
  
     return 0;
 }
+
 一旦名称在当前范围内被找到，编译器就会忽略外层范围定义的同名对象。
 

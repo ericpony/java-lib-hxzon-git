@@ -2,37 +2,66 @@
 来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-14 0:41:57
 http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=270
 
+hxzon学习笔记：
+
 同数组一样，我们不能定义类型为函数的形参，但是我们可以定义一个指向函数的指针的参数。
+
+=============
 目录
+
 使用函数指针
 重载函数指针
 函数指针参数
 返回函数指针
-同其他函数一样，函数指针（function pointer）指向一个特定的类型。函数的类型由它的返回类型和参数类型决定。函数名称不决定函数类型。
+
+====
+同其他函数一样，函数指针（function pointer）指向一个特定的类型。
+函数的类型由它的返回类型和参数类型决定。
+函数名称不决定函数类型。
+
 例如如下函数：
 bool lengthCompare(const string &, const string &);
-以上函数的类型是：bool(const string &, const string &)。为了声明指向该函数的指针，我们使用一个指针替换函数名称：
+
+以上函数的类型是：bool(const string &, const string &)。
+为了声明指向该函数的指针，我们使用一个指针替换函数名称：
+
 bool (*pf)(const string &, const string &);
-*pf周围的括号是必须的。如果我们忽略括号，那么pf就是一个函数，该函数返回的是布尔指针。
+
+*pf周围的括号是必须的。
+如果我们忽略括号，那么pf就是一个函数，该函数返回的是布尔指针。
+
+====
 使用函数指针 
 
-当我们将函数名称作为值来使用的时候，函数自动转换为一个指针。我们可以将一个函数名（实际为指针）赋值给一个函数指针。例如：
+当我们将函数名称作为值来使用的时候，函数自动转换为一个指针。
+我们可以将一个函数名（实际为指针）赋值给一个函数指针。例如：
+
 pf = lengthCompare;
 pf = &lengthCompare;
+
 以上两种操作的结果是一样的。
+
 我们可以使用函数指针去调用函数，而且不需要解引用函数指针。
+
 bool b1 = pf("hello","goodbye");
 bool b2 = (*pf)("hello","goodbye");
 bool b3 = lengthCompare("hello","goodbye");
+
 以上三种方式都是允许的。
-不同函数类型的函数指针之间不能转换。但可以将nullptr或者0赋值给一个函数指针，以表明该指针未指向任何函数。
+
+不同函数类型的函数指针之间不能转换。
+但可以将nullptr或者0赋值给一个函数指针，以表明该指针未指向任何函数。
+
 string::size_type sumLength(const string &, const string &);
 bool cstringCompare(const string &, const char *);
+
 pf = 0; // ok
 pf = sumLength; // error : return type differ
 pf = cstringCompare // error: parameter type differ
 pf = lengthCompare; // ok
+
 完整的代码示例如下所示：
+
 #include <iostream>
 #include <string>
  
@@ -69,19 +98,30 @@ int main()
  
     return 0;
 }
+
+====
 重载函数指针 
 
-当函数指针指向一个重载函数时，指针的类型必须与重载函数中的某个函数完全匹配。
-函数指针参数 
+当函数指针指向一个重载函数时，指针的类型必须与重载函数中的某个函数完全匹配。（hxzon：“完全匹配”？）
 
-同数组一样，我们不能定义类型为函数的形参，但是我们可以定义一个指向函数的指针的参数。我们可以在参数列表中添加一个看起来像函数类型的参数，这种参数将被看作是一个指针。
+====
+函数指针参数
+
+同数组一样，我们不能定义类型为函数的形参，但是我们可以定义一个指向函数的指针的参数。
+我们可以在参数列表中添加一个看起来像函数类型的参数，这种参数将被看作是一个指针。
+
 // 第3个参数是个函数类型，并自动转换为函数指针
 void useBigger(const string &s1, const string &s2, bool pf(const string &, const string &));
+
 // 第3个参数被显式定义为一个函数指针。
 void useBigger(const string &s1, const string &s2, bool (*pf)(const string &, const string &));
+
 当我们将函数作为实参进行传递时，它自动转换为一个指针。
 useBigger(s1,s2,lengthCompare);
-函数指针作为参数在函数中使用的声明十分容易导致错误，因此，我们可以借助类型别名来简化函数指针的使用：
+
+函数指针作为参数在函数中使用的声明十分容易导致错误，
+因此，我们可以借助类型别名来简化函数指针的使用：
+
 // Func和Func2都是函数类型。
 typedef bool Func(const string &, const string &);
 typedef decltype(lengthCompare) Func2;
@@ -89,7 +129,9 @@ typedef decltype(lengthCompare) Func2;
 // FuncP和FuncP2都是函数指针。
 typedef bool (*FuncP)(const string &, const string &);
 typedef decltype(lengthCompare) *Funcp2;
+
 完整的代码示例如下：
+
 #include <iostream>
 #include <string>
  
@@ -144,26 +186,47 @@ int main()
  
     return 0;
 }
+
+====
 返回函数指针 
 
-同数组一样，我们不能返回函数类型，但我们可以返回一个函数指针。目前为止，最简单的声明一个返回函数指针的函数的方式是使用类型别名。
+同数组一样，我们不能返回函数类型，但我们可以返回一个函数指针。
+目前为止，最简单的声明一个返回函数指针的函数的方式是使用类型别名。
+
 using F = int(int*, int); // F是函数类型
 using PF = (int*)(int*, int); // PF是函数指针
-需要注意的是，当函数类型作为参数时会自动转换为指针，但当函数类型作为返回类型时不会自动转换为指针。我们必须显式地指定返回类型是指针类型：
+
+需要注意的是，当函数类型作为参数时会自动转换为指针，
+但当函数类型作为返回类型时不会自动转换为指针。
+我们必须显式地指定返回类型是指针类型：
+
 PF f1(int); // OK
 F f1(int); // error: F是函数类型，f1不能返回一个函数。
 F *f1(int); // OK: 显式地指定f1是一个指向函数的指针。
+
 我们还可以使用最原始的声明方式：
+
 int (*f1(int))(int*, int);
-这个声明的正确读法是由内而外地读。首先f1拥有参数列表（只有一个int参数），所以f1是个函数。其次，f1的返回类型是个指针。这个指针指向的类型是一个函数，这个函数由两个参数和整型的返回类型组成。
+
+这个声明的正确读法是由内而外地读。
+首先f1拥有参数列表（只有一个int参数），所以f1是个函数。
+其次，f1的返回类型是个指针。
+这个指针指向的类型是一个函数，这个函数由两个参数和整型的返回类型组成。
+
 还有一种方法能够简化返回类型为函数指针的函数的声明，那就是后置返回类型(trailing return)：
+
 auto f1(int) -> int(*)(int*, int);
+
 使用auto或者decltype获取函数指针类型
+
 如果我们知道要返回哪个函数，我们可以使用auto或者decltype简化函数的声明。
+
 例如：
+
 string::size_type sumLength(const string&, const string&);
 string::size_type largerLength(const string&, const string&);
  
 decltype(sumLength) *getFunc(const string&);
+
 需要注意的是，decltype返回的是函数类型，不是函数指针。
 

@@ -2,15 +2,33 @@
 来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-10 0:19:43
 http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=266
 
+hxzon学习笔记：
 
-本地变量不能用于实参。除了这个限制，默认实参可以是任何能够转换成参数类型的表达式。
+1，函数可以在一处定义，多处声明。
+然后，在给定的范围内每个参数只能指定一次默认值。（hxzon：注意）
+因此，任何接下来的声明中，只能为没有指定过默认值的参数设定默认值。
+
+2，本地变量不能用于实参。（hxzon？）
+除了这个限制，默认实参可以是任何能够转换成参数类型的表达式。
+hxzon：可以使用函数返回值作为默认实参。
+
+===========
 目录
+
 默认实参的声明
 默认实参的初始化式
-我们可在参数列表中为参数定义默认实参。如果一个参数定义了默认参数，那么这个参数后面的参数必须也要定义默认实参。
+
+====
+我们可在参数列表中为参数定义默认实参。
+如果一个参数定义了默认参数，那么这个参数后面的参数必须也要定义默认实参。
+
 默认实参的声明 
 
-函数可以在一处定义，多处声明。然后，在给定的范围内每个参数只能指定一次默认值。因此，任何接下来的声明中，只能为没有指定过默认值的参数设定默认值。测试的代码示例如下：
+函数可以在一处定义，多处声明。
+然后，在给定的范围内每个参数只能指定一次默认值。
+因此，任何接下来的声明中，只能为没有指定过默认值的参数设定默认值。
+测试的代码示例如下：
+
 #include <iostream>
 #include <string>
  
@@ -19,9 +37,12 @@ using namespace std;
 typedef string::size_type sz;
  
 void display(sz, sz, char);
+
 void display(sz, sz, char = 'A');
+
 //void display(sz, sz, char = 'B');// error: default argument given for parameter 3 of ‘void display(sz, sz, char)’
-void display(sz = 89, sz = 78, char);
+
+void display(sz = 89, sz = 78, char);// hxzon：这里不能再给char指定默认值，因为前面已经指定过一次？
  
 void display(sz height, sz width, char background)
 {
@@ -49,9 +70,13 @@ int main()
     */
     return 0;
 }
+
+====
 默认实参的初始化式 
 
-本地变量不能用于实参。除了这个限制，默认实参可以是任何能够转换成参数类型的表达式。
+本地变量不能用于实参。（hxzon？）
+除了这个限制，默认实参可以是任何能够转换成参数类型的表达式。
+
 #include <iostream>
 #include <string>
  
@@ -66,6 +91,7 @@ char getBG()
     return 'X';
 }
  
+// hxzon：可以使用函数返回值作为默认实参。
 void display(sz height = height, sz width = width, char background = getBG())
 {
     cout << "height: " << height << endl;
