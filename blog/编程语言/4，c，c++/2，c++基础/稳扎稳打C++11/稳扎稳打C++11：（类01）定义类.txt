@@ -4,14 +4,22 @@ http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C587162849
 
 
 const对象以及绑定到const对象的引用和指针只能调用const成员函数。
+
+==========
 目录
+
 定义一个类
 定义成员函数
 介绍this
 介绍const成员函数
 类作用域和成员函数
 类外定义成员函数
-类（classes）背后的基本思想是数据抽象（data abstraction）和封装（encapsulation）。数据抽象是一种程序设计技术，依赖于接口（interface）和实现（implementation）的分离。类的接口包含类的用户能够执行的操作。实现包含类的数据成员，构成接口的函数的函数体，以及任何需要定义类但不通用的函数。
+
+====
+类（classes）背后的基本思想是数据抽象（data abstraction）和封装（encapsulation）。
+数据抽象是一种程序设计技术，依赖于接口（interface）和实现（implementation）的分离。
+类的接口包含类的用户能够执行的操作。实现包含类的数据成员，构成接口的函数的函数体，以及任何需要定义类但不通用的函数。
+
 定义一个类 
 
 struct Sales_data
@@ -24,41 +32,77 @@ struct Sales_data
     unsigned units_sold = 0;
     double revenue = 0.0;
 };
+
 Sales_data add(const Sales_data&, const Sales_data&);
 std::ostream &print(std::ostream&, const Sales_data&);
 std::istream &read(std::istream&, Sales_data&);
+
+====
 定义成员函数 
 
 成员函数（Member Functions）必须在类的内部声明，但可在类的内部或外部进行定义。
 定义在类内的函数默认是inline的。
+
+====
 介绍this 
 
-成员函数访问类内的数据成员是通过传递一个额外的隐式的参数：this。当我们调用一个成员函数时，this会被初始化为被调用函数所属对象的地址。例如，
+成员函数访问类内的数据成员是通过传递一个额外的隐式的参数：this。
+当我们调用一个成员函数时，this会被初始化为被调用函数所属对象的地址。例如，
 total.isbn();
+
 编译器将Sales_data的地址传递给isbn中的隐式this参数。就好像编译器将调用重写成如下形式：
 Sales_data::isbn(&total);
-在成员函数内部，我们可以直接引用函数所属对象的成员。直接使用类成员被假定为通过this指针隐式地使用对象成员。this 是一个const指针，我们不能改变const的地址。
-string isbn() const {return this->bookNo;}
-介绍const成员函数 
 
-上面getName()函数的一个很重要的部分就是const。这里的const的作用是用来修改this指针的类型（转换为const）。
+在成员函数内部，我们可以直接引用函数所属对象的成员。
+直接使用类成员被假定为通过this指针隐式地使用对象成员。
+this 是一个const指针，我们不能改变const的地址。
+
+string isbn() const {return this->bookNo;}
+
+====
+介绍const成员函数（hxzon：未理解）
+
+上面getName()函数的一个很重要的部分就是const。
+这里的const的作用是用来修改this指针的类型（转换为const）。
+
 为何出现这种形式的定义？
 this代表一个const指针，这个指针指向一个非const的对象。
 当一个类的对象被定义为const类型时，此时无法将const对象的地址绑定到this指针上。
 为了解决这个问题，出现了const成员函数，以此来表明this指向的是一个const类型的对象。
-默认情况下，this是一个const指针，我们不能修改this的地址。但是this指针所指向的对象是nonconst的。例如Sales_data中成员函数的this指针的类型是Sales_data *const。因为this的地址不能改变，所以我们不能将this绑定到一个const对象。所以我们不能在一个const对象上调用普通的成员函数。
-如果isbn是一个普通的函数，并且如果this是个普通的指针参数，那么我们可以将this声明为const Sales_data *const。这样，isbn就不能修改this所指向的对象，所以当this指向一个const对象时，函数能够更加灵活。
-然后this是隐式的，并且参数列表中也没有this，没有地方能够将this声明为指向const对象的指针。为了解决这个问题，C++语言让我们把const放在了参数列表后面。在参数列表后面紧跟const表明this是一个指向const对象的指针。这样的成员函数被称为常量成员函数（const member function）。
+
+默认情况下，this是一个const指针，我们不能修改this的地址。
+但是this指针所指向的对象是nonconst的。
+例如Sales_data中成员函数的this指针的类型是Sales_data *const。
+因为this的地址不能改变，所以我们不能将this绑定到一个const对象。
+所以我们不能在一个const对象上调用普通的成员函数。
+
+如果isbn是一个普通的函数，并且如果this是个普通的指针参数，那么我们可以将this声明为const Sales_data *const。
+这样，isbn就不能修改this所指向的对象，所以当this指向一个const对象时，函数能够更加灵活。
+然后this是隐式的，并且参数列表中也没有this，没有地方能够将this声明为指向const对象的指针。
+为了解决这个问题，C++语言让我们把const放在了参数列表后面。
+在参数列表后面紧跟const表明this是一个指向const对象的指针。
+这样的成员函数被称为常量成员函数（const member function）。
+
 我们可以将isbn的声明看作如下形式：
 string Sales_data::isbn(const Sales_data *const this) {return this->bookNo;}
-const成员函数不能修改对象。因此，const成员函数只能读不能修改其对象。
+
+const成员函数不能修改对象。
+因此，const成员函数只能读不能修改其对象。
 const对象以及绑定到const对象的引用和指针只能调用const成员函数。
+
+====
 类作用域和成员函数 
 
-值得注意的是，即使bookNo定义在isbn之后，编译能正常通过。这是因为编译器处理类时分两步：首先编译成员声明，然后编译成员函数体。
+值得注意的是，即使bookNo定义在isbn之后，编译能正常通过。
+这是因为编译器处理类时分两步：首先编译成员声明，然后编译成员函数体。
+
+====
 类外定义成员函数 
 
-如果成员函数是在类的外部进行定义的，那么成员的定义和声明必须匹配。即返回类型、参数列表、函数名称必须与类内部的声明一致。如果类内声明的是const成员函数，那么，在定义时需要在参数列表后指定const。
+如果成员函数是在类的外部进行定义的，那么成员的定义和声明必须匹配。
+即返回类型、参数列表、函数名称必须与类内部的声明一致。
+如果类内声明的是const成员函数，那么，在定义时需要在参数列表后指定const。
+
 double Sales_data::avg_prive() const
 {
     if(unit_sole)

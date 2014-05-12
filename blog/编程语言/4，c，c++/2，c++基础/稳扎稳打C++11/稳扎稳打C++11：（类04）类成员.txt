@@ -3,14 +3,22 @@
 http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=275
 
 
-对于类型名称的声明有两点需要注意的：一是除了使用typedef外，还可以使用using。二是不像其他的类成员（class member），类型成员（type member）必须出现在他们使用之前。
+对于类型名称的声明有两点需要注意的：
+一是除了使用typedef外，还可以使用using。
+二是不像其他的类成员（class member），类型成员（type member）必须出现在他们使用之前。
+
+=========
 目录
+
 定义类型成员（type member）
 创建inline成员
 mutable数据成员
+
+====
 定义类型成员（type member） 
 
-在类中，除了定义数据和函数成员，还能定义它自己的本地类型名称。
+在类中，除了定义数据和函数成员，还能定义它自己的“本地类型名称”。
+
 #include <iostream>
 #include <string>
  
@@ -46,15 +54,29 @@ int main()
     cout << scn.getHeight() << endl;
     return 0;
 }
-对于类型名称的声明有两点需要注意的：一是除了使用typedef外，还可以使用using。二是不像其他的类成员（class member），类型成员（type member）必须出现在他们使用之前。所以类型成员通常在类的开始部分进行定义。
+
+对于类型名称的声明有两点需要注意的：
+一是除了使用typedef外，还可以使用using。
+二是不像其他的类成员（class member），类型成员（type member）必须出现在他们使用之前。
+所以类型成员通常在类的开始部分进行定义。
+
+====
 创建inline成员 
 
-类内定义的成员函数自动是inline的，因此，构造函数也是inline的。
-我们可以在类内的成员函数声明中使用inline，也可义在类外的成员函数定义中使用inline。
+类内定义的成员函数自动是inline的，
+因此，构造函数也是inline的。
+
+我们可以在类内的成员函数声明中使用inline，
+也可义在类外的成员函数定义中使用inline。
+
+====
 mutable数据成员 
 
-有时候，我们希望类中的某个数据成员即使在const成员函数中也能被修改。我们通过mutable声明这样的函数。
+有时候，我们希望类中的某个数据成员即使在const成员函数中也能被修改。
+我们通过mutable声明这样的函数。
+
 一个mutable数据成员即使它是一个const对象的成员也是可以被修改的。
+
 #include <iostream>
 #include <string>
  
@@ -73,6 +95,7 @@ void Screen::someMember() const
 {
     ++access_ctr;
 }
+
 size_t Screen::getAccessCtr()
 {
     return this->access_ctr;

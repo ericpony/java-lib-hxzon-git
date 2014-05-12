@@ -4,9 +4,14 @@ http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C587162849
 
 
 使用委托构造函数的函数体的执行是在被委托构造函数的函数体的执行之后进行的。
-目录
-C++11中扩展了构造函数初始化器的使用，允许我们定义委托构造函数（delegating constructor）。一个委托构造函数使用类中另一个构造函数来完成自己的初始化。
+
+======
+C++11中扩展了构造函数初始化器的使用，
+允许我们定义委托构造函数（delegating constructor）。
+一个委托构造函数使用类中另一个构造函数来完成自己的初始化。
+
 需要注意的是，使用委托构造函数的函数体的执行是在被委托构造函数的函数体的执行之后进行的。
+
 #include <iostream>
 #include <string>
  
@@ -43,3 +48,4 @@ int main()
     */
     return 0;
 }
+

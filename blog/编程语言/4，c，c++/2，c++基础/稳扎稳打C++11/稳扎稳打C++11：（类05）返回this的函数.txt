@@ -2,10 +2,11 @@
 来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-22 23:01:10
 http://ilanever.com/article/sitedetail.html;jsessionid=612D1550D54A398C5871628498084252?id=276
 
+=======
+返回引用的函数是左值的，意味着他们返回了对象本身，而不是对象的拷贝。
 
-返回引用的函数是左值的，意味着他们返回了对象本身，而不是对象的拷贝。
-目录
-返回引用的函数是左值的，意味着他们返回了对象本身，而不是对象的拷贝。
+hxzon：注意，下面的函数，返回对象本身，但都没有return语句。
+
 #include <iostream>
 #include <string>
  
@@ -22,15 +23,18 @@ private:
     int width;
     string content;
 };
+
 inline Screen &Screen::move(int height,int width)
 {
     this->height = height;
     this->width = width;
 }
+
 inline Screen &Screen::set(string content)
 {
     this->content = content;
 }
+
 inline void Screen::display() const
 {
     cout << "height: " << this->height << ", width: " << this->width << ", content: " << this->content << endl;
