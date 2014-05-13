@@ -1,0 +1,128 @@
+﻿稳扎稳打C++11：（IO库）string流
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-5-5 0:07:21
+http://ilanever.com/article/sitedetail.html?id=292
+
+istringstream类型读取字符串，ostringstream类型写入一个字符串，stringstream读和写字符串。
+目录
+使用istringstream
+使用ostringstream
+istringstream类型读取字符串，ostringstream类型写入一个字符串，stringstream读和写字符串。stringstream集成自iostream，所以stringstream拥有iostream全部的操作。除此之外，stringstream还有一些属于自己的操作。以下表中列出了特定于stringstream的操作：
+操作	说明
+sstream strm();	strm是一个未绑定的stringstream。
+sstream strm(s);	strm拥有s的拷贝。该构造函数是explicit。
+strm.str()	返回strm存储字符串的拷贝。
+strm.str(s)	将s拷贝到strm中。返回值为void。
+使用istringstream 
+
+当我们需要处理整行字符串的同时还需要处理单个词的时候，通常需要用到istringstream。
+请看以下的使用示例：
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+ 
+using namespace std;
+ 
+struct PersonInfo
+{
+    string name;
+    vector<string> phones;
+};
+ 
+int main()
+{
+    string line, word;
+    vector<PersonInfo> persons;
+    while(getline(cin,line))
+    {
+        PersonInfo person;
+        istringstream record(line);
+        record >> person.name;
+        while(record >> word)
+        {
+            person.phones.push_back(word);
+        }
+        cout << person.name <<"'s phones size : " << person.phones.size() << endl;
+        persons.push_back(person);
+    }   
+     
+    /*
+    ENVIRONMENT:
+    g++-4.8
+     
+    INPUT&OUTPUT:
+    zhangsan 123 456 789
+    zhangsan's phones size : 3
+    lisi 890
+    lisi's phones size : 1
+    */
+     
+    return 0;
+}
+stringstream的输入运算符（>>）会读取记录中每个单词（由空白符分割）到word中。
+使用ostringstream 
+
+当我们需要一点一点地来建立我们的输出，然而又不希望立即输出的时候，可以使用ostringstream。
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+ 
+using namespace std;
+ 
+struct PersonInfo
+{
+    string name;
+    vector<string> phones;
+};
+ 
+int main()
+{
+    string line, word;
+    vector<PersonInfo> persons;
+    while(getline(cin,line))
+    {
+        PersonInfo person;
+        istringstream record(line);
+        record >> person.name;
+        while(record >> word)
+        {
+            person.phones.push_back(word);
+        }
+        persons.push_back(person);
+        if(persons.size() == 3)
+        {
+            break;
+        }
+    }
+    for(const auto &person : persons)
+    {
+        ostringstream formateed, errs;
+        for(const auto &phone : person.phones)
+        {
+            if(phone.size() != 3)
+            {
+                errs << " " << phone;
+            }
+        }
+        if(!errs.str().empty())
+        {
+            cout << errs.str() << endl;
+        }
+    }
+     
+    /*
+    ENVIRONMENT:
+    g++-4.8
+     
+    INPUT&OUTPUT:
+    zhangsan 1234 567
+    lisi 123 456 789
+    wangwu 0987 123
+     1234
+     0987
+    */
+     
+    return 0;
+}
+

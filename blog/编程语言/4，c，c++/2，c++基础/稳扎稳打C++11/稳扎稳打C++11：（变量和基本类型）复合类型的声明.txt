@@ -1,0 +1,111 @@
+﻿稳扎稳打C++11：（变量和基本类型）复合类型的声明
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-12-24 20:30:45
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=220
+
+对于复杂的指针或引用的声明，最简单的理解方式就是从右向左读。
+目录
+定义多个变量
+指向指针的指针（Pointers to Pointers）
+绑定到指针的引用（References to Pointers）
+定义多个变量 
+
+定义复合类型时，容易引起误解的一种情况就是：认为类型修饰符（type modifier）“＊”或者“＆”应用到单一定义语句中所有的变量。
+#include <iostream>
+#include <typeinfo>
+ 
+using namespace std;
+ 
+int main()
+{
+    int* p;
+    cout << "the type of p is " << typeid(p).name() << endl;
+ 
+    int *p1, i1;
+    cout << "the type of p1 is " << typeid(p1).name() << endl;
+    cout << "the type of i1 is " << typeid(i1).name() << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        the type of p is Pi
+        the type of p1 is Pi
+        the type of i1 is i
+    */
+     
+    return 0;
+}
+由此，我们可以得出一个应用范围更广泛的变量声明格式：
+<base type> <[<type modifier>...] variable name>...
+<base type>是内置类型。<type modifier>是“＊”或者“＆”，可以有0个、1个或多个。
+推荐采用类型修饰符后紧跟变量名称的编码风格，这样不易产生误解。
+注意：typeid在g++中与cl中的返回值不同。在cl中返回直观的类型名称，在g++中返回C风格的缩写类型名称。
+指向指针的指针（Pointers to Pointers） 
+
+指向指针的指针比较容易理解，就是一个指针存储的是另一个指针的地址。
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int ival = 300;
+    int *pi = &ival;
+    int **ppi = &pi;
+     
+    cout << "pi : " << pi << endl;
+    cout << "ppi : " << ppi << endl;
+    cout << "*ppi : " << *ppi << endl;
+    cout << "**ppi : " << **ppi << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        pi : 0xbf91e484
+        ppi : 0xbf91e488
+        *ppi : 0xbf91e484
+        **ppi : 300
+    */
+     
+    return 0;
+}
+绑定到指针的引用（References to Pointers） 
+
+因为指针是对象，所以可以定义绑定到指针的引用。
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int i = 42;
+    int *pi;
+    int *&rpi = pi;
+     
+    cout << "pi : " << pi << endl;
+    cout << "rpi : " << rpi << endl;
+     
+    rpi = &i;
+     
+    cout << "pi : " << pi << endl;
+    cout << "rpi : " << rpi << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        pi : 0x8048919
+        rpi : 0x8048919
+        pi : 0xbfdf8244
+        rpi : 0xbfdf8244
+    */
+     
+    return 0;
+}
+对于复杂的指针或引用的声明，最简单的理解方式就是从右向左读。
+例如上述代码示例中的“int *&rpi”。rpi变量的最右侧的符号是“&”，说明变量首先是一个引用。引用到什么类型的对象由剩下的声明符来决定。下一个符号是“*”，则表示rpi引用到一个指针类型。最后，声明的基本类型是整型，则表明rpi是一个绑定到整型指针的引用。
+

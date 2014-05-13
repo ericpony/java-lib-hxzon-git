@@ -1,0 +1,66 @@
+﻿稳扎稳打C++11：（IO库）条件状态（condition states）
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-29 23:35:47
+http://ilanever.com/article/sitedetail.html?id=288
+
+一旦发生了错误，接下来的stream的IO操作都会失败。只有当stream不在错误状态时，我们才能读和写stream。
+目录
+代码示例
+下表中的函数和标记（flag）允许我们访问和控制stream的条件状态。
+函数/标记	说明
+strm::iostate	strm是IO类型的一种。iostate是独立于机器的整型，用于表示stream的条件状态
+strm::badbit	strm::iostate用于表明stream是否已损坏
+strm::failbit	strm::iostate用于表明IO操作失败
+strm::eofbit	strm::iostate用于表明stream到达文件末尾
+strm::goodbit	strm::iostate用于表明stream不在错误状态。
+s.eof()	如果stream对象s的eofbit被设置，则返回true。
+s.fail()	如果stream对象s的failbit或者badbit被设置，则返回true。
+s.bad()	如果stream对象s的badbit被设置，则返回true。
+s.good()	如果stream对象s处于可用状态，则返回true。
+s.clear()	将stream对象s的所有条件状态设置为可用状态。返回void。
+s.clear(flags)	将stream对象s的状态设置为flags。flags类型是strm::iostate。返回void。
+s.setstate(flags)	添加特定的条件到s中。flags类型是strm::iostate。返回void。
+s.rdstate()	返回s的当前条件，返回类型是strm::iostate。
+一旦发生了错误，接下来的stream的IO操作都会失败。只有当stream不在错误状态时，我们才能读和写stream。由于stream可能处于错误状态，所以在试图使用stream时我们总要检查它的状态。最简单的检查方式就是将stream对象作为条件：
+while(cin >> word)
+{
+    //ok:read successful...
+}
+代码示例 
+
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+    int i;
+    while(cin >> i)
+    {
+        cout << "Your input: " << i << endl;
+    }
+    if(cin.fail())
+    {
+        cout << "cin is fail. reseting..." << endl;
+        cin.clear();
+    }
+    if(cin.good())
+    {
+        cout << "cin is good." << endl;
+    }
+     
+    /*
+    ENVIRONMENT:
+    g++-4.8(64bit)
+     
+    INPUT&OUTPUT:
+    123
+    Your input: 123
+    asdf
+    cin is fail. reseting...
+    cin is good.
+    */
+     
+    return 0;
+}
+

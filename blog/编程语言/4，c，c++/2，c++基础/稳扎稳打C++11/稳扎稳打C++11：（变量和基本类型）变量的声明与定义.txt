@@ -1,0 +1,59 @@
+﻿稳扎稳打C++11：（变量和基本类型）变量的声明与定义
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-11-4 19:17:05
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=203
+
+声明是为了让程序知道变量的存在，而定义是为分配存储空间提供依据。二者在语言中的作用是不同的。
+目录
+什么是声明和定义？
+既生瑜何生亮？
+如何区分声明与定义？
+对于C++中变量的声明与定义，大家通常采用区别的方法来学习。我觉得这样不妥，如果采用“声明与定义的关系”或许比“声明与定义的区别”更能准确描述声明与定义。
+什么是声明和定义？ 
+
+声明（declaration），指定了变量的类型与名称。声明的目的是为了让变量名对程序而言是已知的。
+定义（definition），不仅要指定变量的类型和名称，还要分配存储空间，甚至提供初始值。同时，定义也是声明。
+因此，声明是为了让程序知道变量的存在，而定义是为分配存储空间提供依据。二者在语言中的作用是不同的。程序在编译过程中，需要先知道变量名是否存在，如果存在的话，再去了解该如何为变量分配存储空间。所以当有变量定义的时候，肯定会有变量声明。
+既生瑜何生亮？ 
+
+既然变量定义已经包括变量声明的功能了，为何还要变量声明呢？
+存在变量声明是为了支持单独编译（separate compilation）。单独编译允许文件A中的代码能够使用在文件B中定义的变量V。声明的存在是为了告诉编译器：文件A中的变量V定义在了其他的文件中，请先编译文件A，待遇到变量V的定义后，再给文件A的变量V分配存储空间或赋值。
+通常，为了获得一个不是定义的声明，我们需要使用extern关键字，并且不能进行初始化。
+可以看下以下代码及其运行结果来实际了解下声明的使用。
+extern_test.h
+#include <iostream>
+ 
+void Printmsg(int x);
+extern_test.cpp
+#include <iostream>
+ 
+extern int varx_global;
+extern int vary_global = 101;
+ 
+void Printmsg(int arg)
+{
+    std::cout << "'arg' is " << arg << "." << std::endl;
+    std::cout << "'varx_global' is " << varx_global << "." << std::endl;
+    std::cout << "'vary_global' is " << vary_global << "." << std::endl;
+}
+main.cpp
+#include <iostream>
+#include "extern_test.h"
+ 
+int varx_global = 2001;
+//int vary_global = 1998;
+ 
+int main()
+{
+    Printmsg(2007);
+    return 0;
+}
+程序运行后，输出的结果是
+'arg' is 2007.
+'varx_global' is 2001.
+'vary_global' is 101.
+如何区分声明与定义？ 
+
+判断一个声明是纯粹的声明还是定义，最简单的方法根据声明的初衷来判断变量值是否正确。
+以上面的程序为例，extern_test.cpp文件中的变量varx_global被指定为extern，并且没有进行初始化，该变量在main.cpp文件中进行了定义，程序输出结果为main.cpp中指定的值。所以说明extern_test.cpp中的varx_global是纯粹的声明。而extern_test.cpp中的变量vary_global进行了初始化，编译器不允许在main.cpp中进行同名变量的定义。因此vary_global就是定义。
+变量必须只定义一次，但可以被声明多次。
+

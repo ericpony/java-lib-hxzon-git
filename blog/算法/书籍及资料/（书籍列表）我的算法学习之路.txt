@@ -1,7 +1,21 @@
 ﻿（书籍列表）我的算法学习之路
 http://www.admin10000.com/document/4355.html
 
+《数据结构与算法分析——C语言描述》
+《算法设计与分析》
+《算法引论》如果说算法导论讲的是有哪些算法，那么算法引论讲的就是如何创造算法。
+《Elements of Programming》算法本原
+《C Interfaces and Implementation》C接口与实现
+《Language Implementation Patterns》语言实现模式
+《Algorithms on Strings, Trees and Sequences》字符串，树，序列的算法
+《Writing Efficient Programs》很难找到一本讲代码优化的书
+《Algorithm Design Manual》仅仅是关于Backtrack Template那部分的描述就足以值回书价
+《编程珠玑》
+《The Science of Programming》证明简单代码段的正确性
+《Algorithms 4th》它实际就是一本数据结构的入门书
+《Advanced Data Structures》这门课包含各种让本屌世界观崩坏的奇诡数据结构和算法
 
+========
 　关于
 
 　　严格来说，本文题目应该是我的数据结构和算法学习之路，但这个写法实在太绕口——况且CS中的算法往往暗指数据结构和算法（例如算法导论指的实际上是数据结构和算法导论），所以我认为本文题目是合理的。
@@ -19,7 +33,7 @@ http://www.admin10000.com/document/4355.html
 
 　　读书计划的第一步是选择书籍，我曾向当时我觉得很牛的”学长”和”大神”请教应该读哪些算法书籍，”学长”们均推荐算法导论，还有几个”大神”推荐计算机程序设计艺术（现在我疑心他们是否翻过这些书），草草的翻了下这两本书发现实在看不懂，但幸运的是我在无意中发现了豆瓣这个神奇的网站，里面有很多质量不错的书评，于是我就把评价很高而且看上去不那么吓人的计算机书籍都买了下来——事实证明豆瓣要比这些”学长”或是”大神”靠谱的多得多。
 
-　　数据结构与算法分析——C语言描述
+　　《数据结构与算法分析——C语言描述》
 
 　　数据结构与算法分析——C语言描述是我学习数据结构的第一本书：当时有很多地方看不懂，于是做记号反复看；代码看不明白，于是抄到本子上反复研读；一些算法想不通，就把它所有的中间状态全画出来然后反复推演。事实证明尽管这种学习方法看起来傻逼而且效率很低，但对于当时同样傻逼的我却效果不错——傻人用傻办法嘛，而且这本书的课后题大多都是经典的面试题目，以至于日后我看到编程之美的第一反应就是这货的题目不全是抄别人的么。
 
@@ -39,7 +53,7 @@ http://www.admin10000.com/document/4355.html
 
 　　考研的细节无需赘述，但至今仍清楚的记得自己在复试时惊奇且激动的发现北航宿舍对面就是微软西格玛大厦，那种离理想又进了一步的感觉简直爽到爆。
 
-　　算法设计与分析
+　　《算法设计与分析》
 　　我的研究生生涯绝对是一个反面典型——翘课，实习，写水论文，做水研究，但有一点我颇为自得——从头到尾认真听了韩军教授的算法设计与分析课程。
 
 　　韩军给我印象最深的有两点：课堂休息时跑到外面和几个学生借火抽烟；讲解算法时的犀利和毫不含糊。
@@ -49,7 +63,7 @@ http://www.admin10000.com/document/4355.html
 
 　　如果数据结构与算法分析——C语言描述是我的数据结构启蒙，那么韩军的课程和算法设计与分析基础就是我的算法启蒙，结合课程和书籍，我一一理解并掌握了复杂度分析、分治、减治、变治、动态规划和回溯这些简单但强大的算法工具。
 
-　　算法引论
+　　《算法引论》
 
 　　算法引论是我这时无意中读到的另一本算法书，和普通的算法书不同，这本书从创造性的角度出发——如果说算法导论讲的是有哪些算法，那么算法引论讲的就是如何创造算法。结合前面的算法设计与分析基础，这本书把我能解决的算法问题数量扩大了一个数量级。
 
@@ -78,11 +92,11 @@ http://www.admin10000.com/document/4355.html
 原来自己还是一个算法菜逼。
 　　痛定思痛，我开始了第二个”五年计划”，三七开的时间分配变成了七三开：七分看书，三分WP。而这一阶段的重点从原理（Principle）变成了实现（Implementation）——Talk is cheap, show me the code.
 
-　　Elements of Programming
+　　《Elements of Programming》
 
 　　由于一直觉得名字里带”Elements of”的都是酷炫叼炸天的书，所以我几乎是毫不犹豫的买了这本Elements of Programming，事实上这本书里的代码（或者说STL的代码）确实是：快，狠，准，古龙高手三要素全齐。
 
-　　C Interfaces and Implementation
+　　《C Interfaces and Implementation》
 
 　　百度面试被爆出翔的经历让我意识到另一个问题，绝大多数公司面试时都需要在纸上写C代码，而我自己却很少用C（多数情况用C#），考虑到自己还没牛逼到能让公司改变面试流程的地步，我需要提升自己编写C代码的能力（哪怕只是为了面试）。一顿Google之后，我锁定了C Interfaces and Implementation——另一本关于如何写出狂炫酷帅叼炸天的C代码的奇书，这里套用下Amazon的评论：Probably the best advanced C book in existance。
 
@@ -107,7 +121,7 @@ http://www.admin10000.com/document/4355.html
 
 　　阅读了块覆盖的定义后，我发现我需要对T-SQL进行语法分析，在没有找到一个好用的T-SQL Parser的情况下，只能自己动手搞一个：
 
-　　比较奇诡的是，做这个项目时当时我刚好把ANTLR作者的Language Implementation Patterns看了一半，什么LL(k)啊Packrat啊AST Walker的概念啊正热乎着呢。
+　　比较奇诡的是，做这个项目时当时我刚好把ANTLR作者的《Language Implementation Patterns》看了一半，什么LL(k)啊Packrat啊AST Walker的概念啊正热乎着呢。
 
 　　于是，自己自己就照着T-SQL的官方EBNF，三下五除二撸了一个T-SQL存储过程的LL(k) Parser，把代码转换成AST，然后用一个External AST Walker生成代码块覆盖的HTML报表，全部过程一周不到。
 
@@ -154,11 +168,11 @@ http://www.admin10000.com/document/4355.html
 　　于是我就开始苦思冥想有没有一个能够同时搜索多个字符串的高端算法，以至于那两天坐地铁都在嘟囔怎么才能把这个应用搞的快一些。
 
 
-　　最终还是在Algorithms on Strings, Trees and Sequences里找到了答案——确实有能够同时搜索多个字符串的方法：Tries，而且这本书还用足足一章来讲怎么弄Multiple string comparison，看得我当时高潮迭起，直呼过瘾。
+　　最终还是在《Algorithms on Strings, Trees and Sequences》里找到了答案——确实有能够同时搜索多个字符串的方法：Tries，而且这本书还用足足一章来讲怎么弄Multiple string comparison，看得我当时高潮迭起，直呼过瘾。
 
 　　具体细节不多说，总之换了算法之后，匹配速度快了大约九十多倍，而且代码还短了几十行。哪怕是有10000个联系人，也能在0.1秒内搞定，速度瓶颈就这样愉快的被算法搞定。
 
-　　Writing Efficient Programs
+　　《Writing Efficient Programs》
 　　之后又做了若干个项目，多多少少都用到了”自制”的算法或数据结构，最奇诡的一次是写一个电子书阅读器里的分页，我照着模拟退火（Simulated Annealing）的原理写了一个快速分页算法，事实上这个算法确实很快——但问题是我都不知道为啥它会这么快。
 
 　　总之，算法是一种将有限计算资源发挥到极致的武器，当计算资源很富余时算法确实没大用，但一旦到了效率瓶颈算法绝壁是开山第一刀（因为算法不要钱嘛！要不还得换CPU买SSD升级RAM，肉疼啊！！）。一些人会认为这种说法是有问题，因为编写新算法的人力成本有时比增加硬件的成本还要高——但别忘了增加硬件提升效率也是建立在算法是Scalable的基础上——说白了还是得撸算法。
@@ -176,15 +190,15 @@ http://www.admin10000.com/document/4355.html
 
 　　我没有像身边的同学那般刷题——而是继续看书抄代码学算法，因为我认为那些难得离谱的题面试官也不会问——事实上也是如此。
 
-　　Algorithm Design Manual
+　　《Algorithm Design Manual》
 
 　　因为很多Coding Interview的论坛都提到这本红皮书，我也跟风搞了一本。事实证明，仅仅是关于Backtrack Template那部分的描述就足以值回书价，更不用说它的Heuristics和课后题。
 
-　　编程珠玑&更多的编程珠玑
+　　《编程珠玑》&更多的编程珠玑
 
 　　这两本书就不用多介绍，编程珠玑和更多的编程珠玑，没听说过这两本书请自行面壁。前者偏算法理论，后者偏算法轶事，前者提升能力，后者增长谈资，都值得一读。
 
-　　The Science of Programming
+　　《The Science of Programming》
 
 　　读到编程珠玑里面关于Binary Search的正确性证明时我大呼过瘾，原来程序的正确性也是可以推导的，然后我就在那一章的引用里发现David Gries的The Science of Programming。看名字就觉得很厉害，直接搞了一本开撸。
 
@@ -202,7 +216,7 @@ http://www.admin10000.com/document/4355.html
 
 　　为了不至于到时入职被鄙视的太惨烈，加上自己一贯的算法自卑症，本屌强制自己再次学习算法：
 
-　　Algorithms 4th
+　　《Algorithms 4th》
 
 　　Algorithms是我重温算法的第一本书，尽管它实际就是一本数据结构的入门书，但它确实适合当时已经快把算法忘光的本屌——不为学习，只为重温。
 
@@ -210,7 +224,7 @@ http://www.admin10000.com/document/4355.html
 
 　　6.851 Advanced Data Structures
 
-　　Advanced Data Structures是MIT的高级数据结构教程，为什么会找到这个教程呢？因为Google Advanced Data Structures第一个出来的就是这货。
+　　《Advanced Data Structures》是MIT的高级数据结构教程，为什么会找到这个教程呢？因为Google Advanced Data Structures第一个出来的就是这货。
 
 　　这门课包含各种让本屌世界观崩坏的奇诡数据结构和算法，它们包括但不限于：
 

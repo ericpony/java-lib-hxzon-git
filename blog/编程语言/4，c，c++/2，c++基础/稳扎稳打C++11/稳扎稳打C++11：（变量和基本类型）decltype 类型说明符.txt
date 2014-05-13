@@ -1,0 +1,52 @@
+﻿稳扎稳打C++11：（变量和基本类型）decltype 类型说明符
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-12-30 19:28:19
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=225
+
+当应用到 decltype 的表达式是一个变量的时候，decltype 返回变量的类型，包括 top-level const 和引用。
+目录
+decltype 和引用
+代码示例
+decltype（Declared Type） 用于获取表达式的类型，但不对表达式进行计算。从C++11开始引入该说明符。
+当应用到 decltype 的表达式是一个变量的时候，decltype 返回变量的类型，包括 top-level const 和引用。
+decltype 和引用 
+
+通常来说，如果表达式产生对象可以作为左值，那么decltype将返回对象的引用类型。
+注意：decltype((variable))总是引用类型，但是decltype(variable)只有当variable是引用类型时才是引用类型。
+代码示例 
+
+#include <iostream>
+#include <typeinfo>
+ 
+using std::cin;
+using std::cout;
+using std::endl;
+ 
+double func()
+{
+    cout << "func executed." << endl;
+    return 2.5+3.6;
+}
+ 
+int main()
+{
+    decltype(func()) sum;
+    cout << typeid(sum).name() << endl;
+     
+    const int ci = 0, &cj = ci;
+    decltype(ci) x = 0;
+    decltype(cj) y = x;
+    //decltype(cj) z; // compile error: ‘z’ declared as reference but not initialized
+    cout << typeid(x).name() << endl;
+    cout << typeid(y).name() << endl;
+     
+    int i = 10, *p = &i, &r = i;
+    decltype(r + 0) b;
+    //decltype(*p) c; // compile error: ‘c’ declared as reference but not initialized
+    cout << typeid(b).name() << endl;
+     
+    decltype(i) u;
+    //decltype((i)) v; // compile error: ‘v’ declared as reference but not initialized
+     
+    return 0;
+}
+

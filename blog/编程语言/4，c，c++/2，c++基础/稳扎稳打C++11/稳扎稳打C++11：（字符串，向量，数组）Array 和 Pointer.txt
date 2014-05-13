@@ -1,0 +1,205 @@
+﻿稳扎稳打C++11：（字符串，向量，数组）Array 和 Pointer
+
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-1-17 0:04:04
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=231
+
+
+在C++中，数组和指针是紧密相连的。在大多数情况下，当我们使用一个数组类型的对象时，我们实际上是在使用一个指向数组中第一个元素的指针。事实上，数组的很多操作都是指针的操作。
+目录
+指针即迭代器
+库函数：begin() 和 end()
+指针算术
+指针和下标
+在C++中，数组和指针是紧密相连的。在大多数情况下，当我们使用一个数组类型的对象时，我们实际上是在使用一个指向数组中第一个元素的指针。事实上，数组的很多操作都是指针的操作。例如，当我们使用auto来推测类型时，如果初始化器是个数组，那么推得的类型将是一个指针，而不是数组。但是，当我们使用decltype来推测时，返回的将是数组。
+#include <iostream>
+#include <typeinfo>
+ 
+using namespace std;
+ 
+int main()
+{
+    int arr[10] = {1,2,3,4,5,6,7,8,9,0};
+    auto arr2 = arr;
+    decltype(arr) arr3 = {1,1,1};
+     
+    cout << typeid(arr2).name() << endl;
+    cout << typeid(arr3).name() << endl;
+     
+    /*
+    Environment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        Pi
+        A10_i
+    */
+     
+    return 0;
+}
+指针即迭代器 
+
+指向数组元素的指针支持vector或string的迭代器的操作。例如，我们可以使用递增运算符将指针从一个元素指向下一个元素。
+为了获得指向数组中第一个元素的指针，我们可以使用数组自身，也可以对数组第一个元素求址。为了获得off-the-end指针，我们可以对刚刚越过数组最后一个元素的那个不存在的元素求址。对于这个不存在的元素，我们只能对它进行求址操作。
+#include <iostream>
+#include <typeinfo>
+ 
+using namespace std;
+ 
+int main()
+{
+    int arr[10] = {1,2,3,4,5,6,7,8,9,0};
+     
+    int *p = arr;
+    int i = *(++p);
+    cout << "i : " << i << endl;
+     
+    int *pend = &arr[10];
+    for(int *pbeg = arr; pbeg != pend; ++pbeg)
+    {
+        cout << *pbeg << endl;
+    }
+     
+    /*
+    Environment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        i : 2
+        1
+        2
+        3
+        4
+        5
+        6
+        7
+        8
+        9
+        0
+    */
+     
+    return 0;
+}
+库函数：begin() 和 end() 
+
+使用上述方法获取off-the-end指针是十分容易出错的，为此，C++11为我们引入了两个新函数：begin()和end()。begin()返回指向第一个元素的指针，end()返回off-the-end指针。
+这两个函数定义在了iterator头文件中。
+#include <iostream>
+#include <iterator>
+ 
+using namespace std;
+ 
+int main()
+{
+    int arr[10] = {1,2,3,4,5,6,7,8,9,0};
+     
+    int *pbeg = begin(arr);
+    int *pend = end(arr);
+    while(pbeg != pend && pbeg >= 0)
+    {
+        cout << *pbeg << endl;
+        ++pbeg;
+    }
+     
+    /*
+    Environment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        1
+        2
+        3
+        4
+        5
+        6
+        7
+        8
+        9
+        0
+    */
+     
+    return 0;
+}
+指针算术 
+
+指向数组元素的指针可以使用标准容器迭代器和vector或string的迭代器的所有操作。包括解引用、递增、比较、添加一个整型值、两指针相减。
+当我们向指针加上一个整型值时，结果必须是一个指向数组内部元素的指针，或者是off-the-end指针。
+两个指针相减时，返回的是两个指向同一个数组的元素的指针间的距离。指针相减返回的结果类型为ptrdiff_t，同size_t一样，它是特定于机器的类型，并且定义在cstddef头文件中。
+两个空指针或者指向同一个对象的两个指针也可进行指针算术。
+#include <iostream>
+#include <typeinfo>
+#include <iterator>
+#include <cstddef>
+ 
+using namespace std;
+ 
+int main()
+{
+    int arr[10] = {1,2,3,4,5,6,7,8,9,0};
+     
+    int *pbeg = begin(arr);
+    int *pend = end(arr);
+     
+    auto diff = pend - pbeg;
+    ptrdiff_t diff2 = pend-pbeg;
+     
+    cout << typeid(diff).name() << endl;
+    cout << typeid(diff2).name() << endl;
+     
+    int i = 99;
+    int *p1 = &i;
+    int *p2 = &i;
+    int *p3 = nullptr;
+    int *p4 = nullptr;
+     
+    cout << "p1 - p2 = " << p1 - p2 << endl;
+    cout << "p3 - p4 = " << p3 - p4 << endl;
+     
+    /*
+    Environment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        i
+        i
+        p1 - p2 = 0
+        p3 - p4 = 0
+    */
+     
+    return 0;
+}
+指针和下标 
+
+当指针指向数组中的某个元素（或者off-the-end元素）时，可以对这个指针应用下标运算符。与vector和string的下标不同的是，内置数组类型的下标是有符号类型。
+#include <iostream>
+#include <typeinfo>
+#include <iterator>
+#include <cstddef>
+ 
+using namespace std;
+ 
+int main()
+{
+    int arr[10] = {1,2,3,4,5,6,7,8,9,0};
+     
+    int *p = &arr[4];
+    int i = p[0];
+    int j = p[2];
+    int k = p[-2];
+     
+    cout << i << endl;
+    cout << j << endl;
+    cout << k << endl;
+     
+    /*
+    Environment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        5
+        7
+        3
+    */
+     
+    return 0;
+}
+

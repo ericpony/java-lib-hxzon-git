@@ -1,0 +1,91 @@
+﻿稳扎稳打C++11：（字符串，向量，数组）如何与老式代码打交道
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-1-17 0:14:26
+http://ilanever.com/article/sitedetail.html?id=233
+
+当代C++程序应尽量使用vector和迭代器而不是内置数组和指针，尽量使用string而不是C风格字符串。
+目录
+混合使用string对象和C风格字符串
+使用数组初始化vector
+有很多C++程序早于标准库，那时并没有string和vector。还有很多程序是用C或其他语言写的，这些语言不能使用C++标准库。因此现代的C++程序不得不面对大量的数组和C风格的字符串。还好，C++标准库提供了很多与老式代码打交道的接口。
+混合使用string对象和C风格字符串 
+
+通常，我们可以使用以空字符结尾的字符数组来替换string对象。例如：
+我们可以使用以空字符结尾的字符数组来初始化或赋值一个string对象。
+我们可以使用以空字符结尾的字符数组作为string的“+”或“+=”运算符的操作数。
+但是相反的操作是不支持的：不能直接使用string来替换C风格字符串。不过，可以通过string的c_str成员来获得表示该string对象的C风格字符串。c_str返回的是一个指针，这个指针指向用于表示string对象的以空字符结尾的字符数组的开始，这个指针的类型是const char*。
+#include <iostream>
+#include <string>
+#include <cstring>
+ 
+using namespace std;
+ 
+int main()
+{
+    char ca1[] = "hi, ";
+    char ca2[] = "i am a character array.";
+    string s1 = ca1;
+    s1 += ca2;
+    cout << "s1 : " << s1 << endl;
+ 
+    char ca3[50];
+    strcpy(ca3, s1.c_str());
+    cout << "ca3 : " << ca3 << endl;
+ 
+    /*
+    Environment:
+        VS2012(32bit)
+        g++4.8.1
+    Output:
+        s1 : hi, i am a character array.
+        ca3 : hi, i am a character array.
+ 
+    */
+ 
+    return 0;
+}
+使用数组初始化vector 
+
+我们不能用数组去初始化另一个数组，也不能使用vector去初始化数组，但我们可以用数组来初始化vector。只要我们在vector的构造函数中指定数组的起始元素和刚刚越过最后一个元素的地址即可。
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <vector>
+ 
+using namespace std;
+ 
+int main()
+{
+    int iarr[] = {1,3,5,7,9};
+    vector<int> ivec(begin(iarr), end(iarr));
+    cout << "elements in ivec:" << endl;
+    for(auto i : ivec)
+    {
+        cout << i << endl;
+    }
+ 
+    vector<int> ivec2(iarr+1, iarr+3);
+    cout << "elements in ivec2:" << endl;
+    for(auto i : ivec2)
+    {
+        cout << i << endl;
+    }
+ 
+    /*
+    Environment:
+        VS2012(32bit)
+        g++4.8.1
+    Output:
+        elements in ivec:
+        1
+        3
+        5
+        7
+        9
+        elements in ivec2:
+        3
+        5
+    */
+    return 0;
+}
+由于使用指针和数组容易出现错误，所以当代C++程序应尽量使用vector和迭代器而不是内置数组和指针，尽量使用string而不是C风格字符串。
+

@@ -1,0 +1,116 @@
+﻿稳扎稳打C++11：（变量和基本类型）变量定义
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-10-30 20:59:54
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=201
+
+小小的变量定义也有很多门道哦！
+目录
+什么是定义
+初始化程序（Initializers）
+列表初始化（List Initialization）
+默认初始化（Default Initialization）
+什么是定义 
+
+一个简单的变量定义（definition）包含一个类型说明符（type specifier），后跟一个或多个以逗号分隔的变量名称，并且以分号结尾。变量定义可以选择为一个或多个名称提供初始值。
+初始化程序（Initializers） 
+
+在C++中初始化（initialization）和赋值（assignment）是两个不同的操作。初始化发生在变量创建阶段。赋值则是清除对象当前值，并替换成新值。
+列表初始化（List Initialization） 
+
+C++中有4种方式用于定义变量。用法如下所示：
+#include <iostream>
+ 
+using namespace std;
+ 
+void definitionTest()
+{
+    int units_sold_1 = 99;
+    int units_sold_2 = {99};
+    int units_sold_3(99);
+    int units_sold_4{99}; // supported by c++11
+ 
+    cout << "units_sold_1:" << units_sold_1 << endl;
+    cout << "units_sold_2:" << units_sold_2 << endl;
+    cout << "units_sold_3:" << units_sold_3 << endl;
+    cout << "units_sold_4:" << units_sold_4 << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        units_sold_1:99
+        units_sold_2:99
+        units_sold_3:99
+        units_sold_4:99
+    */
+}
+ 
+int main()
+{
+    definitionTest();
+    return 0;
+}
+示例中最后的定义方式采用花括号的形式，在C++11中被引入，这种形式被称作列表初始化（list initialization）。当这种形式被用于内置类型时，它有一个很重要的性质：编译器不允许采用列表初始化的形式用于初始化那些在初始化程序中可能会丢失信息的内置类型变量。例如下面的代码：
+#include <iostream>
+ 
+using namespace std;
+ 
+void listInitialization()
+{
+    long double ld = 3.141592653;
+    //int a{ld}; // compiler error
+    //int b = {ld}; // compiler error
+    int c(ld);
+    int d = ld;
+     
+    cout << "c:" << c << endl;
+    cout << "d:" << d << endl; 
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        c:3
+        d:3
+    */
+}
+ 
+int main()
+{
+    listInitialization();
+    return 0;
+}
+默认初始化（Default Initialization） 
+
+当我们定义一个变量而没有对它进行初始化时，该变量将被执行默认初始化（default initialized）。用于初始化变量的默认值根据变量的类型和定义位置而有所不同。
+定义在任何函数体（function body）之外的内置类型变量将被默认初始化为 0。定义在函数内的内置类型变量不进行默认初始化，该变量的值为 undefined，但有一种情况除外，那就是本地静态对象。试图复制或访问值为 undefined 的变量的行为都是错误的。
+每个类控制着我们如何初始化类类型（class type）的对象。尤其是类决定着我们是否可以在不使用初始化器的情况下定义对象。如果能的话，类决定着对象的值。
+#include <iostream>
+ 
+using namespace std;
+ 
+int global_i;
+void default_initialization()
+{
+    int local_i;
+    cout << global_i << endl;
+    cout << local_i << endl;
+ 
+    /*
+     * 32bit VC++11
+     * output:
+     *
+     * 0
+     * 6012664
+     * */
+}
+ 
+int main()
+{
+    default_initialization();
+    return 0;
+}
+未初始化的本地变量 local_i 输出的值每次都不一样。
+建议初始化所有的内置类型对象。
+

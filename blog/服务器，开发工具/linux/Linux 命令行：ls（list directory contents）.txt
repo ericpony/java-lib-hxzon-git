@@ -1,0 +1,130 @@
+﻿Linux 命令行：ls（list directory contents）
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-12-6 20:46:44
+http://ilanever.com/article/sitedetail.html?id=209
+
+Linux中最常用的命令之一
+目录
+简介
+常用选项
+示例
+简介 
+
+ls(list)，用于列出文件夹下的文件和文件夹的信息。
+在没有任何参数的情况下，ls按字母顺序列出当前文件夹下的内容的名称，不递归子文件夹的内容，也不显示以“.”开头的文件。
+常用选项 
+
+选项	长选项	描述
+-a	--all	不忽略以“.”开头的文件。
+-A	--almost-all	只忽略“.”和“..”，不忽略以“.”开头的文件。
+-B	--ignore-backups	忽略以“~”结尾的文件。
+-d	--directory	显示文件夹名称，而不是文件夹的内容。
+-I	--ignore	
+-R	--recursive	递归显示所有文件夹的内容。
+-i	--inode	在每个文件名左侧打印inode序号。（inode用于在系统中唯一标识文件。）
+-l	--format=long	打印长格式输出。
+-r	--reverse	反转当前的排序方法。
+-S	--sort=size	按文件大小排序，最大的在最前面。
+-t	--sort=time	按修改时间排序，最新的在最前面。（inode中的mtime）
+-c	--sort=ctime	按状态改变时间排序。（inode中的ctime）
+-u	--time=atime	按访问时间排序
+-v	--sort=version	按版本名称和序号排序
+-1	--format=single-column	每行显示一个文件
+-m	--format=commas	以“， ”分隔，横向显示文件。
+-p	--dndicator-style=slash	在文件夹名称后面添加一个“/”。
+示例 
+
+以下示例演示ls命令的简单用法
+lipei@ubuntu:~$ mkdir shelltest && cd shelltest #创建测试文件夹，并进入该文件夹
+lipei@ubuntu:~/shelltest$ mkdir dir-{1..5} && touch dir-{1..5}/file-{x..z} #创建用于测试的文件夹和文件
+lipei@ubuntu:~/shelltest$ ls -R #递归显示文件夹内容
+.:
+dir-1 dir-2 dir-3 dir-4 dir-5
+
+./dir-1:
+file-x file-y file-z
+
+./dir-2:
+file-x file-y file-z
+
+./dir-3:
+file-x file-y file-z
+
+./dir-4:
+file-x file-y file-z
+
+./dir-5:
+file-x file-y file-z
+lipei@ubuntu:~/shelltest$ touch .temp #创建以点开头的文件
+lipei@ubuntu:~/shelltest$ ls -a #显示所有文件
+. .. dir-1 dir-2 dir-3 dir-4 dir-5 .temp
+lipei@ubuntu:~/shelltest$ ls -A #显示除“.”和“..”外的所有文件
+dir-1 dir-2 dir-3 dir-4 dir-5 .temp
+lipei@ubuntu:~/shelltest$ ls
+dir-1 dir-2 dir-3 dir-4 dir-5
+lipei@ubuntu:~/shelltest$ ls -d #显示文件夹名称
+.
+lipei@ubuntu:~/shelltest$ ls -d ~ #显示文件夹名称
+/home/lipei
+lipei@ubuntu:~/shelltest$ ls -i #显示inode序号
+1082749 dir-1 1083497 dir-2 1083498 dir-3 1083500 dir-4 1083503 dir-5
+lipei@ubuntu:~/shelltest$ ls -l #显示长格式
+total 20
+drwxrwxr-x 2 lipei lipei 4096 12月 9 11:24 dir-1
+drwxrwxr-x 2 lipei lipei 4096 12月 9 11:24 dir-2
+drwxrwxr-x 2 lipei lipei 4096 12月 9 11:24 dir-3
+drwxrwxr-x 2 lipei lipei 4096 12月 9 11:24 dir-4
+drwxrwxr-x 2 lipei lipei 4096 12月 9 11:24 dir-5
+lipei@ubuntu:~/shelltest$ ls -li #显示长格式并显示inode序号
+total 20
+1082749 drwxrwxr-x 2 lipei lipei 4096 12月 9 11:24 dir-1
+1083497 drwxrwxr-x 2 lipei lipei 4096 12月 9 11:24 dir-2
+1083498 drwxrwxr-x 2 lipei lipei 4096 12月 9 11:24 dir-3
+1083500 drwxrwxr-x 2 lipei lipei 4096 12月 9 11:24 dir-4
+1083503 drwxrwxr-x 2 lipei lipei 4096 12月 9 11:24 dir-5
+lipei@ubuntu:~/shelltest$ ls -c
+dir-1 dir-2 dir-3 dir-4 dir-5
+lipei@ubuntu:~/shelltest$ ls -u
+dir-1 dir-2 dir-3 dir-4 dir-5
+lipei@ubuntu:~/shelltest$ ls -t
+dir-1 dir-2 dir-3 dir-4 dir-5
+lipei@ubuntu:~/shelltest$ ls -p #在文件夹名称后添加斜线
+dir-1/ dir-2/ dir-3/ dir-4/ dir-5/
+lipei@ubuntu:~/shelltest$ ls -m #以逗号分隔显示
+dir-1, dir-2, dir-3, dir-4, dir-5
+lipei@ubuntu:~/shelltest$ ls -1 #每项占一行
+dir-1
+dir-2
+dir-3
+dir-4
+dir-5
+lipei@ubuntu:~/shelltest$ ls -Sa #按文件大小倒序排列
+. .. dir-1 dir-2 dir-3 dir-4 dir-5 .temp
+
+长列表格式
+ls命令的长列表格式为：
+<file type>, <file mode>, <number of links>, <owner name>, <group name>, <size>, <date and time>, <pathname>
+<file type>表示的是文件类型。文件类型如下所示：
+字符	含义
+-	regular file
+b	block special file
+c	character special file
+C	high performance (“contiguous data”) file
+d	directory
+l	symbolic link
+s	socket
+?	some other file
+<file mode>包含三段字符，分别表示所有者权限，组权限，其他人权限。每段三个字符的意义如下表所示：
+字符位置	描述
+1	“r”：文件可读；
+“-”：文件不可读。
+2	“w”：文件可写；
+“-”：文件不可写。
+3	 “S”：如果出现在所有者权限字段中，文件不可执行并设置为“set-user-ID”模式；如果出现在组权限字段中，文件不可执行并设置为“set-group-ID”模式。
+“s”：如果出现在所有者权限字段中，文件可执行并设置为“set-user-ID”模式；如果出现在组权限字段中，文件可执行并设置为“set-group-ID”模式。
+“T”：如果出现在其他人权限字段中并且文件是个文件夹，搜索权限不授予其他人，并且设置严格删除标记（restricted deletion flag）。
+“t”：如果出现在其他人权限字段中并且文件是个文件夹，搜索权限授予其他人，并且设置严格删除标记。
+“x”：文件可执行或文件夹可搜索。
+“-”：没有应用任何属性。
+<number of links>指的是指向文件的硬连接数。
+<size>的单位为字节（byte）。
+

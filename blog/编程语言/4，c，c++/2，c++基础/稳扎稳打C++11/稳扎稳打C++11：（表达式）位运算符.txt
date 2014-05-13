@@ -1,0 +1,239 @@
+﻿稳扎稳打C++11：（表达式）位运算符
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-1-25 23:05:05
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=244
+
+
+如果位运算符的操作数是有符号的并且是个负数，那么符号位的处理情况将根据机器的不同而不同。甚至，没有定义左移时符号位应该如何改变。因此，强烈建议在位运算时使用无符号类型。
+目录
+位移运算符
+按位非运算符
+按位与、按位或、异或运算符
+位运算符（bitwise operator）采用整型作为操作数，并将整型值看作一系列的位。位运算符允许我们测试和设置单独的位。bitset类能够存储一系列的位。位运算符包含的运算符有：~(bitwise NOT)、<<(left shift)、>>(right shift)、&(logical AND)、^(logical XOR)、|(logical OR)。
+如果位运算符的操作数是有符号的并且是个负数，那么符号位的处理情况将根据机器的不同而不同。甚至，没有定义左移时符号位应该如何改变。因此，强烈建议在位运算时使用无符号类型。
+位移运算符 
+
+位移运算符（bitwise shift）包括左移运算符（<<）和右移运算符（>>）。IO库重载了这两个运算符用于输入和输出。当位被移出界的时候该位将被忽略。左移操作符在右侧插入值为0的位。右移操作符的行为依赖与左侧操作数的类型：如果操作数是无符号的则在左侧插入值为0的位，如果操作数是有符号的那么结果依赖于定义的实现，可能是把符号位插入到左侧，也可能是把值为0的位插入到左侧。
+请看下面的代码示例：
+#include <iostream>
+#include <string>
+#include <vector>
+#include <strstream>
+ 
+using namespace std;
+ 
+string convert_int_to_string(int i)
+{
+    string s;
+    strstream ss;
+    ss << i;
+    ss >> s;
+    return s;
+}
+ 
+string get_binaryformat(int i)
+{
+    vector<string> bits;
+    int quotient = i / 2;
+    int remainder = i % 2;
+    while(!(quotient == 0 && remainder == 0))
+    {
+        bits.push_back(convert_int_to_string(remainder));
+        int q = quotient;
+        quotient = q / 2;
+        remainder = q % 2;
+    }
+ 
+    string binary;
+    while(bits.size() > 0)
+    {
+        binary += bits.back();
+        bits.pop_back();
+    }
+    return binary;
+}
+ 
+void bitwise_shift()
+{
+    unsigned int bits = 0233;
+    unsigned int bits_leftshift = bits << 8;
+    unsigned int bits_rightshift = bits_leftshift >> 8;
+    unsigned int bits_offtheend = bits << 31;
+    cout << "bits : " << bits << endl;
+    cout << "bits binary : " << get_binaryformat(bits) << endl;
+    cout << "bits left shifted : " << bits_leftshift << endl;
+    cout << "bits left shifted binary : " << get_binaryformat(bits_leftshift) << endl;
+    cout << "bits right shifted : " << bits_rightshift << endl;
+    cout << "bits off the end : " << bits_offtheend << endl;
+    cout << "bits off the end binary : " << get_binaryformat(bits_offtheend) << endl;
+    cout << "unsigned int size(bit) : " << sizeof(unsigned int)*8 << endl;
+     
+    /*
+    Windows32bit
+    VS2012
+     
+    Output:
+    bits : 155
+    bits binary : 10011011
+    bits left shifted : 39680
+    bits left shifted binary : 1001101100000000
+    bits right shifted : 155
+    bits off the end : 2147483648
+    bits off the end binary : -10000000000000000000000000000000
+    unsigned int size(bit) : 32
+     
+    */
+}
+ 
+int main()
+{
+    bitwise_shift();
+    return 0;
+}
+按位非运算符 
+
+按位非运算符（bitwise not）（~）将操作数的每个位取反。当操作数是char类型时，首先char会被提升到int类型。提升后的int对象的高位都会被0填充。然后在对int对象的二进制位进行取反操作。
+#include <iostream>
+#include <string>
+#include <vector>
+#include <strstream>
+ 
+using namespace std;
+ 
+string convert_int_to_string(int i)
+{
+    string s;
+    strstream ss;
+    ss << i;
+    ss >> s;
+    return s;
+}
+ 
+string get_binaryformat(int i)
+{
+    vector<string> bits;
+    int quotient = i / 2;
+    int remainder = i % 2;
+    while(!(quotient == 0 && remainder == 0))
+    {
+        bits.push_back(convert_int_to_string(remainder));
+        int q = quotient;
+        quotient = q / 2;
+        remainder = q % 2;
+    }
+ 
+    string binary;
+    while(bits.size() > 0)
+    {
+        binary += bits.back();
+        bits.pop_back();
+    }
+    return binary;
+}
+ 
+void bitwise_not()
+{
+    unsigned char bits = 0233;
+    unsigned int bits_not = ~bits;
+    cout << "bits : " << get_binaryformat(bits) << endl;
+    cout << "bits_not : " << bits_not << endl;
+    cout << "bits not binary: " << get_binaryformat(~bits) << endl;
+ 
+    /*
+    Windows32bit
+    VS2012
+ 
+    Output:
+    bits : 10011011
+    bits_not : 4294967140
+    bits not binary: -100-1-1-100
+    */
+}
+ 
+int main()
+{
+    cout << endl;
+    bitwise_not();
+    return 0;
+}
+按位与、按位或、异或运算符 
+
+按位与运算符（bitwise and）比较两个操作数的对应位，如果二者都是1，则返回1，否则返回0。
+按位或运算符（bitwise or）比较两个操作数的对应位，如果二者有一个是1，则返回1，否则返回0。
+按位异或运算符（bitwise xor）比较两个操作数的对应位，如果二者一个是1，另一个是0，则返回1，否则返回0。
+#include <iostream>
+#include <string>
+#include <vector>
+#include <strstream>
+ 
+using namespace std;
+ 
+string convert_int_to_string(int i)
+{
+    string s;
+    strstream ss;
+    ss << i;
+    ss >> s;
+    return s;
+}
+ 
+string get_binaryformat(int i)
+{
+    vector<string> bits;
+    int quotient = i / 2;
+    int remainder = i % 2;
+    while(!(quotient == 0 && remainder == 0))
+    {
+        bits.push_back(convert_int_to_string(remainder));
+        int q = quotient;
+        quotient = q / 2;
+        remainder = q % 2;
+    }
+     
+    int sub = 8 - bits.size();
+    while(sub > 0)
+    {
+         
+        bits.push_back(convert_int_to_string(0));
+        --sub;
+    }
+ 
+    string binary;
+    while(bits.size() > 0)
+    {
+        binary += bits.back();
+        bits.pop_back();
+    }
+    return binary;
+}
+ 
+void bitwise_and_or_xor()
+{
+    unsigned int i1 = 0145;
+    unsigned int i2 = 0257;
+    cout << get_binaryformat(i1) << endl;
+    cout << get_binaryformat(i2) << endl;
+    cout << get_binaryformat(i1 & i2) << endl;
+    cout << get_binaryformat(i1 | i2) << endl;
+    cout << get_binaryformat(i1 ^ i2) << endl;
+ 
+    /*
+    Environment:
+    g++4.8(Linux32bit)
+     
+    Output:
+    01100101
+    10101111
+    00100101
+    11101111
+    11001010
+     
+    */
+}
+ 
+int main()
+{
+    bitwise_and_or_xor();
+    return 0;
+}
+
+

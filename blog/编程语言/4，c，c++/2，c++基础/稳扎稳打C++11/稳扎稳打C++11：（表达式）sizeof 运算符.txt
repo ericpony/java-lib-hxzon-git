@@ -1,0 +1,53 @@
+﻿稳扎稳打C++11：（表达式）sizeof 运算符
+
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-3-18 22:38:24
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=250
+
+
+sizeof的应用形式有两种：sizeof (type) 和 sizeof expr。第二种形式返回的是表达式的类型的大小。
+目录
+sizeof运算符用于返回一个表达式和类型名称的大小，单位是byte。sizeof是右相关的。sizeof的结果是类型size_t的常量表达式。sizeof的应用形式有两种：sizeof (type) 和 sizeof expr。第二种形式返回的是表达式的类型的大小。
+sizeof运算符不对操作数进行计算。
+C++11规定，我们可以通过使用范围运算符来获取类成员的大小。我们不需要提供一个对象，因为sizeof获取该成员。
+以下列举了sizeof用于一些常见类型的规则：
+char类型和char类型的sizeof大小是1。
+引用类型的sizeof大小是被引用对象类型的大小。
+指针的sizeof大小是能够容纳一个指针的大小。
+解引用指针的sizeof大小是指针指向对象的类型的大小。指针不必是可用的。
+数组的sizeof大小是整个数组的大小。等同于数组元素类型的sizeof大小乘以数组中元素的个数。
+string或vector的sizeof大小是他们固定部分的大小，不是元素占用的大小。
+请查看下面示例：
+#include <iostream>
+#include "Student.h"
+ 
+using namespace std;
+ 
+int main()
+{
+    cout << sizeof(Student) << endl;
+    cout << sizeof(Student::age) << endl;
+    cout << sizeof(Student::name) << endl;
+ 
+    Student s;
+    cout << sizeof(s.age) << endl;
+ 
+    int ia[] = {1,2,3};
+    constexpr size_t sz = sizeof(ia)/sizeof(*ia);
+    cout << sz << endl;
+ 
+    /*
+    Environment:
+    g++4.8(Linux64bit)
+ 
+    Output:
+    16
+    4
+    8
+    4
+    3
+ 
+    */
+ 
+    return 0;
+}
+

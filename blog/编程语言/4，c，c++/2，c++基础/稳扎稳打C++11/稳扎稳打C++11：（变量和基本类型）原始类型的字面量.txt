@@ -1,0 +1,115 @@
+﻿稳扎稳打C++11：（变量和基本类型）原始类型的字面量
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-11-1 16:18:52
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=217
+
+
+字面量的默认类型以及如何重写默认类型。
+目录
+整型和浮点型字面量
+字符和字符串字面量
+布尔和指针字面量
+指定字面量类型
+代码示例
+几乎每种编程语言都有字面量，C++也不例外。字面量是一种常量，可以不用声明类型，编译器根据字面量的格式和值来决定它的类型。
+整型和浮点型字面量 
+
+整型字面量可以通过十进制（decimal）、八进制（octal）和十六进制（hexadecimal）来表示。八进制以0开头，十六进制以0x或0X开头。默认情况下，十进制字面量按照顺序“int，long，long long”取能够容纳字面量值的最前面的类型作为其类型。而八进制和十六进制则按照顺序“int，unsigned int，long，unsigned long，long long，unsigned long long”取能够容纳字面量值的最前面的类型作为其类型。
+浮点字面量包含小数点（decimal point）或者指数标记E。默认情况下，浮点字面量为double类型。
+字符和字符串字面量 
+
+字符由单引号括起来。字符串由双引号括起来。
+两个相邻的字符串，并且只是以空格（spaces）、制表符（tabs）或换行符（newlines）分开，那么这两个字符串将合并为一个字符串。
+布尔和指针字面量 
+
+布尔字面量只包含true和false两个文本。
+指针字面量包含nullptr。
+指定字面量类型 
+
+字面量有默认的类型，也可以通过给字面量加上前缀或后缀来重写字面量的类型。
+字符和字符串字面量
+前缀	意义	类型
+u	Unicode 16 字符	char16_t
+U	Unicode 32 字符	char32_t
+L	宽字节字符（wide character）	wchar_t
+u8	utf-8	char
+
+整型字面量
+后缀	最小类型
+u或者U	unsigned
+l或者L	long
+ll或者LL	long long
+
+浮点型字面量
+后缀	类型
+f或者F	float
+l或者L	long double
+代码示例 
+
+#include <iostream>
+ 
+using namespace std;
+ 
+void literaltest()
+{
+    cout << 20 << endl;
+    cout << 024 << endl;
+    cout << 0x14 << endl;
+    cout << typeid(20).name() << endl;
+ 
+    cout << 3.14159 << endl;
+    cout << 3.14159E0 << endl;
+    cout << 1. << endl;
+    cout << 0e0 << endl;
+    cout << .001 << endl;
+    cout << typeid(.001).name() << endl;
+ 
+    cout << 'a' << endl;
+    cout << "hello world!" << endl;
+    cout << "Hello "
+            "my world!" << endl;
+    cout << typeid('a').name() << endl;
+    cout << typeid("abc").name() << endl;
+ 
+    cout << typeid(L'a').name() << endl;
+    cout << typeid(20U).name() << endl;
+    cout << typeid(20L).name() << endl;
+    cout << typeid(20LL).name() << endl;
+    cout << typeid(3.14F).name() << endl;
+    cout << typeid(3.14L).name() << endl;
+ 
+    /**
+     * 32bit
+     * output:
+     *
+     * 20
+     * 20
+     * 20
+     * int
+     * 3.14159
+     * 3.14159
+     * 1
+     * 0
+     * 0.001
+     * double
+     * a
+     * hello world!
+     * Hello my world!
+     * char
+     * char const [4]
+     * wchar_t
+     * unsigned int
+     * long
+     * __int64
+     * float
+     * long double
+     *
+     * */
+}
+ 
+int main()
+{
+    literaltest();
+    return 0;
+}
+由以上示例，我们可以发现，字符串的类型是常量字符数组（char const []）。
+

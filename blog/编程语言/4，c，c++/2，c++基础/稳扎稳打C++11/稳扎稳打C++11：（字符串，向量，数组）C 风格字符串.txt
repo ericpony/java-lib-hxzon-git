@@ -1,0 +1,106 @@
+﻿稳扎稳打C++11：（字符串，向量，数组）C 风格字符串
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-1-17 0:12:12
+http://ilanever.com/article/sitedetail.html?id=232
+
+实际为字符数组的C-style字符串如何处理呢？
+目录
+C标准库中的字符串函数
+C风格字符串（C-style character strings）是C++从C继承而来的一种结构，字符串字面量就是它的典型代表。C-style 字符串存储在字符数组中，并且以null字符（'\0'）结尾。
+C标准库中的字符串函数 
+
+C标准库提供了一些函数用于操作C风格的字符串。这些函数定义在了cstring头文件中，cstring是C中string.h头文件的C++版。
+函数	说明
+strlen(p)	返回p的长度（不计入结尾的空字符）。
+strcmp(p1,p2)	比较p1和p2的大小。如果p1等于p2，则返回0；如果p1小于p2，则返回负数；如果p1大于p2，则返回正数。
+strcat(p1,p2)	将p2添加到p1，返回p1。
+strcpy(p1,p2)	将p2复制到p1，返回p1。
+注意：传入到以上函数中的字符数组指针必须是空结尾的。
+strlen 的使用
+#include <iostream>
+#include <cstring>
+ 
+using namespace std;
+ 
+int main()
+{
+    char ca1[] = {'c','+','+','\0'};
+    char ca2[] = {'c','+','+'};
+    cout << strlen(ca1) << endl;
+    cout << strlen(ca2) << endl;
+     
+    /*
+    Environtment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        3
+        6
+ 
+    */
+     
+    return 0;
+}
+在上例中，ca2的长度是6，显然不是我们想要的。产生这个结果是因为我们没有让ca2以空字符结尾。strlen在判断ca2的长度时会继续查找ca2以后的内存，直到遇见一个空字符。
+strcmp 的使用
+C-style 字符串不能同C++中的string类型似的使用“<”和“>”进行比较，要使用strcmp函数进行比较。如果错误地使用了string类型的比较方式的话，实际上是在比较两个指向各自数组第一个元素的指针，没有意义。
+#include <iostream>
+#include <cstring>
+ 
+using namespace std;
+ 
+int main()
+{
+    const char ca3[] = "A string example.";
+    const char ca4[] = "A different string.";
+    if(strcmp(ca3,ca4) < 0)
+    {
+        cout << "ca3 is less than ca4." << endl;
+    }
+    else
+    {
+        cout << "ca3 is greater than ca4." << endl;
+    }
+     
+    /*
+    Environtment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        ca3 is greater than ca4.
+    */
+     
+    return 0;
+}
+strcpy 和 strcat 的使用
+C-style 字符串的复制不能像string类型似的使用“=”直接拷贝，需要使用strcpy函数进行拷贝。C-style字符串的串联也不能和string类型似的使用“+”运算符，而是要使用strcat函数。
+#include <iostream>
+#include <cstring>
+ 
+using namespace std;
+ 
+int main()
+{
+    const char ca3[] = "A string example.";
+    const char ca4[] = "A different string.";
+     
+    char ca5[50];
+    strcpy(ca5,ca3);
+    strcat(ca5," ");
+    strcat(ca5,ca4);
+    cout << ca5 << endl; // cout可以直接打印c-style字符串的所有内容。
+     
+    int ia[5] = {1,2,3,4,5};
+    cout << ia << endl; // cout 不能直接打印非字符数组的所有内容，它打印的是数组的第一个元素的指针。 
+     
+    /*
+    Environtment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        A string example. A different string.
+        0xbfee3de0
+    */
+     
+    return 0;
+}
+

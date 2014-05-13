@@ -1,0 +1,227 @@
+﻿稳扎稳打C++11：（字符串，向量，数组）迭代器
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-1-11 0:17:07
+http://ilanever.com/article/sitedetail.html?id=229
+
+迭代器是一种类似于指针的东西。string和vector相比其他库容器的迭代器支持更多迭代器的操作。
+目录
+使用迭代器
+标准容器迭代器的操作
+迭代器的算术运算
+不仅可以通过下标的方式访问string中的字符或者vector中的元素，还可以通过迭代器（iterator）的方式来访问。迭代器是一种更加通用的方式。
+所有的库容器都支持迭代器，但只有一部分容器支持下标操作。从技术上来讲，string不是容器，但它支持很多容器的操作。
+像指针一样，迭代器为我们提供了一种间接访问对象的方式。一个可用的迭代器可以表示容器中的一个元素，可还以表示刚刚越过容器最后一个元素的位置。
+使用迭代器 
+
+拥有迭代器的类型都拥有返回迭代器的成员：begin和end。begin返回用于表示容器第一个元素的迭代器。end返回用于表示刚刚越过容器最后一个元素的位置的迭代器。end返回的迭代器被认为是“off-the-end iterator”，或者简称为“the end iterator”。
+#include <iostream>
+#include <vector>
+#include <typeinfo>
+ 
+using namespace std;
+ 
+int main()
+{
+    vector<string> svec1;
+    svec1.push_back("hi");
+    svec1.push_back("me");
+ 
+    auto b = svec1.begin(), e = svec1.end();
+    cout << typeid(b).name() << endl;
+ 
+    vector<int> ivec2;
+    if(ivec2.begin() == ivec2.end())
+    {
+        cout << "the iterators returned by begin() and end() are equal."
+            << endl;
+ 
+    }
+     
+    /*
+    Environment:
+        VS2012(32bit)
+    Output:
+        class std::_Vector_iterator<class std::_Vector_val<struct std::_Simple_types<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > > > >
+        the iterators returned by begin() and end() are equal.
+    */
+ 
+    return 0;
+}
+当一个容器为空时，begin和end方法返回的迭代器都是off-the-end iterator，所以此时二者是相等的。
+标准容器迭代器的操作 
+
+操作	说明
+*iter	返回iter所表示元素的一个引用
+iter->mem	解引用iter并且从底层元素获取名为mem的成员。等同于(*iter).mem.
+++iter	递增iter，以指向容器中的下一个元素。
+--iter	递减iter，以指向容器中的上一个元素。
+iter1 == iter2	比较两个迭代器是否相等。如果两个迭代器表示同一个容器中的同一个元素或者同为off-the-end迭代器，那么二者就是相等的。
+iter1 != iter2	“==”运算符的结果取反
+请看下面的代码示例：
+#include <iostream>
+#include <iterator>
+#include <cctype>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+    string s("some thing");
+    if(s.begin() != s.end())
+    {
+        auto it = s.begin();
+        *it = toupper(*it); 
+    }
+    cout << s << endl;
+     
+    // because most iterators do not support "< operator",
+    // so we use "it != s.end()".
+    for(auto it = s.begin(); it != s.end() && !isspace(*it); ++it)
+    {
+        *it = toupper(*it);
+    }
+    cout << s << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++12.04
+    Output:
+        Some thing
+        SOME thing
+    */
+     
+    return 0;
+}
+迭代器的类型
+在拥有迭代器的库类型中定义了名为iterator和const_iterator的类型用于表示实际的迭代器类型。像常量指针一样，一个const_iterator可以读但不能写它所表示的元素；一个iterator既可以读也可以写它所表示的元素。如果容器是const的，我们只能使用它的const_iterator；如果容器是nonconst的，我们既可以使用const_iterator也可以使用iterator。
+#include <iostream>
+#include <string>
+#include <vector>
+ 
+using namespace std;
+ 
+int main()
+{
+    vector<int>::iterator it1;
+    string::iterator it2;
+ 
+    vector<int>::const_iterator it3;
+    string::const_iterator it4;
+ 
+    const vector<int> ivec;
+    auto it5 = ivec.begin();
+ 
+    cout << typeid(it1).name() << endl;
+    cout << typeid(it2).name() << endl;
+    cout << typeid(it3).name() << endl;
+    cout << typeid(it4).name() << endl;
+    cout << typeid(it5).name() << endl;
+ 
+    /*
+    Environment:
+        VS2012(32bit)
+    Output:
+        class std::_Vector_iterator<class std::_Vector_val<struct std::_Simple_types<int> > >
+        class std::_String_iterator<class std::_String_val<struct std::_Simple_types<char> > >
+        class std::_Vector_const_iterator<class std::_Vector_val<struct std::_Simple_types<int> > >
+        class std::_String_const_iterator<class std::_String_val<struct std::_Simple_types<char> > >
+        class std::_Vector_const_iterator<class std::_Vector_val<struct std::_Simple_types<int> > >
+    */
+     
+    return 0;
+}
+cbegin()和cend()
+C++11中引入了两个新函数cbegin和cend，不论容器或者string是否为const类型，二者都会返回 const_iterator。
+#include <iostream>
+#include <iterator>
+#include <vector>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+    vector<int> v;
+    auto it3 = v.cbegin();
+    cout << typeid(it3).name() << endl;
+     
+    /*
+    Environment:
+        VS2012(32bit)
+    Output:
+        class std::_Vector_const_iterator<class std::_Vector_val<struct std::_Simple_types<int> > >
+    */
+ 
+    return 0;
+}
+成员访问
+迭代器的成员访问有两种方法：一种是先解引用迭代器再应用点运算符，另一种是使用箭头运算符（arrow operator）。
+#include <iostream>
+#include <iterator>
+#include <vector>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+    vector<string> sv = {"hi","you","me"};
+    for(auto it = sv.cbegin(); it != sv.cend(); ++it)
+    {
+        cout << "the size of " << *it << " is " << (*it).size() << endl;
+        cout << "the size of " << *it << " is " << it->size() << endl;
+    }
+     
+    /*
+    Environment:
+        g++4.8.1(32bit)
+    Output:
+        the size of hi is 2
+        the size of hi is 2
+        the size of you is 3
+        the size of you is 3
+        the size of me is 2
+        the size of me is 2
+    */
+     
+    return 0;
+}
+当容器使用迭代器进行循环操作时，一定不要向容器中添加元素。
+迭代器的算术运算 
+
+string和vector的迭代器比其他库容器的迭代器支持更多的操作。下表列出了string和vector支持的操作：
+操作	说明
+iter + n	返回一个表示iter在容器内向前移动n个元素的迭代器。
+iter - n	返回一个表示iter在容器内向后移动n个元素的迭代器。
+iter1 += n	等于 iter1 = iter1 + n
+iter1 -= n	等于 iter1 = iter1 - n
+iter1 - iter2	两迭代器相减返回二者之间的移动距离。两迭代器必须属于同一容器。
+>, >=, <, <=	如果迭代器指向的元素出现在另一个迭代器指向的元素的前面，则这个迭代器小于另一个迭代器。
+两个迭代器相减获得的数据类型是一个名为difference_type的有符号的整数类型。
+#include <iostream>
+#include <iterator>
+#include <vector>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+    vector<string> sv = {"hi","you","me"};
+    auto iter1 = sv.begin();
+    auto iter2 = sv.end();
+    vector<string>::difference_type d = iter1 - iter2;
+    cout << d << endl;
+     
+    /*
+    Environment:
+        g++4.8.1(32bit)
+    Output:
+        -3
+    */
+     
+    return 0;
+}
+一个使用迭代器算术运算的经典算法是二叉树查找算法。二叉树查找算法用于在一个已排序的序列中查找指定的值。
+

@@ -1,0 +1,53 @@
+﻿稳扎稳打C++11：（变量和基本类型）复合类型之引用
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-12-20 21:00:45
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=218
+
+引用就是变量的一个别名。
+目录
+引用
+代码示例
+在C++中类型可以分为三种：内置类型（也称基本类型），复合类型（引用，指针，数组），类类型。
+简单的声明包含类型以及变量的名称列表。更加广泛的说，一个声明由一个基类型（base type）以及其后的一个或多个声明器（declarator）组成。每个声明器中指定了变量的名称和与基类型相关的类型。
+引用 
+
+引用（reference）定义了对象的一个可供替换的名称。一个引用类型引用另一个（refer to）类型。引用类型声明器的形式如“&d”，d是声明的名称。
+引用一旦被初始化，引用将保留它指向的初始对象的绑定。没有办法能够使引用重新绑定到另一个对象上。
+引用就是一个已存在对象的别名。
+因为引用不是对象，所以不能定义绑定到引用的引用。
+我们能够在单一定义语句中定义多个引用。每个引用标识符前都必须有&符号。
+代码示例 
+
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int ival = 500;
+    int &refval = ival;
+    //int &refval2; // compile error:引用必须被初始化。
+    cout << "refval:" << refval << endl;
+     
+    refval = 400;
+    cout << "ival:" << ival << endl;
+    cout << "refval:" << refval << endl;
+     
+    int &refval3 = refval;
+    cout << "refval3:" << refval3 << endl;
+     
+    //int &refval4 = 10; // compile error:用类型为‘int’的右值初始化类型为‘int&’的非常量引用无效
+    return 0;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        refval:500
+        ival:400
+        refval:400
+        refval3:400
+    */
+}
+
+

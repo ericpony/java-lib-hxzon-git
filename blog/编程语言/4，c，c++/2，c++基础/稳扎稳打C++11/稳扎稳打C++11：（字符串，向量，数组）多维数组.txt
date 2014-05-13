@@ -1,0 +1,201 @@
+﻿稳扎稳打C++11：（字符串，向量，数组）多维数组
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-1-20 0:44:15
+http://ilanever.com/article/sitedetail.html?id=234
+
+多维数组实际上是数组的数组。
+目录
+初始化多维数组中的元素
+访问多维数组中的元素
+指针和多维数组
+使用类型别名简化指向多维数组的指针
+多维数组实际上是数组的数组。对于理解多维数组，我们可以由内向外读取。比如“int ia[3][4];”，首先ia是一个大小为3的数组，其次ia的元素是大小为4的数组，最后这些元素的类型是整型。
+在二维数组中，第1维通常作为行，第2维通常作为列。
+初始化多维数组中的元素 
+
+可以采用列表初始化的方法对多维数组进行初始化。可以对每个元素使用大括号进行初始化，也可以多整个多维数组只使用一对大括号进行初始化，可以对多维数组中的全部数组进行初始化，也可以部分初始化。
+#include <iostream>
+#include <iterator>
+#include <cstddef>
+ 
+using namespace std;
+ 
+void print_array(const int arr[][4], size_t size)
+{
+    for(size_t ri = 0; ri < size; ++ri)
+    {
+        auto columns = arr[ri];
+        for(size_t ci = 0; ci < 4; ++ci)
+        {
+            cout << columns[ci] << "\t";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
+ 
+int main()
+{
+    int ia1[3][4] = {
+        {0,1,2,3},
+        {4,5,6,7},
+        {8,9,0,11}
+    };
+     
+    int ia2[3][4] = {0,1,2,3,4,5,6,7,8,9,0,11};
+     
+    int ia3[3][4] = {{0},{4},{8}};
+     
+    int ia4[3][4] = {0,3,6,9};
+     
+    print_array(ia1,end(ia1)-begin(ia1));
+    print_array(ia2,end(ia2)-begin(ia2));
+    print_array(ia3,end(ia3)-begin(ia3));
+    print_array(ia4,end(ia4)-begin(ia4));
+     
+    /*
+    Environment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        0   1   2   3   
+        4   5   6   7   
+        8   9   0   11  
+ 
+        0   1   2   3   
+        4   5   6   7   
+        8   9   0   11  
+ 
+        0   0   0   0   
+        4   0   0   0   
+        8   0   0   0   
+ 
+        0   3   6   9   
+        0   0   0   0   
+        0   0   0   0
+    */
+     
+    return 0;
+}
+访问多维数组中的元素 
+
+访问多维数组中的元素可以通过下标的方式访问，也可以通过range-for来访问。通常情况下，我们使用range-for来访问多维数组时，都需要将循环控制变量声明为引用。因为，如果不声明为引用的话，循环控制变量将是指向多维数组中每个元素中的第1个元素的指针。声明为引用，能够避免将数组转换为指针。
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int ia1[3][4] = {
+        {0,1,2,3},
+        {4,5,6,7},
+        {8,9,0,11}
+    };
+     
+    for(auto &row : ia1)
+    {
+        for(auto col : row)
+        {
+            cout << col << "\t";
+        }
+        cout << endl;
+    }
+     
+    /*
+    Environment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        0   1   2   3   
+        4   5   6   7   
+        8   9   0   11  
+    */
+     
+    return 0;
+}
+指针和多维数组 
+
+同任何数组一样，当我们使用多维数组的名称时，它自动转化为指向数组中第一个元素的指针。
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int ia1[3][4] = {
+        {0,1,2,3},
+        {4,5,6,7},
+        {8,9,0,11}
+    };
+     
+    for(auto p = ia1;p != ia1 + 3;++p)
+    {
+        for(auto q = *p; q != *p +4; ++q)
+        {
+            cout << *q << "\t";
+        }
+        cout << endl;
+    }
+     
+    for(auto p = begin(ia1); p != end(ia1); ++p)
+    {
+        for(auto q = begin(*p); q != end(*p); ++q)
+        {
+            cout << *q << "\t";
+        }
+        cout << endl;
+    }
+     
+    /*
+    Environment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        0   1   2   3   
+        4   5   6   7   
+        8   9   0   11  
+        0   1   2   3   
+        4   5   6   7   
+        8   9   0   11  
+    */
+     
+    return 0;
+}
+使用类型别名简化指向多维数组的指针 
+
+可以使用using或typedef定义数组类型的别名。这样易于读写和理解。
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int ia1[3][4] = {
+        {0,1,2,3},
+        {4,5,6,7},
+        {8,9,0,11}
+    };
+     
+    //using int_array = int[4];
+    typedef int int_array[4];
+    for(int_array *p = ia1; p != ia1 + 3; ++p)
+    {
+        for(int *q = *p; q != *p + 4; ++q)
+        {
+            cout << *q << "\t";
+        }
+        cout << endl;
+    }
+     
+    /*
+    Environment:
+        Ubuntu(32bit)
+        g++4.8.1
+    Output:
+        0   1   2   3   
+        4   5   6   7   
+        8   9   0   11  
+    */
+     
+    return 0;
+}
+

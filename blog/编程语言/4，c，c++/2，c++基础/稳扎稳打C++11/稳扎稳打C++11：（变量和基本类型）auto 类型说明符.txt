@@ -1,0 +1,57 @@
+﻿稳扎稳打C++11：（变量和基本类型）auto 类型说明符
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-12-29 10:33:44
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=224
+
+使用auto说明符，让编译器去推测表达式的类型。编译器通常都是从变量的初始化器来推测变量的类型。
+目录
+代码示例
+为了声明变量，我们需要知道表达式的类型。但有些时候很难判断表达式的类型，这时我们可以使用auto说明符，让编译器去推测表达式的类型。编译器通常都是从变量的初始化器来推测变量的类型。
+使用auto时，编译器获得的类型并不总是和初始化器的类型完全一样。首先，当我们使用引用时，编译器推测的类型结果将是引用所绑定对象的类型。其次，auto通常情况下会忽略top-level const。
+如果我们要使推断的类型拥有top-level const，那么我们要显示地为声明添加const限定符。
+我们还可以声明一个绑定到auto推断类型的引用。正常的初始化规则依然适用。如果此时声明器中有top-level const的话，那么const不会被忽略。
+代码示例 
+
+#include <iostream>
+#include <typeinfo>
+ 
+using namespace std;
+ 
+int main()
+{
+    auto d = 3.2 + 4;
+    cout << "d : " << typeid(d).name() << endl;
+     
+    int i = 9, &ri = i;
+    auto ai = ri;
+    cout << "i : " << typeid(i).name() << endl;
+    cout << "ai : " << typeid(ai).name() << endl;
+     
+    const int ci = 89;
+    auto ai2 = ci;
+    cout << "ai2 : " << typeid(ai2).name() << endl;
+     
+    auto ai3 = &i;
+    auto ai4 = &ci;
+    cout << "ai3 : " << typeid(ai3).name() << endl;
+    cout << "ai4 : " << typeid(ai4).name() << endl;
+     
+    const auto ai5 = &i;
+    cout << "ai5 : " << typeid(ai5).name() << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        d : d
+        i : i
+        ai : i
+        ai2 : i
+        ai3 : Pi
+        ai4 : PKi
+        ai5 : Pi
+    */
+     
+    return 0;
+}
+

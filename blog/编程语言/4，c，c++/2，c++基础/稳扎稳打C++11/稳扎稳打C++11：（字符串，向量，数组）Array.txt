@@ -1,0 +1,236 @@
+﻿稳扎稳打C++11：（字符串，向量，数组）Array
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-1-14 23:11:32
+http://ilanever.com/article/sitedetail.html?id=230
+
+同vector不一样的是，数组的大小是固定的，我们不能向数组中添加元素。
+目录
+定义和初始化数组
+访问数组中的元素
+数组类似于vector，但它提供了性能和灵活性的一种折中选择。同vector一样，数组是一种容纳单一类型的未命名对象的容器。但同vector不一样的是，数组的大小是固定的，我们不能向数组中添加元素。
+定义和初始化数组 
+
+数组是复合类型。数组的声明形式如a[d]，a是数组的名称，d是数组的维度（dimension）。数组的维度在编译时必须是已知的，因此维度必须是一个常量表达式（constant expression）。
+#include <iostream>
+#include <iterator>
+ 
+using namespace std;
+ 
+int main()
+{
+    unsigned cnt = 10;
+    int arr[cnt];
+    arr[0] = 234;
+    cout << arr[0] << endl;
+     
+    constexpr unsigned sz = 12;
+    int arr1[sz];
+    arr1[0] = 789;
+    cout << arr1[0] << endl; 
+     
+    /*
+    Environment:
+        g++4.8.1(32bit)
+    Output:
+        234
+        789
+    */
+     
+    return 0;
+}
+注意：此处执行结果同书中描述有出入，cnt虽然不是常量表达式，但是也可以用来定义数组。
+默认情况下，数组中的元素将执行默认初始化。同vector一样，数组中的元素只能是对象，不能是引用。
+列表初始化数组元素
+我们可以使用列表初始化的形式来初始化数组。在使用列表初始化时，可以不定义数组维度。如果定义了维度，那么列表初始化器中的元素个数不能大于数组的维度。如果列表初始化器中元素个数小于数组的维度，那么数组中剩余元素将执行值初始化。
+#include <iostream>
+#include <iterator>
+ 
+using namespace std;
+ 
+int main()
+{
+    int arr1[3] = {4,5,6};
+    int arr2[] = {7,8,9};
+    int arr3[5] = {4,5,6};
+    string arr4[3] = {"hi","you"};
+    //int arr5[2] = {7,8,9}; // 编译错误：‘int [2]’的初始值设定项太多
+     
+    cout << "elements in arr1:" << endl;
+    for(auto i : arr1)
+    {
+        cout << i << endl;
+    }
+     
+    cout << "elements in arr2:" << endl;
+    for(auto i : arr2)
+    {
+        cout << i << endl;
+    }
+     
+    cout << "elements in arr3:" << endl;
+    for(auto i : arr3)
+    {
+        cout << i << endl;
+    }
+     
+    cout << "elements in arr4:" << endl;
+    for(auto s : arr4)
+    {
+        cout << s << endl;
+    }
+ 
+    /*
+    Environment:
+        g++4.8.1
+    Output:
+        elements in arr1:
+        4
+        5
+        6
+        elements in arr2:
+        7
+        8
+        9
+        elements in arr3:
+        4
+        5
+        6
+        0
+        0
+        elements in arr4:
+        hi
+        you
+ 
+ 
+    */
+     
+    return 0;
+}
+特殊的字符数组
+我们可以使用字符串字面量来初始化字符数组。需要注意的是，字符串字面量以一个null字符结尾，null字符也会被复制到字符数组中。
+#include <iostream>
+#include <iterator>
+#include <cstring>
+ 
+using namespace std;
+ 
+void print_array(const char arr[], size_t size)
+{
+    cout << "size : " << size << endl;
+    for(size_t i = 0; i != size; ++i)
+    {
+        cout << arr[i] << endl;
+    }
+}
+ 
+int main()
+{
+    char a1[] = {'C','+','+'};
+    char a2[] = {'C','+','+','\0'};
+    char a3[] = "C++";
+    //char a4[3] = "C++";//编译错误：用以初始化字符数组的字符串太长
+     
+    print_array(a1, end(a1) - begin(a1));
+    print_array(a2, end(a2) - begin(a2));
+    print_array(a3, end(a3) - begin(a3));
+     
+    /*
+    Environment:
+        g++4.8.1(32bit)
+    Output:
+        size : 3
+        C
+        +
+        +
+        size : 4
+        C
+        +
+        +
+ 
+        size : 4
+        C
+        +
+        +
+ 
+ 
+    */
+     
+    return 0;
+}
+数组不能复制也不能赋值
+不允许复制一个数组用于初始化另一个数组或赋值给另一个数组。
+#include <iostream>
+#include <iterator>
+#include <cstring>
+ 
+using namespace std;
+ 
+int main()
+{
+    char a1[] = {'C','+','+'};
+    //char a2[3] = a1;//编译错误：数组必须为一个由花括号包围的初始值设定所初始化
+    //a2 = a1;//编译错误：无效的数组赋值
+     
+    return 0;
+}
+复杂的数组声明
+对于一般的数组声明，我们的理解方法是从右向左读数组的声明。当声明中包含括号时，先读括号里面的，再读括号外面的（从右向左读）。
+int *ptrs[10];
+//int &refs[10]; //编译错误：‘refs’声明为引用的数组
+int (*ptrtoarr)[10] = &arr;
+int (&reftoarr)[10] = arr;
+int *(&arry)[10];
+以上的示例中，ptrs按照从右向左读的方法可知，ptrs首先是一个包含10个元素的数组，其次它的元素类型是整型指针。ptrtoarr按照由内到外的方法读取，ptrtoarr首先是一个指针，其次它是一个包含10个元素的数组，最后它的元素类型是整型。reftoarr按照由内到外的方法读取，reftoarr首先是一个引用，其次它十一个包含10个元素的数组，最后它的元素类型是整型。arry按照由内到外的方法读取，首先它是一个引用，其次它是一个数组，最后它的元素类型是整型指针。
+#include <iostream>
+#include <iterator>
+#include <cstring>
+ 
+using namespace std;
+ 
+int main()
+{
+    int arr[10] = {1,2,3,4,5,6,7,8,9,0};
+    int i = 33;
+    int* pi = &i;
+     
+    int *ptrs[10];
+    //int &refs[10]; //编译错误：‘refs’声明为引用的数组
+    int (*ptrtoarr)[10] = &arr;
+    int (&reftoarr)[10] = arr;
+     
+    cout << "ptrs[0] : " << ptrs[0] << endl;
+    ptrs[0] = pi;
+    cout << "*ptrs[0] : " << *ptrs[0] << endl;
+     
+    cout << "elements in ptrtoarr :" << endl;
+    for(auto p : *ptrtoarr)
+    {
+        cout << p << endl;
+    }
+     
+    /*
+    Environment:
+        g++4.8.1
+    Output:
+        *ptrs[0] : 33
+        elements in ptrtoarr :
+        1
+        2
+        3
+        4
+        5
+        6
+        7
+        8
+        9
+        0
+ 
+    */
+     
+    return 0;
+}
+访问数组中的元素 
+
+同string和vector一样，我们可以使用range-for和下标运算符来访问数组中的元素。
+我们用于定义下标的变量类型是size_t。size_t是一种特定于机器的无符号类型，size_t大到能够容纳内存中任何对象的大小。size_t类型定义在cstddef头文件中。cstddef是C中stddef.h头文件的C++版本。
+使用下标时，一定要注意对下标的值进行检查，不要让下标值超出数组大小。
+

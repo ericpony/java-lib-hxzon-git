@@ -1,0 +1,50 @@
+﻿稳扎稳打C++11：（变量和基本类型）使用 typedef 和 using 定义类型别名
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-12-27 23:57:48
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=223
+
+
+定义类型别名有两种方法：typedef 和 using。typedef 是定义类型别名的传统方式。using 是C++11新引入的方式。
+目录
+定义类型别名有两种方法：typedef 和 using。typedef 是定义类型别名的传统方式。using 是C++11新引入的方式。
+注意：typedef定义的类型别名在使用时不能进行简单的替换。
+#include <iostream>
+#include <typeinfo>
+ 
+using namespace std;
+ 
+int main()
+{
+    typedef double doub;
+    doub d = 4.5;
+    cout << d << endl;
+     
+    using doubl = double;
+    doubl d2 = 3.2;
+    cout << d2 << endl;
+     
+    typedef char *pchar;
+    const pchar pc = 0;
+    cout << typeid(pc).name() << endl;
+     
+    char *const a = 0;
+    cout << typeid(a).name() << endl;
+     
+    const char *b = 0;
+    cout << typeid(b).name() << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        4.5
+        3.2
+        Pc
+        Pc
+        PKc
+    */
+     
+    return 0;
+}
+以上代码中，pchar的类型与a的类型相同，因此pchar指的是自身为const的字符指针，而不是指针所指的对象是const。
+

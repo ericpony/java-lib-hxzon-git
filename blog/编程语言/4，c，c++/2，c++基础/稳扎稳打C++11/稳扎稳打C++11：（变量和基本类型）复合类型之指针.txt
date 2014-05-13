@@ -1,0 +1,307 @@
+﻿稳扎稳打C++11：（变量和基本类型）复合类型之指针
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-12-24 0:07:04
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=219
+
+
+引用和指针都是用于间接地访问对象。但指针与引用有着本质的不同，指针是一个对象。
+目录
+指针
+获取对象的地址
+指针的值
+使用指针访问对象
+空指针
+指针的赋值
+其他指针操作
+void* 指针
+指针 
+
+指针（pointer）是指向（point to）另一个类型的复合类型。
+引用和指针都是用于间接地访问对象。但指针与引用有着本质的不同，指针是一个对象。指针能够被赋值和拷贝。一个指针在其生命周期中可以指向多个不同的对象。不像引用，指针没必要在定义时进行初始化操作。同其他的内置类项一样，如果在块范围内指针在定义时没有被初始化，那么指针的值将是未定以的。
+指针类型的形式如“*d”，d是声明的名称。
+获取对象的地址 
+
+我们使用求址运算符（address-of operator）“&”获取对象的地址。不能定义指向引用的指针，因为引用不是对象。
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int ival = 50;
+    int *pi = &ival;
+    cout << "pi : " << pi << endl;
+    cout << "*pi : " << *pi << endl;
+     
+    int &rval = ival;
+    int *pi2 = &rval;
+    cout << "pi2 : " << pi2 << endl;
+    cout << "*pi2 : " << *pi2 << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        pi : 0xbfb3c6b0
+        *pi : 50
+        pi2 : 0xbfb3c6b0
+        *pi2 : 50
+    */
+     
+    return 0;
+}
+由代码示例可知，对引用rval应用求址运算符，获得的是rval所指向的对象的地址。
+指针的值 
+
+指针的值可以是以下4种情况之一：
+指向一个对象
+指向刚刚越过某一对象末尾的下一个位置
+空指针，表明还没有绑定任何对象
+不可用，值不属于以上三种之一
+使用指针访问对象 
+
+当一个指针指向对象的时候，我们可以使用解引用操作符（dereference operator）“*”来访问对象。
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int ival = 20;
+    int *p = &ival;
+    cout << "p : " << p << endl;
+    cout << "*p : " << *p << endl;
+     
+    *p = 50;
+     
+    cout << "p : " << p << endl;
+    cout << "*p : " << *p << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        p : 0xbfb51ba8
+        *p : 20
+        p : 0xbfb51ba8
+        *p : 50
+    */
+     
+    return 0;
+}
+对指针进行解引用，返回的是指针所指向的对象。
+注意：我们只能对指向对象的指针进行解引用操作。
+空指针 
+
+空指针不指向任何对象。我们可以使用“nullptr”、“NULL”、“0”将指针初始化为空指针。nullptr是在c++11中引入的。它可以转化为任何其他指针类型。NULL是在cstdlib头中定义的预处理器变量（preprocessor variable），它被定义为0，所以使用NULL和0来初始化指针是一样的。
+预处理器变量被预处理器所管理，他们不属于std命名空间。预处理器在执行过程中会将预处理器变量替换为它的值。
+虽然可以使用0初始化空指针，但不能使用值为0的整型变量对指针进行赋值。
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int *p1 = nullptr;
+    int *p2 = NULL;
+    int *p3 = 0;
+     
+    cout << "p1 : " << p1 << endl;
+    //cout << "*p1" << *p1 << endl;
+    cout << "p2 : " << p2 << endl;
+    cout << "p3 : " << p3 << endl;
+     
+    int zero = 0;
+    //int *p4 = zero;// error:invalid conversion from ‘int’ to ‘int*’
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        p1 : 0
+        p2 : 0
+        p3 : 0
+    */
+     
+    return 0;
+}
+如果对空指针进行解引用，程序将报错：“Segmentation fault (core dumped)”。
+指针的赋值 
+
+和其他变量一样，当我们赋值给一个指针的时候，我们给指针本身提供一个新的值。赋值使指针指向一个不同的对象。
+#include <iostream>
+ 
+using namespace std;
+ 
+int *pi_global;
+ 
+int main()
+{
+    cout << "pi_global : " << pi_global << endl;
+     
+    int ival1 = 600;
+    int ival2 = 400;
+     
+    int *pi1 = 0;
+    int *pi2 = &ival1;
+    int *pi3;
+     
+    cout << "pi1 : " << pi1 << endl;
+    cout << "pi2 : " << pi2 << endl;
+    cout << "pi3 : " << pi3 << endl;
+     
+    pi3 = pi2;
+    pi2 = 0;
+    pi1 = &ival2;
+     
+    cout << "pi1 : " << pi1 << endl;
+    cout << "pi2 : " << pi2 << endl;
+    cout << "pi3 : " << pi3 << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        pi_global : 0
+        pi1 : 0
+        pi2 : 0xbfbb985c
+        pi3 : 0xb760bff4
+        pi1 : 0xbfbb9860
+        pi2 : 0
+        pi3 : 0xbfbb985c
+    */
+     
+    return 0;
+}
+由以上示例可知，指针定义在任何函数体之外，并且不进行初始化，那么该指针的值为0；如果指针定义在函数体内，且不进行初始化，那么该指针的地址是未定义的。
+其他指针操作 
+
+指针可以应用于条件表达式中，还可以进行比较。
+当指针应用于条件表达式中，如果指针是0，则返回false；如果指针不为0，则返回true。
+指针在以下情况下是相等的（或者说认为他们持有相同的地址）：
+二者都为null
+二者都指向同一个对象
+二者都指向刚刚越过某一对象末尾的下一个位置
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    int *p1 = nullptr;
+    int *p2 = NULL;
+    int *p3 = 0;
+     
+    int ival = 500;
+    int *pi1 = &ival;
+     
+    if(p1)
+    {
+        cout << "p1 is evaluated to 'true'. " << endl;
+    }
+    else
+    {
+        cout << "p1 is evaluated to 'false'. " << endl;
+    }
+     
+    if(pi1)
+    {
+        cout << "pi1 is evaluated to 'true'. " << endl;
+    }
+    else
+    {
+        cout << "pi1 is evaluated to 'false'. " << endl;
+    }
+     
+    if(p1 == p2)
+    {
+        cout << "p1 is equal to p2." << endl;
+    }
+    if(p1 == p3)
+    {
+        cout << "p1 is equal to p3." << endl;
+    }
+    if(p2 == p3)
+    {
+        cout << "p2 is equal to p3." << endl;
+    }
+     
+    int ival2 = 20;
+    int *pi2 = &ival2;
+    int *pi3 = &ival;
+     
+    if(pi1 == pi2)
+    {
+        cout << "pi1 is equal to pi2." << endl;
+    }
+    else
+    {
+        cout << "pi1 is not equal to pi2." << endl;
+    }
+    if(pi1 == pi3)
+    {
+        cout << "pi1 is equal to pi3." << endl;
+    }
+    else
+    {
+        cout << "pi1 is not equal to pi3." << endl;
+    }
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        p1 is evaluated to 'false'. 
+        pi1 is evaluated to 'true'. 
+        p1 is equal to p2.
+        p1 is equal to p3.
+        p2 is equal to p3.
+        pi1 is not equal to pi2.
+        pi1 is equal to pi3.
+    */
+     
+    return 0;
+}
+void* 指针 
+
+void* 是一种特殊的指针，它能够存储任何对象的地址。由于void*不存储对象的类型，所以只有有限的操作能够执行。
+可以使用void*指针与其他指针进行比较。
+可以将void*传入函数或作为函数的结果返回。
+可以把一个void*指针赋值给另一个void*指针。
+#include <iostream>
+ 
+using namespace std;
+ 
+int main()
+{
+    double d1 = 3.14;
+    int i1 = 15;
+    char c1 = 'x';
+     
+    void *p = &d1;
+    cout << "p : " << p << endl;
+    p = &i1;
+    cout << "p : " << p << endl;
+    p = &c1;
+    cout << "p : " << p << endl;
+     
+    void *p2 = p;
+    cout << "p2 : " << p2 << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        p : 0xbfff2928
+        p : 0xbfff291c
+        p : 0xbfff291b
+        p2 : 0xbfff291b
+    */
+     
+    return 0;
+}

@@ -1,0 +1,84 @@
+﻿稳扎稳打C++11：（IO库）文件的输入和输出
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-5-4 23:04:48
+http://ilanever.com/article/sitedetail.html?id=291
+
+每个文件流类型都定义其默认的文件模式。ifstream的默认模式是in，ofstream的默认模式是out，fstream的模式是in和out。
+目录
+文件模式
+fstream继承自iostream，fstream拥有iostream所有的操作，除此之外，还有一些特定于fstream的操作如下表所示：
+操作	说明
+fstream fstrm;	创建一个没有绑定文件的流。
+fstream fstrm(s);	创建一个流并且打开名称为s的文件。s可以是string，也可以是C风格字符串。这些构造函数是explicit。默认的文件模式依赖于fstream的类型。
+fstream fstrm(s, mode);	在指定模式下打开文件。
+fstrm.open(s);	打开名称为s的文件并且绑定文件到fstrm上。
+fstrm.open(s, mode);	
+fstrm.close();	关闭fstrm绑定的文件。
+fstrm.is_open();	如果与fstrm相关的文件被成功打开而且还未关闭，则返回true。否则返回false。
+请看下面的使用示例：
+#include <iostream>
+#include <fstream>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+    string filepath = "/home/ilan/mytest";
+    ofstream out(filepath);
+    if(out)
+    {
+        out << "this is my new line." << endl;
+        out.close();
+    }
+    else
+    {
+        cout << "open failed." << endl;
+    }
+     
+    return 0;
+}
+由于打开文件有可能失败，所以最好在打开文件后检查下是否成功打开。如果流已被打开，它将被关联到指定的文件。如果在一个已打开的流上继续调用open将失败并且设置failbit位。如果要将流关联到另一个文件上，我们必须先关闭已有的文件。
+当流对象超出作用域时，文件会自动关闭。
+文件模式 
+
+每个流都有一个关联的文件模式（file mode）用于表示文件的使用方式。
+模式	说明
+in	文件以输入方式打开
+out	文件以输出方式打开
+app	文件以追加方式打开。append的简写
+ate	文件打开后定位到文件末尾。
+trunc	如果文件存在，把文件长度设为0.
+binary	以二进制方式打开文件。缺省是文本方式。
+指定的mode拥有以下限制：
+out可以设置给ofstream或者fstream对象。
+in可以设置给ifstream或者fstream对象。
+只有当已设置out后才能设置trunc。
+只有不设置trunc时才能设置app模式。如果指定了app，文件将一直以输出模式打开。
+默认情况下，当文件以out模式打开时，即使我们没有指定trunc，也是trunc的。
+ate和binary可以指定给任何文件流对象类型，并且可以与任何其他文件模式进行组合。
+每个文件流类型都定义其默认的文件模式。ifstream的默认模式是in，ofstream的默认模式是out，fstream的模式是in和out。
+默认情况下，当我们打开一个ofstream，文件的内容会被忽略。唯一能够阻止ostream清空文件的方式是指定app模式。
+以下是读写文件的一个简单例子：
+#include <iostream>
+#include <fstream>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+    string filepath = "/home/ilan/mytest";
+    ofstream out(filepath, fstream::app);
+    if(out)
+    {
+        out << "this is my new line." << endl;
+        out.close();
+    }
+    else
+    {
+        cout << "open failed." << endl;
+    }
+     
+    return 0;
+}
+

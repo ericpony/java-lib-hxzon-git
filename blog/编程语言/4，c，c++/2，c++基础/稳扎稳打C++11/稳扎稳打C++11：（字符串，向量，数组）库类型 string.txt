@@ -1,0 +1,307 @@
+﻿稳扎稳打C++11：（字符串，向量，数组）库类型 string
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-1-5 12:31:40
+http://ilanever.com/article/sitedetail.html?id=227
+
+当我们混合使用字符字面量和字符串字面量以及string对象时，加运算符（+）的操作数必须有一边为string对象。
+目录
+定义和初始化字符串
+字符串操作
+处理字符串的字符
+一个字符串是一个长度可变的字符序列。
+为了使用string类型，我们必须#include string头文件，并使用using来声明我们要使用string类型。如下所示：
+#include <string>
+using std::string
+定义和初始化字符串 
+
+每个类都定义了它的对象如何被初始化。一个类能够定义多种不同的方式用于初始化它的对象。string 类型的初始化方式如下所示：
+初始化方式	说明
+string s1	默认初始化；s1 是空字符串。
+string s2(s1)	s2 是 s1 的一个复制版本。
+string s2 = s1	同 s2(s1)，s2 是 s1 的一个复制版本。
+string s3("value")	s3 是字符串字面量的一个复制版本，不包含null。
+string s3 = "value"	同 s3("value")，s3 是字符串字面量的一个复制版本。
+string s4(n,'c')	使用 n 个字符 'c' 的复制版本来初始化 s4。
+string对象的初始化代码示例如下所示。
+#include <iostream>
+#include <string>
+ 
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
+ 
+void string_init()
+{
+    string s0;
+    string s1 = "this is a string.";
+    string s2("this is a string too.");
+    string s3(5,'a');
+    string s4 = s2;
+    string s5(s2);
+     
+    cout << "s0:" << s0 << endl;
+    cout << "s1:" << s1 << endl;
+    cout << "s2:" << s2 << endl;
+    cout << "s3:" << s3 << endl;
+    cout << "s4:" << s4 << endl;
+    cout << "s5:" << s5 << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        s0:
+        s1:this is a string.
+        s2:this is a string too.
+        s3:aaaaa
+        s4:this is a string too.
+        s5:this is a string too.
+    */
+}
+ 
+int main()
+{
+    string_init();
+     
+    return 0;
+}
+字符串操作 
+
+一个类不仅定义了对象如何被创建和初始化，还定义了类的对象所能执行的操作。
+操作	说明
+os << s	将 s 写入输出流 os。返回 os。
+is >> s	从输入流 is 读取空格分隔的字符串到 s。返回 is。
+getline(is,s)	从输入流 is 读取一行输入到字符串 s。返回 is。
+s.empty()	如果 s 是空的则返回 true，否则返回 false。
+s.size()	返回 s 中字符的数目。
+s[n]	返回 s 定位置 n 的字符的引用，位置从0开始。
+s1 + s2	返回 s1 和 s2 串联后的字符串。
+s1 = s2	用 s2 的副本替换 s1 中的字符。
+s1 == s2	如果 s1 和 s2 包含相同的字符，则 s1 和 s2 相等，否则不等。比较时大小写敏感。
+s1 != s2	与相等比较的结果相反。
+<,<=,>,>=	比较时是大小写敏感的，并且使用字典排序。
+读写字符串
+string 输入运算符读取并忽略任何前导空白符（例如：spaces, newlines, tabs）。输入运算符读取字符一直到遇到下一个空白符截止。
+#include <iostream>
+#include <string>
+ 
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
+ 
+int main()
+{
+    string s;
+    cin >> s;
+    cout << s << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Input:
+            Hello world.
+    Output:
+        Hello
+    */
+     
+    return 0;
+}
+在上面的示例中，我们输入带有前导空白符的“    Hello world.”，程序输出的结果是没有空白符的“Hello”。
+使用getline读取整行字符串
+我们可以使用getline函数获取输入的整行字符串。当getline看到一个newline字符时，即使这个newline字符是输入的第一个字符，getline也会停止读取并返回。
+#include <iostream>
+#include <string>
+ 
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
+ 
+int main()
+{
+    string line;
+    while(getline(cin,line))
+    {
+        cout << line << endl;
+    }
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Input:
+        Hello world.
+    Output:
+        Hello world.
+    */
+     
+    return 0;
+}
+string::size_type 类型
+string 的 size 方法返回的是string::size_type类型。之所以这样做是为了能够不依赖机器而使用库类型。
+string::size_type 是一个无符号类型。并且能够容纳任何字符串的长度值。
+任何用于存储size方法返回结果的变量都应该是string::size_type类型。
+#include <iostream>
+#include <string>
+#include <typeinfo>
+ 
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
+using std::boolalpha;
+ 
+int main()
+{
+    string s = "Hello world";
+    string::size_type size1 = s.size();
+    auto size2 = s.size();
+    cout << size1 << endl;
+    cout << boolalpha << (typeid(size2) == typeid(string::size_type)) << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        11
+        true
+    */
+     
+    return 0;
+}
+字符串比较
+字符串比较区分大小写。字符串的比较遵循如下规则。
+只有当两个字符串具有相同的长度并且拥有同样的字符时，二者才相等;
+如果两个字符串拥有不同的长度并且较短字符串中的每个字符在较长字符串的对应位置都相等，那么较短字符串小于较长字符串；
+如果两个字符串任何对应位置的字符都不同，那么二者的比较其实是在比较第一个不同的字符。
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+    string s1 = "hello world.";
+    string s2 = "hello world.";
+    cout << "\"" << s1 << "\"" << " == " << "\"" << s2 << "\" : "
+        << boolalpha << (s1 == s2) << endl;
+     
+    string s3 = "hello";
+    cout << "\"" << s1 << "\"" << " > " << "\"" << s3 << "\" : "
+        << boolalpha << (s1 > s3) << endl;
+     
+    string s4 = "i";
+    cout << "\"" << s1 << "\"" << " < " << "\"" << s4 << "\" : "
+        << boolalpha << (s1 < s4) << endl;
+         
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        "hello world." == "hello world." : true
+        "hello world." > "hello" : true
+        "hello world." < "i" : true
+    */
+    return 0;
+}
+字符串与字面量相加
+string 库允许我们将字符字面量和字符串字面量都转换为string对象。
+当我们混合使用字符字面量和字符串字面量以及string对象时，加运算符（+）的操作数必须有一边为string对象。
+#include <iostream>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+    string s1 = "hello";
+    string s2 = s1 + " world";
+    string s3 = s1 + " " + "world";
+     
+    cout << s1 << endl;
+    cout << s2 << endl;
+    cout << s3 << endl;
+     
+    //string s4 = "hello" + " world"; // compile error : 操作数类型‘const char [6]’和‘const char [7]’对双目‘operator+’而言无效
+    string s5 = "world";
+    //string s6 = "hello" + " " + s5;// compile error : 操作数类型‘const char [6]’和‘const char [7]’对双目‘operator+’而言无效
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        hello
+        hello world
+        hello world
+    */
+    return 0;
+}
+为了兼容C，字符串字面量不是标准库中的string，二者是不同的。
+处理字符串的字符 
+
+我们可以使用 range-for 语句来迭代字符串中的每个字符，也可使用 range-for 语句来修改字符串中的字符。当要修改字符串中的字符时，我们需要定义循环变量为一个引用类型。
+#include <iostream>
+#include <string>
+#include <cctype>
+ 
+using namespace std;
+ 
+int main()
+{
+    string s1 = "hello";
+    for(auto c : s1)
+    {
+        cout << c << endl;
+    }
+     
+    for(auto &c : s1)
+    {
+        c = toupper(c);
+    }
+    cout << s1 << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        h
+        e
+        l
+        l
+        o
+        HELLO
+    */
+    return 0;
+}
+用于访问字符串中的单个字符有两种方式：使用下标运算符（subscript operator）和迭代器（iterator）。
+下标运算符使用string::size_type类型值作为参数。然而，如果我们使用有符号类型的下标，那么有符号类型的值将被转换为string::size_type所表示的无符号类型的值。下标运算符返回的是在给定位置字符的引用。
+#include <iostream>
+#include <string>
+#include <cctype>
+ 
+using namespace std;
+ 
+int main()
+{
+    string s1 = "hello";
+    s1[0] = toupper(s1[0]);
+    cout << s1 << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        Hello
+    */
+    return 0;
+}
+

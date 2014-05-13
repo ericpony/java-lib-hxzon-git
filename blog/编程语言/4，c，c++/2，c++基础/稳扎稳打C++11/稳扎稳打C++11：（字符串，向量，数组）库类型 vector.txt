@@ -1,0 +1,201 @@
+﻿稳扎稳打C++11：（字符串，向量，数组）库类型 vector
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-1-7 23:52:18
+http://ilanever.com/article/sitedetail.html?id=228
+
+通常，在定义vector时，没必要提供vector的大小，除非vector中的元素都是相同的。
+目录
+定义和初始化vector
+vector的操作
+一个vector是一个对象的集合，集合中的每个对象都拥有同样的类型。vector通常被当作一个容器，因为它包含其他对象。vector本身是个模板，不是类型。
+若要使用vector，需要在源码中添加如下代码。
+#include <vector>
+ 
+using std::vector;
+C++中有类模板（class template）和函数模板（function template）。vector属于类模板。使用模板创建类或方法的过程叫做实例化（instantiation）。
+因为引用不是对象，所以我们不能定义元素是引用类型的vector。
+#include <iostream>
+#include <vector>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+    vector<int> ivec;
+    vector<vector<string>> svvec;
+     
+    cout << ivec.size() << endl;
+    cout << svvec.size() << endl;
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        0
+        0
+    */
+     
+    return 0;
+}
+定义和初始化vector 
+
+定义vector有如下几种方式：
+方式	说明
+vector<T> v1	vector存储T类型的对象。执行默认初始化，v1是空的。
+vector<T> v2(v1)	v2拥有v1中每个元素的复制版本。
+vector<T> v2 = v1	同v2(v1)，v2拥有v1中每个元素的复制版本。
+vector<T> v3(n,val)	n3拥有n个值为val的元素。
+vector<T> v4(n)	v4拥有n个值被初始化对象的复制版本。
+vector<T> v5{a,b,c...}	v5拥有初始化器中的所有元素。
+vector<T> v6 = {a,b,c...}	同v5{a,b,c...}
+如果我们初始化vector时，只提供了vector的大小，那么vector内的元素将执行值初始化（value-initialized）操作。当vector的元素类型是内置类型（如int）时，那么元素将被初始化为0；当vector的元素类型是类类型（如string）时，那么将使用类的默认初始化器对元素进行初始化。对于后者，当类需要进行显示初始化时，如果只提供vector的大小，那么我们将不能创建vector。
+当使用列表初始化vector时，如果列表初始化器不能初始化vector时，那么初始化器中的值将用于构造对象。
+#include <iostream>
+#include <vector>
+#include <string>
+ 
+using namespace std;
+ 
+void print_vector(vector<string> vec,string vecname)
+{
+    cout << "the elements in '" << vecname << "'." << endl;
+    for(auto s : vec)
+    {
+        cout << s << endl;
+    }
+}
+ 
+int main()
+{
+    vector<string> svec1 = {"me","you","she"};
+    vector<string> svec2(svec1);
+    vector<string> svec3 = svec1;
+    vector<string> svec4(5,"them");
+    vector<string> svec5(3);
+    vector<string> svec6{"dog","cheken"};
+     
+    print_vector(svec1,"svec1");
+    print_vector(svec2,"svec2");
+    print_vector(svec3,"svec3");
+    print_vector(svec4,"svec4");
+    print_vector(svec5,"svec5");
+    print_vector(svec6,"svec6");
+     
+    vector<int> ivec7(4); // value-initialized
+    cout << "the elements in 'ivec7'." << endl;
+    for(auto i : ivec7)
+    {
+        cout << i << endl;
+    }
+     
+    // the value in list-initializer can't initialize vector.
+    vector<string> svec8{6,"hello"};
+    cout << "the elements in 'svec8'." << endl;
+    for(auto s : svec8)
+    {
+        cout << s << endl;
+    }
+     
+    /*
+    Environment:
+        Ubuntu12.04(32bit)
+        g++4.8.1
+    Output:
+        the elements in 'svec1'.
+        me
+        you
+        she
+        the elements in 'svec2'.
+        me
+        you
+        she
+        the elements in 'svec3'.
+        me
+        you
+        she
+        the elements in 'svec4'.
+        them
+        them
+        them
+        them
+        them
+        the elements in 'svec5'.
+ 
+ 
+ 
+        the elements in 'svec6'.
+        dog
+        cheken
+        the elements in 'ivec7'.
+        0
+        0
+        0
+        0
+        the elements in 'svec8'.
+        hello
+        hello
+        hello
+        hello
+        hello
+        hello
+ 
+    */
+     
+    return 0;
+}
+vector的操作 
+
+vector的大部分操作与string是相同的。下表列出了vector的大部分重要操作：
+操作	说明
+v.empty()	如果v是空的，则返回true；否则返回false。
+v.size()	返回v中元素的个数。
+v.push_back(t)	向v的末尾添加元素t
+v[n]	返回v中位置n的元素的引用。
+v1 = v2	用v2中元素的副本替换v1中的元素。
+v1 = {a,b,c...}	使用列表中元素的副本替换v1中的元素。
+v1 == v2	如果v1和v2中元素的个数相同并且二者对应元素相同，则返回true；否则返回false。
+v1 != v2	“==”的结果取反。
+<, <=, >, >=	使用字典排序进行比较。
+v.size()方法返回的类型是vector<type>::size_type。
+通常，在定义vector时，没必要提供vector的大小，除非vector中的元素都是相同的。因为C++标准要求vector是十分高效的。有时，向空vector中添加元素的做法比事先定义大小的做法更高效。vector的这种形式是与C中数组（array）的最显著的区别。
+#include <iostream>
+#include <vector>
+#include <string>
+#include <strstream>
+ 
+using namespace std;
+ 
+void print_vector(vector<string> vec,string vecname)
+{
+    cout << "the elements in '" << vecname << "'." << endl;
+    for(auto s : vec)
+    {
+        cout << s << endl;
+    }
+}
+ 
+string convert_int_to_string(int i)
+{
+    string s;
+    strstream ss;
+    ss << i;
+    ss >> s;
+    return s;
+}
+ 
+int main()
+{
+    vector<string> svec1;
+    for(int i = 0; i<=4; ++i)
+    {
+        svec1.push_back(convert_int_to_string(i));
+    }
+    print_vector(svec1,"svec1");
+     
+    vector<string>::size_type vsize = svec1.size();
+    cout << "vsize: " << vsize << endl;
+     
+    return 0;
+}
+

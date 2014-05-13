@@ -1,0 +1,150 @@
+﻿稳扎稳打C++11：（变量和基本类型）原始类型转换
+来源：ilanever.com | 作者：LanPei | 创建时间：2013-10-15 20:49:56
+http://ilanever.com/article/sitedetail.html;jsessionid=2961C1F211EC6475556C3D02C1E9F698?id=199
+
+类型转换是任何开发都离不开的话题。
+目录
+示例代码
+C++遵循以下规则执行类型转换：
+当我们将一个非 bool 类型赋值给一个 bool 对象时，如果非 bool 类型的值为0则 bool 对象为 false，否则 bool 对象为 true。
+当我们将一个 bool 类型赋值给其他算术类型时，如果 bool 是 true 则返回值是1，如果 bool 是 false 则返回值是0。
+当我们将一个浮点值赋值给一个整型对象时，浮点值将被截取。浮点值小数点的前半部分将被保留。
+当我们将一个整型值赋值给一个浮点型的对象时，浮点值的小数部分是0。如果整数值的位数超出了浮点对象的容纳能力，精度就会丢失。
+如果我们将一个超出范围的值赋值给一个无符号类型的对象，结果将是该值对目标类型所能存储的值的个数进行求模。例如，一个8位的 unsigned char 能够存储0到255,。如果我们我们赋予一个超出这个范围的值，编译器会赋予那个值对256求模的余数。因此，将 -1 赋予一个8位的 unsigned char 对象，得到的是255.
+如果我们将一个超出范围的值赋值给一个有符号类型的对象，结果是 undefined。程序在运行中会崩溃或者产生垃圾值。
+不要在表达式中混用有符号值和无符号值。因为有符号值会自动转化为无符号值。
+示例代码 
+
+#include <iostream>
+ 
+using namespace std;
+ 
+void convert_nonbool_to_bool()
+{
+    bool b1 = 'a';
+    bool b2 = 1;
+    bool b3 = -1;
+    bool b4 = 0;
+    bool b5 = 3.14;
+    bool b6 = 0.0;
+    std::cout << "b1: " << boolalpha << b1 << endl;
+    std::cout << "b2: " << boolalpha << b2 << endl;
+    std::cout << "b3: " << boolalpha << b3 << endl;
+    std::cout << "b4: " << boolalpha << b4 << endl;
+    std::cout << "b5: " << boolalpha << b5 << endl;
+    std::cout << "b6: " << boolalpha << b6 << endl;
+ 
+    /*
+     * 32bit VC++11
+     * output:
+     *
+     * b1: true
+     * b2: true
+     * b3: true
+     * b4: false
+     * b5: true
+     * b6: false
+     *
+     * */
+}
+ 
+void convert_bool_to_nonbool()
+{
+    bool btrue = true;
+    bool bfalse = false;
+    int i1 = btrue;
+    int i2 = bfalse;
+    char c1 = btrue;
+    char c2 = bfalse;
+    float f1 = btrue;
+    float f2 = bfalse;
+    std::cout << "i1: " << i1 << endl;
+    std::cout << "i2: " << i2 << endl;
+    std::cout << "c1: " << c1 << endl;
+    std::cout << "c2: " << c2 << endl;
+    std::cout << "f1: " << f1 << endl;
+    std::cout << "f2: " << f2 << endl;
+ 
+    /*
+     * 32bit VC++11
+     * output:
+     *
+     * i1: 1
+     * i2: 0
+     * c1: 
+     * c2:
+     * f1: 1
+     * f2: 0
+     * */
+}
+ 
+void convert_float_to_int()
+{
+    float f1 = 3.14;
+    int i1 = f1;
+    std::cout << "i1: " << i1 << endl;
+ 
+    /*
+     * 32bit VC++11
+     * output:
+     *
+     * i1: 3
+     * */
+}
+ 
+void convert_int_to_float()
+{
+    long long int i1 = 1e20;
+    float f1 = i1;
+    std::cout << "f1: " << f1 << endl;
+ 
+    /*
+     * 32bit VC++11
+     * output:
+     *
+     * f1: 7.76628e+018
+     * */
+}
+ 
+void convert_to_unsigned()
+{
+    unsigned char uc1 = 257;
+    unsigned char uc2 = -1;
+    std::cout << "uc1: " << (int)uc1 << endl;
+    std::cout << "uc2: " << (int)uc2 << endl;
+ 
+    /*
+     * 32bit VC++11
+     * output:
+     *
+     * uc1: 1
+     * uc2: 255
+     * */
+}
+ 
+void convert_to_signed()
+{
+    //int32 取值范围：-2,147,483,648 到 2,147,483,647
+    int i1 = 2147483648;
+    std::cout << "i1: " << i1 << endl;
+ 
+    /*
+     * 32bit VC++11
+     * output:
+     *
+     * i1: -2147483648
+     * */
+}
+ 
+int main()
+{
+    convert_nonbool_to_bool();
+    convert_bool_to_nonbool();
+    convert_float_to_int();
+    convert_int_to_float();
+    convert_to_unsigned();
+    convert_to_signed();
+    return 0;
+}
+VC++11对于将超出范围的值赋给有符号类型时，得到的结果不是undefined。
+

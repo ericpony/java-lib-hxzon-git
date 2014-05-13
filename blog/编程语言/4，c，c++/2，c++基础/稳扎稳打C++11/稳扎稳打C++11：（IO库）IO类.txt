@@ -1,0 +1,27 @@
+﻿稳扎稳打C++11：（IO库）IO类
+来源：ilanever.com | 作者：LanPei | 创建时间：2014-4-28 22:47:25
+http://ilanever.com/article/sitedetail.html?id=287
+
+能拷贝或赋值IO对象，因此，我们不能将流类型作为参数或返回类型。我们必须通过引用来传递IO对象，读或写都会改变对象的状态，因此，引用不能是const的。
+目录
+IO类型的关系
+不能拷贝和赋值IO对象
+IO头文件和类型如下所示：
+头文件	类型	说明
+iostream	istream, wistream	读stream
+ostream, wostream	写stream
+iostream, wiostream	读和写stream
+fstream	ifstream, wifstream	读文件
+ofstream, wofstream	写文件
+fstream, wfstream	读和写文件
+sstream	istringstream, wistringstream	读string
+ostringstream, wostringstream	写string
+stringstream, wstringstream	读和写string
+为了支持宽字符，库定义了一些类型用于操作wchar_t数据。以w开头的类即用于处理宽字符。wcin、wcout、wcerr对应于cin、cout、cerr。
+IO类型的关系 
+
+ifstream和istringstream继承自istream。ofstream和ostringstream继承自ostream。
+不能拷贝和赋值IO对象 
+
+我们不能拷贝或赋值IO对象，因此，我们不能将流类型作为参数或返回类型。我们必须通过引用来传递IO对象，读或写都会改变对象的状态，因此，引用不能是const的。
+
