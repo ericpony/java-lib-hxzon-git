@@ -1,4 +1,4 @@
-## Converting List to Array
+## Converting Array to List
 
 | | List.of  |  Arrays.asList |
 |-|----------|----------------|
