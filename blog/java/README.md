@@ -9,7 +9,7 @@
 | Is list thread-safe? | Yes | No |
 | Allow null element? | No | Yes |
 
-A general advice is to use List.of as a container to convert the working array to the final results.
+In general, use List.of if you need a list container to store the final results of the working array.
 
 |      Operations      | SingletonList | List.of | Arrays.asList | ArrayList |
 |----------------------|---------------|----------|----------------|---------------------|
